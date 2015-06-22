@@ -146,7 +146,6 @@ class Main(QtGui.QWidget, Ui_Form):
 
     def filterList_textChanged(self, list_type):
 
-
         if list_type == "sequence":
             seq_filter_str = str(self.seqFilter.text())
             if seq_filter_str > 0:
@@ -283,9 +282,10 @@ class Main(QtGui.QWidget, Ui_Form):
             (self.selected_project_id, self.selected_asset_type, self.selected_asset_name,
              self.selected_asset_version)).fetchone()[0]
 
+        asset_extension = os.path.splitext(self.selected_asset_path)[-1]
         if self.selected_asset_path.endswith(".jpg") or self.selected_asset_path.endswith(".png"):
 
-            self.fileTypeLbl.setText("Image (" + os.path.splitext(self.selected_asset_path)[-1] + ")")
+            self.fileTypeLbl.setText("Image (" + asset_extension + ")")
 
             for i in reversed(range(self.actionFrameLayout.count())):  # Delete all items from layout
                 self.actionFrameLayout.itemAt(i).widget().close()
@@ -297,10 +297,10 @@ class Main(QtGui.QWidget, Ui_Form):
             self.loadInKuadroBtn.clicked.connect(partial(self.load_asset, "Kuadro"))
 
         elif self.selected_asset_path.endswith(".mb") or self.selected_asset_path.endswith(".ma"):
-            self.fileTypeLbl.setText("Maya (" + os.path.splitext(self.selected_asset_path)[-1] + ")")
+            self.fileTypeLbl.setText("Maya (" + asset_extension + ")")
 
         elif self.selected_asset_path.endswith(".obj"):
-            self.fileTypeLbl.setText("Geometry (" + os.path.splitext(self.selected_asset_path)[-1] + ")")
+            self.fileTypeLbl.setText("Geometry (" + asset_extension + ")")
 
 
         # Load thumbnail image
@@ -359,7 +359,6 @@ class Main(QtGui.QWidget, Ui_Form):
             comments = str(self.commentTxt.toHtml())
         else:
             comments = str(self.commentTxt.toPlainText())
-
 
         new_comment = "<b>{1}</b>: {0} ({2})\n".format(str(self.commentTxtLine.text()), username,
                                                        time.strftime("%d/%m/%Y"))
@@ -563,7 +562,7 @@ class SoftwareDialog(QtGui.QDialog):
 
 
 
-        # Main Loop
+            # Main Loop
 
 
 if __name__ == "__main__":
