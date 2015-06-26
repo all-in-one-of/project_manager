@@ -539,7 +539,6 @@
                     </spacer>
                    </item>
                   </layout>
-                  <zorder>assetImg</zorder>
                   <zorder>frame_3</zorder>
                   <zorder>label</zorder>
                   <zorder>verticalSpacer</zorder>
@@ -634,12 +633,12 @@
           </item>
           <item>
            <property name="text">
-            <string>Modeling</string>
+            <string>Layout</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>Layout</string>
+            <string>Modeling</string>
            </property>
           </item>
          </widget>
@@ -694,8 +693,8 @@
          <widget class="QLineEdit" name="assetNameCreationLineEdit">
           <property name="geometry">
            <rect>
-            <x>380</x>
-            <y>360</y>
+            <x>370</x>
+            <y>470</y>
             <width>113</width>
             <height>20</height>
            </rect>
@@ -707,8 +706,8 @@
          <widget class="QLabel" name="assetNameCreationLbl">
           <property name="geometry">
            <rect>
-            <x>270</x>
-            <y>370</y>
+            <x>260</x>
+            <y>470</y>
             <width>81</width>
             <height>16</height>
            </rect>
@@ -718,6 +717,9 @@
           </property>
          </widget>
          <widget class="QListWidget" name="assetDependencyList">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>720</x>
@@ -822,6 +824,41 @@
           <property name="text">
            <string>Software</string>
           </property>
+         </widget>
+         <widget class="QGroupBox" name="webGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>40</x>
+            <y>290</y>
+            <width>941</width>
+            <height>80</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>URL</string>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+          <widget class="QLineEdit" name="conceptWebLineEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>40</x>
+             <y>30</y>
+             <width>811</width>
+             <height>20</height>
+            </rect>
+           </property>
+          </widget>
          </widget>
         </widget>
         <widget class="QWidget" name="preferencesTab">

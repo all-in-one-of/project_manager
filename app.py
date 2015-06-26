@@ -33,7 +33,7 @@ import time
 import socket
 from thibh import screenshot
 import urllib
-import sip
+import shutil
 
 from PyQt4 import QtGui, QtCore, Qt
 from ui.main_window import Ui_Form
@@ -44,27 +44,31 @@ class Main(QtGui.QWidget, Ui_Form):
         QtGui.QMainWindow.__init__(self)
         Ui_Form.__init__(self)
 
-        Form = self.setupUi(self)
-        Form.center_window()
+        self.Form = self.setupUi(self)
+        self.Form.center_window()
 
         # Create Favicon
         app_icon = QtGui.QIcon()
-        app_icon.addFile("H:\\01-NAD\\Session-06\\_pipeline\\PyQt_test\\project_manager\\media\\favicon.png",
+        app_icon.addFile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png",
                          QtCore.QSize(16, 16))
-        Form.setWindowIcon(app_icon)
+        self.Form.setWindowIcon(app_icon)
 
 
         # Set the StyleSheet
-        css = QtCore.QFile("H:\\01-NAD\\Session-06\\_pipeline\\PyQt_test\\project_manager\\media\\style.css")
+        css = QtCore.QFile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
         css.open(QtCore.QIODevice.ReadOnly)
         if css.isOpen():
-            Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
-        css.close()
+            self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
 
-        # Override StyleSheet
+
+        # Overrides
         self.publishBtn.setStyleSheet("background-color: #77D482;")
         self.loadBtn.setStyleSheet(
             "QPushButton {background-color: #77B0D4;} QPushButton:hover {background-color: #1BCAA7;}")
+        self.assetDependencyList.setEnabled(False)
+        self.webGroupBox.setDisabled(True)
+
+
 
         # Database Setup
         self.db_path = "H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_database\\db.sqlite"
@@ -144,6 +148,8 @@ class Main(QtGui.QWidget, Ui_Form):
 
         self.savePrefBtn.clicked.connect(self.save_prefs)
 
+        self.createAssetBtn.clicked.connect(self.create_asset)
+
     def filterList_textChanged(self, list_type):
 
         if list_type == "sequence":
@@ -171,6 +177,9 @@ class Main(QtGui.QWidget, Ui_Form):
         self.selected_project = str(self.projectList.selectedItems()[0].text())
         self.selected_project_id = str(self.cursor.execute('''SELECT project_id FROM projects WHERE project_name=?''',
                                                            (self.selected_project,)).fetchone()[0])
+        self.selected_project_path = str(
+            self.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''',
+                                (self.selected_project,)).fetchone()[0])
 
         # Query the departments associated with the project
         self.departments = (self.cursor.execute('''SELECT DISTINCT asset_type FROM assets WHERE project_id=?''',
@@ -196,8 +205,13 @@ class Main(QtGui.QWidget, Ui_Form):
 
         # Populate the assets list
         self.all_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_id=?''',
-                                              (self.selected_project_id,))
+                                              (self.selected_project_id,)).fetchall()
         self.add_assets_to_asset_list(self.all_assets)
+
+        # Populate the asset dependency list
+        self.assetDependencyList.clear()
+        for asset in self.all_assets:
+            self.assetDependencyList.addItem(asset[5] + "_" + asset[3] + "_" + str(asset[6]))
 
     def departmentList_Clicked(self):
         self.selected_department = str(self.departmentList.selectedItems()[0].text())
@@ -340,40 +354,145 @@ class Main(QtGui.QWidget, Ui_Form):
         '''
 
         selected_department = str(self.departmentCreationList.selectedItems()[0].text())
+        self.webGroupBox.setEnabled(False)
 
         if selected_department == "Concept":
-            self.softwareCreationList.setItemHidden(self.seqList.item(i), False)
-            self.softwareCreationList.setItemHidden("Houdini", False)
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(0), True)  # Blender
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(1), True)  # Cinema 4D
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(2), True)  # Houdini
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(3), True)  # Maya
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(4), False)  # Photoshop
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(5), True)  # Softimage
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), True)  # ZBrush
+
+            self.assetDependencyList.setEnabled(False)
+            self.webGroupBox.setEnabled(True)
+            self.conceptWebLineEdit.setEnabled(True)
+            try:
+                self.softwareCreationList.setItemSelected(
+                    self.softwareCreationList.setItemSelected(self.softwareCreationList.item(4), True))
+            except:
+                pass
+
+        elif selected_department == "Modeling":
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(1), False)  # Cinema 4D
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(0), False)  # Blender
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(2), False)  # Houdini
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(3), False)  # Maya
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(4), True)  # Photoshop
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(5), False)  # Softimage
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), False)  # ZBrush
+            self.assetDependencyList.setEnabled(False)
+
+        elif selected_department == "Layout":
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(1), True)  # Cinema 4D
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(0), False)  # Blender
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(2), True)  # Houdini
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(3), False)  # Maya
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(4), True)  # Photoshop
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(5), False)  # Softimage
+            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), False)  # ZBrush
+            self.assetDependencyList.setEnabled(True)
+
+    def create_asset(self):
+        '''Create asset
+        '''
+
+        asset_name = ""
+        asset_path = ""
+
+        # Check if a project is selected
+        if len(self.projectList.selectedItems()) == 0:
+            self.message_box(text="Please select a project first")
+            return
+
+
+        # Check if a department is selected
+        try:
+            selected_department = str(self.departmentCreationList.selectedItems()[0].text())
+        except:
+            self.message_box(text="You must first select a project and department")
+            return
+
+        # Check if a name is defined for the asset
+        if len(str(self.assetNameCreationLineEdit.text())) == 0:
+            self.message_box(text="Please enter a name for the asset")
+            return
+        else:
+            asset_name = str(self.assetNameCreationLineEdit.text())
+
+        # Check if a sequence is selected and starts building the path for the asset
+        if len(self.seqCreationList.selectedItems()) > 0:
+            selected_sequence = str(self.seqCreationList.selectedItems()[0].text())
+            selected_sequence_id = str(
+                self.cursor.execute('''SELECT sequence_id FROM sequences WHERE sequence_name=?''',
+                                    (selected_sequence,)).fetchone()[0])
+            asset_path = self.selected_project_path + "\\seq\\" + selected_sequence
+        else:
+            asset_path = self.selected_project_path + "\\assets"
+            selected_sequence_id = "None"
+
+        if selected_department == "Concept":
+
+            oUrl = str(self.conceptWebLineEdit.text())
+            if not len(oUrl) == 0:
+                asset_path += "\\concepts\\concept_{0}_01.jpg".format(asset_name)
+                asset_path, asset_name = self.check_if_asset_already_exists(asset_path, asset_name, "jpg")
+                urllib.urlretrieve(oUrl, asset_path)
+            else:
+                asset_path += "\\concepts\\concept_{0}_01.psd".format(asset_name)
+                asset_path, asset_name = self.check_if_asset_already_exists(asset_path, asset_name, "psd")
+                shutil.copyfile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\default_scenes\\photoshop.psd",
+                                asset_path)
+
+            self.cursor.execute(
+                '''INSERT INTO assets(project_id, sequence_id, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?)''',
+                (self.selected_project_id, selected_sequence_id, asset_name, asset_path, "concept", "01", self.username))
+
+            self.db.commit()
+
         elif selected_department == "Modeling":
             pass
+
         elif selected_department == "Layout":
             pass
 
-    def add_comment(self):
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            subprocess.Popen([self.photoshop_path, asset_path])
 
-        if self.username == "Thibault":
-            username = "<font color=red>Thibault</font>"
 
-        # Check if there is already a comment or not to avoid empty first line due to HTML
-        if self.commentTxt.toPlainText():
-            comments = str(self.commentTxt.toHtml())
+    def check_if_asset_already_exists(self, asset_path, asset_name, asset_type):
+        if not os.path.isfile(asset_path):
+            return (asset_path, asset_name)
         else:
-            comments = str(self.commentTxt.toPlainText())
 
-        new_comment = "<b>{1}</b>: {0} ({2})\n".format(str(self.commentTxtLine.text()), username,
-                                                       time.strftime("%d/%m/%Y"))
-        new_comment = comments + new_comment
-        self.cursor.execute('''UPDATE assets SET asset_comment = ? WHERE asset_path = ?''',
-                            (new_comment, self.selected_asset_path,))
-        self.db.commit()
+            asset_tmp = asset_name
+            folder_path = "\\".join(asset_path.split("\\")[0:-1])
+            assets_name_list = []
 
-        # Update comment field
-        asset_comment = self.cursor.execute('''SELECT asset_comment FROM assets WHERE asset_path=?''',
-                                            (self.selected_asset_path,)).fetchone()[0]
-        self.commentTxt.setText(asset_comment)
+            new_asset_name = asset_name
+
+            for cur_file in next(os.walk(folder_path))[2]:
+                if asset_tmp in cur_file and asset_type in cur_file:
+                    assets_name_list.append(cur_file.split("_")[1])
+
+            assets_name_list = sorted(assets_name_list)
+            try:
+                asset_nbr = int(assets_name_list[-1].split("-")[-1])
+                asset_nbr += 1
+                new_asset_name += "-" + str(asset_nbr).zfill(3)
+            except:
+                new_asset_name += "-001"
+
+            asset_path = asset_path.replace(asset_name, new_asset_name)
+
+            return (asset_path, new_asset_name)
+
+
+
+
 
     def load_asset(self, action):
-
         if action == "Kuadro":
 
             if not QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
@@ -398,6 +517,7 @@ class Main(QtGui.QWidget, Ui_Form):
         elif self.selected_asset_path.endswith(".ma") or self.selected_asset_path.endswith(".mb"):
             subprocess.Popen(["C:\\Program Files\\Autodesk\\Maya2015\\bin\\maya.exe", self.selected_asset_path])
 
+
     def add_assets_to_asset_list(self, assets_list):
         """
         Add assets from assets_list to self.assetList
@@ -407,6 +527,30 @@ class Main(QtGui.QWidget, Ui_Form):
         self.assetList.clear()
         for asset in assets_list:
             self.assetList.addItem(asset[5] + "_" + asset[3] + "_" + str(asset[6]))
+
+
+    def add_comment(self):
+        if self.username == "Thibault":
+            username = "<font color=red>Thibault</font>"
+
+        # Check if there is already a comment or not to avoid empty first line due to HTML
+        if self.commentTxt.toPlainText():
+            comments = str(self.commentTxt.toHtml())
+        else:
+            comments = str(self.commentTxt.toPlainText())
+
+        new_comment = "<b>{1}</b>: {0} ({2})\n".format(str(self.commentTxtLine.text()), username,
+                                                       time.strftime("%d/%m/%Y"))
+        new_comment = comments + new_comment
+        self.cursor.execute('''UPDATE assets SET asset_comment = ? WHERE asset_path = ?''',
+                            (new_comment, self.selected_asset_path,))
+        self.db.commit()
+
+        # Update comment field
+        asset_comment = self.cursor.execute('''SELECT asset_comment FROM assets WHERE asset_path=?''',
+                                            (self.selected_asset_path,)).fetchone()[0]
+        self.commentTxt.setText(asset_comment)
+
 
     def save_prefs(self):
         """
@@ -448,6 +592,31 @@ class Main(QtGui.QWidget, Ui_Form):
 
         self.db.commit()
 
+
+    def message_box(self, type="Warning", text="Warning"):
+        self.msgBox = QtGui.QMessageBox()
+
+        # Apply custom CSS to msgBox
+        css = QtCore.QFile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
+        css.open(QtCore.QIODevice.ReadOnly)
+        if css.isOpen():
+            self.msgBox.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+        css.close()
+
+        self.msgBox.setWindowTitle("Warning!")
+        self.msgBox.setText(text)
+
+        self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
+        self.msgBox.setDefaultButton(self.msgBox_okBtn)
+
+        if type == "Warning":
+            self.msgBox.setIcon(QtGui.QMessageBox.Warning)
+        elif type == "Error":
+            self.msgBox.setIcon(QtGui.QMessageBox.Critical)
+
+        return self.msgBox.exec_()
+
+
     def center_window(self):
         """
         Move the window to the center of the screen
@@ -457,11 +626,13 @@ class Main(QtGui.QWidget, Ui_Form):
         self.move((resolution.width() / 2) - (self.frameSize().width() / 2),
                   (resolution.height() / 2) - (self.frameSize().height() / 2))
 
+
     def open_in_explorer(self):
         """
         Open selected assets in explorer
         """
         subprocess.Popen(r'explorer /select,' + str(self.assetPathLbl.text()))
+
 
     def clear_filter(self, filter_type):
         """
@@ -472,16 +643,21 @@ class Main(QtGui.QWidget, Ui_Form):
         elif filter_type == "asset":
             self.assetFilter.setText("")
 
+
     def update_thumb(self):
         """
         Update selected asset thumbnail
         """
-        screenshot.take(self.screenshot_dir, self.asset_name)
+        self.Form.showMinimized()
 
-        pixmap = QtGui.QPixmap(self.screenshot_dir + self.asset_name + ".jpg").scaled(1000, 200,
+        screenshot.take(self.screenshot_dir, self.selected_asset_name)
+
+        pixmap = QtGui.QPixmap(self.screenshot_dir + self.selected_asset_name + ".jpg").scaled(1000, 200,
                                                                                       QtCore.Qt.KeepAspectRatio,
                                                                                       QtCore.Qt.SmoothTransformation)
         self.assetImg.setPixmap(pixmap)
+        self.Form.showMaximized()
+        self.Form.showNormal()
 
 
 class SoftwareDialog(QtGui.QDialog):
