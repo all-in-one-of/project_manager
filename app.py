@@ -47,15 +47,15 @@ class Main(QtGui.QWidget, Ui_Form):
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
-        # Create Favicon
+        # Create Favicons
         app_icon = QtGui.QIcon()
-        app_icon.addFile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png",
+        app_icon.addFile("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png",
                          QtCore.QSize(16, 16))
         self.Form.setWindowIcon(app_icon)
 
 
         # Set the StyleSheet
-        css = QtCore.QFile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
+        css = QtCore.QFile("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
         css.open(QtCore.QIODevice.ReadOnly)
         if css.isOpen():
             self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
@@ -71,7 +71,7 @@ class Main(QtGui.QWidget, Ui_Form):
 
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_database\\db.sqlite"
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
@@ -117,7 +117,7 @@ class Main(QtGui.QWidget, Ui_Form):
 
 
         # Global Variables
-        self.screenshot_dir = "H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_database\\screenshots\\"
+        self.screenshot_dir = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\screenshots\\"
         self.username = socket.gethostname()
 
         pixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img.png").scaled(1000, 200, QtCore.Qt.KeepAspectRatio,
@@ -442,7 +442,7 @@ class Main(QtGui.QWidget, Ui_Form):
             else:
                 asset_path += "\\concepts\\concept_{0}_01.psd".format(asset_name)
                 asset_path, asset_name = self.check_if_asset_already_exists(asset_path, asset_name, "psd")
-                shutil.copyfile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\default_scenes\\photoshop.psd",
+                shutil.copyfile("H:\\01-NAD\\_pipeline\\_utilities\\default_scenes\\photoshop.psd",
                                 asset_path)
 
             self.cursor.execute(
@@ -498,7 +498,7 @@ class Main(QtGui.QWidget, Ui_Form):
             if not QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
                 os.system("taskkill /im kuadro.exe /f")
             subprocess.Popen(
-                ["H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_soft\\kuadro.exe", self.selected_asset_path])
+                ["H:\\01-NAD\\_pipeline\\_utilities\\_soft\\kuadro.exe", self.selected_asset_path])
             return
 
 
@@ -597,7 +597,7 @@ class Main(QtGui.QWidget, Ui_Form):
         self.msgBox = QtGui.QMessageBox()
 
         # Apply custom CSS to msgBox
-        css = QtCore.QFile("H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
+        css = QtCore.QFile("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
         css.open(QtCore.QIODevice.ReadOnly)
         if css.isOpen():
             self.msgBox.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
@@ -707,7 +707,7 @@ class SoftwareDialog(QtGui.QDialog):
             subprocess.Popen(["", self.asset])
         elif software == "blender":
             subprocess.Popen(["H:\\Dossiers Importants\\Google Drive\\Blender\\2.74\\blender.exe", "--python",
-                              "H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\software_scripts\\blender\\blender_obj_load.py",
+                              "H:\\01-NAD\\_pipeline\\_utilities\\software_scripts\\blender\\blender_obj_load.py",
                               self.asset])
         elif software == "c4d":
             subprocess.Popen(["H:\\Programmes\\Cinema 4D R16\\CINEMA 4D.exe", self.asset])
