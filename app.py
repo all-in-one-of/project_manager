@@ -40,6 +40,8 @@ from ui.main_window import Ui_Form
 
 
 class Main(QtGui.QWidget, Ui_Form):
+
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         Ui_Form.__init__(self)
@@ -47,15 +49,25 @@ class Main(QtGui.QWidget, Ui_Form):
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
-        # Create Favicons
+        # Global Variables
+        self.cur_path = os.path.dirname(os.path.realpath(__file__)) # H:\01-NAD\_pipeline\_utilities\_asset_manager
+        self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "") # H:\01-NAD\_pipeline\_utilities
+        self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
+        self.username = socket.gethostname()
+        pixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img.png").scaled(1000, 200, QtCore.Qt.KeepAspectRatio,
+                                                                                   QtCore.Qt.SmoothTransformation)
+        self.assetImg.setPixmap(pixmap)
+
+
+        # Create Favicon
         app_icon = QtGui.QIcon()
-        app_icon.addFile("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png",
+        app_icon.addFile(self.cur_path + "\\media\\favicon.png",
                          QtCore.QSize(16, 16))
         self.Form.setWindowIcon(app_icon)
 
 
         # Set the StyleSheet
-        css = QtCore.QFile("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
+        css = QtCore.QFile(self.cur_path + "\\media\\style.css")
         css.open(QtCore.QIODevice.ReadOnly)
         if css.isOpen():
             self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
@@ -68,10 +80,8 @@ class Main(QtGui.QWidget, Ui_Form):
         self.assetDependencyList.setEnabled(False)
         self.webGroupBox.setDisabled(True)
 
-
-
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"
+        self.db_path = self.cur_path_one_folder_up + "\\_database\\db.sqlite"
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
@@ -116,13 +126,7 @@ class Main(QtGui.QWidget, Ui_Form):
 
 
 
-        # Global Variables
-        self.screenshot_dir = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\screenshots\\"
-        self.username = socket.gethostname()
 
-        pixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img.png").scaled(1000, 200, QtCore.Qt.KeepAspectRatio,
-                                                                                   QtCore.Qt.SmoothTransformation)
-        self.assetImg.setPixmap(pixmap)
 
 
         # Connect the filter textboxes
@@ -295,6 +299,10 @@ class Main(QtGui.QWidget, Ui_Form):
             '''SELECT asset_path FROM assets WHERE project_id=? AND asset_type=? AND asset_name=? AND asset_version=?''',
             (self.selected_project_id, self.selected_asset_type, self.selected_asset_name,
              self.selected_asset_version)).fetchone()[0]
+
+        cur_asset = Asset(self.selected_asset_name, self.selected_asset_path)
+        print(cur_asset.name)
+        cur_asset.create_version(self.selected_project_id)
 
         asset_extension = os.path.splitext(self.selected_asset_path)[-1]
         if self.selected_asset_path.endswith(".jpg") or self.selected_asset_path.endswith(".png"):
@@ -597,7 +605,7 @@ class Main(QtGui.QWidget, Ui_Form):
         self.msgBox = QtGui.QMessageBox()
 
         # Apply custom CSS to msgBox
-        css = QtCore.QFile("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\style.css")
+        css = QtCore.QFile(self.cur_path + "\\media\\style.css")
         css.open(QtCore.QIODevice.ReadOnly)
         if css.isOpen():
             self.msgBox.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
@@ -658,6 +666,17 @@ class Main(QtGui.QWidget, Ui_Form):
         self.assetImg.setPixmap(pixmap)
         self.Form.showMaximized()
         self.Form.showNormal()
+
+
+
+class Asset(Main):
+    def __init__(self, name, path):
+        self.name = name
+        self.path = path
+
+    def create_version(self, project_id):
+        print(project_id)
+
 
 
 class SoftwareDialog(QtGui.QDialog):
@@ -739,6 +758,8 @@ class SoftwareDialog(QtGui.QDialog):
 
 
             # Main Loop
+
+
 
 
 if __name__ == "__main__":
