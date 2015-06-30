@@ -35,15 +35,24 @@
    <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QFrame" name="assetManagerFrame">
      <property name="frameShape">
-      <enum>QFrame::Box</enum>
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="margin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QTabWidget" name="Tabs">
         <property name="tabShape">
@@ -61,7 +70,179 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QFrame" name="listFrame">
+           <widget class="QGroupBox" name="filterGroupBox">
+            <property name="title">
+             <string>Filter options</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_9">
+             <property name="margin">
+              <number>5</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="assignedToFilterLbl">
+               <property name="text">
+                <string>Assigned to:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="meOnlyFrame">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_16">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QComboBox" name="assignedToFilterComboBox">
+                  <property name="frame">
+                   <bool>true</bool>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Amélie</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Chloé</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Christopher</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>David</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Edwin</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Étienne</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Jérémy</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Laurence</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Louis-Philippe</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Marc-Antoine</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Mathieu</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Maxime</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Olivier</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Simon</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Thibault</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Yann</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Yi</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Valentin</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="meOnlyCheckBox">
+                  <property name="font">
+                   <font>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Me</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                  <property name="tristate">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="listsFrame">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -69,12 +250,103 @@
              </size>
             </property>
             <property name="frameShape">
-             <enum>QFrame::Box</enum>
+             <enum>QFrame::NoFrame</enum>
             </property>
             <property name="frameShadow">
-             <enum>QFrame::Sunken</enum>
+             <enum>QFrame::Plain</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout">
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item row="4" column="0">
+              <widget class="QFrame" name="addProjectFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_14">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLineEdit" name="addProjectLineEdit">
+                  <property name="placeholderText">
+                   <string>project name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="addProjectBtn">
+                  <property name="maximumSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>+</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QFrame" name="seqFilterFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLineEdit" name="seqFilter">
+                  <property name="placeholderText">
+                   <string>filter</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="seqFilterClearBtn">
+                  <property name="maximumSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>x</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>16</width>
+                    <height>16</height>
+                   </size>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                  <property name="default">
+                   <bool>false</bool>
+                  </property>
+                  <property name="flat">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
              <item row="2" column="6">
               <widget class="QFrame" name="assetFilterFrame">
                <property name="frameShape">
@@ -94,6 +366,13 @@
                  <number>0</number>
                 </property>
                 <item>
+                 <widget class="QLineEdit" name="assetFilter">
+                  <property name="placeholderText">
+                   <string>filter</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="assetFilterClearBtn">
                   <property name="maximumSize">
                    <size>
@@ -103,13 +382,6 @@
                   </property>
                   <property name="text">
                    <string>x</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="assetFilter">
-                  <property name="placeholderText">
-                   <string>filter</string>
                   </property>
                  </widget>
                 </item>
@@ -227,7 +499,7 @@
                 <enum>QFrame::Box</enum>
                </property>
                <property name="sortingEnabled">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -237,7 +509,7 @@
                 <enum>QFrame::Box</enum>
                </property>
                <property name="sortingEnabled">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -287,59 +559,6 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
-              <widget class="QFrame" name="seqFilterFrame">
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_6">
-                <property name="spacing">
-                 <number>6</number>
-                </property>
-                <property name="margin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QPushButton" name="seqFilterClearBtn">
-                  <property name="maximumSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>x</string>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>16</width>
-                    <height>16</height>
-                   </size>
-                  </property>
-                  <property name="checkable">
-                   <bool>false</bool>
-                  </property>
-                  <property name="default">
-                   <bool>false</bool>
-                  </property>
-                  <property name="flat">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="seqFilter">
-                  <property name="placeholderText">
-                   <string>filter</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
              <item row="3" column="7">
               <widget class="QListWidget" name="versionList">
                <property name="frameShape">
@@ -376,13 +595,89 @@
                </property>
               </widget>
              </item>
+             <item row="4" column="1">
+              <widget class="QFrame" name="addSequenceFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_13">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLineEdit" name="addSequenceLineEdit">
+                  <property name="maxLength">
+                   <number>3</number>
+                  </property>
+                  <property name="placeholderText">
+                   <string>sequence name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="addSequenceBtn">
+                  <property name="maximumSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>+</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="4" column="2">
+              <widget class="QFrame" name="addShotFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_15">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QSpinBox" name="shotSpinBox">
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                  <property name="singleStep">
+                   <number>10</number>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="addShotBtn">
+                  <property name="maximumSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>+</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
           <item>
            <widget class="QFrame" name="infoFrame">
             <property name="frameShape">
-             <enum>QFrame::Box</enum>
+             <enum>QFrame::NoFrame</enum>
             </property>
             <property name="frameShadow">
              <enum>QFrame::Sunken</enum>
@@ -406,7 +701,7 @@
                 <item>
                  <widget class="QFrame" name="thumbnailFrame">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Sunken</enum>
@@ -419,10 +714,66 @@
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_4">
                    <property name="margin">
-                    <number>5</number>
+                    <number>0</number>
                    </property>
                    <item>
-                    <widget class="QLabel" name="label_3">
+                    <widget class="QFrame" name="fileTypeFrame">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_4">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="fileTypeLbl">
+                        <property name="maximumSize">
+                         <size>
+                          <width>60</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="lineWidth">
+                         <number>0</number>
+                        </property>
+                        <property name="text">
+                         <string>File Type:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="fileTypeValueLbl">
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="lineWidth">
+                         <number>0</number>
+                        </property>
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="thumbnailLbl">
                      <property name="font">
                       <font>
                        <weight>75</weight>
@@ -488,32 +839,133 @@
                     </widget>
                    </item>
                    <item>
-                    <spacer name="verticalSpacer_2">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
+                    <widget class="QPushButton" name="openInExplorerBtn">
+                     <property name="text">
+                      <string>Open in Explorer</string>
                      </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
+                    </widget>
                    </item>
                   </layout>
                  </widget>
                 </item>
                 <item>
+                 <widget class="Line" name="line">
+                  <property name="frameShadow">
+                   <enum>QFrame::Sunken</enum>
+                  </property>
+                  <property name="lineWidth">
+                   <number>1</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QFrame" name="assetInfoFrame">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Sunken</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
                    <item>
-                    <widget class="QFrame" name="frame_3">
+                    <widget class="QFrame" name="createdByFrame">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_17">
+                      <item>
+                       <widget class="QLabel" name="createdByLbl">
+                        <property name="maximumSize">
+                         <size>
+                          <width>64</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="text">
+                         <string>Created by:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="createdByValueLbl">
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="assignedToLbl">
+                        <property name="maximumSize">
+                         <size>
+                          <width>64</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="text">
+                         <string>Assigned to:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="assignedToValueLbl">
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="assignedToFrame_2">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_18">
+                      <item>
+                       <widget class="QLabel" name="dueDateLbl">
+                        <property name="maximumSize">
+                         <size>
+                          <width>44</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="text">
+                         <string>Due on:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="dueDateValueLbl">
+                        <property name="text">
+                         <string>Lundi 01 Janvier 2015 - 12h00</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="timeLeftLbl">
+                        <property name="text">
+                         <string>1 day 10 hours left</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="stateFrame">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
                      </property>
@@ -521,132 +973,31 @@
                       <enum>QFrame::Raised</enum>
                      </property>
                      <layout class="QHBoxLayout" name="horizontalLayout_2">
-                      <property name="spacing">
-                       <number>6</number>
-                      </property>
-                      <property name="margin">
-                       <number>0</number>
-                      </property>
                       <item>
-                       <widget class="QLabel" name="label_2">
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="lineWidth">
-                         <number>0</number>
-                        </property>
-                        <property name="text">
-                         <string>Path on disk: </string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QLabel" name="assetPathLbl">
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="lineWidth">
-                         <number>0</number>
-                        </property>
-                        <property name="text">
-                         <string>...</string>
-                        </property>
-                        <property name="wordWrap">
-                         <bool>false</bool>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="openInExplorerBtn">
-                        <property name="text">
-                         <string>Open in Explorer</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <spacer name="horizontalSpacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
+                       <widget class="QLabel" name="stateLbl">
+                        <property name="maximumSize">
                          <size>
-                          <width>40</width>
-                          <height>20</height>
+                          <width>34</width>
+                          <height>16777215</height>
                          </size>
                         </property>
-                       </spacer>
+                        <property name="text">
+                         <string>State:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label">
+                        <property name="text">
+                         <string>Approved</string>
+                        </property>
+                       </widget>
                       </item>
                      </layout>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QFrame" name="frame_8">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QHBoxLayout" name="horizontalLayout_4">
-                      <property name="margin">
-                       <number>0</number>
-                      </property>
-                      <item>
-                       <widget class="QLabel" name="label_5">
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="lineWidth">
-                         <number>0</number>
-                        </property>
-                        <property name="text">
-                         <string>File Type:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QLabel" name="fileTypeLbl">
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="lineWidth">
-                         <number>0</number>
-                        </property>
-                        <property name="text">
-                         <string>...</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <spacer name="horizontalSpacer_2">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label">
+                    <widget class="QLabel" name="commentsLbl">
                      <property name="font">
                       <font>
                        <weight>75</weight>
@@ -684,27 +1035,14 @@
                      </property>
                     </widget>
                    </item>
-                   <item>
-                    <spacer name="verticalSpacer">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
                   </layout>
-                  <zorder>frame_3</zorder>
-                  <zorder>label</zorder>
-                  <zorder>verticalSpacer</zorder>
+                  <zorder>commentsLbl</zorder>
                   <zorder>addCommentBtn</zorder>
                   <zorder>commentTxtLine</zorder>
                   <zorder>commentTxt</zorder>
-                  <zorder>frame_8</zorder>
+                  <zorder>createdByFrame</zorder>
+                  <zorder>assignedToFrame_2</zorder>
+                  <zorder>stateFrame</zorder>
                  </widget>
                 </item>
                </layout>
@@ -1064,7 +1402,7 @@
              <item>
               <widget class="QFrame" name="photoshopPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1076,7 +1414,7 @@
                 <item>
                  <widget class="QLabel" name="photoshopPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Photoshop</string>
@@ -1099,7 +1437,7 @@
              <item>
               <widget class="QFrame" name="mayaPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1111,7 +1449,7 @@
                 <item>
                  <widget class="QLabel" name="mayaPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Maya</string>
@@ -1134,7 +1472,7 @@
              <item>
               <widget class="QFrame" name="softimagePathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1146,7 +1484,7 @@
                 <item>
                  <widget class="QLabel" name="softimagePrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Softimage</string>
@@ -1169,7 +1507,7 @@
              <item>
               <widget class="QFrame" name="houdiniPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1181,7 +1519,7 @@
                 <item>
                  <widget class="QLabel" name="houdiniPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Houdini</string>
@@ -1204,7 +1542,7 @@
              <item>
               <widget class="QFrame" name="cinema4dPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1216,7 +1554,7 @@
                 <item>
                  <widget class="QLabel" name="cinema4dPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Cinema 4D</string>
@@ -1239,7 +1577,7 @@
              <item>
               <widget class="QFrame" name="nukePathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1251,7 +1589,7 @@
                 <item>
                  <widget class="QLabel" name="nukePrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Nuke</string>
@@ -1274,7 +1612,7 @@
              <item>
               <widget class="QFrame" name="zbrushPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1286,7 +1624,7 @@
                 <item>
                  <widget class="QLabel" name="zbrushPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>ZBrush</string>
@@ -1309,7 +1647,7 @@
              <item>
               <widget class="QFrame" name="mariPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1321,7 +1659,7 @@
                 <item>
                  <widget class="QLabel" name="mariPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Mari</string>
@@ -1344,7 +1682,7 @@
              <item>
               <widget class="QFrame" name="blenderPathFrame">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Plain</enum>
@@ -1356,7 +1694,7 @@
                 <item>
                  <widget class="QLabel" name="blenderPrefLbl">
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::NoFrame</enum>
                   </property>
                   <property name="text">
                    <string>Blender</string>

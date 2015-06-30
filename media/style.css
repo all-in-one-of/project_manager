@@ -278,10 +278,7 @@ QHeaderView::section
     border: 1px solid #6c6c6c;
 }
 
-QCheckBox:disabled
-{
-color: #414141;
-}
+
 
 QDockWidget::title
 {
@@ -429,33 +426,15 @@ QRadioButton::indicator:checked
     );
 }
 
-QCheckBox::indicator{
-    color: #b1b1b1;
-    background-color: #323232;
-    border: 1px solid #b1b1b1;
-    width: 9px;
-    height: 9px;
-}
+
 
 QRadioButton::indicator
 {
     border-radius: 6px;
 }
 
-QRadioButton::indicator:hover, QCheckBox::indicator:hover
-{
-    border: 1px solid #ffaa00;
-}
 
-QCheckBox::indicator:checked
-{
-    image:url(:/images/checkbox.png);
-}
 
-QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
-{
-    border: 1px solid #444;
-}
 
 QListWidget {
   background-color: #727272;
