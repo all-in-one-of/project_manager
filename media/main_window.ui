@@ -59,7 +59,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -274,7 +274,14 @@
                 <item>
                  <widget class="QLineEdit" name="addProjectLineEdit">
                   <property name="placeholderText">
-                   <string>project name</string>
+                   <string>name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="projectShortnameLineEdit">
+                  <property name="placeholderText">
+                   <string>shortname</string>
                   </property>
                  </widget>
                 </item>
@@ -974,15 +981,15 @@
                      </property>
                      <layout class="QHBoxLayout" name="horizontalLayout_2">
                       <item>
-                       <widget class="QLabel" name="stateLbl">
+                       <widget class="QLabel" name="statusLbl">
                         <property name="maximumSize">
                          <size>
-                          <width>34</width>
+                          <width>40</width>
                           <height>16777215</height>
                          </size>
                         </property>
                         <property name="text">
-                         <string>State:</string>
+                         <string>Status:</string>
                         </property>
                        </widget>
                       </item>
@@ -990,6 +997,38 @@
                        <widget class="QLabel" name="label">
                         <property name="text">
                          <string>Approved</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="stateFrame_2">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_20">
+                      <item>
+                       <widget class="QLabel" name="statusLbl_2">
+                        <property name="maximumSize">
+                         <size>
+                          <width>90</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="text">
+                         <string>Last accessed by:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_2">
+                        <property name="text">
+                         <string>Thibault on monday June 15 2015</string>
                         </property>
                        </widget>
                       </item>
@@ -1043,6 +1082,7 @@
                   <zorder>createdByFrame</zorder>
                   <zorder>assignedToFrame_2</zorder>
                   <zorder>stateFrame</zorder>
+                  <zorder>stateFrame_2</zorder>
                  </widget>
                 </item>
                </layout>
@@ -1104,8 +1144,8 @@
          <widget class="QPushButton" name="createAssetBtn">
           <property name="geometry">
            <rect>
-            <x>420</x>
-            <y>530</y>
+            <x>340</x>
+            <y>780</y>
             <width>221</width>
             <height>23</height>
            </rect>
@@ -1131,7 +1171,7 @@
           </property>
           <item>
            <property name="text">
-            <string>Concept</string>
+            <string>Concepts</string>
            </property>
           </item>
           <item>
@@ -1142,6 +1182,11 @@
           <item>
            <property name="text">
             <string>Modeling</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>References</string>
            </property>
           </item>
          </widget>
@@ -1199,8 +1244,8 @@
          <widget class="QLineEdit" name="assetNameCreationLineEdit">
           <property name="geometry">
            <rect>
-            <x>370</x>
-            <y>470</y>
+            <x>440</x>
+            <y>680</y>
             <width>113</width>
             <height>20</height>
            </rect>
@@ -1212,8 +1257,8 @@
          <widget class="QLabel" name="assetNameCreationLbl">
           <property name="geometry">
            <rect>
-            <x>260</x>
-            <y>470</y>
+            <x>350</x>
+            <y>690</y>
             <width>81</width>
             <height>16</height>
            </rect>
@@ -1231,9 +1276,9 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>720</x>
+            <x>850</x>
             <y>90</y>
-            <width>256</width>
+            <width>161</width>
             <height>192</height>
            </rect>
           </property>
@@ -1247,9 +1292,9 @@
          <widget class="QListWidget" name="seqCreationList">
           <property name="geometry">
            <rect>
-            <x>430</x>
+            <x>370</x>
             <y>90</y>
-            <width>256</width>
+            <width>181</width>
             <height>192</height>
            </rect>
           </property>
@@ -1263,9 +1308,9 @@
          <widget class="QLabel" name="sequencesCreationLbl">
           <property name="geometry">
            <rect>
-            <x>450</x>
+            <x>380</x>
             <y>60</y>
-            <width>121</width>
+            <width>91</width>
             <height>16</height>
            </rect>
           </property>
@@ -1286,9 +1331,9 @@
          <widget class="QLabel" name="dependencyCreationLbl">
           <property name="geometry">
            <rect>
-            <x>760</x>
+            <x>830</x>
             <y>60</y>
-            <width>151</width>
+            <width>111</width>
             <height>16</height>
            </rect>
           </property>
@@ -1309,7 +1354,7 @@
          <widget class="QLabel" name="departmentCreationLbl">
           <property name="geometry">
            <rect>
-            <x>40</x>
+            <x>30</x>
             <y>50</y>
             <width>111</width>
             <height>16</height>
@@ -1334,7 +1379,7 @@
            <rect>
             <x>220</x>
             <y>50</y>
-            <width>91</width>
+            <width>81</width>
             <height>16</height>
            </rect>
           </property>
@@ -1368,12 +1413,12 @@
            <string>URL</string>
           </property>
           <property name="flat">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="checkable">
            <bool>false</bool>
           </property>
-          <widget class="QLineEdit" name="conceptWebLineEdit">
+          <widget class="QLineEdit" name="referenceWebLineEdit">
            <property name="enabled">
             <bool>false</bool>
            </property>
@@ -1386,6 +1431,45 @@
             </rect>
            </property>
           </widget>
+         </widget>
+         <widget class="QListWidget" name="shotCreationList">
+          <property name="geometry">
+           <rect>
+            <x>580</x>
+            <y>90</y>
+            <width>181</width>
+            <height>192</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QLabel" name="shotCreationLbl">
+          <property name="geometry">
+           <rect>
+            <x>590</x>
+            <y>70</y>
+            <width>51</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="text">
+           <string>Shots</string>
+          </property>
          </widget>
         </widget>
         <widget class="QWidget" name="preferencesTab">

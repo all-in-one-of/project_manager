@@ -27,9 +27,10 @@ import subprocess
 from functools import partial
 import sqlite3
 import time
-from thibh import screenshot
+from thibh import screenshot, modules
 import urllib
 import shutil
+import unicodedata
 
 from PyQt4 import QtGui, QtCore, Qt
 from ui.main_window import Ui_Form
@@ -53,10 +54,6 @@ class Main(QtGui.QWidget, Ui_Form):
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "yjobin": "Yann", "yshan": "Yi", "vdelbroucq": "Valentin"}
-        pixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img.png").scaled(1000, 200, QtCore.Qt.KeepAspectRatio,
-                                                                                   QtCore.Qt.SmoothTransformation)
-        self.assetImg.setPixmap(pixmap)
-
 
         # Create Favicon
         app_icon = QtGui.QIcon()
@@ -84,10 +81,6 @@ class Main(QtGui.QWidget, Ui_Form):
             self.addProjectFrame.hide()
             self.addSequenceFrame.hide()
             self.addShotFrame.hide()
-
-
-
-
 
         # Database Setup
         self.db_path = self.cur_path_one_folder_up + "\\_database\\db.sqlite"
@@ -133,6 +126,9 @@ class Main(QtGui.QWidget, Ui_Form):
         self.mariPathLineEdit.setText(self.mari_path)
         self.blenderPathLineEdit.setText(self.blender_path)
 
+        # Filtering options
+        self.meOnlyCheckBox.stateChanged.connect(self.filter_assets_for_me)
+
         # Connect the filter textboxes
         self.seqFilter.textChanged.connect(partial(self.filterList_textChanged, "sequence"))
         self.assetFilter.textChanged.connect(partial(self.filterList_textChanged, "asset"))
@@ -142,9 +138,10 @@ class Main(QtGui.QWidget, Ui_Form):
         self.projectList.itemDoubleClicked.connect(self.projectList_DoubleClicked)
         self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)
+        self.seqCreationList.itemClicked.connect(self.seqCreationList_Clicked)
+        self.shotList.itemClicked.connect(self.shotList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
-
 
         # Connect the buttons
         self.addProjectBtn.clicked.connect(self.add_project)
@@ -161,6 +158,7 @@ class Main(QtGui.QWidget, Ui_Form):
         self.savePrefBtn.clicked.connect(self.save_prefs)
         self.createAssetBtn.clicked.connect(self.create_asset)
 
+        # Other connects
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -168,7 +166,7 @@ class Main(QtGui.QWidget, Ui_Form):
             return
 
         project_name = str(self.addProjectLineEdit.text())
-
+        project_shortname = str(self.projectShortnameLineEdit.text())
         selected_folder = str(QtGui.QFileDialog.getExistingDirectory())
 
         # Prevent two projects from having the same name
@@ -198,8 +196,8 @@ class Main(QtGui.QWidget, Ui_Form):
         os.makedirs(project_path + "\\assets\\rnd")
 
         # Add project to database
-        self.cursor.execute('''INSERT INTO projects(project_name, project_path) VALUES (?, ?)''',
-                            (project_name, project_path))
+        self.cursor.execute('''INSERT INTO projects(project_name, project_shortname, project_path) VALUES (?, ?, ?)''',
+                            (project_name, project_shortname, project_path))
         self.db.commit()
 
         # Get projects from database and add them to the projects list
@@ -256,8 +254,9 @@ class Main(QtGui.QWidget, Ui_Form):
             return
 
         # Prevent two shots from having the same number
-        all_shots_number = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                               (self.selected_project_name, self.selected_sequence_name)).fetchall()
+        all_shots_number = self.cursor.execute(
+            '''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
+            (self.selected_project_name, self.selected_sequence_name)).fetchall()
         all_shots_number = [i[0] for i in all_shots_number]
         if shot_number in all_shots_number:
             self.message_box(text="Shot number already exists.")
@@ -302,6 +301,11 @@ class Main(QtGui.QWidget, Ui_Form):
             self.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''',
                                 (self.selected_project_name,)).fetchone()[0])
 
+        self.selected_project_shortname = str(
+            self.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''',
+                                (self.selected_project_name,)).fetchone()[0])
+
+
         # Query the departments associated with the project
         self.departments = (self.cursor.execute('''SELECT DISTINCT asset_type FROM assets WHERE project_name=?''',
                                                 (self.selected_project_name,))).fetchall()
@@ -322,6 +326,9 @@ class Main(QtGui.QWidget, Ui_Form):
         self.seqCreationList.clear()
         self.seqCreationList.addItem("All")
         self.shotList.clear()
+        self.shotCreationList.clear()
+        self.shotList.addItem("None")
+        self.shotCreationList.addItem("None")
         [self.seqList.addItem(sequence[0]) for sequence in self.sequences]
         [self.seqCreationList.addItem(sequence[0]) for sequence in self.sequences]
 
@@ -343,7 +350,8 @@ class Main(QtGui.QWidget, Ui_Form):
 
         if len(self.seqList.selectedItems()) == 0:
             if self.selected_department == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,))
+                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
+                                             (self.selected_project_name,))
             else:
                 assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''',
                                              (self.selected_project_name, self.selected_department,))
@@ -354,7 +362,8 @@ class Main(QtGui.QWidget, Ui_Form):
         else:
 
             if self.selected_department == "All" and self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,))
+                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
+                                             (self.selected_project_name,))
             elif self.selected_department == "All" and self.selected_sequence_name != "All":
                 assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_id=?''',
                                              (self.selected_project_name, self.selected_sequence_id))
@@ -375,21 +384,28 @@ class Main(QtGui.QWidget, Ui_Form):
     def seqList_Clicked(self):
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
 
-        # Add shots to shot list
-        if not self.selected_sequence_name == "All":
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                             (self.selected_project_name, self.selected_sequence_name,)).fetchall()
+        # Add shots to shot list and shot creation list
+        if self.selected_sequence_name == "All":
             self.shotList.clear()
+            self.shotList.addItem("None")
+            self.shotCreationList.clear()
+            self.shotCreationList.addItem("None")
+        else:
+            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
+                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
+            self.shotList.clear()
+            self.shotList.addItem("None")
+            self.shotCreationList.clear()
+            self.shotCreationList.addItem("None")
             shots = [i[0] for i in shots]
             shots = sorted(shots)
-            [self.shotList.addItem(shot) for shot in shots]
-        else:
-            self.shotList.clear()
+            [(self.shotList.addItem(shot), self.shotCreationList.addItem(shot)) for shot in shots]
 
 
         if len(self.departmentList.selectedItems()) == 0:
             if self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,))
+                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
+                                             (self.selected_project_name,))
             else:
                 assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_name=?''',
                                              (self.selected_project_name, self.selected_sequence_name,))
@@ -399,7 +415,8 @@ class Main(QtGui.QWidget, Ui_Form):
 
         else:
             if self.selected_department == "All" and self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,))
+                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
+                                             (self.selected_project_name,))
             elif self.selected_department == "All" and self.selected_sequence_name != "All":
                 assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_name=?''',
                                              (self.selected_project_name, self.selected_sequence_name))
@@ -413,6 +430,34 @@ class Main(QtGui.QWidget, Ui_Form):
 
             # Add assets to asset list
             self.add_assets_to_asset_list(assets)
+
+
+
+        # Mirror selection to Asset Creation tab
+        seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
+        self.seqCreationList.setCurrentRow(seq_list_selected_index)
+
+    def seqCreationList_Clicked(self):
+        self.selected_sequence_name = str(self.seqCreationList.selectedItems()[0].text())
+
+        # Add shots to shot list and shot creation list
+        if self.selected_sequence_name == "All":
+            self.shotCreationList.clear()
+            self.shotCreationList.addItem("None")
+        else:
+            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
+                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
+            self.shotCreationList.clear()
+            self.shotCreationList.addItem("None")
+            shots = [i[0] for i in shots]
+            shots = sorted(shots)
+            [self.shotCreationList.addItem(shot) for shot in shots]
+
+    def shotList_Clicked(self):
+
+        # Mirror selection to Asset Creation tab
+        shot_list_selected_index = self.shotList.selectedIndexes()[0].row()
+        self.shotCreationList.setCurrentRow(shot_list_selected_index)
 
     def assetList_Clicked(self):
 
@@ -485,6 +530,7 @@ class Main(QtGui.QWidget, Ui_Form):
         ex. if "Concept" is selected, only show Photoshop.
         '''
 
+        # Global overrides
         selected_department = str(self.departmentCreationList.selectedItems()[0].text())
         self.webGroupBox.setEnabled(False)
 
@@ -499,7 +545,7 @@ class Main(QtGui.QWidget, Ui_Form):
 
             self.assetDependencyList.setEnabled(False)
             self.webGroupBox.setEnabled(True)
-            self.conceptWebLineEdit.setEnabled(True)
+            self.referenceWebLineEdit.setEnabled(True)
             try:
                 self.softwareCreationList.setItemSelected(
                     self.softwareCreationList.setItemSelected(self.softwareCreationList.item(4), True))
@@ -526,18 +572,24 @@ class Main(QtGui.QWidget, Ui_Form):
             self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), False)  # ZBrush
             self.assetDependencyList.setEnabled(True)
 
+        elif selected_department == "References":
+            self.softwareCreationList.setEnabled(False)
+            self.webGroupBox.setEnabled(True)
+            self.referenceWebLineEdit.setEnabled(True)
+
     def create_asset(self):
         '''Create asset
         '''
 
-        asset_name = ""
-        asset_path = ""
+        asset_name = unicode(self.assetNameCreationLineEdit.text())
+        asset_name = modules.normalize_str(asset_name)
 
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
             self.message_box(text="Please select a project first")
             return
 
+        asset_filename = "\\assets\\" + self.selected_project_shortname + "_"
 
         # Check if a department is selected
         try:
@@ -547,26 +599,53 @@ class Main(QtGui.QWidget, Ui_Form):
             return
 
         # Check if a name is defined for the asset
-        if len(str(self.assetNameCreationLineEdit.text())) == 0:
+        if len(asset_name) == 0:
             self.message_box(text="Please enter a name for the asset")
             return
-        else:
-            asset_name = str(self.assetNameCreationLineEdit.text())
 
-        # Check if a sequence is selected and starts building the path for the asset
-        if len(self.seqCreationList.selectedItems()) > 0:
+        # Check if a sequence is selected
+        try:
             selected_sequence = str(self.seqCreationList.selectedItems()[0].text())
-            selected_sequence_id = str(
-                self.cursor.execute('''SELECT sequence_id FROM sequences WHERE sequence_name=?''',
-                                    (selected_sequence,)).fetchone()[0])
-            asset_path = self.selected_project_path + "\\seq\\" + selected_sequence
-        else:
-            asset_path = self.selected_project_path + "\\assets"
-            selected_sequence_id = "None"
+            asset_filename += selected_sequence + "_"
+        except:
+            selected_sequence = "xxx"
+            asset_filename += "xxx_"
 
-        if selected_department == "Concept":
+        # Check if a shot is selected
+        try:
+            selected_shot = str(self.shotCreationList.selectedItems()[0].text())
+            asset_filename += selected_shot + "_"
+        except:
+            selected_shot = "xxxx"
+            asset_filename += "xxxx_"
 
-            oUrl = str(self.conceptWebLineEdit.text())
+
+        # Create asset depending on selected department
+        if selected_department == "References":
+
+            last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
+            if last_version:
+                last_version = str(int(last_version) + 1).zfill(2)
+                asset_filename += "ref_" + asset_name + "_" + last_version
+            else:
+                asset_filename += "ref_" + asset_name + "_01"
+
+            print(asset_filename)
+
+            # URL = str(self.referenceWebLineEdit.text())
+            # if len(URL) > 0:
+            #     urllib.urlretrieve(URL, self.selected_project_path + asset_filename)
+            #
+            # self.cursor.execute(
+            #     '''INSERT INTO assets(project_name, sequence_name, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?)''',
+            #     (self.selected_project_name, selected_sequence_name, asset_name, asset_filename, "ref", "01",
+            #      self.username))
+            #
+            # self.db.commit()
+
+        elif selected_department == "Concept":
+
+            oUrl = str(self.referenceWebLineEdit.text())
             if not len(oUrl) == 0:
                 asset_path += "\\concepts\\concept_{0}_01.jpg".format(asset_name)
                 asset_path, asset_name = self.check_if_asset_already_exists(asset_path, asset_name, "jpg")
@@ -591,14 +670,24 @@ class Main(QtGui.QWidget, Ui_Form):
         elif selected_department == "Layout":
             pass
 
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-            subprocess.Popen([self.photoshop_path, asset_path])
+#        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+#            subprocess.Popen([self.photoshop_path, asset_path])
+
+    def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
+        all_versions = self.cursor.execute(
+            '''SELECT asset_version FROM assets WHERE asset_name=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
+            (ref_name, sequence_name, shot_number)).fetchall()
+        if len(all_versions) == 0:
+            return
+        else:
+            all_versions = [str(i[0]) for i in all_versions]
+            all_versions = sorted(all_versions)
+            last_version = all_versions[-1]
+            return last_version
+
 
     def check_if_asset_already_exists(self, asset_path, asset_name, asset_type):
-        if not os.path.isfile(asset_path):
-            return (asset_path, asset_name)
-        else:
-
+        if os.path.isfile(asset_path):
             asset_tmp = asset_name
             folder_path = "\\".join(asset_path.split("\\")[0:-1])
             assets_name_list = []
@@ -620,6 +709,9 @@ class Main(QtGui.QWidget, Ui_Form):
             asset_path = asset_path.replace(asset_name, new_asset_name)
 
             return (asset_path, new_asset_name)
+        else:
+            return (asset_path, asset_name)
+
 
     def load_asset(self, action):
         if action == "Kuadro":
@@ -779,6 +871,48 @@ class Main(QtGui.QWidget, Ui_Form):
         self.assetImg.setPixmap(pixmap)
         self.Form.showMaximized()
         self.Form.showNormal()
+
+    def filter_assets_for_me(self):
+
+        if not self.meOnlyCheckBox.checkState():
+            self.assignedToFilterComboBox.setCurrentIndex(0)
+        else:
+            if self.username == "achaput":
+                self.assignedToFilterComboBox.setCurrentIndex(1)
+            elif self.username == "costiguy":
+                self.assignedToFilterComboBox.setCurrentIndex(2)
+            elif self.username == "cgonnord":
+                self.assignedToFilterComboBox.setCurrentIndex(3)
+            elif self.username == "dcayerdesforges":
+                self.assignedToFilterComboBox.setCurrentIndex(4)
+            elif self.username == "earismendez":
+                self.assignedToFilterComboBox.setCurrentIndex(5)
+            elif self.username == "erodrigue":
+                self.assignedToFilterComboBox.setCurrentIndex(6)
+            elif self.username == "jberger":
+                self.assignedToFilterComboBox.setCurrentIndex(7)
+            elif self.username == "lgregoire":
+                self.assignedToFilterComboBox.setCurrentIndex(8)
+            elif self.username == "lclavet":
+                self.assignedToFilterComboBox.setCurrentIndex(9)
+            elif self.username == "mchretien":
+                self.assignedToFilterComboBox.setCurrentIndex(10)
+            elif self.username == "mbeaudoin":
+                self.assignedToFilterComboBox.setCurrentIndex(11)
+            elif self.username == "mroz":
+                self.assignedToFilterComboBox.setCurrentIndex(12)
+            elif self.username == "obolduc":
+                self.assignedToFilterComboBox.setCurrentIndex(13)
+            elif self.username == "slachapelle":
+                self.assignedToFilterComboBox.setCurrentIndex(14)
+            elif self.username == "thoudon":
+                self.assignedToFilterComboBox.setCurrentIndex(15)
+            elif self.username == "yjobin":
+                self.assignedToFilterComboBox.setCurrentIndex(16)
+            elif self.username == "yshan":
+                self.assignedToFilterComboBox.setCurrentIndex(17)
+            elif self.username == "vdelbroucq":
+                self.assignedToFilterComboBox.setCurrentIndex(18)
 
 
 class Asset(Main):
