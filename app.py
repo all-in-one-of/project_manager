@@ -27,10 +27,10 @@ import subprocess
 from functools import partial
 import sqlite3
 import time
-from thibh import screenshot, modules
+from thibh import modules
 import urllib
 import shutil
-import unicodedata
+from PIL import Image
 
 from PyQt4 import QtGui, QtCore, Qt
 from ui.main_window import Ui_Form
@@ -74,7 +74,6 @@ class Main(QtGui.QWidget, Ui_Form):
         self.loadBtn.setStyleSheet(
             "QPushButton {background-color: #77B0D4;} QPushButton:hover {background-color: #1BCAA7;}")
         self.assetDependencyList.setEnabled(False)
-        self.webGroupBox.setDisabled(True)
 
         # Admin Setup
         if not self.username == "thoudon" or self.username == "lclavet":
@@ -132,6 +131,7 @@ class Main(QtGui.QWidget, Ui_Form):
         # Connect the filter textboxes
         self.seqFilter.textChanged.connect(partial(self.filterList_textChanged, "sequence"))
         self.assetFilter.textChanged.connect(partial(self.filterList_textChanged, "asset"))
+        self.filterByNameLineEdit.textChanged.connect(self.filter_reference_thumb)
 
         # Connect the lists
         self.projectList.itemClicked.connect(self.projectList_Clicked)
@@ -139,7 +139,9 @@ class Main(QtGui.QWidget, Ui_Form):
         self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)
         self.seqCreationList.itemClicked.connect(self.seqCreationList_Clicked)
+        self.seqReferenceList.itemClicked.connect(self.seqReferenceList_Clicked)
         self.shotList.itemClicked.connect(self.shotList_Clicked)
+        self.shotReferenceList.itemClicked.connect(self.shotReferenceList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
 
@@ -157,8 +159,14 @@ class Main(QtGui.QWidget, Ui_Form):
 
         self.savePrefBtn.clicked.connect(self.save_prefs)
         self.createAssetBtn.clicked.connect(self.create_asset)
+        self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
+        self.reloadReferenceThumbBtn.clicked.connect(self.load_reference_thumbnails)
+
+        self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
+        self.openRefInPhotoshopBtn.clicked.connect(self.load_ref_in_photoshop)
 
         # Other connects
+        self.referenceThumbSizeSlider.sliderMoved.connect(self.change_reference_thumb_size)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -325,12 +333,17 @@ class Main(QtGui.QWidget, Ui_Form):
         self.seqList.addItem("All")
         self.seqCreationList.clear()
         self.seqCreationList.addItem("All")
+        self.seqReferenceList.clear()
+        self.seqReferenceList.addItem("All")
         self.shotList.clear()
-        self.shotCreationList.clear()
         self.shotList.addItem("None")
+        self.shotCreationList.clear()
         self.shotCreationList.addItem("None")
-        [self.seqList.addItem(sequence[0]) for sequence in self.sequences]
-        [self.seqCreationList.addItem(sequence[0]) for sequence in self.sequences]
+        self.shotReferenceList.clear()
+        self.shotReferenceList.addItem("None")
+        [(self.seqList.addItem(sequence[0]), self.seqCreationList.addItem(sequence[0]),
+          self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
+
 
         # Populate the assets list
         self.all_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
@@ -340,7 +353,7 @@ class Main(QtGui.QWidget, Ui_Form):
         # Populate the asset dependency list
         self.assetDependencyList.clear()
         for asset in self.all_assets:
-            self.assetDependencyList.addItem(asset[5] + "_" + asset[3] + "_" + str(asset[6]))
+            self.assetDependencyList.addItem(asset[4])
 
     def projectList_DoubleClicked(self):
         subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
@@ -384,12 +397,14 @@ class Main(QtGui.QWidget, Ui_Form):
     def seqList_Clicked(self):
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
 
-        # Add shots to shot list and shot creation list
+        # Add shots to shot list, shot creation list and reference tool shot list
         if self.selected_sequence_name == "All":
             self.shotList.clear()
             self.shotList.addItem("None")
             self.shotCreationList.clear()
             self.shotCreationList.addItem("None")
+            self.shotReferenceList.clear()
+            self.shotReferenceList.addItem("None")
         else:
             shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
                                         (self.selected_project_name, self.selected_sequence_name,)).fetchall()
@@ -397,9 +412,12 @@ class Main(QtGui.QWidget, Ui_Form):
             self.shotList.addItem("None")
             self.shotCreationList.clear()
             self.shotCreationList.addItem("None")
+            self.shotReferenceList.clear()
+            self.shotReferenceList.addItem("None")
             shots = [i[0] for i in shots]
             shots = sorted(shots)
-            [(self.shotList.addItem(shot), self.shotCreationList.addItem(shot)) for shot in shots]
+            [(self.shotList.addItem(shot), self.shotCreationList.addItem(shot), self.shotReferenceList.addItem(shot))
+             for shot in shots]
 
 
         if len(self.departmentList.selectedItems()) == 0:
@@ -437,6 +455,13 @@ class Main(QtGui.QWidget, Ui_Form):
         seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
         self.seqCreationList.setCurrentRow(seq_list_selected_index)
 
+        # Mirror selection to Reference Tool tab
+        seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
+        self.seqReferenceList.setCurrentRow(seq_list_selected_index)
+
+        # Load thumbnails on Reference Tool tab
+        self.load_reference_thumbnails()
+
     def seqCreationList_Clicked(self):
         self.selected_sequence_name = str(self.seqCreationList.selectedItems()[0].text())
 
@@ -444,6 +469,7 @@ class Main(QtGui.QWidget, Ui_Form):
         if self.selected_sequence_name == "All":
             self.shotCreationList.clear()
             self.shotCreationList.addItem("None")
+
         else:
             shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
                                         (self.selected_project_name, self.selected_sequence_name,)).fetchall()
@@ -453,11 +479,36 @@ class Main(QtGui.QWidget, Ui_Form):
             shots = sorted(shots)
             [self.shotCreationList.addItem(shot) for shot in shots]
 
+    def seqReferenceList_Clicked(self):
+        self.selected_sequence_name = str(self.seqReferenceList.selectedItems()[0].text())
+
+        # Add shots to shot list and shot creation list
+        if self.selected_sequence_name == "All":
+            self.shotReferenceList.clear()
+            self.shotReferenceList.addItem("None")
+
+        else:
+            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
+                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
+            self.shotReferenceList.clear()
+            self.shotReferenceList.addItem("None")
+            shots = [i[0] for i in shots]
+            shots = sorted(shots)
+            [self.shotReferenceList.addItem(shot) for shot in shots]
+
+        # Load thumbnails
+        self.load_reference_thumbnails()
+
+    def shotReferenceList_Clicked(self):
+        # Load thumbnails
+        self.load_reference_thumbnails()
+
     def shotList_Clicked(self):
 
         # Mirror selection to Asset Creation tab
         shot_list_selected_index = self.shotList.selectedIndexes()[0].row()
         self.shotCreationList.setCurrentRow(shot_list_selected_index)
+        self.shotReferenceList.setCurrentRow(shot_list_selected_index)
 
     def assetList_Clicked(self):
 
@@ -632,16 +683,7 @@ class Main(QtGui.QWidget, Ui_Form):
 
             print(asset_filename)
 
-            # URL = str(self.referenceWebLineEdit.text())
-            # if len(URL) > 0:
-            #     urllib.urlretrieve(URL, self.selected_project_path + asset_filename)
-            #
-            # self.cursor.execute(
-            #     '''INSERT INTO assets(project_name, sequence_name, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?)''',
-            #     (self.selected_project_name, selected_sequence_name, asset_name, asset_filename, "ref", "01",
-            #      self.username))
-            #
-            # self.db.commit()
+
 
         elif selected_department == "Concept":
 
@@ -673,6 +715,79 @@ class Main(QtGui.QWidget, Ui_Form):
 #        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
 #            subprocess.Popen([self.photoshop_path, asset_path])
 
+    def create_reference_from_web(self):
+
+        self.createReferenceProgressBar.setValue(0)
+
+        asset_name = unicode(self.referenceNameLineEdit.text())
+        asset_name = modules.normalize_str(asset_name)
+        asset_name = modules.convert_to_camel_case(asset_name)
+
+        # Check if a project is selected
+        if len(self.projectList.selectedItems()) == 0:
+            self.message_box(text="Please select a project first")
+            return
+
+        asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
+
+        # Check if a name is defined for the asset
+        if len(asset_name) == 0:
+            self.message_box(text="Please enter a name for the asset")
+            return
+
+        # Check if a sequence is selected
+        try:
+            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
+            asset_filename += selected_sequence + "_"
+        except:
+            selected_sequence = "xxx"
+            asset_filename += "xxx_"
+
+        # Check if a shot is selected
+        try:
+            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
+            asset_filename += selected_shot + "_"
+        except:
+            selected_shot = "xxxx"
+            asset_filename += "xxxx_"
+
+
+        # Create reference
+        last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
+        if last_version:
+            last_version = str(int(last_version) + 1).zfill(2)
+            asset_filename += "ref_" + asset_name + "_" + last_version
+        else:
+            last_version = "01"
+            asset_filename += "ref_" + asset_name + "_" + last_version
+
+        asset_filename += ".jpg"
+
+        self.createReferenceProgressBar.setValue(25)
+
+        # Fetch image from web and compress it
+        URL = str(self.referenceWebLineEdit.text())
+        if len(URL) > 0:
+            urllib.urlretrieve(URL, self.selected_project_path + asset_filename)
+            downloaded_img = Image.open(self.selected_project_path + asset_filename)
+            image_width = downloaded_img.size[0]
+            modules.compress_image(self.selected_project_path + asset_filename, image_width, 60)
+
+            self.createReferenceProgressBar.setValue(50)
+
+        # Add reference to database
+        self.cursor.execute(
+            '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
+            (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref", last_version,
+             self.username))
+
+        self.db.commit()
+
+        self.createReferenceProgressBar.setValue(100)
+        self.createReferenceProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #56bb4e;}")
+
+        self.load_reference_thumbnails()
+
     def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
         all_versions = self.cursor.execute(
             '''SELECT asset_version FROM assets WHERE asset_name=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
@@ -684,7 +799,6 @@ class Main(QtGui.QWidget, Ui_Form):
             all_versions = sorted(all_versions)
             last_version = all_versions[-1]
             return last_version
-
 
     def check_if_asset_already_exists(self, asset_path, asset_name, asset_type):
         if os.path.isfile(asset_path):
@@ -712,7 +826,6 @@ class Main(QtGui.QWidget, Ui_Form):
         else:
             return (asset_path, asset_name)
 
-
     def load_asset(self, action):
         if action == "Kuadro":
 
@@ -738,6 +851,108 @@ class Main(QtGui.QWidget, Ui_Form):
         elif self.selected_asset_path.endswith(".ma") or self.selected_asset_path.endswith(".mb"):
             subprocess.Popen(["C:\\Program Files\\Autodesk\\Maya2015\\bin\\maya.exe", self.selected_asset_path])
 
+    def load_reference_thumbnails(self):
+
+        self.referenceThumbListWidget.clear()
+
+        # Retrieve selected sequence and shot
+        try:
+            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
+        except:
+            selected_sequence = "xxx"
+        try:
+            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
+        except:
+            selected_shot = "xxxx"
+
+
+
+        # Get reference paths from database based on selected sequence and shot
+        if selected_sequence == "All" and selected_shot == "None":
+            references_list = self.cursor.execute('''SELECT asset_name, asset_path, asset_version FROM assets''').fetchall()
+        elif selected_sequence == "All" and selected_shot != "None":
+            references_list = self.cursor.execute('''SELECT asset_name, asset_path, asset_version FROM assets WHERE shot_number=?''', (selected_shot,)).fetchall()
+        elif selected_sequence != "All" and selected_shot == "None":
+            references_list = self.cursor.execute('''SELECT asset_name, asset_path, asset_version FROM assets WHERE sequence_name=?''', (selected_sequence,)).fetchall()
+        else:
+            references_list = self.cursor.execute('''SELECT asset_name, asset_path, asset_version FROM assets WHERE sequence_name=? AND shot_number=?''', (selected_sequence, selected_shot,)).fetchall()
+
+
+        # Load thumbnails
+        if len(references_list) > 0:
+
+            self.referenceThumbProgressBar.setMaximum(len(references_list))
+
+            # Create a dictionary with reference_name = reference_path (ex: {musee:C:\musee.jpg})
+            self.references = {}
+            for reference in references_list:
+                reference_path = str(reference[1])
+                reference_version = str(reference[2])
+                reference_name = str(reference[0]) + "_" + reference_version
+                self.references[reference_path] = reference_name
+
+            thumbnails_widgets = {}
+
+            for i, reference in enumerate(self.references.items()):
+
+                reference_path = self.selected_project_path + reference[0]
+                reference_name = reference[1]
+
+                thumbnails_widgets[i] = QtGui.QListWidgetItem(reference_name)
+                thumbnails_widgets[i].setIcon(QtGui.QIcon(reference_path))
+
+                self.referenceThumbListWidget.addItem(thumbnails_widgets[i])
+                self.referenceThumbListWidget.repaint()
+
+                # Add 1 to progress bar
+                self.referenceThumbProgressBar.setValue(i+1)
+
+            # Change progress bar color to green
+            self.referenceThumbProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #56bb4e;}")
+
+    def change_reference_thumb_size(self):
+        slider_size = self.referenceThumbSizeSlider.value()
+        icon_size = QtCore.QSize(slider_size, slider_size)
+        self.referenceThumbListWidget.setIconSize(icon_size)
+
+    def filter_reference_thumb(self):
+
+        filter_str = str(self.filterByNameLineEdit.text()).lower()
+        if filter_str > 0:
+            for i in xrange(0, self.referenceThumbListWidget.count()):
+                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
+                if filter_str in item_text:
+                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
+                else:
+                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
+
+    def load_ref_in_kuadro(self):
+
+        os.system("taskkill /im kuadro.exe /f")
+
+        selected_thumbs_name = [str(i.text()) for i in self.referenceThumbListWidget.selectedItems()]
+
+        references_to_load = []
+        for value, key in self.references.items():
+            if key in selected_thumbs_name:
+                references_to_load.append(self.selected_project_path + value)
+
+        for reference_path in references_to_load:
+            subprocess.Popen(["H:\\01-NAD\\_pipeline\\_utilities\\_soft\\kuadro.exe", reference_path])
+
+    def load_ref_in_photoshop(self):
+
+        selected_thumbs_name = [str(i.text()) for i in self.referenceThumbListWidget.selectedItems()]
+
+        references_to_load = []
+        for value, key in self.references.items():
+            if key in selected_thumbs_name:
+                references_to_load.append(self.selected_project_path + value)
+
+        for reference_path in references_to_load:
+            subprocess.Popen([self.photoshop_path, reference_path])
+
+
     def add_assets_to_asset_list(self, assets_list):
         """
         Add assets from assets_list to self.assetList
@@ -746,7 +961,7 @@ class Main(QtGui.QWidget, Ui_Form):
 
         self.assetList.clear()
         for asset in assets_list:
-            self.assetList.addItem(asset[5] + "_" + asset[3] + "_" + str(asset[6]))
+            self.assetList.addItem(asset[4])
 
     def add_comment(self):
         if self.username == "Thibault":
@@ -863,7 +1078,7 @@ class Main(QtGui.QWidget, Ui_Form):
         """
         self.Form.showMinimized()
 
-        screenshot.take(self.screenshot_dir, self.selected_asset_name)
+        modules.take_screenshot(self.screenshot_dir, self.selected_asset_name)
 
         pixmap = QtGui.QPixmap(self.screenshot_dir + self.selected_asset_name + ".jpg").scaled(1000, 200,
                                                                                                QtCore.Qt.KeepAspectRatio,
@@ -915,13 +1130,6 @@ class Main(QtGui.QWidget, Ui_Form):
                 self.assignedToFilterComboBox.setCurrentIndex(18)
 
 
-class Asset(Main):
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-
-    def create_version(self, project_id):
-        print(project_id)
 
 
 class SoftwareDialog(QtGui.QDialog):

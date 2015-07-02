@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1063</width>
+    <width>1073</width>
     <height>879</height>
    </rect>
   </property>
@@ -59,7 +59,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -1397,41 +1397,6 @@
            <string>Software</string>
           </property>
          </widget>
-         <widget class="QGroupBox" name="webGroupBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>40</x>
-            <y>290</y>
-            <width>941</width>
-            <height>80</height>
-           </rect>
-          </property>
-          <property name="title">
-           <string>URL</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <property name="checkable">
-           <bool>false</bool>
-          </property>
-          <widget class="QLineEdit" name="referenceWebLineEdit">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="geometry">
-            <rect>
-             <x>40</x>
-             <y>30</y>
-             <width>811</width>
-             <height>20</height>
-            </rect>
-           </property>
-          </widget>
-         </widget>
          <widget class="QListWidget" name="shotCreationList">
           <property name="geometry">
            <rect>
@@ -1471,6 +1436,477 @@
            <string>Shots</string>
           </property>
          </widget>
+        </widget>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>References Tool</string>
+         </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout_23">
+          <item>
+           <widget class="QFrame" name="referenceOptionsFrame">
+            <property name="maximumSize">
+             <size>
+              <width>500</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_21">
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QFrame" name="addReferenceFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_17">
+                <property name="margin">
+                 <number>5</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="seqAndShotsFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_26">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="seqReferenceFrame">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_15">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="sequencesReferenceLbl">
+                        <property name="font">
+                         <font>
+                          <pointsize>12</pointsize>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="text">
+                         <string>Sequences</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QListWidget" name="seqReferenceList">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="sortingEnabled">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="shotReferenceFrame">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_16">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="shotReferenceLbl">
+                        <property name="font">
+                         <font>
+                          <pointsize>12</pointsize>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="text">
+                         <string>Shots</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QListWidget" name="shotReferenceList">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="sortingEnabled">
+                         <bool>false</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="addReferenceOptionsFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_27">
+                   <property name="margin">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <widget class="QGroupBox" name="fromWebGroupBox">
+                     <property name="title">
+                      <string>From web</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>false</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_13">
+                      <property name="margin">
+                       <number>3</number>
+                      </property>
+                      <item>
+                       <widget class="QLineEdit" name="referenceWebLineEdit">
+                        <property name="enabled">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QFrame" name="referenceNameFrame">
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_25">
+                         <property name="margin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QLabel" name="referenceNameLbl">
+                           <property name="frameShape">
+                            <enum>QFrame::NoFrame</enum>
+                           </property>
+                           <property name="text">
+                            <string>Asset name:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLineEdit" name="referenceNameLineEdit">
+                           <property name="placeholderText">
+                            <string>ex: mainchar, house...</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="createReferenceFromWebBtn">
+                        <property name="text">
+                         <string>Create Reference</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QProgressBar" name="createReferenceProgressBar">
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>10</height>
+                         </size>
+                        </property>
+                        <property name="value">
+                         <number>0</number>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="Line" name="referenceCreationLine">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QGroupBox" name="fromExistingFilesGroupBox">
+                     <property name="title">
+                      <string>From existing files</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>false</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>false</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_14">
+                      <property name="margin">
+                       <number>3</number>
+                      </property>
+                      <item>
+                       <widget class="QPushButton" name="createReferencesFromFilesBtn">
+                        <property name="text">
+                         <string>Select files on computer</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="filterByFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_12">
+                <property name="margin">
+                 <number>5</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="filterByNameGroupBox">
+                  <property name="title">
+                   <string>Filter by name</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_11">
+                   <property name="margin">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLineEdit" name="filterByNameLineEdit"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="filterByTagsGroupBox">
+                  <property name="title">
+                   <string>Filter by tags</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_10">
+                   <property name="margin">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QListWidget" name="filterByTagsListWidget"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="addTagsFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_18">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="addTagsGroupBox">
+                  <property name="title">
+                   <string>Add tags</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_24">
+                   <property name="margin">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QListWidget" name="allTagsListWidget"/>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="addTagsBtn">
+                     <property name="text">
+                      <string>&gt;&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QListWidget" name="existingTagsListWidget"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="openInFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_19">
+                <property name="margin">
+                 <number>5</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="openInGroupBox">
+                  <property name="title">
+                   <string>Open in</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_28">
+                   <property name="margin">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <widget class="QPushButton" name="openRefInPhotoshopBtn">
+                     <property name="text">
+                      <string>Photoshop</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="openRefInKuadroBtn">
+                     <property name="text">
+                      <string>Kuadro</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="referenceThumbFrame">
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_20">
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QListWidget" name="referenceThumbListWidget">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::ExtendedSelection</enum>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>256</width>
+                 <height>256</height>
+                </size>
+               </property>
+               <property name="layoutMode">
+                <enum>QListView::SinglePass</enum>
+               </property>
+               <property name="viewMode">
+                <enum>QListView::IconMode</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSlider" name="referenceThumbSizeSlider">
+               <property name="minimum">
+                <number>256</number>
+               </property>
+               <property name="maximum">
+                <number>1024</number>
+               </property>
+               <property name="value">
+                <number>256</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="reloadReferenceThumbBtn">
+               <property name="text">
+                <string>Reload Thumbnails</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QProgressBar" name="referenceThumbProgressBar">
+               <property name="value">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
         </widget>
         <widget class="QWidget" name="preferencesTab">
          <attribute name="title">
