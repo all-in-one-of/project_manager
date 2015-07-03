@@ -90,6 +90,10 @@ class Main(QtGui.QWidget, Ui_Form):
         if not (self.username == "yjobin" or self.username == "thoudon" or self.username == "lclavet"):
             self.Tabs.removeTab(3)
 
+        if not (self.username == "thoudon" or self.username == "lclavet"):
+            self.Tabs.removeTab(1)
+            self.Tabs.removeTab(4)
+
         # Database Setup
         self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"
         self.db = sqlite3.connect(self.db_path)
@@ -162,7 +166,7 @@ class Main(QtGui.QWidget, Ui_Form):
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
-
+        self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
 
         # Connect the buttons
         self.addProjectBtn.clicked.connect(self.add_project)
@@ -943,20 +947,21 @@ class Main(QtGui.QWidget, Ui_Form):
 
         # Retrieve selected references
         selected_references = self.referenceThumbListWidget.selectedItems()
-        selected_references = [str(i.text()) for i in selected_references]
 
         # Delete references on database and on disk
         number_of_refs_removed = 0
         for ref in selected_references:
             number_of_refs_removed += 1
-            ref_name = ref.split("_")[0]
-            ref_version = ref.split("_")[1]
-            ref_path = self.cursor.execute(
-                '''SELECT asset_path FROM assets WHERE asset_name=? AND asset_version=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
-                (ref_name, ref_version, self.selected_sequence_name,self.selected_shot_number,)).fetchone()[0]
+            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_sequence = ref_data[0]
+            ref_shot_number = ref_data[1]
+            ref_path = ref_data[3]
+            ref_name = ref_data[2]
+            ref_version = ref_data[4]
+
             os.remove(self.selected_project_path + str(ref_path))
             self.cursor.execute('''DELETE FROM assets WHERE asset_name=? AND asset_version=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
-                                (ref_name, ref_version, self.selected_sequence_name, self.selected_shot_number,))
+                                (ref_name, ref_version, ref_sequence, ref_shot_number,))
 
         if number_of_refs_removed > 1:
             self.add_log_entry(
@@ -1048,50 +1053,50 @@ class Main(QtGui.QWidget, Ui_Form):
         # Get reference paths from database based on selected sequence and shot
         if selected_sequence == "All" and selected_shot == "None":
             references_list = self.cursor.execute(
-                '''SELECT asset_name, asset_path, asset_version FROM assets''').fetchall()
+                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets''').fetchall()
         elif selected_sequence == "All" and selected_shot != "None":
             references_list = self.cursor.execute(
-                '''SELECT asset_name, asset_path, asset_version FROM assets WHERE shot_number=?''',
+                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE shot_number=?''',
                 (selected_shot,)).fetchall()
         elif selected_sequence != "All" and selected_shot == "None":
             references_list = self.cursor.execute(
-                '''SELECT asset_name, asset_path, asset_version FROM assets WHERE sequence_name=?''',
+                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
                 (selected_sequence,)).fetchall()
         else:
             references_list = self.cursor.execute(
-                '''SELECT asset_name, asset_path, asset_version FROM assets WHERE sequence_name=? AND shot_number=?''',
+                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
                 (selected_sequence, selected_shot,)).fetchall()
 
+        # references_list = (u'mus', u'xxxx', u'musee', u'\\assets\\ref\\nat_mus_xxxx_ref_musee_01.jpg', u'01', u'lighting,tree,architecture')
+
+        all_tags = []
 
         # Load thumbnails
         if len(references_list) > 0:
 
             self.referenceProgressBar.setMaximum(len(references_list))
 
-            # Create a dictionary with reference_name = reference_path (ex: {musee:C:\musee.jpg})
-            self.references = {}
-            for reference in references_list:
-                reference_path = str(reference[1])
-                reference_version = str(reference[2])
-                reference_name = str(reference[0]) + "_" + reference_version
-                self.references[reference_path] = reference_name
+            for i, reference in enumerate(references_list):
+                reference_path = self.selected_project_path + reference[3]
+                reference_name = reference[2] + "_" + reference[4]
 
-            thumbnails_widgets = {}
+                all_tags.append(reference[5])
 
-            for i, reference in enumerate(self.references.items()):
-                reference_path = self.selected_project_path + reference[0]
-                reference_name = reference[1]
+                reference_listItem = QtGui.QListWidgetItem(reference_name)
+                reference_listItem.setIcon(QtGui.QIcon(reference_path))
+                reference_listItem.setData(QtCore.Qt.UserRole, reference)
 
-                thumbnails_widgets[i] = QtGui.QListWidgetItem(reference_name)
-                thumbnails_widgets[i].setIcon(QtGui.QIcon(reference_path))
-                data = (i)
-                thumbnails_widgets[i].setData(QtCore.Qt.UserRole, data)
-
-                self.referenceThumbListWidget.addItem(thumbnails_widgets[i])
+                self.referenceThumbListWidget.addItem(reference_listItem)
                 self.referenceThumbListWidget.repaint()
 
-                # Add 1 to progress bar
                 self.referenceProgressBar.setValue(i + 1)
+
+        all_tags = filter(None, all_tags)
+        all_tags = ",".join(all_tags)
+        all_tags = all_tags.split(",")
+        all_tags = sorted(list(set(all_tags)))
+        self.filterByTagsListWidget.clear()
+        [self.filterByTagsListWidget.addItem(tag) for tag in all_tags]
 
         # Change progress bar color to green
         self.referenceProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #56bb4e;}")
@@ -1112,9 +1117,55 @@ class Main(QtGui.QWidget, Ui_Form):
                 else:
                     self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
 
+    def filter_reference_by_tags(self):
+        selected_tags = self.filterByTagsListWidget.selectedItems()
+        selected_tags = [str(i.text()) for i in selected_tags]
+
+
+
+        all_references = []
+        for i in xrange(self.referenceThumbListWidget.count()):
+             all_references.append(self.referenceThumbListWidget.item(i))
+
+        if not selected_tags:
+            [ref.setHidden(False) for ref in all_references]
+            return
+
+
+        for ref in all_references:
+            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_tags = ref_data[5]
+            all_tags = []
+            all_tags.append(ref_tags)
+            all_tags = filter(None, all_tags)
+            all_tags = ",".join(all_tags) # convert all_tags = ["", "architecture", "architecture,lighting"] to all_tags = "architecture,architecture,lighting"
+            all_tags = all_tags.split(",") # convert all_tags = "architecture,architecture,lighting" to ["architecture", "architecture", "lighting"]
+            all_tags = sorted(list(set(all_tags))) # sort list and remove duplicates
+            if set(all_tags).isdisjoint(selected_tags):
+                ref.setHidden(True)
+            else:
+                ref.setHidden(False)
+
     def referenceThumbListWidget_itemSelectionChanged(self):
+
         self.selected_references = self.referenceThumbListWidget.selectedItems()
-        self.selected_references = [str(i.text()) for i in self.selected_references]
+
+        # Retrieve tags from selected references
+        all_tags = []
+        for ref in self.selected_references:
+            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_tags = ref_data[5]
+            all_tags.append(ref_tags)
+
+        all_tags = filter(None, all_tags)
+        all_tags = ",".join(all_tags) # convert all_tags = ["", "architecture", "architecture,lighting"] to all_tags = "architecture,architecture,lighting"
+        all_tags = all_tags.split(",") # convert all_tags = "architecture,architecture,lighting" to ["architecture", "architecture", "lighting"]
+        all_tags = sorted(list(set(all_tags))) # sort list and remove duplicates
+
+        # Add tags to existing tags list
+        self.existingTagsListWidget.clear()
+        for tag in all_tags:
+            self.existingTagsListWidget.addItem(tag)
 
     def load_ref_in_kuadro(self):
 
@@ -1157,11 +1208,11 @@ class Main(QtGui.QWidget, Ui_Form):
             return
 
         self.tagsListWidget.addItem(tag_name)
+        self.allTagsListWidget.addItem(tag_name)
         self.cursor.execute('''INSERT INTO tags(project_name, tag_name) VALUES (?, ?)''',
                             (self.selected_project_name, tag_name))
 
         self.db.commit()
-
         self.addTagLineEdit.setText("")
 
     def remove_selected_tags(self):
@@ -1181,50 +1232,73 @@ class Main(QtGui.QWidget, Ui_Form):
 
     def add_tags_to_selected_references(self):
 
-        # Retrieve selected references thumbnails names
-        selected_references = self.referenceThumbListWidget.selectedItems()
-        for i in selected_references:
-            test = i.data(QtCore.Qt.UserRole).toPyObject()
-            print(test)
-
-        return
-
-        selected_references = [str(i.text()) for i in selected_references]
-
-
-
-        # Retrieve selected tags and join them with a comma (ex: character,lighting,architecture)
+        # Retrieve selected tags to add
         selected_tags = self.allTagsListWidget.selectedItems()
         selected_tags = [str(i.text()) for i in selected_tags]
 
-        for ref_path in self.references.keys():
-            ref_nomenclature = ref_path.split("\\")[-1].split(".")[0]
-            ref_project_name = self.selected_project_name
-            ref_sequence_name = ref_nomenclature.split("_")[1]
-            ref_shot_number = ref_nomenclature.split("_")[2]
-            ref_name = ref_nomenclature.split("_")[4]
-            ref_version = ref_nomenclature.split("_")[5]
-            tags = self.cursor.execute(
-                '''SELECT asset_tags FROM assets WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (ref_project_name, ref_sequence_name, ref_shot_number, ref_name, ref_version,)).fetchone()[0]
+        # Retrieve selected references thumbnails names
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        for ref in selected_references:
+            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_sequence_name = ref_data[0]
+            ref_shot_number = ref_data[1]
+            ref_name = ref_data[2]
+            ref_version = ref_data[4]
+            ref_tags = ref_data[5]
+            if ref_tags and "," in ref_tags:
+                ref_tags = ref_data[5].split(",")
+            else:
+                ref_tags = [ref_tags]
 
-            if not tags:
-                tags = ""
-            tags_list = tags.split(",")
-            tags_list_without_dups = list(set(tags_list + selected_tags))
-            tags_list_without_dups = [i for i in tags_list_without_dups if i] # Remove empty strings from list
-            tags_to_add = ",".join(tags_list_without_dups)
+            tags_to_add = sorted(list(set(ref_tags + selected_tags)))
+            tags_to_add = filter(None, tags_to_add)
+            tags_to_add = ",".join(tags_to_add)
+
+            # Update reference QListWidgetItem data
+            data = (ref_sequence_name, ref_shot_number, ref_name, ref_data[3], ref_version, tags_to_add)
+            ref.setData(QtCore.Qt.UserRole, data)
 
             self.cursor.execute(
-                '''UPDATE assets SET asset_tags=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (tags_to_add, ref_project_name, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
+                '''UPDATE assets SET asset_tags=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
+                (tags_to_add, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
 
         self.db.commit()
 
+        self.referenceThumbListWidget_itemSelectionChanged()
 
     def remove_tags_from_selected_references(self):
-        pass
+        # Retrieve selected tags to remove
+        selected_tags = self.existingTagsListWidget.selectedItems()
+        selected_tags = [str(i.text()) for i in selected_tags]
 
+        # Retrieve selected references thumbnails names
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        for ref in selected_references:
+            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_sequence_name = ref_data[0]
+            ref_shot_number = ref_data[1]
+            ref_name = ref_data[2]
+            ref_version = ref_data[4]
+            ref_tags = ref_data[5]
+            if ref_tags and "," in ref_tags:
+                ref_tags = ref_data[5].split(",")
+            else:
+                ref_tags = [ref_tags]
+
+            tags_to_add = list(set(ref_tags) - set(selected_tags))
+            tags_to_add = ",".join(tags_to_add)
+
+            # Update reference QListWidgetItem data
+            data = (ref_sequence_name, ref_shot_number, ref_name, ref_data[3], ref_version, tags_to_add)
+            ref.setData(QtCore.Qt.UserRole, data)
+
+            self.cursor.execute(
+                '''UPDATE assets SET asset_tags=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
+                (tags_to_add, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
+
+        self.db.commit()
+
+        self.referenceThumbListWidget_itemSelectionChanged()
 
     def add_assets_to_asset_list(self, assets_list):
         """

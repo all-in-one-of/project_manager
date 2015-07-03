@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Fri Jul 03 10:58:28 2015
+# Created: Fri Jul 03 16:13:35 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -757,6 +757,7 @@ class Ui_Form(object):
         self.verticalLayout_10.setMargin(3)
         self.verticalLayout_10.setObjectName(_fromUtf8("verticalLayout_10"))
         self.filterByTagsListWidget = QtGui.QListWidget(self.filterByTagsGroupBox)
+        self.filterByTagsListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.filterByTagsListWidget.setObjectName(_fromUtf8("filterByTagsListWidget"))
         self.verticalLayout_10.addWidget(self.filterByTagsListWidget)
         self.verticalLayout_12.addWidget(self.filterByTagsGroupBox)
@@ -793,6 +794,7 @@ class Ui_Form(object):
         self.verticalLayout_50.addWidget(self.removeTagsBtn)
         self.horizontalLayout_24.addWidget(self.frame)
         self.existingTagsListWidget = QtGui.QListWidget(self.addTagsGroupBox)
+        self.existingTagsListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.existingTagsListWidget.setObjectName(_fromUtf8("existingTagsListWidget"))
         self.horizontalLayout_24.addWidget(self.existingTagsListWidget)
         self.verticalLayout_18.addWidget(self.addTagsGroupBox)

@@ -1746,7 +1746,11 @@
                        <number>3</number>
                       </property>
                       <item>
-                       <widget class="QListWidget" name="filterByTagsListWidget"/>
+                       <widget class="QListWidget" name="filterByTagsListWidget">
+                        <property name="selectionMode">
+                         <enum>QAbstractItemView::ExtendedSelection</enum>
+                        </property>
+                       </widget>
                       </item>
                      </layout>
                     </widget>
@@ -1815,7 +1819,11 @@
                        </widget>
                       </item>
                       <item>
-                       <widget class="QListWidget" name="existingTagsListWidget"/>
+                       <widget class="QListWidget" name="existingTagsListWidget">
+                        <property name="selectionMode">
+                         <enum>QAbstractItemView::ExtendedSelection</enum>
+                        </property>
+                       </widget>
                       </item>
                      </layout>
                     </widget>
