@@ -100,13 +100,13 @@ QPushButton
 
 QPushButton:hover {
     
-    background-color: #1BCAA7;
+    background-color: #1b81ca;
 
 }
 
 QPushButton:pressed
 {
-    background-color: #19B495;
+    background-color: #0064ac;
 }
 
 QComboBox
@@ -344,6 +344,7 @@ QProgressBar
     border: 2px solid grey;
     border-radius: 5px;
     text-align: center;
+    color: #fff;
 }
 
 QProgressBar::chunk
@@ -440,4 +441,13 @@ QListWidget {
   border: solid;
   border-radius: 2;
   padding: 3;
+}
+
+QListWidget::item:hover {
+  background-color: #1b81ca;
+  color: #fff;
+}
+
+QListWidget::item:selected {
+  background-color: #1b81ca;
 }

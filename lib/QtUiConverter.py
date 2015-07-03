@@ -15,11 +15,11 @@ def convert_ui():
     main_window_path = os.path.dirname(cur_dir) + "\\ui\\main_window_tmp.py"
 
     if len(sys.argv) < 2:
-        script_path = "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\main_window.ui"
+        script_path = ui_path
     else:
         script_path = sys.argv[1]
 
-    subprocess.Popen(["python.exe", "H:\\01-NAD\\WinPython\\python-2.7.9.amd64\\Lib\\site-packages\\PyQt4\\uic\\pyuic.py", ui_path, "-o",
+    subprocess.Popen(["python.exe", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\WinPython\\python-2.7.9.amd64\\Lib\\site-packages\\PyQt4\\uic\\pyuic.py", ui_path, "-o",
                       main_window_path, "-x"])
 
     time.sleep(0.5)
