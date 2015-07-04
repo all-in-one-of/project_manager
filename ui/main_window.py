@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Fri Jul 03 16:13:35 2015
+# Created: Sat Jul 04 09:29:34 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(1073, 879)
+        Form.resize(1083, 910)
         Form.setMinimumSize(QtCore.QSize(1050, 600))
         Form.setMaximumSize(QtCore.QSize(16777215, 16777215))
         Form.setMouseTracking(False)
@@ -41,7 +41,6 @@ class Ui_Form(object):
         self.assetManagerFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.assetManagerFrame.setObjectName(_fromUtf8("assetManagerFrame"))
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.assetManagerFrame)
-        self.verticalLayout_5.setMargin(0)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
         self.Tabs = QtGui.QTabWidget(self.assetManagerFrame)
         self.Tabs.setTabShape(QtGui.QTabWidget.Rounded)
@@ -500,6 +499,12 @@ class Ui_Form(object):
         self.loadBtn.setObjectName(_fromUtf8("loadBtn"))
         self.verticalLayout_2.addWidget(self.loadBtn)
         self.Tabs.addTab(self.assetLoaderTab, _fromUtf8(""))
+        self.taskManagerTab = QtGui.QWidget()
+        self.taskManagerTab.setObjectName(_fromUtf8("taskManagerTab"))
+        self.Tabs.addTab(self.taskManagerTab, _fromUtf8(""))
+        self.myTasksTab = QtGui.QWidget()
+        self.myTasksTab.setObjectName(_fromUtf8("myTasksTab"))
+        self.Tabs.addTab(self.myTasksTab, _fromUtf8(""))
         self.assetCreatorTab = QtGui.QWidget()
         self.assetCreatorTab.setObjectName(_fromUtf8("assetCreatorTab"))
         self.createAssetBtn = QtGui.QPushButton(self.assetCreatorTab)
@@ -1061,10 +1066,14 @@ class Ui_Form(object):
         self.verticalLayout_7.addWidget(self.savePrefBtn)
         self.Tabs.addTab(self.preferencesTab, _fromUtf8(""))
         self.verticalLayout_5.addWidget(self.Tabs)
+        self.deadlineProgressBar = QtGui.QProgressBar(self.assetManagerFrame)
+        self.deadlineProgressBar.setProperty("value", 100)
+        self.deadlineProgressBar.setObjectName(_fromUtf8("deadlineProgressBar"))
+        self.verticalLayout_5.addWidget(self.deadlineProgressBar)
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(2)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1139,6 +1148,8 @@ class Ui_Form(object):
         self.publishBtn.setText(_translate("Form", "Publish", None))
         self.loadBtn.setText(_translate("Form", "Load Asset", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))
+        self.Tabs.setTabText(self.Tabs.indexOf(self.taskManagerTab), _translate("Form", "Task Manager", None))
+        self.Tabs.setTabText(self.Tabs.indexOf(self.myTasksTab), _translate("Form", "My Tasks", None))
         self.createAssetBtn.setText(_translate("Form", "Create Asset", None))
         self.departmentCreationList.setSortingEnabled(True)
         __sortingEnabled = self.departmentCreationList.isSortingEnabled()
