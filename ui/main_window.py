@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sat Jul 04 09:29:34 2015
+# Created: Sat Jul 04 14:30:57 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -501,6 +501,9 @@ class Ui_Form(object):
         self.Tabs.addTab(self.assetLoaderTab, _fromUtf8(""))
         self.taskManagerTab = QtGui.QWidget()
         self.taskManagerTab.setObjectName(_fromUtf8("taskManagerTab"))
+        self.moduleTestBtn = QtGui.QPushButton(self.taskManagerTab)
+        self.moduleTestBtn.setGeometry(QtCore.QRect(290, 140, 251, 23))
+        self.moduleTestBtn.setObjectName(_fromUtf8("moduleTestBtn"))
         self.Tabs.addTab(self.taskManagerTab, _fromUtf8(""))
         self.myTasksTab = QtGui.QWidget()
         self.myTasksTab.setObjectName(_fromUtf8("myTasksTab"))
@@ -833,6 +836,12 @@ class Ui_Form(object):
         self.verticalLayout_20 = QtGui.QVBoxLayout(self.referenceThumbFrame)
         self.verticalLayout_20.setMargin(0)
         self.verticalLayout_20.setObjectName(_fromUtf8("verticalLayout_20"))
+        self.referenceProgressBar = QtGui.QProgressBar(self.referenceThumbFrame)
+        self.referenceProgressBar.setMinimumSize(QtCore.QSize(0, 0))
+        self.referenceProgressBar.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.referenceProgressBar.setProperty("value", 0)
+        self.referenceProgressBar.setObjectName(_fromUtf8("referenceProgressBar"))
+        self.verticalLayout_20.addWidget(self.referenceProgressBar)
         self.referenceThumbListWidget = QtGui.QListWidget(self.referenceThumbFrame)
         self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(675, 0))
         self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
@@ -860,12 +869,6 @@ class Ui_Form(object):
         self.verticalLayout_22 = QtGui.QVBoxLayout(self.progressBarFrame)
         self.verticalLayout_22.setMargin(0)
         self.verticalLayout_22.setObjectName(_fromUtf8("verticalLayout_22"))
-        self.referenceProgressBar = QtGui.QProgressBar(self.progressBarFrame)
-        self.referenceProgressBar.setMinimumSize(QtCore.QSize(0, 0))
-        self.referenceProgressBar.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.referenceProgressBar.setProperty("value", 0)
-        self.referenceProgressBar.setObjectName(_fromUtf8("referenceProgressBar"))
-        self.verticalLayout_22.addWidget(self.referenceProgressBar)
         self.verticalLayout_23.addWidget(self.progressBarFrame)
         self.Tabs.addTab(self.tab, _fromUtf8(""))
         self.tagsManagerTab = QtGui.QWidget()
@@ -1073,7 +1076,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(0)
+        self.Tabs.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1148,6 +1151,7 @@ class Ui_Form(object):
         self.publishBtn.setText(_translate("Form", "Publish", None))
         self.loadBtn.setText(_translate("Form", "Load Asset", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))
+        self.moduleTestBtn.setText(_translate("Form", "sss", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.taskManagerTab), _translate("Form", "Task Manager", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.myTasksTab), _translate("Form", "My Tasks", None))
         self.createAssetBtn.setText(_translate("Form", "Create Asset", None))
