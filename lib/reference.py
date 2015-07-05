@@ -13,7 +13,6 @@ from PIL import Image
 class ReferenceTab(object):
 
     def __init__(self):
-        self.addRefToKuadroBtn.clicked.connect(self.add_ref_in_kuadro)
         self.filterByNameLineEdit.textChanged.connect(self.filter_reference_by_name)
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.rename_reference)
@@ -182,6 +181,9 @@ class ReferenceTab(object):
         selected_files_path = QtGui.QFileDialog.getOpenFileNames(self, 'Select Files',
                                                                  'Z:\\Groupes-cours\\NAND999-A15-N01\\Nature',
                                                                  "Images Files (*.jpg *.png *bmp)")
+
+        if len(selected_files_path) < 1:
+            return
 
         self.referenceProgressBar.setValue(25)
 
@@ -512,10 +514,6 @@ class ReferenceTab(object):
 
         subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe",
                          [references_to_load]], close_fds=True)
-        # os.system("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe "  + references_to_load)
-
-    def add_ref_in_kuadro(self):
-        pass
 
     def load_ref_in_photoshop(self):
 

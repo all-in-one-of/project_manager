@@ -47,6 +47,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
 
         # Database Setup
         self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"
+        #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite"
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
@@ -68,10 +69,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.username = os.getenv('USERNAME')
         self.members = {"achaput": "Amélie", "costiguy": "Chloé", "cgonnord": "Christopher", "dcayerdesforges": "David",
-                        "earismendez": "Edwin", "erodrigue": "Étienne", "jberger": "Jérémy", "lgregoire": "Laurence",
+                        "earismendez": "Edwin", "erodrigue": "Étienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
-                        "yjobin": "Yann", "yshan": "Yi", "vdelbroucq": "Valentin"}
+                        "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
 
         self.selected_project_name = ""
         self.selected_sequence_name = "xxx"

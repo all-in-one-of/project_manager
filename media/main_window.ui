@@ -1163,7 +1163,7 @@
             </rect>
            </property>
            <property name="sortingEnabled">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <attribute name="horizontalHeaderDefaultSectionSize">
             <number>100</number>
@@ -1206,12 +1206,27 @@
            </column>
            <column>
             <property name="text">
-             <string>Time Left</string>
+             <string>Days Left</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>Bid</string>
+             <string>Bid (days)</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Sequence</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Shot</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Asset</string>
             </property>
            </column>
           </widget>
@@ -1323,17 +1338,49 @@
             </property>
            </item>
           </widget>
-          <widget class="QPushButton" name="taskManagerAddRowBtn">
+          <widget class="QPushButton" name="taskManagerAddTaskBtn">
            <property name="geometry">
             <rect>
-             <x>60</x>
-             <y>250</y>
+             <x>50</x>
+             <y>310</y>
              <width>75</width>
              <height>23</height>
             </rect>
            </property>
            <property name="text">
             <string>Add Task</string>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="taskManagerNbrOfRowsToAddSpinBox">
+           <property name="geometry">
+            <rect>
+             <x>150</x>
+             <y>310</y>
+             <width>46</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>1</number>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="taskManagerRemoveTaskBtn">
+           <property name="geometry">
+            <rect>
+             <x>230</x>
+             <y>310</y>
+             <width>81</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Remove Task</string>
            </property>
           </widget>
          </widget>
@@ -2071,14 +2118,7 @@
                       <item>
                        <widget class="QPushButton" name="openRefInKuadroBtn">
                         <property name="text">
-                         <string>Kuadro (Load)</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="addRefToKuadroBtn">
-                        <property name="text">
-                         <string>Kuadro (Add)</string>
+                         <string>Kuadro</string>
                         </property>
                        </widget>
                       </item>
