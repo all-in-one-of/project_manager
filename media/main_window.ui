@@ -56,7 +56,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -1138,18 +1138,204 @@
          <attribute name="title">
           <string>Task Manager</string>
          </attribute>
-         <widget class="QPushButton" name="moduleTestBtn">
+         <widget class="QFrame" name="taskManagerMainFrame">
           <property name="geometry">
            <rect>
-            <x>290</x>
-            <y>140</y>
-            <width>251</width>
-            <height>23</height>
+            <x>20</x>
+            <y>20</y>
+            <width>1001</width>
+            <height>801</height>
            </rect>
           </property>
-          <property name="text">
-           <string>sss</string>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
           </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QTableWidget" name="taskManagerTableWidget">
+           <property name="geometry">
+            <rect>
+             <x>50</x>
+             <y>340</y>
+             <width>851</width>
+             <height>391</height>
+            </rect>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <attribute name="horizontalHeaderDefaultSectionSize">
+            <number>100</number>
+           </attribute>
+           <attribute name="horizontalHeaderStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="verticalHeaderStretchLastSection">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>Task Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Department</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Status</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Assigned to</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>End</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Time Left</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Bid</string>
+            </property>
+           </column>
+          </widget>
+          <widget class="QComboBox" name="taskManagerAssignedToComboBox">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>120</y>
+             <width>512</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="frame">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Amélie</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Chloé</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Christopher</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>David</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Edwin</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Étienne</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Jérémy</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Laurence</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Louis-Philippe</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Marc-Antoine</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Mathieu</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Maxime</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Olivier</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Simon</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Thibault</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yann</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yi</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Valentin</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QPushButton" name="taskManagerAddRowBtn">
+           <property name="geometry">
+            <rect>
+             <x>60</x>
+             <y>250</y>
+             <width>75</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Add Task</string>
+           </property>
+          </widget>
          </widget>
         </widget>
         <widget class="QWidget" name="myTasksTab">
@@ -1885,7 +2071,14 @@
                       <item>
                        <widget class="QPushButton" name="openRefInKuadroBtn">
                         <property name="text">
-                         <string>Kuadro</string>
+                         <string>Kuadro (Load)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="addRefToKuadroBtn">
+                        <property name="text">
+                         <string>Kuadro (Add)</string>
                         </property>
                        </widget>
                       </item>

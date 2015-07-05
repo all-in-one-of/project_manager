@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 from PyQt4 import QtGui, QtCore, Qt
 from thibh import modules
 import re
@@ -8,6 +11,24 @@ from PIL import Image
 
 
 class ReferenceTab(object):
+
+    def __init__(self):
+        self.addRefToKuadroBtn.clicked.connect(self.add_ref_in_kuadro)
+        self.filterByNameLineEdit.textChanged.connect(self.filter_reference_by_name)
+        self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
+        self.referenceThumbListWidget.itemDoubleClicked.connect(self.rename_reference)
+        self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
+        self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
+        self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
+        self.removeRefsBtn.clicked.connect(self.remove_selected_references)
+        self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
+        self.openRefInPhotoshopBtn.clicked.connect(self.load_ref_in_photoshop)
+        self.addTagsBtn.clicked.connect(self.add_tags_to_selected_references)
+        self.removeTagsBtn.clicked.connect(self.remove_tags_from_selected_references)
+        self.referenceThumbSizeSlider.sliderMoved.connect(self.change_reference_thumb_size)
+
+
+
     def add_tags_to_selected_references(self):
 
         # Retrieve selected tags to add
@@ -489,9 +510,12 @@ class ReferenceTab(object):
 
         references_to_load = " ".join(references_to_load)
 
-        subprocess.call(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe",
-                         [references_to_load]])
+        subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe",
+                         [references_to_load]], close_fds=True)
         # os.system("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe "  + references_to_load)
+
+    def add_ref_in_kuadro(self):
+        pass
 
     def load_ref_in_photoshop(self):
 

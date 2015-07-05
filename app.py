@@ -38,18 +38,29 @@ from PyQt4 import QtGui, QtCore, Qt
 from ui.main_window import Ui_Form
 from lib.reference import ReferenceTab
 from lib.module import Lib
+from lib.task_manager import TaskManager
 
-
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         Ui_Form.__init__(self)
-        ReferenceTab.__init__(self)
-        Lib.__init__(self)
 
+        # Database Setup
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"
+        self.db = sqlite3.connect(self.db_path)
+        self.cursor = self.db.cursor()
+
+
+
+        # Initialize the guis
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
+        # Initialize modules and connections
+        ReferenceTab.__init__(self)
+        Lib.__init__(self)
+        TaskManager.__init__(self)
+        TaskManager.add_tasks_from_database(self)
 
         # Global Variables
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
@@ -92,10 +103,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib):
         # Admin Setup
         self.remove_tabs_based_on_members()
 
-        # Database Setup
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"
-        self.db = sqlite3.connect(self.db_path)
-        self.cursor = self.db.cursor()
 
         # Get tags from database and add them to the tags manager list and to the allTagsListWidget
         all_tags = self.cursor.execute('''SELECT tag_name FROM tags''').fetchall()
@@ -170,7 +177,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib):
         # Connect the filter textboxes
         self.seqFilter.textChanged.connect(partial(self.filterList_textChanged, "sequence"))
         self.assetFilter.textChanged.connect(partial(self.filterList_textChanged, "asset"))
-        self.filterByNameLineEdit.textChanged.connect(partial(ReferenceTab.filter_reference_by_name, self))
+
 
         # Connect the lists
         self.projectList.itemClicked.connect(self.projectList_Clicked)
@@ -183,9 +190,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib):
         self.shotReferenceList.itemClicked.connect(self.shotReferenceList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
-        self.referenceThumbListWidget.itemSelectionChanged.connect(partial(ReferenceTab.referenceThumbListWidget_itemSelectionChanged, self))
-        self.referenceThumbListWidget.itemDoubleClicked.connect(partial(ReferenceTab.rename_reference, self))
-        self.filterByTagsListWidget.itemSelectionChanged.connect(partial(ReferenceTab.filter_reference_by_tags, self))
 
         # Connect the buttons
         self.addProjectBtn.clicked.connect(self.add_project)
@@ -201,12 +205,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib):
 
         self.savePrefBtn.clicked.connect(partial(Lib.save_prefs, self))
         self.createAssetBtn.clicked.connect(self.create_asset)
-        self.createReferenceFromWebBtn.clicked.connect(partial(ReferenceTab.create_reference_from_web, self))
-        self.createReferencesFromFilesBtn.clicked.connect(partial(ReferenceTab.create_reference_from_files, self))
-        self.removeRefsBtn.clicked.connect(partial(ReferenceTab.remove_selected_references, self))
 
-        self.openRefInKuadroBtn.clicked.connect(partial(ReferenceTab.load_ref_in_kuadro, self))
-        self.openRefInPhotoshopBtn.clicked.connect(partial(ReferenceTab.load_ref_in_photoshop, self))
+
 
         self.updateLogBtn.clicked.connect(self.update_log)
 
@@ -214,11 +214,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib):
         self.addTagBtn.clicked.connect(self.add_tag_to_tags_manager)
         self.addTagLineEdit.returnPressed.connect(self.add_tag_to_tags_manager)
         self.removeSelectedTagsBtn.clicked.connect(self.remove_selected_tags_from_tags_manager)
-        self.addTagsBtn.clicked.connect(partial(ReferenceTab.add_tags_to_selected_references, self))
-        self.removeTagsBtn.clicked.connect(partial(ReferenceTab.remove_tags_from_selected_references, self))
 
         # Other connects
-        self.referenceThumbSizeSlider.sliderMoved.connect(partial(ReferenceTab.change_reference_thumb_size, self))
 
         self.update_log()
 
