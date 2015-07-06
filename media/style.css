@@ -353,7 +353,7 @@ QProgressBar::chunk
 }
 
 QTabBar::tab {
-    color: #b1b1b1;
+    color: #fff;
     border: 1px solid #444;
     border-bottom-style: none;
     background-color: #323232;
@@ -374,7 +374,7 @@ QTabWidget::pane {
 QTabBar::tab:last
 {
     margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
-    border-top-right-radius: 3px;
+    border-top-right-radius: 5px;
 }
 
 QTabBar::tab:first:!selected
@@ -382,7 +382,7 @@ QTabBar::tab:first:!selected
  margin-left: 0px; /* the last selected tab has nothing to overlap with on the right */
 
 
-    border-top-left-radius: 3px;
+    border-top-left-radius: 5px;
 }
 
 QTabBar::tab:!selected
@@ -395,9 +395,10 @@ QTabBar::tab:!selected
 
 QTabBar::tab:selected
 {
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     margin-bottom: 0px;
+    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:0.4 #343434, stop:0.2 #343434, stop:0.1 #e52d2d);
 }
 
 QTabBar::tab:!selected:hover

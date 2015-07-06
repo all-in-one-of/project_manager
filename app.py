@@ -51,46 +51,48 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
-
-
         # Initialize the guis
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
         # Initialize modules and connections
         ReferenceTab.__init__(self)
-        Lib.__init__(self)
-        TaskManager.__init__(self)
-        TaskManager.add_tasks_from_database(self)
+        #Lib.__init__(self)
+
 
         # Global Variables
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.username = os.getenv('USERNAME')
-        self.members = {"achaput": "Amélie", "costiguy": "Chloé", "cgonnord": "Christopher", "dcayerdesforges": "David",
-                        "earismendez": "Edwin", "erodrigue": "Étienne", "jberger": "Jeremy", "lgregoire": "Laurence",
+        self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
+                        "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
-                        "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
+                        "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
+        # self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
+        #         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
+        #         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
+        #         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
+        #         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
 
         self.selected_project_name = ""
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
+
+        TaskManager.__init__(self)
+        TaskManager.add_tasks_from_database(self)
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
         self.app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
         self.Form.setWindowIcon(self.app_icon)
 
-
         # Set the StyleSheet
         css = QtCore.QFile(self.cur_path + "\\media\\style.css")
         css.open(QtCore.QIODevice.ReadOnly)
         if css.isOpen():
             self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
-
-
 
         # Overrides
         self.publishBtn.setStyleSheet("background-color: #77D482;")
@@ -976,13 +978,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         tabs_list = {"Asset Loader":0, "Task Manager":1, "My Tasks":2, "Asset Creator":3, "References Tool":4,
                      "Tags Manager":5, "Log":6, "Preferences":7}
 
-        if self.members[self.username] == "Amélie":
+        if self.members[self.username] == "Amelie":
             self.Tabs.removeTab(1)
             self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
-        elif self.members[self.username] == "Chloé":
+        elif self.members[self.username] == "Chloe":
             self.Tabs.removeTab(1)
             self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
@@ -1006,13 +1008,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
-        elif self.members[self.username] == "Étienne":
+        elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(1)
             self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
-        elif self.members[self.username] == "Jérémy":
+        elif self.members[self.username] == "Jeremy":
             self.Tabs.removeTab(1)
             self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)

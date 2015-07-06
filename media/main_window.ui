@@ -1134,17 +1134,17 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="taskManagerTab">
+        <widget class="QWidget" name="tmTab">
          <attribute name="title">
           <string>Task Manager</string>
          </attribute>
-         <widget class="QFrame" name="taskManagerMainFrame">
+         <widget class="QFrame" name="tmMainFrame">
           <property name="geometry">
            <rect>
             <x>20</x>
             <y>20</y>
-            <width>1001</width>
-            <height>801</height>
+            <width>1011</width>
+            <height>571</height>
            </rect>
           </property>
           <property name="frameShape">
@@ -1153,236 +1153,334 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <widget class="QTableWidget" name="taskManagerTableWidget">
-           <property name="geometry">
-            <rect>
-             <x>50</x>
-             <y>340</y>
-             <width>851</width>
-             <height>391</height>
-            </rect>
-           </property>
-           <property name="sortingEnabled">
-            <bool>false</bool>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>100</number>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Task Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Department</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Status</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Assigned to</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Start</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>End</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Days Left</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Bid (days)</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Sequence</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Shot</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Asset</string>
-            </property>
-           </column>
-          </widget>
-          <widget class="QComboBox" name="taskManagerAssignedToComboBox">
-           <property name="geometry">
-            <rect>
-             <x>170</x>
-             <y>120</y>
-             <width>512</width>
-             <height>25</height>
-            </rect>
-           </property>
-           <property name="frame">
-            <bool>true</bool>
-           </property>
+          <layout class="QVBoxLayout" name="verticalLayout_27">
            <item>
-            <property name="text">
-             <string>None</string>
-            </property>
+            <widget class="QGroupBox" name="tmFilterByGroupBox">
+             <property name="title">
+              <string>Filter by</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_26">
+              <item>
+               <widget class="QFrame" name="tmDepartmentFilterGroupBox">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_29">
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="tmDepartmentFilter">
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Department:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="tmFilterByDeptComboBox">
+                   <property name="frame">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="frame_3">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_30">
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="tmStatusLbl">
+                   <property name="maximumSize">
+                    <size>
+                     <width>40</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Status:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="tmFilterByStatusComboBox">
+                   <property name="frame">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="tmFilterByMemberFrame">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_31">
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="tmMemberLbl">
+                   <property name="maximumSize">
+                    <size>
+                     <width>45</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Member:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="tmFilterByMemberComboBox">
+                   <property name="frame">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="frame_2">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_33">
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="tmBidLbl">
+                   <property name="maximumSize">
+                    <size>
+                     <width>24</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Bid:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="tmBidOperationComboBox">
+                   <item>
+                    <property name="text">
+                     <string>&gt;</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>&lt;</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="tmFilterByBidComboBox">
+                   <property name="buttonSymbols">
+                    <enum>QAbstractSpinBox::PlusMinus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="tmHorizontalSpacer_01">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item>
-            <property name="text">
-             <string>Amélie</string>
-            </property>
+            <widget class="QGroupBox" name="tmTaskManagementFrame">
+             <property name="title">
+              <string>Tasks Management</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_32">
+              <item>
+               <widget class="QSpinBox" name="tmNbrOfRowsToAddSpinBox">
+                <property name="wrapping">
+                 <bool>false</bool>
+                </property>
+                <property name="frame">
+                 <bool>false</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::PlusMinus</enum>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="tmAddTaskBtn">
+                <property name="text">
+                 <string>Add Task</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="tmRemoveTaskBtn">
+                <property name="text">
+                 <string>Remove Task</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item>
-            <property name="text">
-             <string>Chloé</string>
-            </property>
+            <widget class="QTableWidget" name="tmTableWidget">
+             <property name="showGrid">
+              <bool>false</bool>
+             </property>
+             <property name="gridStyle">
+              <enum>Qt::SolidLine</enum>
+             </property>
+             <property name="sortingEnabled">
+              <bool>false</bool>
+             </property>
+             <attribute name="horizontalHeaderDefaultSectionSize">
+              <number>100</number>
+             </attribute>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderStretchLastSection">
+              <bool>false</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Task Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Department</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Status</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Assigned to</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Start</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>End</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Days Left</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Bid (hours)</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Sequence</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Shot</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Asset</string>
+              </property>
+             </column>
+            </widget>
            </item>
-           <item>
-            <property name="text">
-             <string>Christopher</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>David</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Edwin</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Étienne</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Jérémy</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Laurence</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Louis-Philippe</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Marc-Antoine</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Mathieu</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Maxime</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Olivier</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Simon</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Thibault</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Yann</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Yi</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Valentin</string>
-            </property>
-           </item>
-          </widget>
-          <widget class="QPushButton" name="taskManagerAddTaskBtn">
-           <property name="geometry">
-            <rect>
-             <x>50</x>
-             <y>310</y>
-             <width>75</width>
-             <height>23</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Add Task</string>
-           </property>
-          </widget>
-          <widget class="QSpinBox" name="taskManagerNbrOfRowsToAddSpinBox">
-           <property name="geometry">
-            <rect>
-             <x>150</x>
-             <y>310</y>
-             <width>46</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="value">
-            <number>1</number>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="taskManagerRemoveTaskBtn">
-           <property name="geometry">
-            <rect>
-             <x>230</x>
-             <y>310</y>
-             <width>81</width>
-             <height>23</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Remove Task</string>
-           </property>
-          </widget>
+          </layout>
          </widget>
         </widget>
         <widget class="QWidget" name="myTasksTab">
