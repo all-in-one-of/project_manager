@@ -8,6 +8,7 @@ import subprocess
 import os
 import shutil
 from PIL import Image
+import urllib
 
 
 class ReferenceTab(object):

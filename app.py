@@ -19,6 +19,16 @@ The _Asset Manager shortcut is pointing toward the app.exe file inside the lib/d
 The app.py file is the main python file
 
 
+    Instructions:
+- When working home:
+    - uncomment the line with the database on my computer
+    - change the self.members list by uncommenting the lines
+
+- Before publishing:
+    - Change the database from working database to the official project database
+
+
+
 '''
 
 import sys
@@ -46,8 +56,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         Ui_Form.__init__(self)
 
         # Database Setup
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"
-        #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite"
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        # self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        # self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
+
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
@@ -70,7 +82,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
-        # self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
+        #self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
         #         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
         #         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
         #         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
@@ -139,6 +151,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         projects = self.cursor.execute('''SELECT * FROM projects''')
         for project in projects:
             self.projectList.addItem(project[1])
+
+        # Select default project
+        self.projectList.setCurrentRow(0)
+        self.projectList_Clicked()
 
         # Get software paths from database and put them in preference
         self.photoshop_path = str(self.cursor.execute(

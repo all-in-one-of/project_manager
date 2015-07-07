@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sun Jul 05 18:44:09 2015
+# Created: Tue Jul 07 11:17:17 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1215,7 +1215,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(1)
+        self.Tabs.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1381,6 +1381,7 @@ class Ui_Form(object):
         self.filterByNameGroupBox.setTitle(_translate("Form", "Filter by name", None))
         self.filterByTagsGroupBox.setTitle(_translate("Form", "Filter by tags", None))
         self.addTagsGroupBox.setTitle(_translate("Form", "Add/remove tags", None))
+        self.allTagsListWidget.setSortingEnabled(True)
         self.addTagsBtn.setText(_translate("Form", ">>", None))
         self.removeTagsBtn.setText(_translate("Form", "<<", None))
         self.openInGroupBox.setTitle(_translate("Form", "Open in", None))
