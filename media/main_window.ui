@@ -1487,6 +1487,76 @@
          <attribute name="title">
           <string>My Tasks</string>
          </attribute>
+         <widget class="QFrame" name="frame_4">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>90</y>
+            <width>119</width>
+            <height>156</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_28">
+           <item>
+            <widget class="QFrame" name="frame_5">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_29">
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>TextLabel</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton">
+                <property name="text">
+                 <string>PushButton</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_6">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_30">
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>TextLabel</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_2">
+                <property name="text">
+                 <string>PushButton</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
         <widget class="QWidget" name="assetCreatorTab">
          <attribute name="title">
@@ -1787,6 +1857,51 @@
            <string>Shots</string>
           </property>
          </widget>
+         <widget class="QTreeWidget" name="treeWidget">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>320</y>
+            <width>256</width>
+            <height>192</height>
+           </rect>
+          </property>
+          <column>
+           <property name="text">
+            <string>test</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>sdfsd</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>sdfsdf</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>sdfsdf</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>sdfsdfsfd</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>dsfsdfgdsg</string>
+            </property>
+           </item>
+          </item>
+          <item>
+           <property name="text">
+            <string>dsgsdf</string>
+           </property>
+          </item>
+         </widget>
         </widget>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -1962,13 +2077,47 @@
                           <number>3</number>
                          </property>
                          <item>
-                          <widget class="QLineEdit" name="referenceWebLineEdit">
-                           <property name="enabled">
-                            <bool>true</bool>
+                          <widget class="QFrame" name="frame_7">
+                           <property name="frameShape">
+                            <enum>QFrame::NoFrame</enum>
                            </property>
-                           <property name="placeholderText">
-                            <string>URL</string>
+                           <property name="frameShadow">
+                            <enum>QFrame::Raised</enum>
                            </property>
+                           <layout class="QHBoxLayout" name="horizontalLayout_34">
+                            <property name="margin">
+                             <number>0</number>
+                            </property>
+                            <item>
+                             <widget class="QLineEdit" name="referenceWebLineEdit">
+                              <property name="enabled">
+                               <bool>true</bool>
+                              </property>
+                              <property name="placeholderText">
+                               <string>URL</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="showUrlImageBtn">
+                              <property name="maximumSize">
+                               <size>
+                                <width>24</width>
+                                <height>24</height>
+                               </size>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                              <property name="iconSize">
+                               <size>
+                                <width>16</width>
+                                <height>16</height>
+                               </size>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
                           </widget>
                          </item>
                          <item>
@@ -2040,6 +2189,9 @@
                          </property>
                          <item>
                           <widget class="QPushButton" name="createReferencesFromFilesBtn">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
                            <property name="text">
                             <string>Select files on computer</string>
                            </property>
@@ -2049,6 +2201,13 @@
                        </widget>
                       </item>
                      </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="changeRefSeqShotBtn">
+                     <property name="text">
+                      <string>Change sequence / shot for selected </string>
+                     </property>
                     </widget>
                    </item>
                   </layout>
@@ -2307,7 +2466,7 @@
                 <item>
                  <widget class="QPushButton" name="removeRefsBtn">
                   <property name="text">
-                   <string>Remove References</string>
+                   <string>Remove Selected Reference(s)</string>
                   </property>
                  </widget>
                 </item>

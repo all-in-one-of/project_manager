@@ -9,7 +9,7 @@ import os
 import shutil
 from PIL import Image
 import urllib
-
+from lib.module import Lib
 
 class ReferenceTab(object):
 
@@ -24,10 +24,12 @@ class ReferenceTab(object):
         self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
         self.openRefInPhotoshopBtn.clicked.connect(self.load_ref_in_photoshop)
         self.addTagsBtn.clicked.connect(self.add_tags_to_selected_references)
+        self.allTagsListWidget.doubleClicked.connect(self.add_tags_to_selected_references)
         self.removeTagsBtn.clicked.connect(self.remove_tags_from_selected_references)
+        self.existingTagsListWidget.doubleClicked.connect(self.remove_tags_from_selected_references)
         self.referenceThumbSizeSlider.sliderMoved.connect(self.change_reference_thumb_size)
-
-
+        self.changeRefSeqShotBtn.clicked.connect(self.change_seq_shot_layout)
+        self.showUrlImageBtn.clicked.connect(self.show_url_image)
 
     def add_tags_to_selected_references(self):
 
@@ -164,18 +166,27 @@ class ReferenceTab(object):
         # Check if a sequence is selected
         try:
             selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
+            if selected_sequence == "All":
+                selected_sequence = "xxx"
             asset_filename += selected_sequence + "_"
         except:
             selected_sequence = "xxx"
             asset_filename += "xxx_"
 
+
+
         # Check if a shot is selected
         try:
             selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
+            if selected_shot == "None":
+                selected_sequence = "xxxx"
             asset_filename += selected_shot + "_"
         except:
             selected_shot = "xxxx"
             asset_filename += "xxxx_"
+
+
+
 
 
         # Ask for user to select files
@@ -208,6 +219,7 @@ class ReferenceTab(object):
         selected_files_path = [str(i.toAscii()) for i in selected_files_path]
 
         self.referenceProgressBar.setValue(50)
+
 
         # Rename images
         for i, path in enumerate(selected_files_path):
@@ -444,6 +456,7 @@ class ReferenceTab(object):
         return all_tags
 
     def change_reference_thumb_size(self):
+
         slider_size = self.referenceThumbSizeSlider.value()
         icon_size = QtCore.QSize(slider_size, slider_size)
         self.referenceThumbListWidget.setIconSize(icon_size)
@@ -493,8 +506,13 @@ class ReferenceTab(object):
         for ref in all_references:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
             ref_tags = ref_data[5]
-            ref_tags = ref_tags.split(
-                ",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
+            if ref_tags == None:
+                ref.setHidden(True)
+                continue
+
+            if "," in ref_tags:
+                ref_tags = ref_tags.split(",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
+
             if set(ref_tags).isdisjoint(selected_tags):
                 ref.setHidden(True)
             else:
@@ -556,13 +574,103 @@ class ReferenceTab(object):
 
         return
 
-    def rename_ref(self):
+    def change_seq_shot_layout(self):
+        self.change_dialog = QtGui.QDialog()
+        self.change_dialog.setWindowTitle("Change Sequence / Shot")
+        self.change_dialog.resize(300, 200)
 
-        self.rename_dialog.close()
+        Lib.apply_style(self, self.change_dialog)
+
+        # Create main layout
+        main_layout = QtGui.QVBoxLayout(self.change_dialog)
+
+        # Create seq and shot combo box
+        self.seq_combobox = QtGui.QComboBox()
+        self.seq_combobox.addItem("All")
+        self.seq_combobox.addItems([str(i[0]) for i in self.sequences])
+
+        self.shot_combobox = QtGui.QComboBox()
+        self.shot_combobox.addItem("None")
+
+        # Create accept button
+        apply_btn = QtGui.QPushButton("Accept")
+
+        # Create labels
+        sequence_lbl = QtGui.QLabel("Sequence Name:")
+        shot_lbl = QtGui.QLabel("Shot Number:")
+
+        # Add widgets to layout
+        main_layout.addWidget(sequence_lbl)
+        main_layout.addWidget(self.seq_combobox)
+        main_layout.addWidget(shot_lbl)
+        main_layout.addWidget(self.shot_combobox)
+        main_layout.addWidget(apply_btn)
+
+        # Connect the widgets to the functions
+        apply_btn.clicked.connect(self.change_seq_shot)
+        self.seq_combobox.currentIndexChanged.connect(self.filter_shots_from_sequences)
+
+        # Execute the QDialog
+        self.change_dialog.exec_()
+
+    def change_seq_shot(self):
+        self.change_dialog.close()
+
+        selected_sequence = str(self.seq_combobox.currentText())
+        selected_shot = str(self.shot_combobox.currentText())
+        selected_references = self.referenceThumbListWidget.selectedItems()
+
+        if selected_sequence == "All":
+            selected_sequence = "xxx"
+
+        if selected_shot == "None":
+            selected_shot = "xxxx"
+
+        for ref in selected_references:
+            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_sequence_name = ref_data[0]
+            ref_shot_number = ref_data[1]
+            ref_name = ref_data[2]
+            ref_path = ref_data[3]
+            ref_version = ref_data[4]
+            ref_tags = ref_data[5]
+            self.cursor.execute(
+                    '''UPDATE assets SET sequence_name=?, shot_number=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
+                    (selected_sequence, selected_shot, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
+
+            # Update reference QListWidgetItem data
+            data = (selected_sequence, selected_shot, ref_name, ref_path, ref_version, ref_tags)
+            ref.setData(QtCore.Qt.UserRole, data)
+
+        self.db.commit()
+        self.load_reference_thumbnails()
+
+    def filter_shots_from_sequences(self):
+        selected_sequence_name = str(self.seq_combobox.currentText())
+
+        # Add shots to shot list and shot creation list
+        if selected_sequence_name == "All":
+            self.shot_combobox.addItem("None")
+
+        else:
+            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
+                                        (self.selected_project_name, selected_sequence_name,)).fetchall()
+            self.shot_combobox.clear()
+            self.shot_combobox.addItem("None")
+            shots = [i[0] for i in shots]
+            shots = sorted(shots)
+            [self.shot_combobox.addItem(shot) for shot in shots]
+
+    def rename_ref(self):
 
         new_name = unicode(self.reference_new_name.text())
         new_name = modules.normalize_str(new_name)
         new_name = modules.convert_to_camel_case(new_name)
+
+        if len(new_name) >= 3:
+            self.rename_dialog.close()
+        else:
+            return
 
         selected_reference = self.referenceThumbListWidget.selectedItems()[0]
 
@@ -586,6 +694,44 @@ class ReferenceTab(object):
         selected_reference.setData(QtCore.Qt.UserRole, data)
 
         self.load_reference_thumbnails()
+
+    def show_url_image(self):
+
+        URL = str(self.referenceWebLineEdit.text())
+
+        if len(URL) < 5:
+            Lib.message_box(self, text="Please enter a valid URL")
+            return
+
+        eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon_closed.png")
+        eye_icon = QtGui.QIcon(eye_icon)
+        self.showUrlImageBtn.setIcon(eye_icon)
+        self.showUrlImageBtn.repaint()
+
+        QDialog = QtGui.QDialog()
+        QDialog.setWindowTitle("URL Preview")
+        QDialog.setMaximumSize(600, 600)
+        Lib.apply_style(self, QDialog)
+
+        data = urllib.urlopen(URL).read()
+        pixmap = QtGui.QPixmap()
+        pixmap.loadFromData(data)
+        pixmap = pixmap.scaled(600, 600, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        label = QtGui.QLabel()
+        label.setPixmap(pixmap)
+
+        layout = QtGui.QHBoxLayout(QDialog)
+
+        layout.addWidget(label)
+
+        QDialog.resize(600, 600)
+
+        eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
+        eye_icon = QtGui.QIcon(eye_icon)
+        self.showUrlImageBtn.setIcon(eye_icon)
+        self.showUrlImageBtn.repaint()
+
+        QDialog.exec_()
 
 
 

@@ -42,6 +42,7 @@ import urllib
 import shutil
 from PIL import Image
 from datetime import date
+from random import randint
 
 from PyQt4 import QtGui, QtCore, Qt
 
@@ -56,9 +57,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         Ui_Form.__init__(self)
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        # self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
-        # self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
@@ -115,6 +116,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         font.setPointSize(12)
         self.logTextEdit.setFont(font)
 
+        eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
+        #eye_icon.scaled(8, 8)
+        eye_icon = QtGui.QIcon(eye_icon)
+        self.showUrlImageBtn.setIcon(eye_icon)
+
+
         # Admin Setup
         self.remove_tabs_based_on_members()
 
@@ -125,7 +132,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.tagsListWidget.clear()
         for tag in all_tags:
             self.tagsListWidget.addItem(tag)
-            self.allTagsListWidget.addItem(tag)
+            tagItem = QtGui.QListWidgetItem(tag)
+            #font = QtGui.QFont()
+            #rand = randint(5, 15)
+            #font.setPointSize(rand)
+            #tagItem.setFont(font)
+            self.allTagsListWidget.addItem(tagItem)
+
+
+        self.referenceProgressBar.setValue(100)
+        self.referenceProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #56bb4e;}")
 
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
@@ -237,9 +253,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         # Other connects
 
         self.update_log()
-
-
-
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -822,7 +835,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
             return (asset_path, new_asset_name)
         else:
             return (asset_path, asset_name)
-
 
     def load_asset(self, action):
         if action == "Kuadro":

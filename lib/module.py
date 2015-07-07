@@ -86,3 +86,18 @@ class Lib(object):
         Open selected assets in explorer
         """
         subprocess.Popen(r'explorer /select,' + str(self.assetPathLbl.text()))
+
+    def apply_style(self, form):
+
+
+        # Apply custom CSS to msgBox
+        css = QtCore.QFile(self.cur_path + "\\media\\style.css")
+        css.open(QtCore.QIODevice.ReadOnly)
+        if css.isOpen():
+            form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+        css.close()
+
+        # Create Favicon
+        app_icon = QtGui.QIcon()
+        app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
+        form.setWindowIcon(app_icon)

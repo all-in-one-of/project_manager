@@ -127,7 +127,6 @@ class TaskManager(object):
             self.tmTableWidget.setCellWidget(0, 4, date_start_edit)
             self.widgets[str(inversed_index) + ":4"] = date_start_edit
 
-
             # Adding task end
             task_date_end = task[8]
             date_end = QtCore.QDate.fromString(task_date_end, 'dd/MM/yyyy')
