@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from PyQt4 import QtGui, QtCore, Qt
-import time
+from PyQt4 import QtGui, QtCore
 from lib.module import Lib
-
 
 class TaskManager(object):
 
     def __init__(self):
 
-
+        super(TaskManager, self).__init__()
 
         self.tm_departments = {"Script": 0, "Storyboard": 1, "References": 2, "Concepts": 3, "Modeling": 4, "Texturing": 5,
                             "Rigging": 6, "Animation": 7, "Simulation": 8, "Shading": 9, "Layout": 10,
@@ -34,9 +32,11 @@ class TaskManager(object):
         self.item_added = False
         self.tmTableWidget.setStyleSheet("color: white;")
         self.tmAddTaskBtn.clicked.connect(self.add_task)
-        self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
+        self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
 
+        self.tmRemoveTaskBtn.setStyleSheet("QPushButton {background-color: #872d2c;} QPushButton:hover {background-color: #1b81ca;}")
+        self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
 
         self.tmFilterByDeptComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByStatusComboBox.currentIndexChanged.connect(self.filter)
@@ -44,12 +44,25 @@ class TaskManager(object):
         self.tmBidOperationComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByBidComboBox.valueChanged.connect(self.filter)
 
+
+        self.tmFilterByProjectComboBox.addItem("None")
+        self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.tm_load_sequences)
+
+        self.tmFilterBySequenceComboBox.addItem("None")
+        self.tmFilterBySequenceComboBox.currentIndexChanged.connect(self.tm_load_shots)
+
+        self.tmFilterByShotComboBox.addItem("None")
+
         self.tmFilterByDeptComboBox.addItem("None")
         self.tmFilterByDeptComboBox.addItems(self.tm_departments.keys())
         self.tmFilterByStatusComboBox.addItem("None")
         self.tmFilterByStatusComboBox.addItems(self.status.keys())
         self.tmFilterByMemberComboBox.addItem("None")
         self.tmFilterByMemberComboBox.addItems(sorted(self.members.values()))
+
+        # Add project to project filter combobox
+        for project in self.projects:
+            self.tmFilterByProjectComboBox.addItem(project)
 
     def add_tasks_from_database(self):
 
@@ -68,38 +81,46 @@ class TaskManager(object):
 
             self.tmTableWidget.insertRow(0)
 
+            # Adding tasks id
+            task_id = task[0] #Ex: 1, 5, 8
+            task_id_item = QtGui.QTableWidgetItem()
+            task_id_item.setText(str(task_id))
+            task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tmTableWidget.setItem(0, 0, task_id_item)
+            self.widgets[str(inversed_index) + ":0"] = task_id_item
+
             # Adding tasks description
-            task_description = task[3] #Ex: Ajouter références pour le musée
+            task_description = task[5] #Ex: Ajouter références pour le musée
             task_description_item = QtGui.QTableWidgetItem()
             task_description_item.setText(task_description)
-            self.tmTableWidget.setItem(0, 0, task_description_item)
-            self.widgets[str(inversed_index) + ":0"] = task_description_item
+            self.tmTableWidget.setItem(0, 1, task_description_item)
+            self.widgets[str(inversed_index) + ":1"] = task_description_item
 
 
             # Adding department combo boxes
-            task_department = task[4] #Ex: Compositing
+            task_department = task[6] #Ex: Compositing
             combo_box = QtGui.QComboBox()
             combo_box.addItems(["Script", "Storyboard", "References", "Concepts", "Modeling", "Texturing",
                             "Rigging", "Animation", "Simulation", "Shading", "Layout",
                             "DMP", "Compositing", "Editing", "RnD"])
             combo_box.setCurrentIndex(self.tm_departments[task_department])
             combo_box.currentIndexChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 1, combo_box)
-            self.widgets[str(inversed_index) + ":1"] = combo_box
+            self.tmTableWidget.setCellWidget(0, 2, combo_box)
+            self.widgets[str(inversed_index) + ":2"] = combo_box
 
             # Adding task status
-            task_status = task[5] #Ex: En cours
+            task_status = task[7] #Ex: En cours
             combo_box = QtGui.QComboBox()
             combo_box.addItems(["Ready to Start", "In Progress", "On Hold", "Waiting for Approval", "Retake", "Done"])
             combo_box.setCurrentIndex(self.status[task_status])
             combo_box.setEditable(False)
             combo_box.currentIndexChanged.connect(self.update_tasks)
             self.change_cell_status_color(combo_box, task_status)
-            self.tmTableWidget.setCellWidget(0, 2, combo_box)
-            self.widgets[str(inversed_index) + ":2"] = combo_box
+            self.tmTableWidget.setCellWidget(0, 3, combo_box)
+            self.widgets[str(inversed_index) + ":3"] = combo_box
 
             # Adding assigned to
-            task_assignation = task[6] #Ex: Amélie
+            task_assignation = task[8] #Ex: Amélie
             combo_box = QtGui.QComboBox()
             combo_box.addItems(
                 [u"Amelie", u"Chloe", u"Christopher", u"David", u"Edwin", u"Etienne", u"Jeremy",
@@ -107,31 +128,31 @@ class TaskManager(object):
                  u"Valentin", u"Yann", u"Yi"])
             combo_box.setCurrentIndex(self.members_id[task_assignation])
             combo_box.currentIndexChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 3, combo_box)
-            self.widgets[str(inversed_index) + ":3"] = combo_box
+            self.tmTableWidget.setCellWidget(0, 4, combo_box)
+            self.widgets[str(inversed_index) + ":4"] = combo_box
 
 
             # Adding task start
-            task_date_start = task[7]
+            task_date_start = task[9]
             date_start = QtCore.QDate.fromString(task_date_start, 'dd/MM/yyyy')
             date_start_edit = QtGui.QDateEdit()
             date_start_edit.setDate(date_start)
             date_start_edit.setDisplayFormat("dd/MM/yyyy")
             date_start_edit.setFrame(False)
             self.set_calendar(date_start_edit)
-            self.tmTableWidget.setCellWidget(0, 4, date_start_edit)
-            self.widgets[str(inversed_index) + ":4"] = date_start_edit
+            self.tmTableWidget.setCellWidget(0, 5, date_start_edit)
+            self.widgets[str(inversed_index) + ":5"] = date_start_edit
 
             # Adding task end
-            task_date_end = task[8]
+            task_date_end = task[10]
             date_end = QtCore.QDate.fromString(task_date_end, 'dd/MM/yyyy')
             date_end_edit = QtGui.QDateEdit()
             date_end_edit.setDate(date_end)
             date_end_edit.setDisplayFormat("dd/MM/yyyy")
             date_end_edit.setFrame(False)
             self.set_calendar(date_end_edit)
-            self.tmTableWidget.setCellWidget(0, 5, date_end_edit)
-            self.widgets[str(inversed_index) + ":5"] = date_end_edit
+            self.tmTableWidget.setCellWidget(0, 6, date_end_edit)
+            self.widgets[str(inversed_index) + ":6"] = date_end_edit
 
 
             # Adding days left
@@ -140,11 +161,11 @@ class TaskManager(object):
             days_left_item.setText(days_left)
             days_left_item.setTextAlignment(QtCore.Qt.AlignCenter)
             days_left_item.setFlags(QtCore.Qt.ItemIsEnabled)
-            self.tmTableWidget.setItem(0, 6, days_left_item)
-            self.widgets[str(inversed_index) + ":6"] = days_left_item
+            self.tmTableWidget.setItem(0, 7, days_left_item)
+            self.widgets[str(inversed_index) + ":7"] = days_left_item
 
             # Adding task bid
-            task_bid = task[9]
+            task_bid = task[11]
             task_bid_item = QtGui.QSpinBox()
             task_bid_item.setValue(int(task_bid))
             task_bid_item.setAlignment(QtCore.Qt.AlignCenter)
@@ -153,13 +174,23 @@ class TaskManager(object):
             task_bid_item.setMinimum(1)
             task_bid_item.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
             task_bid_item.valueChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 7, task_bid_item)
-            self.widgets[str(inversed_index) + ":7"] = task_bid_item
+            self.tmTableWidget.setCellWidget(0, 8, task_bid_item)
+            self.widgets[str(inversed_index) + ":8"] = task_bid_item
+
+            # Adding sequence name
+            task_sequence_name = task[2] #Ex: mus, cri, fru
+            combo_box = QtGui.QComboBox()
+            combo_box.addItem(task_sequence_name)
+            combo_box.currentIndexChanged.connect(self.update_tasks)
+            self.tmTableWidget.setCellWidget(0, 9, combo_box)
+            self.widgets[str(inversed_index) + ":9"] = combo_box
 
             inversed_index -= 1
 
 
         self.tmTableWidget.cellChanged.connect(self.update_tasks)
+        self.tmTableWidget.resizeColumnsToContents()
+        self.item_added = False
 
     def update_tasks(self, value):
 
@@ -176,42 +207,44 @@ class TaskManager(object):
         else:
             widget_index = self.tmTableWidget.indexAt(clicked_widget.pos())
             widget_row_index = widget_index.row()
+            widget_row_column = widget_index.column()
 
 
         # Get widgets and their values from row index
-        task_description_widget = self.widgets[str(widget_row_index) + ":0"]
+        task_id_widget = self.widgets[str(widget_row_index) + ":0"]
+        task_id = str(task_id_widget.text())
+
+        task_description_widget = self.widgets[str(widget_row_index) + ":1"]
         task_description = unicode(task_description_widget.text())
 
-        task_department_widget = self.widgets[str(widget_row_index) + ":1"]
+        task_department_widget = self.widgets[str(widget_row_index) + ":2"]
         task_department = str(task_department_widget.currentText())
 
-        task_status_widget = self.widgets[str(widget_row_index) + ":2"]
+        task_status_widget = self.widgets[str(widget_row_index) + ":3"]
         task_status = str(task_status_widget.currentText())
 
-        task_assignation_widget = self.widgets[str(widget_row_index) + ":3"]
+        task_assignation_widget = self.widgets[str(widget_row_index) + ":4"]
         task_assignation = unicode(task_assignation_widget.currentText()).encode('UTF-8')
         # Get username from name (Ex: achaput from Amélie)
         for key, val in self.members.items():
             if task_assignation.decode('UTF-8') == val.decode('UTF-8'):
                 task_assignation = key
 
-        task_start_widget = self.widgets[str(widget_row_index) + ":4"]
+        task_start_widget = self.widgets[str(widget_row_index) + ":5"]
         task_start = str(task_start_widget.date().toString("dd/MM/yyyy"))
 
-        task_end_widget = self.widgets[str(widget_row_index) + ":5"]
+        task_end_widget = self.widgets[str(widget_row_index) + ":6"]
         task_end = str(task_end_widget.date().toString("dd/MM/yyyy"))
 
-        task_time_left_widget = self.widgets[str(widget_row_index) + ":6"]
+        task_time_left_widget = self.widgets[str(widget_row_index) + ":7"]
 
-        task_bid_widget = self.widgets[str(widget_row_index) + ":7"]
+        task_bid_widget = self.widgets[str(widget_row_index) + ":8"]
         task_bid = str(task_bid_widget.value())
 
-
-
         self.cursor.execute(
-            '''UPDATE tasks SET task_description=?, task_department=?, task_status=?, task_assignation=?, task_start=?, task_end=?, task_bid=? WHERE rowid=?''',
+            '''UPDATE tasks SET task_description=?, task_department=?, task_status=?, task_assignation=?, task_start=?, task_end=?, task_bid=? WHERE task_id=?''',
             (task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid,
-             widget_row_index + 1))
+             task_id))
 
         self.calculate_days_left(task_start_widget, task_end_widget, task_time_left_widget)
         self.change_cell_status_color(task_status_widget, task_status)
@@ -238,22 +271,39 @@ class TaskManager(object):
         self.add_tasks_from_database()
         self.item_added = False
 
+    def remove_task(self):
+
+        selected_rows = self.tmTableWidget.selectedItems()
+        for row in selected_rows:
+            task_id_widget = self.widgets[str(row.row()) + ":0"]
+            task_id = str(task_id_widget.text())
+            self.cursor.execute('''DELETE FROM tasks WHERE task_id=?''', (task_id,))
+
+        self.db.commit()
+
+        self.item_added = True
+        self.add_tasks_from_database()
+
     def complete_task(self):
         selected_rows = self.tmTableWidget.selectedItems()
         bid = 0
         for row in selected_rows:
 
-            cur_row_bid = self.widgets[str(row.row()) + ":7"]
+            # Add bid value from each row
+            cur_row_bid = self.widgets[str(row.row()) + ":8"]
             cur_row_bid = cur_row_bid.value()
             bid += cur_row_bid
 
-            row_to_delete = row.row() + 1
-            self.cursor.execute('''DELETE FROM tasks WHERE rowid = ? ''', (row_to_delete,))
+            # Get task id for current row
+            task_id_widget = self.widgets[str(row.row()) + ":0"]
+            task_id = str(task_id_widget.text())
+            self.cursor.execute('''DELETE FROM tasks WHERE task_id = ? ''', (task_id,))
 
 
-        today_bid = self.cursor.execute('''SELECT bid_log_amount FROM bid_log WHERE bid_log_day=?''',
-                                        (self.today,)).fetchone()
 
+        today_bid = self.cursor.execute('''SELECT bid_log_amount FROM bid_log WHERE bid_log_day=?''', (self.today,)).fetchone()
+
+        # Check if an entry already exists for today. If yes, add the bid to the daily bid. If not, create an entry
         if today_bid:
             today_bid = int(today_bid[0])
             bid += today_bid
@@ -261,16 +311,6 @@ class TaskManager(object):
         else:
             self.cursor.execute('''INSERT INTO bid_log(project_name, bid_log_day, bid_log_amount) VALUES(?,?,?)''', (self.selected_project_name, self.today, bid))
 
-        self.db.commit()
-        self.item_added = True
-        self.add_tasks_from_database()
-
-    def remove_task(self):
-
-        selected_rows = self.tmTableWidget.selectedItems()
-        for row in selected_rows:
-            row_to_delete = row.row() + 1
-            self.cursor.execute('''DELETE FROM tasks WHERE rowid = ? ''', (row_to_delete,))
 
         self.db.commit()
         self.item_added = True
@@ -288,10 +328,10 @@ class TaskManager(object):
             bid_operation = self.tmBidOperationComboBox.currentText()
 
             # Retrieve value of current row items
-            department = self.tmTableWidget.cellWidget(row_index, 1).currentText()
-            status = self.tmTableWidget.cellWidget(row_index, 2).currentText()
-            member = self.tmTableWidget.cellWidget(row_index, 3).currentText()
-            bid = self.tmTableWidget.cellWidget(row_index, 7).value()
+            department = self.tmTableWidget.cellWidget(row_index, 2).currentText()
+            status = self.tmTableWidget.cellWidget(row_index, 3).currentText()
+            member = self.tmTableWidget.cellWidget(row_index, 4).currentText()
+            bid = self.tmTableWidget.cellWidget(row_index, 8).value()
 
             # If filters are set to default value, set the filters variables to the current row values
             if department_filter == "None": department_filter = department
@@ -340,5 +380,31 @@ class TaskManager(object):
             cell_item.setStyleSheet("background-color: #872d2c")
         elif task_status == "Done":
             cell_item.setStyleSheet("background-color: #4b4b4b;")
+
+    def tm_load_sequences(self):
+        current_project = str(self.tmFilterByProjectComboBox.currentText())
+        if current_project == "None":
+            return
+
+        sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (current_project,)).fetchall()
+        sequences = [str(i[0]) for i in sequences]
+
+        self.tmFilterBySequenceComboBox.clear()
+        self.tmFilterBySequenceComboBox.addItem("None")
+        for seq in sequences:
+            self.tmFilterBySequenceComboBox.addItem(seq)
+
+    def tm_load_shots(self):
+        current_sequence = str(self.tmFilterBySequenceComboBox.currentText())
+        if current_sequence == "None":
+            return
+
+        shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE sequence_name=?''', (current_sequence,)).fetchall()
+        shots = [str(i[0]) for i in shots]
+
+        self.tmFilterByShotComboBox.clear()
+        self.tmFilterByShotComboBox.addItem("None")
+        for shot in shots:
+            self.tmFilterByShotComboBox.addItem(shot)
 
 

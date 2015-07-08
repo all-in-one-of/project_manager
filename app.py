@@ -57,8 +57,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         self.db = sqlite3.connect(self.db_path)
@@ -68,9 +68,18 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
+        # Get projects from database and add them to the projects list
+        self.projects = self.cursor.execute('''SELECT project_name FROM projects''').fetchall()
+        self.projects = [str(i[0]) for i in self.projects]
+        for project in self.projects:
+            self.projectList.addItem(project)
+
+        # Select default project
+        self.projectList.setCurrentRow(0)
+        self.projectList_Clicked()
+
         # Initialize modules and connections
         ReferenceTab.__init__(self)
-        #Lib.__init__(self)
 
 
         # Global Variables
@@ -162,14 +171,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         elif remaining_days >= 0:
             self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;}")
 
-        # Get projects from database and add them to the projects list
-        projects = self.cursor.execute('''SELECT * FROM projects''')
-        for project in projects:
-            self.projectList.addItem(project[1])
 
-        # Select default project
-        self.projectList.setCurrentRow(0)
-        self.projectList_Clicked()
 
         # Get software paths from database and put them in preference
         self.photoshop_path = str(self.cursor.execute(
