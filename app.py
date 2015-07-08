@@ -92,6 +92,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.selected_project_name = ""
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
+        self.today = time.strftime("%d/%m/%Y", time.gmtime())
 
         TaskManager.__init__(self)
         TaskManager.add_tasks_from_database(self)
@@ -140,8 +141,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
             self.allTagsListWidget.addItem(tagItem)
 
 
-        self.referenceProgressBar.setValue(100)
-        self.referenceProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #56bb4e;}")
 
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
@@ -728,7 +727,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         '''
 
         asset_name = unicode(self.assetNameCreationLineEdit.text())
-        asset_name = modules.normalize_str(asset_name)
+        asset_name = Lib.normalize_str(asset_name)
 
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -869,7 +868,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
             return
 
         tag_name = unicode(self.addTagLineEdit.text())
-        tag_name = modules.normalize_str(tag_name)
+        tag_name = Lib.normalize_str(tag_name)
 
         if len(tag_name) == 0:
             Lib.message_box(text="Please enter a tag name.")
@@ -945,7 +944,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         """
         self.Form.showMinimized()
 
-        modules.take_screenshot(self.screenshot_dir, self.selected_asset_name)
+        Lib.take_screenshot(self.screenshot_dir, self.selected_asset_name)
 
         pixmap = QtGui.QPixmap(self.screenshot_dir + self.selected_asset_name + ".jpg").scaled(1000, 200,
                                                                                                QtCore.Qt.KeepAspectRatio,

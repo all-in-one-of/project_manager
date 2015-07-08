@@ -2,12 +2,6 @@
 # coding=utf-8
 
 from PyQt4 import QtGui, QtCore, Qt
-from thibh import modules
-import re
-import subprocess
-import os
-import shutil
-from PIL import Image
 import time
 from lib.module import Lib
 
@@ -40,7 +34,9 @@ class TaskManager(object):
         self.item_added = False
         self.tmTableWidget.setStyleSheet("color: white;")
         self.tmAddTaskBtn.clicked.connect(self.add_task)
+        self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
+
 
         self.tmFilterByDeptComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByStatusComboBox.currentIndexChanged.connect(self.filter)
@@ -66,7 +62,6 @@ class TaskManager(object):
         self.widgets = {}
 
         inversed_index = len(all_tasks) - 1
-
 
         # Add existing tasks to task table
         for i, task in enumerate(reversed(all_tasks)):
@@ -211,6 +206,8 @@ class TaskManager(object):
         task_bid_widget = self.widgets[str(widget_row_index) + ":7"]
         task_bid = str(task_bid_widget.value())
 
+
+
         self.cursor.execute(
             '''UPDATE tasks SET task_description=?, task_department=?, task_status=?, task_assignation=?, task_start=?, task_end=?, task_bid=? WHERE rowid=?''',
             (task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid,
@@ -231,16 +228,42 @@ class TaskManager(object):
         self.item_added = True
 
         number_of_rows_to_add = self.tmNbrOfRowsToAddSpinBox.value()
-        today_date = time.strftime("%d/%m/%Y", time.gmtime())
 
         for i in xrange(number_of_rows_to_add):
             self.cursor.execute(
                 '''INSERT INTO tasks(project_name, task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid) VALUES (?,?,?,?,?,?,?,?)''',
-                (self.selected_project_name, "", "Script", "Ready to Start", u"achaput", today_date, today_date, "1"))
+                (self.selected_project_name, "", "Script", "Ready to Start", u"achaput", self.today, self.today, "1"))
 
         self.db.commit()
         self.add_tasks_from_database()
         self.item_added = False
+
+    def complete_task(self):
+        selected_rows = self.tmTableWidget.selectedItems()
+        bid = 0
+        for row in selected_rows:
+
+            cur_row_bid = self.widgets[str(row.row()) + ":7"]
+            cur_row_bid = cur_row_bid.value()
+            bid += cur_row_bid
+
+            row_to_delete = row.row() + 1
+            self.cursor.execute('''DELETE FROM tasks WHERE rowid = ? ''', (row_to_delete,))
+
+
+        today_bid = self.cursor.execute('''SELECT bid_log_amount FROM bid_log WHERE bid_log_day=?''',
+                                        (self.today,)).fetchone()
+
+        if today_bid:
+            today_bid = int(today_bid[0])
+            bid += today_bid
+            self.cursor.execute('''UPDATE bid_log SET bid_log_amount=? WHERE project_name=? AND bid_log_day=?''', (bid, self.selected_project_name, self.today,))
+        else:
+            self.cursor.execute('''INSERT INTO bid_log(project_name, bid_log_day, bid_log_amount) VALUES(?,?,?)''', (self.selected_project_name, self.today, bid))
+
+        self.db.commit()
+        self.item_added = True
+        self.add_tasks_from_database()
 
     def remove_task(self):
 

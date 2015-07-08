@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from PyQt4 import QtGui, QtCore, Qt
-from thibh import modules
-
+from PyQt4 import QtGui, QtCore
+import unicodedata
+import PIL
+from PIL import Image
+import subprocess
+import winsound
+import os
 
 class Lib(object):
 
@@ -101,3 +105,47 @@ class Lib(object):
         app_icon = QtGui.QIcon()
         app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
         form.setWindowIcon(app_icon)
+
+    def normalize_str(self, data):
+        try:
+            data = unicode(data, "utf-8")
+        except:
+            pass
+        return unicodedata.normalize('NFKD', data).encode('ascii', 'ignore')
+
+    def convert_to_camel_case(self, str):
+        str = str
+        liste = str.split(" ")
+        liste_finale = []
+        for i, item in enumerate(liste):
+            if i != 0:
+                uppercase_str = item[0].upper() + item[1:len(item)]
+                liste_finale.append(uppercase_str)
+            else:
+                liste_finale.append(item)
+
+        str = "".join(liste_finale)
+        str = str.replace("'", "")
+        return str
+
+    def compress_image(self, image_path, width, quality):
+        basewidth = width
+        img = Image.open(image_path)
+        wpercent = (basewidth/float(img.size[0]))
+        hsize = int((float(img.size[1])*float(wpercent)))
+        img = img.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
+        img.save(image_path, 'JPEG', quality=quality)
+
+    def take_screenshot(self, path="H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_database\\screenshots", name="tmp"):
+
+        # constants
+        cur_dir = os.path.dirname(os.path.realpath(__file__))
+        SCREEN_GRABBER = cur_dir + "\\screenshot_grabber\\MiniCap.exe"
+
+        # filename
+        extension = ".jpg"
+        file_name = path + "\\" + name + extension
+
+        # run the screen grabber
+        subprocess.call([SCREEN_GRABBER, '-captureregselect', '-exit', '-save', file_name])
+        winsound.PlaySound(cur_dir + "\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
