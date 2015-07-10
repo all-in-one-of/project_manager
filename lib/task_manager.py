@@ -3,6 +3,7 @@
 
 from PyQt4 import QtGui, QtCore
 from lib.module import Lib
+import operator
 
 class TaskManager(object):
 
@@ -38,6 +39,7 @@ class TaskManager(object):
         self.tmRemoveTaskBtn.setStyleSheet("QPushButton {background-color: #872d2c;} QPushButton:hover {background-color: #1b81ca;}")
         self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
 
+        self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByDeptComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByStatusComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByMemberComboBox.currentIndexChanged.connect(self.filter)
@@ -96,7 +98,6 @@ class TaskManager(object):
             self.tmTableWidget.setItem(0, 1, task_description_item)
             self.widgets[str(inversed_index) + ":1"] = task_description_item
 
-
             # Adding department combo boxes
             task_department = task[6] #Ex: Compositing
             combo_box = QtGui.QComboBox()
@@ -131,7 +132,6 @@ class TaskManager(object):
             self.tmTableWidget.setCellWidget(0, 4, combo_box)
             self.widgets[str(inversed_index) + ":4"] = combo_box
 
-
             # Adding task start
             task_date_start = task[9]
             date_start = QtCore.QDate.fromString(task_date_start, 'dd/MM/yyyy')
@@ -153,7 +153,6 @@ class TaskManager(object):
             self.set_calendar(date_end_edit)
             self.tmTableWidget.setCellWidget(0, 6, date_end_edit)
             self.widgets[str(inversed_index) + ":6"] = date_end_edit
-
 
             # Adding days left
             days_left = str(date_start.daysTo(date_end))
@@ -178,6 +177,8 @@ class TaskManager(object):
             self.widgets[str(inversed_index) + ":8"] = task_bid_item
 
             # Adding sequence name
+            all_sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (self.selected_project_name,)).fetchall()
+
             task_sequence_name = task[2] #Ex: mus, cri, fru
             combo_box = QtGui.QComboBox()
             combo_box.addItem(task_sequence_name)
@@ -208,7 +209,6 @@ class TaskManager(object):
             widget_index = self.tmTableWidget.indexAt(clicked_widget.pos())
             widget_row_index = widget_index.row()
             widget_row_column = widget_index.column()
-
 
         # Get widgets and their values from row index
         task_id_widget = self.widgets[str(widget_row_index) + ":0"]
@@ -321,6 +321,7 @@ class TaskManager(object):
         number_of_rows = self.tmTableWidget.rowCount()
         for row_index in xrange(number_of_rows):
             # Retrieve text / value of filter widgets
+            project_filter = str(self.tmFilterByProjectComboBox.currentText())
             department_filter = self.tmFilterByDeptComboBox.currentText()
             status_filter = self.tmFilterByStatusComboBox.currentText()
             member_filter = self.tmFilterByMemberComboBox.currentText()
@@ -328,28 +329,28 @@ class TaskManager(object):
             bid_operation = self.tmBidOperationComboBox.currentText()
 
             # Retrieve value of current row items
+            task_id = str(self.tmTableWidget.item(row_index, 0).text())
+            project = str(self.cursor.execute('''SELECT project_name FROM tasks WHERE task_id=?''', (task_id,)).fetchone()[0])
             department = self.tmTableWidget.cellWidget(row_index, 2).currentText()
             status = self.tmTableWidget.cellWidget(row_index, 3).currentText()
             member = self.tmTableWidget.cellWidget(row_index, 4).currentText()
             bid = self.tmTableWidget.cellWidget(row_index, 8).value()
 
             # If filters are set to default value, set the filters variables to the current row values
+            if project_filter == "None": project_filter = project
             if department_filter == "None": department_filter = department
             if status_filter == "None" : status_filter = status
             if member_filter == "None" : member_filter = member
             if bid_filter == 0: bid_filter = bid
 
-            if str(bid_operation) == ">":
-                if department_filter == department and status_filter == status and member_filter == member and bid_filter <= bid:
-                    self.tmTableWidget.showRow(row_index)
-                else:
-                    self.tmTableWidget.hideRow(row_index)
+            if str(bid_operation) == ">=": bid_result = operator.le(bid_filter, bid)
+            elif str(bid_operation) == "<=": bid_result = operator.ge(bid_filter, bid)
 
-            elif str(bid_operation) == "<":
-                if department_filter == department and status_filter == status and member_filter == member and bid_filter >= bid:
-                    self.tmTableWidget.showRow(row_index)
-                else:
-                    self.tmTableWidget.hideRow(row_index)
+
+            if project_filter == project and department_filter == department and status_filter == status and member_filter == member and bid_result:
+                self.tmTableWidget.showRow(row_index)
+            else:
+                self.tmTableWidget.hideRow(row_index)
 
     def calculate_days_left(self, task_start_widget, task_end_widget, task_time_left_widget):
 
@@ -386,12 +387,12 @@ class TaskManager(object):
         if current_project == "None":
             return
 
-        sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (current_project,)).fetchall()
-        sequences = [str(i[0]) for i in sequences]
+        self.tm_sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (current_project,)).fetchall()
+        self.tm_sequences = [str(i[0]) for i in self.tm_sequences]
 
         self.tmFilterBySequenceComboBox.clear()
         self.tmFilterBySequenceComboBox.addItem("None")
-        for seq in sequences:
+        for seq in self.tm_sequences:
             self.tmFilterBySequenceComboBox.addItem(seq)
 
     def tm_load_shots(self):

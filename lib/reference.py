@@ -7,6 +7,7 @@ import os
 import shutil
 from PIL import Image
 import urllib
+from functools import partial
 from lib.module import Lib
 
 class ReferenceTab(object):
@@ -24,9 +25,22 @@ class ReferenceTab(object):
         self.allTagsTreeWidget.doubleClicked.connect(self.add_tags_to_selected_references)
         self.removeTagsBtn.clicked.connect(self.remove_tags_from_selected_references)
         self.existingTagsListWidget.doubleClicked.connect(self.remove_tags_from_selected_references)
-        self.referenceThumbSizeSlider.sliderMoved.connect(self.change_reference_thumb_size)
+        self.biggerRefPushButton_01.clicked.connect(partial(self.change_reference_thumb_size, 1))
+        self.biggerRefPushButton_02.clicked.connect(partial(self.change_reference_thumb_size, 2))
+        self.biggerRefPushButton_03.clicked.connect(partial(self.change_reference_thumb_size, 3))
+        self.biggerRefPushButton_04.clicked.connect(partial(self.change_reference_thumb_size, 4))
         self.changeRefSeqShotBtn.clicked.connect(self.change_seq_shot_layout)
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
+
+        icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
+        self.biggerRefPushButton_01.setIcon(icon)
+        self.biggerRefPushButton_02.setIcon(icon)
+        self.biggerRefPushButton_03.setIcon(icon)
+        self.biggerRefPushButton_04.setIcon(icon)
+        self.biggerRefPushButton_01.setIconSize(QtCore.QSize(8, 8))
+        self.biggerRefPushButton_02.setIconSize(QtCore.QSize(16, 16))
+        self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
+        self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
 
     def add_tags_to_selected_references(self):
 
@@ -128,7 +142,7 @@ class ReferenceTab(object):
             downloaded_img = Image.open(self.selected_project_path + asset_filename)
             image_width = downloaded_img.size[0]
             if image_width > 1920: image_width = 1920
-            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, 75)
+            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, 90)
 
 
         # Add reference to database
@@ -229,7 +243,7 @@ class ReferenceTab(object):
         for path in selected_files_name:
             img = Image.open(self.selected_project_path + path)
             image_width = img.size[0]
-            Lib.compress_image(self, self.selected_project_path + path, image_width, 75)
+            Lib.compress_image(self, self.selected_project_path + path, image_width, 90)
 
 
         # Add reference to database
@@ -401,7 +415,6 @@ class ReferenceTab(object):
 
             self.filterByTagsListWidget.addItem(item)
 
-
     def reload_filter_by_tags_list(self):
 
         all_references = []
@@ -456,10 +469,9 @@ class ReferenceTab(object):
 
         return all_tags
 
-    def change_reference_thumb_size(self):
+    def change_reference_thumb_size(self, size):
 
-        slider_size = self.referenceThumbSizeSlider.value()
-        icon_size = QtCore.QSize(slider_size, slider_size)
+        icon_size = QtCore.QSize(128 * size, 128 * size)
         self.referenceThumbListWidget.setIconSize(icon_size)
 
         try:
@@ -592,6 +604,7 @@ class ReferenceTab(object):
         new_path = ref_path.replace(self.old_reference_name, new_name)
 
         new_version = ref_version
+        # Check if file exist, if yes, increment new_version and change new_path based on new_version.
         while os.path.isfile(self.selected_project_path + new_path):
             fileName, fileExtension = os.path.splitext(new_path)
             current_version = int(fileName.split("_")[-1])

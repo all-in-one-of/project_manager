@@ -78,8 +78,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         for project in self.projects:
             self.projectList.addItem(project)
 
-        # Initialize modules and connections
-        ReferenceTab.__init__(self)
 
 
         # Global Variables
@@ -97,6 +95,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         #         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
         #         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
         #         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
+
+
+        # Initialize modules and connections
+        ReferenceTab.__init__(self)
 
 
         # Select default project
@@ -1250,13 +1252,18 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
                     child_item.setFont(0, font)
                     top_item.addChild(child_item)
 
-
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == QtCore.Qt.Key_F11:
+            if self.isFullScreen():
+                self.showNormal()
+            else:
+                self.showFullScreen()
 
 
     def closeEvent(self, event):
-
         quit_msg = "Are you sure you want to exit the program?"
-        reply = QtGui.QMessageBox.question(self, 'Message',
+        reply = QtGui.QMessageBox.question(self, 'Are you leaving :(',
                          quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
