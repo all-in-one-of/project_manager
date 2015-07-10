@@ -15,6 +15,11 @@ class TaskManager(object):
                             "Rigging": 6, "Animation": 7, "Simulation": 8, "Shading": 9, "Layout": 10,
                             "DMP": 11, "Compositing": 12, "Editing": 13, "RnD": 14}
 
+        self.tm_departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
+                                         "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
+                                         "Simulation": "sim", "Shading": "shd", "Layout": "lay", "DMP": "dmp",
+                                         "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
+
         self.status = {"Ready to Start": 0, "In Progress": 1, "On Hold": 2, "Waiting for Approval": 3, "Retake": 4,
                        "Done": 5}
 
@@ -40,6 +45,8 @@ class TaskManager(object):
         self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
 
         self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.filter)
+        self.tmFilterBySequenceComboBox.currentIndexChanged.connect(self.filter)
+        self.tmFilterByShotComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByDeptComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByStatusComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByMemberComboBox.currentIndexChanged.connect(self.filter)
@@ -88,6 +95,7 @@ class TaskManager(object):
             task_id_item = QtGui.QTableWidgetItem()
             task_id_item.setText(str(task_id))
             task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            task_id_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
             self.tmTableWidget.setItem(0, 0, task_id_item)
             self.widgets[str(inversed_index) + ":0"] = task_id_item
 
@@ -178,23 +186,52 @@ class TaskManager(object):
 
             # Adding sequence name
             all_sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (self.selected_project_name,)).fetchall()
-
+            all_sequences = [str(i[0]) for i in all_sequences]
+            all_sequences.insert(0, "xxx")
             task_sequence_name = task[2] #Ex: mus, cri, fru
             combo_box = QtGui.QComboBox()
-            combo_box.addItem(task_sequence_name)
+            combo_box.addItems(all_sequences)
+            index = combo_box.findText(task_sequence_name, QtCore.Qt.MatchFixedString)
+            combo_box.setCurrentIndex(index)
             combo_box.currentIndexChanged.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 9, combo_box)
             self.widgets[str(inversed_index) + ":9"] = combo_box
+
+            # Adding shot number
+            all_shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, task_sequence_name)).fetchall()
+            all_shots = [str(i[0]) for i in all_shots]
+            all_shots.insert(0, "xxxx")
+            task_shot_number = task[3] #Ex: 0010, 0025, 0200
+            combo_box = QtGui.QComboBox()
+            combo_box.addItems(all_shots)
+            index = combo_box.findText(task_shot_number, QtCore.Qt.MatchFixedString)
+            combo_box.setCurrentIndex(index)
+            combo_box.currentIndexChanged.connect(self.update_tasks)
+            self.tmTableWidget.setCellWidget(0, 10, combo_box)
+            self.widgets[str(inversed_index) + ":10"] = combo_box
+
+            # Adding assets
+            all_assets = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, task_sequence_name, task_shot_number)).fetchall()
+            all_assets = [str(i[0]) for i in all_assets]
+            all_assets.insert(0, "xxxxx")
+            task_asset_name = task[4] #Ex: lion, pierrePrecieuse
+            combo_box = QtGui.QComboBox()
+            combo_box.addItems(all_assets)
+            index = combo_box.findText(task_asset_name, QtCore.Qt.MatchFixedString)
+            combo_box.setCurrentIndex(index)
+            combo_box.currentIndexChanged.connect(self.update_tasks)
+            self.tmTableWidget.setCellWidget(0, 11, combo_box)
+            self.widgets[str(inversed_index) + ":11"] = combo_box
 
             inversed_index -= 1
 
 
         self.tmTableWidget.cellChanged.connect(self.update_tasks)
         self.tmTableWidget.resizeColumnsToContents()
+
         self.item_added = False
 
     def update_tasks(self, value):
-
         if self.item_added == True:
             return
 
@@ -204,7 +241,9 @@ class TaskManager(object):
 
         # Get index from clicked_widget position
         if type(clicked_widget) == QtGui.QTableWidget:
+            widget_index = self.tmTableWidget.indexAt(clicked_widget.pos())
             widget_row_index = clicked_widget_value
+            widget_row_column = widget_index.column()
         else:
             widget_index = self.tmTableWidget.indexAt(clicked_widget.pos())
             widget_row_index = widget_index.row()
@@ -241,10 +280,57 @@ class TaskManager(object):
         task_bid_widget = self.widgets[str(widget_row_index) + ":8"]
         task_bid = str(task_bid_widget.value())
 
+        task_sequence_widget = self.widgets[str(widget_row_index) + ":9"]
+        task_sequence = str(task_sequence_widget.currentText())
+
+        task_shot_widget = self.widgets[str(widget_row_index) + ":10"]
+        task_shot = str(task_shot_widget.currentText())
+
+        task_asset_widget = self.widgets[str(widget_row_index) + ":11"]
+        task_asset = str(task_asset_widget.currentText())
+
+        # Sequence was changed -> Filter shots and assets from sequence and department
+        if widget_row_column == 9 or widget_row_column == 2:
+            # Get shots from current sequence
+            shots_from_sequence = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, task_sequence,)).fetchall()
+            shots_from_sequence = [str(i[0]) for i in shots_from_sequence]
+            shots_from_sequence.insert(0, "xxxx")
+            # Add shots to shots combo box
+            shot_combobox = self.widgets[str(widget_row_index) + ":10"]
+            shot_combobox.clear()
+            shot_combobox.addItems(shots_from_sequence)
+
+            # Get assets from current sequence and shot
+            assets_from_sequence = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (self.selected_project_name, task_sequence, self.tm_departments_shortname[task_department],)).fetchall()
+            assets_from_sequence = [str(i[0]) for i in assets_from_sequence]
+            assets_from_sequence.insert(0, "xxxxx")
+            # Add assets to asset combo box
+            shot_combobox = self.widgets[str(widget_row_index) + ":11"]
+            shot_combobox.clear()
+            shot_combobox.addItems(assets_from_sequence)
+
+        # Shot was changed -> Filter assets from sequence, shots and department
+        elif widget_row_column == 10 or widget_row_column == 2:
+            assets_from_shots = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_type=?''', (self.selected_project_name, task_sequence, task_shot, self.tm_departments_shortname[task_department])).fetchall()
+            assets_from_shots = [str(i[0]) for i in assets_from_shots]
+            assets_from_shots.insert(0, "xxxxx")
+            shot_combobox = self.widgets[str(widget_row_index) + ":11"]
+            shot_combobox.clear()
+            shot_combobox.addItems(assets_from_shots)
+
+        task_sequence_widget = self.widgets[str(widget_row_index) + ":9"]
+        task_sequence = str(task_sequence_widget.currentText())
+
+        task_shot_widget = self.widgets[str(widget_row_index) + ":10"]
+        task_shot = str(task_shot_widget.currentText())
+
+        task_asset_widget = self.widgets[str(widget_row_index) + ":11"]
+        task_asset = str(task_asset_widget.currentText())
+
         self.cursor.execute(
-            '''UPDATE tasks SET task_description=?, task_department=?, task_status=?, task_assignation=?, task_start=?, task_end=?, task_bid=? WHERE task_id=?''',
-            (task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid,
-             task_id))
+            '''UPDATE tasks SET task_description=?, task_department=?, task_status=?, task_assignation=?, task_start=?, task_end=?, task_bid=?, sequence_name=?, shot_number=?, asset_name=? WHERE task_id=?''',
+            (task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid, task_sequence, task_shot, task_asset,
+             task_id,))
 
         self.calculate_days_left(task_start_widget, task_end_widget, task_time_left_widget)
         self.change_cell_status_color(task_status_widget, task_status)
@@ -264,8 +350,8 @@ class TaskManager(object):
 
         for i in xrange(number_of_rows_to_add):
             self.cursor.execute(
-                '''INSERT INTO tasks(project_name, task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid) VALUES (?,?,?,?,?,?,?,?)''',
-                (self.selected_project_name, "", "Script", "Ready to Start", u"achaput", self.today, self.today, "1"))
+                '''INSERT INTO tasks(project_name, sequence_name, shot_number, asset_name, task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid) VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
+                (self.selected_project_name, "xxx", "xxxx", "xxxxx", "", "Script", "Ready to Start", u"achaput", self.today, self.today, "1"))
 
         self.db.commit()
         self.add_tasks_from_database()
@@ -322,6 +408,8 @@ class TaskManager(object):
         for row_index in xrange(number_of_rows):
             # Retrieve text / value of filter widgets
             project_filter = str(self.tmFilterByProjectComboBox.currentText())
+            sequence_filter = str(self.tmFilterBySequenceComboBox.currentText())
+            shot_filter = str(self.tmFilterByShotComboBox.currentText())
             department_filter = self.tmFilterByDeptComboBox.currentText()
             status_filter = self.tmFilterByStatusComboBox.currentText()
             member_filter = self.tmFilterByMemberComboBox.currentText()
@@ -331,6 +419,8 @@ class TaskManager(object):
             # Retrieve value of current row items
             task_id = str(self.tmTableWidget.item(row_index, 0).text())
             project = str(self.cursor.execute('''SELECT project_name FROM tasks WHERE task_id=?''', (task_id,)).fetchone()[0])
+            sequence = str(self.tmTableWidget.cellWidget(row_index, 9).currentText())
+            shot = str(self.tmTableWidget.cellWidget(row_index, 10).currentText())
             department = self.tmTableWidget.cellWidget(row_index, 2).currentText()
             status = self.tmTableWidget.cellWidget(row_index, 3).currentText()
             member = self.tmTableWidget.cellWidget(row_index, 4).currentText()
@@ -338,6 +428,8 @@ class TaskManager(object):
 
             # If filters are set to default value, set the filters variables to the current row values
             if project_filter == "None": project_filter = project
+            if sequence_filter == "None": sequence_filter = sequence
+            if shot_filter == "None": shot_filter = shot
             if department_filter == "None": department_filter = department
             if status_filter == "None" : status_filter = status
             if member_filter == "None" : member_filter = member
@@ -346,8 +438,7 @@ class TaskManager(object):
             if str(bid_operation) == ">=": bid_result = operator.le(bid_filter, bid)
             elif str(bid_operation) == "<=": bid_result = operator.ge(bid_filter, bid)
 
-
-            if project_filter == project and department_filter == department and status_filter == status and member_filter == member and bid_result:
+            if project_filter == project and sequence_filter == sequence and shot_filter == shot and department_filter == department and status_filter == status and member_filter == member and bid_result:
                 self.tmTableWidget.showRow(row_index)
             else:
                 self.tmTableWidget.hideRow(row_index)
@@ -407,5 +498,3 @@ class TaskManager(object):
         self.tmFilterByShotComboBox.addItem("None")
         for shot in shots:
             self.tmFilterByShotComboBox.addItem(shot)
-
-

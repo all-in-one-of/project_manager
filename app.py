@@ -65,6 +65,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
+
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
