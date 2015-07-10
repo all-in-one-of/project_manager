@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 08 17:13:03 2015
+# Created: Fri Jul 10 12:00:48 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -987,10 +987,12 @@ class Ui_Form(object):
         self.horizontalLayout_24 = QtGui.QHBoxLayout(self.addTagsGroupBox)
         self.horizontalLayout_24.setMargin(3)
         self.horizontalLayout_24.setObjectName(_fromUtf8("horizontalLayout_24"))
-        self.allTagsListWidget = QtGui.QListWidget(self.addTagsGroupBox)
-        self.allTagsListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.allTagsListWidget.setObjectName(_fromUtf8("allTagsListWidget"))
-        self.horizontalLayout_24.addWidget(self.allTagsListWidget)
+        self.allTagsTreeWidget = QtGui.QTreeWidget(self.addTagsGroupBox)
+        self.allTagsTreeWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.allTagsTreeWidget.setObjectName(_fromUtf8("allTagsTreeWidget"))
+        self.allTagsTreeWidget.headerItem().setText(0, _fromUtf8("1"))
+        self.allTagsTreeWidget.header().setVisible(False)
+        self.horizontalLayout_24.addWidget(self.allTagsTreeWidget)
         self.frame = QtGui.QFrame(self.addTagsGroupBox)
         self.frame.setFrameShape(QtGui.QFrame.NoFrame)
         self.frame.setFrameShadow(QtGui.QFrame.Raised)
@@ -1081,14 +1083,14 @@ class Ui_Form(object):
         self.tagsManagerTab.setObjectName(_fromUtf8("tagsManagerTab"))
         self.verticalLayout_25 = QtGui.QVBoxLayout(self.tagsManagerTab)
         self.verticalLayout_25.setObjectName(_fromUtf8("verticalLayout_25"))
-        self.treeWidget_2 = QtGui.QTreeWidget(self.tagsManagerTab)
-        self.treeWidget_2.setObjectName(_fromUtf8("treeWidget_2"))
-        self.treeWidget_2.headerItem().setText(0, _fromUtf8("1"))
-        self.verticalLayout_25.addWidget(self.treeWidget_2)
-        self.tagsListWidget = QtGui.QListWidget(self.tagsManagerTab)
-        self.tagsListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.tagsListWidget.setObjectName(_fromUtf8("tagsListWidget"))
-        self.verticalLayout_25.addWidget(self.tagsListWidget)
+        self.tagsTreeWidget = QtGui.QTreeWidget(self.tagsManagerTab)
+        self.tagsTreeWidget.setDragEnabled(True)
+        self.tagsTreeWidget.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.tagsTreeWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.tagsTreeWidget.setObjectName(_fromUtf8("tagsTreeWidget"))
+        self.tagsTreeWidget.headerItem().setText(0, _fromUtf8("1"))
+        self.tagsTreeWidget.header().setVisible(False)
+        self.verticalLayout_25.addWidget(self.tagsTreeWidget)
         self.addTagLineEdit = QtGui.QLineEdit(self.tagsManagerTab)
         self.addTagLineEdit.setObjectName(_fromUtf8("addTagLineEdit"))
         self.verticalLayout_25.addWidget(self.addTagLineEdit)
@@ -1285,7 +1287,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(1)
+        self.Tabs.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1444,7 +1446,7 @@ class Ui_Form(object):
         self.shotCreationLbl.setText(_translate("Form", "Shots", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetCreatorTab), _translate("Form", "Asset Creator", None))
         self.sequencesReferenceLbl.setText(_translate("Form", "Sequences", None))
-        self.seqReferenceList.setSortingEnabled(True)
+        self.seqReferenceList.setSortingEnabled(False)
         self.shotReferenceLbl.setText(_translate("Form", "Shots", None))
         self.shotReferenceList.setSortingEnabled(False)
         self.fromWebGroupBox.setTitle(_translate("Form", "From web", None))
@@ -1457,7 +1459,6 @@ class Ui_Form(object):
         self.changeRefSeqShotBtn.setText(_translate("Form", "Change sequence / shot for selected ", None))
         self.filterByTagsGroupBox.setTitle(_translate("Form", "Filter by tags", None))
         self.addTagsGroupBox.setTitle(_translate("Form", "Add/remove tags", None))
-        self.allTagsListWidget.setSortingEnabled(True)
         self.addTagsBtn.setText(_translate("Form", ">>", None))
         self.removeTagsBtn.setText(_translate("Form", "<<", None))
         self.openInGroupBox.setTitle(_translate("Form", "Open in", None))

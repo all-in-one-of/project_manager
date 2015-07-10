@@ -23,6 +23,7 @@ The app.py file is the main python file
 - When working home:
     - uncomment the line with the database on my computer
     - change the self.members list by uncommenting the lines
+    - copy the sqlite database to desktop
 
 - Before publishing:
     - Change the database from working database to the official project database
@@ -40,8 +41,10 @@ import time
 from thibh import modules
 import urllib
 import shutil
+
 from PIL import Image
 from datetime import date
+from collections import Counter
 from random import randint
 
 from PyQt4 import QtGui, QtCore, Qt
@@ -53,12 +56,13 @@ from lib.task_manager import TaskManager
 
 class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
-        Ui_Form.__init__(self)
+        super(Main, self).__init__()
+        #QtGui.QMainWindow.__init__(self)
+        #Ui_Form.__init__(self)
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         self.db = sqlite3.connect(self.db_path)
@@ -73,10 +77,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.projects = [str(i[0]) for i in self.projects]
         for project in self.projects:
             self.projectList.addItem(project)
-
-        # Select default project
-        self.projectList.setCurrentRow(0)
-        self.projectList_Clicked()
 
         # Initialize modules and connections
         ReferenceTab.__init__(self)
@@ -98,7 +98,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         #         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
         #         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
 
-        self.selected_project_name = ""
+
+        # Select default project
+        self.projectList.setCurrentRow(0)
+        self.projectList_Clicked()
+
+        self.selected_project_name = str(self.projectList.selectedItems()[0].text())
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
@@ -127,27 +132,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.logTextEdit.setFont(font)
 
         eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
-        #eye_icon.scaled(8, 8)
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
-
 
         # Admin Setup
         self.remove_tabs_based_on_members()
 
-
-        # Get tags from database and add them to the tags manager list and to the allTagsListWidget
-        all_tags = self.cursor.execute('''SELECT tag_name FROM tags''').fetchall()
-        all_tags = [str(i[0]) for i in all_tags]
-        self.tagsListWidget.clear()
-        for tag in all_tags:
-            self.tagsListWidget.addItem(tag)
-            tagItem = QtGui.QListWidgetItem(tag)
-            #font = QtGui.QFont()
-            #rand = randint(5, 15)
-            #font.setPointSize(rand)
-            #tagItem.setFont(font)
-            self.allTagsListWidget.addItem(tagItem)
+        # Tags setup
+        self.setup_tags()
 
 
 
@@ -422,6 +414,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.seqCreationList.addItem("All")
         self.seqReferenceList.clear()
         self.seqReferenceList.addItem("All")
+        self.seqReferenceList.addItem("None")
         self.shotList.clear()
         self.shotList.addItem("None")
         self.shotCreationList.clear()
@@ -863,41 +856,59 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
             subprocess.Popen(["C:\\Program Files\\Autodesk\\Maya2015\\bin\\maya.exe", self.selected_asset_path])
 
     def add_tag_to_tags_manager(self):
-
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
             Lib.message_box(text="Please select a project first.")
             return
 
         tag_name = unicode(self.addTagLineEdit.text())
-        tag_name = Lib.normalize_str(tag_name)
+        tag_name = Lib.normalize_str(self, tag_name)
 
         if len(tag_name) == 0:
             Lib.message_box(text="Please enter a tag name.")
             return
 
-        self.tagsListWidget.addItem(tag_name)
-        self.allTagsListWidget.addItem(tag_name)
-        self.cursor.execute('''INSERT INTO tags(project_name, tag_name) VALUES (?, ?)''',
-                            (self.selected_project_name, tag_name))
+        item = QtGui.QTreeWidgetItem(self.tagsTreeWidget)
+        item.setText(0, tag_name)
+        self.tagsTreeWidget.addTopLevelItem(item)
 
-        self.db.commit()
         self.addTagLineEdit.setText("")
+        self.save_tags_list()
 
     def remove_selected_tags_from_tags_manager(self):
-        selected_tags = self.tagsListWidget.selectedItems()
-        selected_tags = [str(i.text()) for i in selected_tags]
+        root = self.tagsTreeWidget.invisibleRootItem()
+        for item in self.tagsTreeWidget.selectedItems():
+            (item.parent() or root).removeChild(item)
+        self.save_tags_list()
 
-        for tag in selected_tags:
-            self.cursor.execute('''DELETE FROM tags WHERE tag_name = ? ''', (tag,))
+    def save_tags_list(self):
+        root = self.tagsTreeWidget.invisibleRootItem() # Fetch the root item
+        child_count = root.childCount()
+        for item in xrange(child_count):
+
+            # Get the text of the first item in the tree widget
+            parent_text = str(root.child(item).text(0))
+
+            # Check if item already exists, if no, add it to the database, if yes, update its name and parent
+            already_exist = self.cursor.execute('''SELECT tag_name FROM tags WHERE tag_name=?''', (parent_text,)).fetchone()
+            if already_exist == None:
+                self.cursor.execute('''INSERT INTO tags(project_name, tag_name, tag_parent) VALUES(?,?,?)''', (self.selected_project_name, parent_text, "",))
+            else:
+                self.cursor.execute('''UPDATE tags SET tag_name=?, tag_parent=? WHERE tag_name=? AND project_name=?''', (parent_text, "", parent_text, self.selected_project_name,))
+
+            # Get all children of parent item
+            nbr_of_children = root.child(item).childCount()
+            for i in range(nbr_of_children):
+                child_text = str(root.child(item).child(i).text(0))
+
+                # Check if item already exists, if no, add it to the database, if yes, update its name and parent
+                already_exist = self.cursor.execute('''SELECT tag_name FROM tags WHERE tag_name=?''', (child_text,)).fetchone()
+                if already_exist == None:
+                    self.cursor.execute('''INSERT INTO tags(project_name, tag_name, tag_parent) VALUES(?,?,?)''', (self.selected_project_name, child_text, parent_text,))
+                else:
+                    self.cursor.execute('''UPDATE tags SET tag_name=?, tag_parent=? WHERE tag_name=? AND project_name=?''', (child_text, parent_text, child_text, self.selected_project_name,))
 
         self.db.commit()
-
-        all_tags = self.cursor.execute('''SELECT tag_name FROM tags''').fetchall()
-        all_tags = [str(i[0]) for i in all_tags]
-        self.tagsListWidget.clear()
-        for tag in all_tags:
-            self.tagsListWidget.addItem(tag)
 
     def add_assets_to_asset_list(self, assets_list):
         """
@@ -1136,6 +1147,124 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.logTextEdit.setText(log_entries)
         self.logLbl.setText("Total log entries: " + str(len(log_db_entries)))
 
+    def setup_tags(self):
+
+        self.tagsTreeWidget.itemSelectionChanged.connect(self.save_tags_list)
+
+        # Select all tags
+        tags = self.cursor.execute('''SELECT * FROM tags WHERE project_name=?''', (self.selected_project_name,)).fetchall()
+
+        # Select all tags associated to assets
+        tags_frequency = self.cursor.execute('''SELECT asset_tags FROM assets''').fetchall()
+        tags_frequency_tmp = []
+
+        # Create a list with all asset tags (ex: ["feu", "lighting", "feu", "feu", "lighting", "architecture"])
+        for tag in tags_frequency:
+            tag = list(tag)[0]
+            try:
+                tag = tag.split(",")
+                tags_frequency_tmp.append(tag)
+            except:
+                tags_frequency_tmp.append(tag)
+
+        tags_frequency_tmp = filter(None, tags_frequency_tmp)
+        tags_frequency_tmp = sum(tags_frequency_tmp, []) # Join all lists into one list
+        tags_frequency_tmp = [str(i) for i in tags_frequency_tmp] # Convert all items from unicode to string
+        self.tags_frequency = Counter(tags_frequency_tmp) # Create a dictionary from list with number of occurences
+
+        self.maximum_tag_occurence = max(self.tags_frequency.values())
+
+        parent_tags = []
+        child_tags = []
+
+        # Separate parent tags to children tags
+        for tag in tags:
+            tag_name = tag[2]
+            tag_parent = tag[3]
+            if tag_parent:
+                child_tags.append(tag)
+            else:
+                parent_tags.append(tag)
+
+        # Add all parents tags to the tags manager list
+        for tag in parent_tags:
+            tag_name = tag[2]
+            tag_frequency = self.tags_frequency[tag_name] # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+            top_item = QtGui.QTreeWidgetItem(self.tagsTreeWidget)
+            top_item.setText(0, tag_name)
+            top_item.setFont(0, font)
+            top_item.setExpanded(True)
+            self.tagsTreeWidget.addTopLevelItem(top_item)
+
+        # Add all children to parents (tags manager list)
+        root = self.tagsTreeWidget.invisibleRootItem()
+        child_count = root.childCount()
+        for item in xrange(child_count):
+            top_item = root.child(item)
+            top_item_name = str(root.child(item).text(0))
+            for tag in child_tags:
+                tag_name = tag[2]
+                tag_parent = tag[3]
+                if tag_parent == top_item_name: # Check if the tag_parent of current child is equal to the current top item
+                    tag_frequency = self.tags_frequency[tag_name] # Get the frequency of current tag (ex: 1, 5, 15)
+                    tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+                    font = QtGui.QFont()
+                    font.setPointSize(tag_frequency)
+                    child_item = QtGui.QTreeWidgetItem(top_item)
+                    child_item.setText(0, tag_name)
+                    child_item.setFont(0, font)
+                    top_item.addChild(child_item)
+
+        # Add all parents tags to the add tags list
+        for tag in parent_tags:
+            tag_name = tag[2]
+            tag_frequency = self.tags_frequency[tag_name] # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 9, 20) # Fit frequency in the 9-20 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+            top_item = QtGui.QTreeWidgetItem(self.allTagsTreeWidget)
+            top_item.setText(0, tag_name)
+            top_item.setFont(0, font)
+            top_item.setExpanded(True)
+            self.allTagsTreeWidget.addTopLevelItem(top_item)
+
+        # Add all children to parents (add tags list)
+        root = self.allTagsTreeWidget.invisibleRootItem()
+        child_count = root.childCount()
+        for item in xrange(child_count):
+            top_item = root.child(item)
+            top_item_name = str(root.child(item).text(0))
+            for tag in child_tags:
+                tag_name = tag[2]
+                tag_parent = tag[3]
+                if tag_parent == top_item_name: # Check if the tag_parent of current child is equal to the current top item
+                    tag_frequency = self.tags_frequency[tag_name] # Get the frequency of current tag (ex: 1, 5, 15)
+                    tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 9, 20) # Fit frequency in the 9-20 range
+                    font = QtGui.QFont()
+                    font.setPointSize(tag_frequency)
+                    child_item = QtGui.QTreeWidgetItem(top_item)
+                    child_item.setText(0, tag_name)
+                    child_item.setFont(0, font)
+                    top_item.addChild(child_item)
+
+
+
+
+    def closeEvent(self, event):
+
+        quit_msg = "Are you sure you want to exit the program?"
+        reply = QtGui.QMessageBox.question(self, 'Message',
+                         quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+        if reply == QtGui.QMessageBox.Yes:
+            self.save_tags_list()
+            event.accept()
+        else:
+            event.ignore()
+
 class SoftwareDialog(QtGui.QDialog):
     def __init__(self, asset, parent=None):
         super(SoftwareDialog, self).__init__(parent)
@@ -1215,6 +1344,8 @@ class SoftwareDialog(QtGui.QDialog):
 
 
             # Main Loop
+
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

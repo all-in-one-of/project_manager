@@ -21,7 +21,7 @@ class ReferenceTab(object):
         self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
         self.openRefInPhotoshopBtn.clicked.connect(self.load_ref_in_photoshop)
         self.addTagsBtn.clicked.connect(self.add_tags_to_selected_references)
-        self.allTagsListWidget.doubleClicked.connect(self.add_tags_to_selected_references)
+        self.allTagsTreeWidget.doubleClicked.connect(self.add_tags_to_selected_references)
         self.removeTagsBtn.clicked.connect(self.remove_tags_from_selected_references)
         self.existingTagsListWidget.doubleClicked.connect(self.remove_tags_from_selected_references)
         self.referenceThumbSizeSlider.sliderMoved.connect(self.change_reference_thumb_size)
@@ -31,8 +31,8 @@ class ReferenceTab(object):
     def add_tags_to_selected_references(self):
 
         # Retrieve selected tags to add
-        selected_tags = self.allTagsListWidget.selectedItems()
-        selected_tags = [str(i.text()) for i in selected_tags]
+        selected_tags = self.allTagsTreeWidget.selectedItems()
+        selected_tags = [str(i.text(0)) for i in selected_tags]
 
         # Retrieve selected QListWidgetItem
         selected_references = self.referenceThumbListWidget.selectedItems()
@@ -142,8 +142,8 @@ class ReferenceTab(object):
 
         self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
 
-
         self.load_reference_thumbnails()
+        self.referenceThumbListWidget.scrollToBottom()
 
     def create_reference_from_files(self):
 
@@ -355,6 +355,10 @@ class ReferenceTab(object):
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
                 (selected_sequence,)).fetchall()
+        elif selected_sequence == "None":
+            references_list = self.cursor.execute(
+                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
+                ("xxx",)).fetchall()
         else:
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
@@ -386,7 +390,17 @@ class ReferenceTab(object):
         all_tags = all_tags.split(",")
         all_tags = sorted(list(set(all_tags)))
         self.filterByTagsListWidget.clear()
-        [self.filterByTagsListWidget.addItem(tag) for tag in all_tags]
+        for tag in all_tags:
+            tag_frequency = self.tags_frequency[tag] # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+
+            item = QtGui.QListWidgetItem(tag)
+            item.setFont(font)
+
+            self.filterByTagsListWidget.addItem(item)
+
 
     def reload_filter_by_tags_list(self):
 
@@ -397,7 +411,16 @@ class ReferenceTab(object):
         all_tags = self.get_all_tags_from_loaded_references(all_references)
 
         self.filterByTagsListWidget.clear()
-        [self.filterByTagsListWidget.addItem(tag) for tag in all_tags]
+        for tag in all_tags:
+            tag_frequency = self.tags_frequency[tag] # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+
+            item = QtGui.QListWidgetItem(tag)
+            item.setFont(font)
+
+            self.filterByTagsListWidget.addItem(item)
 
     def referenceThumbListWidget_itemSelectionChanged(self):
 
@@ -445,7 +468,6 @@ class ReferenceTab(object):
         except:
             pass
 
-
     def filter_reference_by_tags(self):
 
         # Get all selected tags from the filter tags list
@@ -472,6 +494,8 @@ class ReferenceTab(object):
 
             if "," in ref_tags:
                 ref_tags = ref_tags.split(",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
+            else:
+                ref_tags = ref_tags.split()
 
             if set(ref_tags).isdisjoint(selected_tags):
                 ref.setHidden(True)
@@ -507,27 +531,35 @@ class ReferenceTab(object):
             subprocess.Popen([self.photoshop_path, ref_path])
 
     def rename_reference_layout(self):
-        self.old_reference_name = self.referenceThumbListWidget.selectedItems()[0]
-        self.old_reference_name = self.old_reference_name.data(QtCore.Qt.UserRole).toPyObject()[2]
 
-        self.rename_dialog = QtGui.QDialog()
-        self.rename_dialog.setWindowIcon(self.app_icon)
-        self.rename_dialog.setWindowTitle("Rename reference")
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            # Renaming reference
+            self.old_reference_name = self.referenceThumbListWidget.selectedItems()[0]
+            self.old_reference_name = self.old_reference_name.data(QtCore.Qt.UserRole).toPyObject()[2]
 
-        Lib.apply_style(self, self.rename_dialog)
+            self.rename_dialog = QtGui.QDialog()
+            self.rename_dialog.setWindowIcon(self.app_icon)
+            self.rename_dialog.setWindowTitle("Rename reference")
 
-        self.horizontalLayout = QtGui.QVBoxLayout(self.rename_dialog)
+            Lib.apply_style(self, self.rename_dialog)
 
-        self.reference_new_name = QtGui.QLineEdit()
-        self.reference_new_name.setText(self.old_reference_name)
-        self.horizontalLayout.addWidget(self.reference_new_name)
+            self.horizontalLayout = QtGui.QVBoxLayout(self.rename_dialog)
 
-        self.acceptBtn = QtGui.QPushButton("Accept")
-        self.horizontalLayout.addWidget(self.acceptBtn)
+            self.reference_new_name = QtGui.QLineEdit()
+            self.reference_new_name.setText(self.old_reference_name)
+            self.horizontalLayout.addWidget(self.reference_new_name)
 
-        self.acceptBtn.clicked.connect(self.rename_reference)
+            self.acceptBtn = QtGui.QPushButton("Accept")
+            self.horizontalLayout.addWidget(self.acceptBtn)
 
-        self.rename_dialog.exec_()
+            self.acceptBtn.clicked.connect(self.rename_reference)
+
+            self.rename_dialog.exec_()
+        else:
+            # Open image in windows viewer
+            selected_ref = self.referenceThumbListWidget.selectedItems()[0]
+            ref_path = selected_ref.data(QtCore.Qt.UserRole).toPyObject()[3]
+            os.system(self.selected_project_path + ref_path)
 
         return
 

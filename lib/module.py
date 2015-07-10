@@ -149,3 +149,7 @@ class Lib(object):
         # run the screen grabber
         subprocess.call([SCREEN_GRABBER, '-captureregselect', '-exit', '-save', file_name])
         winsound.PlaySound(cur_dir + "\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
+
+    def fit_range(self, base_value=2.5, base_min=0, base_max=5, limit_min=0, limit_max=1):
+        return ((limit_max - limit_min) * (base_value - base_min) / (base_max - base_min)) + limit_min
+
