@@ -440,7 +440,10 @@ class MyTasks(object):
     def open_tasks_as_desktop_widgets(self):
         all_tasks = self.cursor.execute('''SELECT * FROM tasks WHERE task_assignation=?''', (self.username,)).fetchall()
         self.tasks = {}
-        for task in all_tasks:
-            self.tasks[task] = DesktopWidget(task[5])
+        for i, task in enumerate(all_tasks):
+            self.tasks[task] = DesktopWidget(task[5], task[6], task[7], task[9], task[10], task[11])
             self.tasks[task].show()
+
+            self.tasks[task].move(10, 10 + (i * 60))
+
 

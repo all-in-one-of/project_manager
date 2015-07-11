@@ -1409,14 +1409,26 @@ if __name__ == "__main__":
     splash.setMask(splash_pix.mask())
     splash.show()
 
+    time.sleep(0.1)
+
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-02.jpg"))
     splash.repaint()
+
+    time.sleep(0.2)
 
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-03.jpg"))
     splash.repaint()
 
+    time.sleep(0.1)
+
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-04.jpg"))
     splash.repaint()
+
+    time.sleep(0.05)
+
+    splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-05.jpg"))
+    splash.repaint()
+
 
     window = Main()
     window.show()

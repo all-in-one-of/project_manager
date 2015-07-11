@@ -201,37 +201,68 @@ class Lib(object):
 
 class DesktopWidget(QtGui.QWidget):
 
-    def __init__(self, task_name):
+    def __init__(self, task_name, task_department, task_status, task_start, task_end, task_bid):
         super(DesktopWidget, self).__init__()
 
+        self.DesktopWidget_status = {"Ready to Start": 0, "In Progress": 1, "On Hold": 2, "Waiting for Approval": 3, "Retake": 4,
+                       "Done": 5}
 
         # Create Favicon
         app_icon = QtGui.QIcon()
         app_icon.addFile("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png", QtCore.QSize(16, 16))
         self.setWindowIcon(app_icon)
 
-        self.top = True
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint|QtCore.Qt.WindowStaysOnTopHint)
+        self.top = False
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setWindowTitle("My Tasks - Desktop Widget")
 
-        self.setStyleSheet("background: rgb(30, 30, 30);")
+        self.setStyleSheet("background: rgb(222, 222, 222);")
 
         self.layout = QtGui.QHBoxLayout(self)
 
         self.taskNameLbl = QtGui.QLabel(task_name)
-        self.taskNameLbl.setStyleSheet("color: #fff;")
+        self.taskNameLbl.setStyleSheet("color: rgb(30, 30, 30);")
         self.layout.addWidget(self.taskNameLbl)
 
         self.add_separator()
 
-        self.taskDepartmentLbl = QtGui.QLabel("Modeling")
-        self.taskDepartmentLbl.setStyleSheet("color: #fff;")
+        self.taskDepartmentLbl = QtGui.QLabel(task_department)
+        self.taskDepartmentLbl.setStyleSheet("color: rgb(30, 30, 30);")
         self.layout.addWidget(self.taskDepartmentLbl)
+
+        self.add_separator()
+
+        self.statusComboBox = QtGui.QComboBox()
+        self.statusComboBox.addItems(["Ready to Start", "In Progress", "On Hold", "Waiting for Approval", "Retake", "Done"])
+        self.statusComboBox.setCurrentIndex(self.DesktopWidget_status[task_status])
+        self.change_cell_status_color(self.statusComboBox, task_status)
+        self.layout.addWidget(self.statusComboBox)
+
+        self.add_separator()
+
+        self.taskStartLbl = QtGui.QLabel("Start: " + task_start)
+        self.taskStartLbl.setStyleSheet("color: rgb(30, 30, 30);")
+        self.layout.addWidget(self.taskStartLbl)
+
+        self.add_separator()
+
+        self.taskEndLbl = QtGui.QLabel("End: " + task_end)
+        self.taskEndLbl.setStyleSheet("color: rgb(30, 30, 30);")
+        self.layout.addWidget(self.taskEndLbl)
+
+        self.add_separator()
+
+        self.taskBidtLbl = QtGui.QLabel(task_bid + " days left")
+        self.taskBidtLbl.setStyleSheet("color: rgb(30, 30, 30);")
+        self.layout.addWidget(self.taskBidtLbl)
 
         self.layout.setContentsMargins(12, 12, 12, 12)
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showMenu)
+
+
+
 
 
     def showMenu(self, pos):
@@ -264,16 +295,33 @@ class DesktopWidget(QtGui.QWidget):
         line_01 = QtGui.QFrame()
         line_01.setFrameShape(QtGui.QFrame.VLine)
         line_01.setLineWidth(1)
-        line_01.setStyleSheet("color: #fff;")
+        line_01.setStyleSheet("color: rgb(30, 30, 30);")
         self.layout.addWidget(line_01)
 
     def mousePressEvent(self, event):
         self.offset = event.pos()
 
     def mouseMoveEvent(self, event):
-        x=event.globalX()
-        y=event.globalY()
-        x_w = self.offset.x()
-        y_w = self.offset.y()
-        self.move(x-x_w, y-y_w)
+        try:
+            x=event.globalX()
+            y=event.globalY()
+            x_w = self.offset.x()
+            y_w = self.offset.y()
+            self.move(x-x_w, y-y_w)
+        except:
+            pass
 
+    def change_cell_status_color(self, cell_item, task_status):
+
+        if task_status == "Ready to Start":
+            cell_item.setStyleSheet("background-color: #872d2c;")
+        elif task_status == "In Progress":
+            cell_item.setStyleSheet("background-color: #3292d5;")
+        elif task_status == "On Hold":
+            cell_item.setStyleSheet("background-color: #eb8a18;")
+        elif task_status == "Waiting for Approval":
+            cell_item.setStyleSheet("background-color: #eb8a18")
+        elif task_status == "Retake":
+            cell_item.setStyleSheet("background-color: #872d2c")
+        elif task_status == "Done":
+            cell_item.setStyleSheet("background-color: #4b4b4b;")
