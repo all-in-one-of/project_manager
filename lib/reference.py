@@ -9,6 +9,7 @@ from PIL import Image
 import urllib
 from functools import partial
 from lib.module import Lib
+import time
 
 class ReferenceTab(object):
 
@@ -300,13 +301,14 @@ class ReferenceTab(object):
                 '''DELETE FROM assets WHERE asset_name=? AND asset_version=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
                 (ref_name, ref_version, ref_sequence, ref_shot_number,))
 
+            self.db.commit()
+
         if number_of_refs_removed > 1:
             self.add_log_entry(
                 "{0} deleted {1} reference(s)".format(self.members[self.username], number_of_refs_removed))
         else:
             self.add_log_entry("{0} deleted {1} reference".format(self.members[self.username], number_of_refs_removed))
 
-        self.db.commit()
         self.load_reference_thumbnails()
 
     def remove_tags_from_selected_references(self):
@@ -359,32 +361,32 @@ class ReferenceTab(object):
         except:
             selected_shot = "xxxx"
 
-        if selected_sequence == "All": selected_sequence = "xxx"
+        if selected_sequence == "None": selected_sequence = "xxx"
+        if selected_shot == "None": selected_shot = "xxxx"
+
 
         # Get reference paths from database based on selected sequence and shot
-        if selected_sequence == "xxx" and selected_shot == "None":
+        if selected_sequence == "All" and selected_shot == "xxxx":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets''').fetchall()
-        elif selected_sequence == "xxx" and selected_shot != "None":
+        elif selected_sequence == "xxx" and selected_shot != "xxxx":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE shot_number=?''',
                 (selected_shot,)).fetchall()
-        elif selected_sequence != "xxx" and selected_shot == "None":
+        elif selected_sequence != "xxx" and selected_shot == "xxxx":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
                 (selected_sequence,)).fetchall()
-        elif selected_sequence == "None":
+        elif selected_sequence == "xxx" and selected_shot == "xxxx":
             references_list = self.cursor.execute(
-                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
-                ("xxx",)).fetchall()
+                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
+                ("xxx","xxxx",)).fetchall()
         else:
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
                 (selected_sequence, selected_shot,)).fetchall()
 
         # references_list = (u'mus', u'xxxx', u'musee', u'\\assets\\ref\\nat_mus_xxxx_ref_musee_01.jpg', u'01', u'lighting,tree,architecture')
-
-        print(references_list)
 
         all_tags = []
 
@@ -401,8 +403,9 @@ class ReferenceTab(object):
                 reference_list_item = QtGui.QListWidgetItem()
                 reference_list_item.setIcon(QtGui.QIcon(reference_path))
                 reference_list_item.setData(QtCore.Qt.UserRole, reference)
+                if os.path.isfile(reference_path):
+                    self.referenceThumbListWidget.addItem(reference_list_item)
 
-                self.referenceThumbListWidget.addItem(reference_list_item)
 
 
         all_tags = filter(None, all_tags)

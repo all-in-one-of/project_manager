@@ -13,6 +13,7 @@ import ctypes
 import sys
 
 class Lib(object):
+
     def save_prefs(self):
         """
         Save preferences
@@ -128,6 +129,8 @@ class Lib(object):
 
         str = "".join(liste_finale)
         str = str.replace("'", "")
+        str = str.replace("_", "")
+        str = str.replace("-", "")
         return str
 
     def compress_image(self, image_path, width, quality):
@@ -195,3 +198,82 @@ class Lib(object):
                     files_list.append(path)
 
         return files_list
+
+class DesktopWidget(QtGui.QWidget):
+
+    def __init__(self, task_name):
+        super(DesktopWidget, self).__init__()
+
+
+        # Create Favicon
+        app_icon = QtGui.QIcon()
+        app_icon.addFile("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png", QtCore.QSize(16, 16))
+        self.setWindowIcon(app_icon)
+
+        self.top = True
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint|QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("My Tasks - Desktop Widget")
+
+        self.setStyleSheet("background: rgb(30, 30, 30);")
+
+        self.layout = QtGui.QHBoxLayout(self)
+
+        self.taskNameLbl = QtGui.QLabel(task_name)
+        self.taskNameLbl.setStyleSheet("color: #fff;")
+        self.layout.addWidget(self.taskNameLbl)
+
+        self.add_separator()
+
+        self.taskDepartmentLbl = QtGui.QLabel("Modeling")
+        self.taskDepartmentLbl.setStyleSheet("color: #fff;")
+        self.layout.addWidget(self.taskDepartmentLbl)
+
+        self.layout.setContentsMargins(12, 12, 12, 12)
+
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showMenu)
+
+
+    def showMenu(self, pos):
+
+        self.widget_menu=QtGui.QMenu(self)
+        self.action_top = QtGui.QAction("Always on top", self.widget_menu)
+        self.action_close = QtGui.QAction("Close", self.widget_menu)
+        self.action_top.triggered.connect(self.always_on_top)
+        self.action_close.triggered.connect(self.close_widget)
+        self.widget_menu.addAction(self.action_top)
+        self.widget_menu.addAction(self.action_close)
+        self.widget_menu.popup(self.mapToGlobal(pos))
+        self.widget_menu.setStyleSheet("QMenu::item {color: black;}")
+        self.widget_menu.setStyleSheet("QMenu {color: white;}")
+
+    def close_widget(self):
+        self.close()
+
+    def always_on_top(self):
+        if self.top == False:
+            self.setWindowFlags(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+            self.show()
+            self.top = True
+        else:
+            self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
+            self.show()
+            self.top = False
+
+    def add_separator(self):
+        line_01 = QtGui.QFrame()
+        line_01.setFrameShape(QtGui.QFrame.VLine)
+        line_01.setLineWidth(1)
+        line_01.setStyleSheet("color: #fff;")
+        self.layout.addWidget(line_01)
+
+    def mousePressEvent(self, event):
+        self.offset = event.pos()
+
+    def mouseMoveEvent(self, event):
+        x=event.globalX()
+        y=event.globalY()
+        x_w = self.offset.x()
+        y_w = self.offset.y()
+        self.move(x-x_w, y-y_w)
+

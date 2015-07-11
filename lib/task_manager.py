@@ -9,7 +9,6 @@ class TaskManager(object):
 
     def __init__(self):
 
-        super(TaskManager, self).__init__()
 
         self.tm_departments = {"Script": 0, "Storyboard": 1, "References": 2, "Concepts": 3, "Modeling": 4, "Texturing": 5,
                             "Rigging": 6, "Animation": 7, "Simulation": 8, "Shading": 9, "Layout": 10,
@@ -41,6 +40,9 @@ class TaskManager(object):
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
         self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
 
+        self.tmHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
+        self.tmHideDoneCheckBox.clicked.connect(self.hide_done_tasks)
+
         self.tmRemoveTaskBtn.setStyleSheet("QPushButton {background-color: #872d2c;} QPushButton:hover {background-color: #1b81ca;}")
         self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
 
@@ -53,7 +55,6 @@ class TaskManager(object):
         self.tmBidOperationComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByBidComboBox.valueChanged.connect(self.filter)
 
-
         self.tmFilterByProjectComboBox.addItem("None")
         self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.tm_load_sequences)
 
@@ -61,7 +62,6 @@ class TaskManager(object):
         self.tmFilterBySequenceComboBox.currentIndexChanged.connect(self.tm_load_shots)
 
         self.tmFilterByShotComboBox.addItem("None")
-
         self.tmFilterByDeptComboBox.addItem("None")
         self.tmFilterByDeptComboBox.addItems(self.tm_departments.keys())
         self.tmFilterByStatusComboBox.addItem("None")
@@ -72,6 +72,8 @@ class TaskManager(object):
         # Add project to project filter combobox
         for project in self.projects:
             self.tmFilterByProjectComboBox.addItem(project)
+
+        self.add_tasks_from_database()
 
     def add_tasks_from_database(self):
 
@@ -86,7 +88,7 @@ class TaskManager(object):
         inversed_index = len(all_tasks) - 1
 
         # Add existing tasks to task table
-        for i, task in enumerate(reversed(all_tasks)):
+        for row_index, task in enumerate(reversed(all_tasks)):
 
             self.tmTableWidget.insertRow(0)
 
@@ -122,7 +124,6 @@ class TaskManager(object):
             combo_box = QtGui.QComboBox()
             combo_box.addItems(["Ready to Start", "In Progress", "On Hold", "Waiting for Approval", "Retake", "Done"])
             combo_box.setCurrentIndex(self.status[task_status])
-            combo_box.setEditable(False)
             combo_box.currentIndexChanged.connect(self.update_tasks)
             self.change_cell_status_color(combo_box, task_status)
             self.tmTableWidget.setCellWidget(0, 3, combo_box)
@@ -178,7 +179,7 @@ class TaskManager(object):
             task_bid_item.setAlignment(QtCore.Qt.AlignCenter)
             task_bid_item.setFrame(False)
             task_bid_item.setMaximum(500)
-            task_bid_item.setMinimum(1)
+            task_bid_item.setMinimum(0)
             task_bid_item.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
             task_bid_item.valueChanged.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 8, task_bid_item)
@@ -222,6 +223,11 @@ class TaskManager(object):
             combo_box.currentIndexChanged.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 11, combo_box)
             self.widgets[str(inversed_index) + ":11"] = combo_box
+
+            # If hide done checkbox is checked and current task is done, hide it
+            if self.tmHideDoneCheckBox.isChecked():
+                if task_status == "Done":
+                    self.tmTableWidget.hideRow(0)
 
             inversed_index -= 1
 
@@ -351,7 +357,7 @@ class TaskManager(object):
         for i in xrange(number_of_rows_to_add):
             self.cursor.execute(
                 '''INSERT INTO tasks(project_name, sequence_name, shot_number, asset_name, task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid) VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
-                (self.selected_project_name, "xxx", "xxxx", "xxxxx", "", "Script", "Ready to Start", u"achaput", self.today, self.today, "1"))
+                (self.selected_project_name, "xxx", "xxxx", "xxxxx", "", "Script", "Ready to Start", u"achaput", self.today, self.today, "0"))
 
         self.db.commit()
         self.add_tasks_from_database()
@@ -383,7 +389,7 @@ class TaskManager(object):
             # Get task id for current row
             task_id_widget = self.widgets[str(row.row()) + ":0"]
             task_id = str(task_id_widget.text())
-            self.cursor.execute('''DELETE FROM tasks WHERE task_id = ? ''', (task_id,))
+            self.cursor.execute('''UPDATE tasks SET task_status=? WHERE task_id=? ''', ("Done", task_id,))
 
 
 
@@ -498,3 +504,17 @@ class TaskManager(object):
         self.tmFilterByShotComboBox.addItem("None")
         for shot in shots:
             self.tmFilterByShotComboBox.addItem(shot)
+
+    def hide_done_tasks(self):
+        number_of_rows = self.tmTableWidget.rowCount()
+        for row_index in xrange(number_of_rows):
+
+            if self.tmHideDoneCheckBox.isChecked():
+                status = self.tmTableWidget.cellWidget(row_index, 3).currentText()
+                if status == "Done":
+                    self.tmTableWidget.hideRow(row_index)
+                else:
+                    self.tmTableWidget.showRow(row_index)
+            else:
+                self.tmTableWidget.showRow(row_index)
+

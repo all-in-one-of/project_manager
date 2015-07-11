@@ -115,7 +115,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
 
         TaskManager.__init__(self)
-        TaskManager.add_tasks_from_database(self)
+        MyTasks.__init__(self)
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
@@ -266,6 +266,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
 
         # Other connects
         self.update_log()
+
+
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -1298,17 +1300,21 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
                 self.showNormal()
             else:
                 self.showFullScreen()
+        if key == QtCore.Qt.Key_Escape:
+            sys.exit()
+
 
     def closeEvent(self, event):
-        quit_msg = "Are you sure you want to exit the program?"
-        reply = QtGui.QMessageBox.question(self, 'Are you leaving :(',
-                         quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-
-        if reply == QtGui.QMessageBox.Yes:
-            self.save_tags_list()
-            event.accept()
-        else:
-            event.ignore()
+        self.save_tags_list()
+        # quit_msg = "Are you sure you want to exit the program?"
+        # reply = QtGui.QMessageBox.question(self, 'Are you leaving :(',
+        #                  quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        #
+        # if reply == QtGui.QMessageBox.Yes:
+        #
+        #     event.accept()
+        # else:
+        #     event.ignore()
 
 
 
@@ -1396,6 +1402,24 @@ class SoftwareDialog(QtGui.QDialog):
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
+
+    # Show Splashscreen
+    splash_pix = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen.jpg")
+    splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+    splash.setMask(splash_pix.mask())
+    splash.show()
+
+    splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-02.jpg"))
+    splash.repaint()
+
+    splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-03.jpg"))
+    splash.repaint()
+
+    splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-04.jpg"))
+    splash.repaint()
+
     window = Main()
     window.show()
+
+    splash.finish(window)
     sys.exit(app.exec_())
