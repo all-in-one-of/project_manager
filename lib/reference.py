@@ -13,6 +13,7 @@ from lib.module import Lib
 class ReferenceTab(object):
 
     def __init__(self):
+        self.allTagsTreeWidget.sortItems(0, QtCore.Qt.AscendingOrder)
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.rename_reference_layout)
         self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
@@ -264,6 +265,7 @@ class ReferenceTab(object):
 
 
         self.load_reference_thumbnails()
+        self.referenceThumbListWidget.scrollToBottom()
 
     def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
         all_versions = self.cursor.execute(
@@ -357,15 +359,17 @@ class ReferenceTab(object):
         except:
             selected_shot = "xxxx"
 
+        if selected_sequence == "All": selected_sequence = "xxx"
+
         # Get reference paths from database based on selected sequence and shot
-        if selected_sequence == "All" and selected_shot == "None":
+        if selected_sequence == "xxx" and selected_shot == "None":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets''').fetchall()
-        elif selected_sequence == "All" and selected_shot != "None":
+        elif selected_sequence == "xxx" and selected_shot != "None":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE shot_number=?''',
                 (selected_shot,)).fetchall()
-        elif selected_sequence != "All" and selected_shot == "None":
+        elif selected_sequence != "xxx" and selected_shot == "None":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
                 (selected_sequence,)).fetchall()
@@ -379,6 +383,8 @@ class ReferenceTab(object):
                 (selected_sequence, selected_shot,)).fetchall()
 
         # references_list = (u'mus', u'xxxx', u'musee', u'\\assets\\ref\\nat_mus_xxxx_ref_musee_01.jpg', u'01', u'lighting,tree,architecture')
+
+        print(references_list)
 
         all_tags = []
 
@@ -733,7 +739,7 @@ class ReferenceTab(object):
             Lib.message_box(self, text="Please enter a valid URL")
             return
 
-        eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon_closed.png")
+        eye_icon = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon_closed.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
         self.showUrlImageBtn.repaint()
@@ -756,7 +762,7 @@ class ReferenceTab(object):
 
         QDialog.resize(600, 600)
 
-        eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
+        eye_icon = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
         self.showUrlImageBtn.repaint()

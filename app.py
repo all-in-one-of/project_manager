@@ -38,12 +38,12 @@ import subprocess
 from functools import partial
 import sqlite3
 import time
-from thibh import modules
 import urllib
 import shutil
 
 from PIL import Image
 from datetime import date
+from datetime import datetime
 from collections import Counter
 from random import randint
 
@@ -53,8 +53,9 @@ from ui.main_window import Ui_Form
 from lib.reference import ReferenceTab
 from lib.module import Lib
 from lib.task_manager import TaskManager
+from lib.my_tasks import MyTasks
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
     def __init__(self):
         super(Main, self).__init__()
         #QtGui.QMainWindow.__init__(self)
@@ -65,6 +66,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
+        # Backup database
+        self.backup_database()
 
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
@@ -144,8 +147,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         # Tags setup
         self.setup_tags()
 
-
-
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
         day_end = date(2016,5,1)
@@ -153,18 +154,35 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
 
         total_days = abs(day_end - day_start).days
         remaining_days = abs(day_end - day_today).days
-        remaining_days = (remaining_days * 100) / total_days # Converts number of remaining day to a percentage
+        remaining_days_percent = (remaining_days * 100) / total_days # Converts number of remaining day to a percentage
 
-        self.deadlineProgressBar.setMaximum(100)
+        self.deadlineProgressBar.setFormat("{0} days left ({1}%)".format(remaining_days, remaining_days_percent))
+        self.deadlineProgressBar.setMaximum(total_days)
         self.deadlineProgressBar.setValue(remaining_days)
-        if remaining_days >= 75:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #98cd00;}")
-        elif remaining_days >= 50:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #eeca04;}")
-        elif remaining_days >= 25:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #f35905;}")
+        self.deadlineProgressBar.setStyleSheet("")
+        if remaining_days >= 231:
+            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #98cd00;} QProgressBar {color: #323232;}")
+        elif remaining_days >= 154:
+            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #d7b600;} QProgressBar {color: #fff;}")
+        elif remaining_days >= 77:
+            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #f35905;} QProgressBar {color: #fff;}")
         elif remaining_days >= 0:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;}")
+            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;} QProgressBar {color: #fff;}")
+
+        # Setup disk usage progress bar
+        disk_usage = Lib.get_folder_space(self)
+        self.diskUsageProgressBar.setFormat('{0}/2.0 Tera'.format(disk_usage))
+        disk_usage = disk_usage.replace(".", "")
+        self.diskUsageProgressBar.setRange(0, 20)
+        self.diskUsageProgressBar.setValue(int(disk_usage))
+        if disk_usage >= 15:
+            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #98cd00;} QProgressBar {color: #323232;}")
+        elif disk_usage >= 10:
+            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #d7b600;} QProgressBar {color: #323232;}")
+        elif disk_usage >= 5:
+            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #f35905;} QProgressBar {color: #323232;}")
+        elif disk_usage >= 0:
+            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;} QProgressBar {color: #323232;}")
 
 
 
@@ -247,7 +265,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
         self.removeSelectedTagsBtn.clicked.connect(self.remove_selected_tags_from_tags_manager)
 
         # Other connects
-
         self.update_log()
 
     def add_project(self):
@@ -1253,6 +1270,27 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
                     child_item.setFont(0, font)
                     top_item.addChild(child_item)
 
+    def backup_database(self):
+        # Get creation_time of last database backup and compare it to current  time
+        database_files = Lib.get_files_from_folder(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\backup")
+        if len(database_files) > 1000:
+            Lib.message_box("Trop de backups détectés pour la base de donnée. Veuillez avertir Thibault, merci ;)")
+
+        database_files = sorted(database_files)
+        last_database_file = database_files[-1]
+        creation_time = time.ctime(os.path.getctime(last_database_file))
+        creation_time = time.strptime(creation_time, "%a %b %d %H:%M:%S %Y")
+        current_time = str(datetime.now())
+        current_time = time.strptime(current_time, "%Y-%m-%d %H:%M:%S.%f")
+        time_difference = (time.mktime(current_time) - time.mktime(creation_time)) / 60
+
+        if time_difference > 180: # If last backup is older than 5 hours, do a backup
+            fileName, fileExtension = os.path.splitext(last_database_file)
+            last_database_file_version = int(fileName.split("_")[-1])
+            new_version = str(last_database_file_version + 1).zfill(4)
+            backup_database_filename = fileName.replace(str(last_database_file_version).zfill(4), new_version) + ".sqlite"
+            shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
+
     def keyPressEvent(self, event):
         key = event.key()
         if key == QtCore.Qt.Key_F11:
@@ -1260,7 +1298,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
                 self.showNormal()
             else:
                 self.showFullScreen()
-
 
     def closeEvent(self, event):
         quit_msg = "Are you sure you want to exit the program?"
@@ -1272,6 +1309,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager):
             event.accept()
         else:
             event.ignore()
+
+
 
 class SoftwareDialog(QtGui.QDialog):
     def __init__(self, asset, parent=None):

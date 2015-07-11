@@ -8,9 +8,11 @@ from PIL import Image
 import subprocess
 import winsound
 import os
+import collections
+import ctypes
+import sys
 
 class Lib(object):
-
     def save_prefs(self):
         """
         Save preferences
@@ -153,3 +155,43 @@ class Lib(object):
     def fit_range(self, base_value=2.5, base_min=0, base_max=5, limit_min=0, limit_max=1):
         return ((limit_max - limit_min) * (base_value - base_min) / (base_max - base_min)) + limit_min
 
+    def disk_usage(self, path):
+        _ntuple_diskusage = collections.namedtuple('usage', 'total used free')
+        _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), \
+                           ctypes.c_ulonglong()
+        if sys.version_info >= (3,) or isinstance(path, unicode):
+            fun = ctypes.windll.kernel32.GetDiskFreeSpaceExW
+        else:
+            fun = ctypes.windll.kernel32.GetDiskFreeSpaceExA
+        ret = fun(path, ctypes.byref(_), ctypes.byref(total), ctypes.byref(free))
+        if ret == 0:
+            raise ctypes.WinError()
+        used = total.value - free.value
+        return _ntuple_diskusage(total.value, used, free.value)
+
+    def bytes2human(self, n):
+        symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+        prefix = {}
+        for i, s in enumerate(symbols):
+            prefix[s] = 1 << (i+1)*10
+        for s in reversed(symbols):
+            if n >= prefix[s]:
+                value = float(n) / prefix[s]
+                return '%.1f' % (value)
+        return "%sB" % n
+
+    def get_folder_space(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature"):
+        usage = self.disk_usage(path)
+        return self.bytes2human(usage.total)
+
+    def get_files_from_folder(self, path):
+        files_list = []
+        folder_path = path
+
+        for (dir, _, files) in os.walk(folder_path):
+            for f in files:
+                path = os.path.join(dir, f)
+                if os.path.exists(path):
+                    files_list.append(path)
+
+        return files_list
