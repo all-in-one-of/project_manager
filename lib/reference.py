@@ -159,7 +159,10 @@ class ReferenceTab(object):
         self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
 
         self.load_reference_thumbnails()
-        self.referenceThumbListWidget.scrollToBottom()
+
+        last_item = self.referenceThumbListWidget.item(self.referenceThumbListWidget.count() - 1)
+        self.referenceThumbListWidget.scrollToItem(last_item)
+        self.referenceThumbListWidget.setItemSelected(last_item, True)
 
     def create_reference_from_files(self):
 
@@ -266,7 +269,11 @@ class ReferenceTab(object):
 
 
         self.load_reference_thumbnails()
-        self.referenceThumbListWidget.scrollToBottom()
+
+        last_item = self.referenceThumbListWidget.item(self.referenceThumbListWidget.count() - 1)
+        self.referenceThumbListWidget.scrollToItem(last_item)
+        self.referenceThumbListWidget.setItemSelected(last_item, True)
+
 
     def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
         all_versions = self.cursor.execute(

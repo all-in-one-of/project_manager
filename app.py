@@ -267,8 +267,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         # Other connects
         self.update_log()
 
-
-
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
             Lib.message_box(text="Please enter a project name")
@@ -1409,22 +1407,22 @@ if __name__ == "__main__":
     splash.setMask(splash_pix.mask())
     splash.show()
 
-    time.sleep(0.1)
+    time.sleep(0.05)
 
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-02.jpg"))
     splash.repaint()
 
-    time.sleep(0.2)
+    time.sleep(0.1)
 
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-03.jpg"))
     splash.repaint()
 
-    time.sleep(0.1)
+    time.sleep(0.05)
 
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-04.jpg"))
     splash.repaint()
 
-    time.sleep(0.05)
+    time.sleep(0.02)
 
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-05.jpg"))
     splash.repaint()

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sat Jul 11 15:00:35 2015
+# Created: Sun Jul 12 09:39:19 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1537,7 +1537,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(2)
+        self.Tabs.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
