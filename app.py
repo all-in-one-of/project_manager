@@ -137,7 +137,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         font.setPointSize(12)
         self.logTextEdit.setFont(font)
 
-        eye_icon = QtGui.QPixmap("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
+        eye_icon = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
 
@@ -171,19 +171,19 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
 
         # Setup disk usage progress bar
         disk_usage = Lib.get_folder_space(self)
-        self.diskUsageProgressBar.setFormat('{0}/2.0 Tera'.format(disk_usage))
-        disk_usage = disk_usage.replace(".", "")
-        self.diskUsageProgressBar.setRange(0, 20)
+        disk_usage = int(float(disk_usage) * 1000) # Multiply disk usage by 1000. Ex: 1.819 to 1819
+        disk_usage = (2000 * int(disk_usage)) / 1862 # 2TO in theory = 1.862GB in reality. Remapping real disk usage to the theoric one
+        self.diskUsageProgressBar.setFormat('{0}/2000 GB'.format(str(disk_usage)))
+        self.diskUsageProgressBar.setRange(0, 2000)
         self.diskUsageProgressBar.setValue(int(disk_usage))
-        if disk_usage >= 15:
+        if disk_usage >= 1500:
             self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #98cd00;} QProgressBar {color: #323232;}")
-        elif disk_usage >= 10:
+        elif disk_usage >= 1000:
             self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #d7b600;} QProgressBar {color: #323232;}")
-        elif disk_usage >= 5:
+        elif disk_usage >= 500:
             self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #f35905;} QProgressBar {color: #323232;}")
         elif disk_usage >= 0:
             self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;} QProgressBar {color: #323232;}")
-
 
 
         # Get software paths from database and put them in preference
@@ -226,7 +226,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         # Connect the filter textboxes
         self.seqFilter.textChanged.connect(partial(self.filterList_textChanged, "sequence"))
         self.assetFilter.textChanged.connect(partial(self.filterList_textChanged, "asset"))
-
 
         # Connect the lists
         self.projectList.itemClicked.connect(self.projectList_Clicked)
@@ -1301,7 +1300,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         if key == QtCore.Qt.Key_Escape:
             sys.exit()
 
-
     def closeEvent(self, event):
         self.save_tags_list()
         # quit_msg = "Are you sure you want to exit the program?"
@@ -1313,8 +1311,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         #     event.accept()
         # else:
         #     event.ignore()
-
-
 
 class SoftwareDialog(QtGui.QDialog):
     def __init__(self, asset, parent=None):

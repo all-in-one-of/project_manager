@@ -27,7 +27,7 @@ class MyTasks(object):
                            "mroz": 11, "obolduc": 12, "slachapelle": 13, "thoudon": 14,
                            "vdelbroucq": 15, "yjobin": 16, "yshan": 17}
 
-        self.item_added = False
+        self.mt_item_added = False
         self.mtTableWidget.setStyleSheet("color: white;")
 
         self.mtFilterByProjectComboBox.currentIndexChanged.connect(self.mt_filter)
@@ -79,10 +79,7 @@ class MyTasks(object):
         # Add existing tasks to task table
         for row_index, task in enumerate(reversed(all_tasks)):
 
-            task_status = task[7] #Ex: On Hold
-            # If hide done checkbox is checked and current task is done, hide it
-            if task_status == "Done":
-                continue
+
 
             self.mtTableWidget.insertRow(0)
 
@@ -114,13 +111,21 @@ class MyTasks(object):
 
             # Adding task status
             task_status = task[7] #Ex: En cours
-            combo_box = QtGui.QComboBox()
-            combo_box.addItems(["Ready to Start", "In Progress", "On Hold", "Waiting for Approval", "Retake"])
-            combo_box.setCurrentIndex(self.mt_status[task_status])
-            combo_box.currentIndexChanged.connect(self.mt_update_tasks)
-            self.change_cell_status_color(combo_box, task_status)
-            self.mtTableWidget.setCellWidget(0, 3, combo_box)
-            self.mt_widgets[str(inversed_index) + ":3"] = combo_box
+            if task_status == "Done":
+                task_status_item = QtGui.QTableWidgetItem()
+                task_status_item.setText(task_status)
+                task_status_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                task_status_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+                self.mtTableWidget.setItem(0, 3, task_status_item)
+                self.mt_widgets[str(inversed_index) + ":3"] = task_status_item
+            else:
+                status_combobox = QtGui.QComboBox()
+                status_combobox.addItems(["Ready to Start", "In Progress", "On Hold", "Waiting for Approval", "Retake"])
+                status_combobox.setCurrentIndex(self.mt_status[task_status])
+                status_combobox.currentIndexChanged.connect(self.mt_update_tasks)
+                self.change_cell_status_color(status_combobox, task_status)
+                self.mtTableWidget.setCellWidget(0, 3, status_combobox)
+                self.mt_widgets[str(inversed_index) + ":3"] = status_combobox
 
             # Adding assigned to
             task_assignation = task[8] #Ex: Amélie
@@ -161,16 +166,12 @@ class MyTasks(object):
             self.mt_widgets[str(inversed_index) + ":7"] = days_left_item
 
             # Adding task bid
-            task_bid = task[11]
-            task_bid_item = QtGui.QSpinBox()
-            task_bid_item.setValue(int(task_bid))
-            task_bid_item.setAlignment(QtCore.Qt.AlignCenter)
-            task_bid_item.setFrame(False)
-            task_bid_item.setMaximum(500)
-            task_bid_item.setMinimum(0)
-            task_bid_item.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
-            task_bid_item.valueChanged.connect(self.mt_update_tasks)
-            self.mtTableWidget.setCellWidget(0, 8, task_bid_item)
+            task_bid = task[11] #Ex: 5, 12, 24
+            task_bid_item = QtGui.QTableWidgetItem()
+            task_bid_item.setText(task_bid)
+            task_bid_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            task_bid_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            self.mtTableWidget.setItem(0, 8, task_bid_item)
             self.mt_widgets[str(inversed_index) + ":8"] = task_bid_item
 
             # Adding sequence name
@@ -212,18 +213,15 @@ class MyTasks(object):
             self.mtTableWidget.setCellWidget(0, 11, combo_box)
             self.mt_widgets[str(inversed_index) + ":11"] = combo_box
 
-
-
             inversed_index -= 1
-
 
         self.mtTableWidget.cellChanged.connect(self.mt_update_tasks)
         self.mtTableWidget.resizeColumnsToContents()
 
-        self.item_added = False
+        self.mt_item_added = False
 
     def mt_update_tasks(self, value):
-        if self.item_added == True:
+        if self.mt_item_added == True:
             return
 
         # Get which item was clicked and its value
@@ -244,86 +242,13 @@ class MyTasks(object):
         task_id_widget = self.mt_widgets[str(widget_row_index) + ":0"]
         task_id = str(task_id_widget.text())
 
-        task_description_widget = self.mt_widgets[str(widget_row_index) + ":1"]
-        task_description = unicode(task_description_widget.text())
-
-        task_department_widget = self.mt_widgets[str(widget_row_index) + ":2"]
-        task_department = str(task_department_widget.currentText())
-
         task_status_widget = self.mt_widgets[str(widget_row_index) + ":3"]
         task_status = str(task_status_widget.currentText())
 
-        task_assignation_widget = self.mt_widgets[str(widget_row_index) + ":4"]
-        task_assignation = unicode(task_assignation_widget.currentText()).encode('UTF-8')
-        # Get username from name (Ex: achaput from Amélie)
-        for key, val in self.members.items():
-            if task_assignation.decode('UTF-8') == val.decode('UTF-8'):
-                task_assignation = key
-
-        task_start_widget = self.mt_widgets[str(widget_row_index) + ":5"]
-        task_start = str(task_start_widget.date().toString("dd/MM/yyyy"))
-
-        task_end_widget = self.mt_widgets[str(widget_row_index) + ":6"]
-        task_end = str(task_end_widget.date().toString("dd/MM/yyyy"))
-
-        task_time_left_widget = self.mt_widgets[str(widget_row_index) + ":7"]
-
-        task_bid_widget = self.mt_widgets[str(widget_row_index) + ":8"]
-        task_bid = str(task_bid_widget.value())
-
-        task_sequence_widget = self.mt_widgets[str(widget_row_index) + ":9"]
-        task_sequence = str(task_sequence_widget.currentText())
-
-        task_shot_widget = self.mt_widgets[str(widget_row_index) + ":10"]
-        task_shot = str(task_shot_widget.currentText())
-
-        task_asset_widget = self.mt_widgets[str(widget_row_index) + ":11"]
-        task_asset = str(task_asset_widget.currentText())
-
-        # Sequence was changed -> Filter shots and assets from sequence and department
-        if widget_row_column == 9 or widget_row_column == 2:
-            # Get shots from current sequence
-            shots_from_sequence = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, task_sequence,)).fetchall()
-            shots_from_sequence = [str(i[0]) for i in shots_from_sequence]
-            shots_from_sequence.insert(0, "xxxx")
-            # Add shots to shots combo box
-            shot_combobox = self.mt_widgets[str(widget_row_index) + ":10"]
-            shot_combobox.clear()
-            shot_combobox.addItems(shots_from_sequence)
-
-            # Get assets from current sequence and shot
-            assets_from_sequence = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (self.selected_project_name, task_sequence, self.mt_departments_shortname[task_department],)).fetchall()
-            assets_from_sequence = [str(i[0]) for i in assets_from_sequence]
-            assets_from_sequence.insert(0, "xxxxx")
-            # Add assets to asset combo box
-            shot_combobox = self.mt_widgets[str(widget_row_index) + ":11"]
-            shot_combobox.clear()
-            shot_combobox.addItems(assets_from_sequence)
-
-        # Shot was changed -> Filter assets from sequence, shots and department
-        elif widget_row_column == 10 or widget_row_column == 2:
-            assets_from_shots = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_type=?''', (self.selected_project_name, task_sequence, task_shot, self.mt_departments_shortname[task_department])).fetchall()
-            assets_from_shots = [str(i[0]) for i in assets_from_shots]
-            assets_from_shots.insert(0, "xxxxx")
-            shot_combobox = self.mt_widgets[str(widget_row_index) + ":11"]
-            shot_combobox.clear()
-            shot_combobox.addItems(assets_from_shots)
-
-        task_sequence_widget = self.mt_widgets[str(widget_row_index) + ":9"]
-        task_sequence = str(task_sequence_widget.currentText())
-
-        task_shot_widget = self.mt_widgets[str(widget_row_index) + ":10"]
-        task_shot = str(task_shot_widget.currentText())
-
-        task_asset_widget = self.mt_widgets[str(widget_row_index) + ":11"]
-        task_asset = str(task_asset_widget.currentText())
-
         self.cursor.execute(
-            '''UPDATE tasks SET task_description=?, task_department=?, task_status=?, task_assignation=?, task_start=?, task_end=?, task_bid=?, sequence_name=?, shot_number=?, asset_name=? WHERE task_id=?''',
-            (task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid, task_sequence, task_shot, task_asset,
-             task_id,))
+            '''UPDATE tasks SET task_status=? WHERE task_id=?''',
+            (task_status, task_id,))
 
-        self.calculate_days_left(task_start_widget, task_end_widget, task_time_left_widget)
         self.change_cell_status_color(task_status_widget, task_status)
 
         self.db.commit()
@@ -348,9 +273,12 @@ class MyTasks(object):
             sequence = str(self.mtTableWidget.cellWidget(row_index, 9).currentText())
             shot = str(self.mtTableWidget.cellWidget(row_index, 10).currentText())
             department = str(self.mtTableWidget.item(row_index, 2).text())
-            status = self.mtTableWidget.cellWidget(row_index, 3).currentText()
+            try:
+                status = self.mtTableWidget.cellWidget(row_index, 3).currentText()
+            except:
+                status = str(self.mtTableWidget.item(row_index, 3).text())
             member = str(self.mtTableWidget.item(row_index, 4).text())
-            bid = self.mtTableWidget.cellWidget(row_index, 8).value()
+            bid = self.mtTableWidget.item(row_index, 8).text()
 
             # If filters are set to default value, set the filters variables to the current row values
             if project_filter == "None": project_filter = project

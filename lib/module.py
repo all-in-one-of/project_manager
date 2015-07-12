@@ -4,7 +4,7 @@
 from PyQt4 import QtGui, QtCore
 import unicodedata
 import PIL
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 import subprocess
 import winsound
 import os
@@ -180,7 +180,7 @@ class Lib(object):
         for s in reversed(symbols):
             if n >= prefix[s]:
                 value = float(n) / prefix[s]
-                return '%.1f' % (value)
+                return '%.3f' % (value)
         return "%sB" % n
 
     def get_folder_space(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature"):
@@ -198,6 +198,27 @@ class Lib(object):
                     files_list.append(path)
 
         return files_list
+
+    def add_watermark(self, in_file, text, out_file='watermark.jpg', angle=0, opacity=0.75):
+        font = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\arial.ttf"
+        img = Image.open(in_file).convert('RGB')
+        watermark = Image.new('RGBA', img.size, (0,0,0,0))
+        size = 2
+        n_font = ImageFont.truetype(font, size)
+        n_width, n_height = n_font.getsize(text)
+        while n_width+n_height < watermark.size[0]:
+            size += 2
+            n_font = ImageFont.truetype(font, size)
+            n_width, n_height = n_font.getsize(text)
+        draw = ImageDraw.Draw(watermark, 'RGBA')
+        draw.text(((watermark.size[0] - n_width) / 2,
+                  (watermark.size[1] - n_height) / 2),
+                  text, font=n_font)
+        watermark = watermark.rotate(angle,Image.BICUBIC)
+        alpha = watermark.split()[3]
+        alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
+        watermark.putalpha(alpha)
+        Image.composite(watermark, img, watermark).save(out_file, 'JPEG')
 
 class DesktopWidget(QtGui.QWidget):
 
@@ -260,10 +281,6 @@ class DesktopWidget(QtGui.QWidget):
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showMenu)
-
-
-
-
 
     def showMenu(self, pos):
 

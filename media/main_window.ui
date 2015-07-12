@@ -1656,11 +1656,18 @@
             </layout>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="tmShowBidCurveBtn">
+            <property name="text">
+             <string>Show bid curve</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
         <widget class="QWidget" name="myTasksTab">
          <attribute name="title">
-          <string>My Tasks</string>
+          <string>Tasks</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_29">
           <item>
@@ -1984,13 +1991,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="loadTasksAsWidgetBtn">
-            <property name="text">
-             <string>Load as Desktop Widgets</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QTableWidget" name="mtTableWidget">
             <property name="showGrid">
              <bool>false</bool>
@@ -2073,6 +2073,13 @@
               <string>Asset</string>
              </property>
             </column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="loadTasksAsWidgetBtn">
+            <property name="text">
+             <string>Load as Desktop Widgets</string>
+            </property>
            </widget>
           </item>
          </layout>
@@ -2909,7 +2916,7 @@
                    <number>500</number>
                   </property>
                   <property name="wordWrap">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>

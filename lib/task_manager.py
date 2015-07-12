@@ -4,6 +4,10 @@
 from PyQt4 import QtGui, QtCore
 from lib.module import Lib
 import operator
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from random import randint
+import datetime
 
 class TaskManager(object):
 
@@ -39,6 +43,7 @@ class TaskManager(object):
         self.tmAddTaskBtn.clicked.connect(self.add_task)
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
         self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
+        self.tmShowBidCurveBtn.clicked.connect(self.show_bid_curve)
 
         self.tmHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
         self.tmHideDoneCheckBox.clicked.connect(self.hide_done_tasks)
@@ -343,6 +348,8 @@ class TaskManager(object):
 
         self.db.commit()
 
+        #self.mt_add_tasks_from_database()
+
     def add_task(self, item_added):
 
         # Check if a project is selected
@@ -518,3 +525,23 @@ class TaskManager(object):
             else:
                 self.tmTableWidget.showRow(row_index)
 
+    def show_bid_curve(self):
+
+        d1 = datetime.datetime(2015,07,11)
+        d2 = datetime.datetime.now()
+        total_days = (d2-d1).days
+        total_days = 100
+
+        bid_log_days = self.cursor.execute('''SELECT bid_log_day FROM bid_log WHERE project_name=? LIMIT ?''', (self.selected_project_name, total_days,)).fetchall()
+        bid_log_amounts = self.cursor.execute('''SELECT bid_log_amount FROM bid_log WHERE project_name=? LIMIT ?''', (self.selected_project_name, total_days,)).fetchall()
+        bid_log_days = [str(i[0]) for i in bid_log_days]
+        bid_log_days = [datetime.datetime.strptime(d,'%d/%m/%Y').date() for d in bid_log_days]
+        bid_log_amounts = [int(str(i[0])) for i in bid_log_amounts]
+
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%Y'))
+        plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+        plt.ylabel('Number of bidded hours')
+        plt.xlabel('Date')
+        plt.plot(bid_log_days, bid_log_amounts)
+        plt.gcf().autofmt_xdate()
+        plt.show()

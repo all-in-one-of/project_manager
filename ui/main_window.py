@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sun Jul 12 09:39:19 2015
+# Created: Sun Jul 12 18:17:21 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -716,6 +716,9 @@ class Ui_Form(object):
         self.tmTableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_27.addWidget(self.tmTableWidget)
         self.verticalLayout_11.addWidget(self.tmMainFrame)
+        self.tmShowBidCurveBtn = QtGui.QPushButton(self.tmTab)
+        self.tmShowBidCurveBtn.setObjectName(_fromUtf8("tmShowBidCurveBtn"))
+        self.verticalLayout_11.addWidget(self.tmShowBidCurveBtn)
         self.Tabs.addTab(self.tmTab, _fromUtf8(""))
         self.myTasksTab = QtGui.QWidget()
         self.myTasksTab.setObjectName(_fromUtf8("myTasksTab"))
@@ -858,9 +861,6 @@ class Ui_Form(object):
         self.horizontalLayout_49.setObjectName(_fromUtf8("horizontalLayout_49"))
         self.verticalLayout_28.addWidget(self.mtDoneFilterFrame)
         self.verticalLayout_29.addWidget(self.mtFilterByGroupBox)
-        self.loadTasksAsWidgetBtn = QtGui.QPushButton(self.myTasksTab)
-        self.loadTasksAsWidgetBtn.setObjectName(_fromUtf8("loadTasksAsWidgetBtn"))
-        self.verticalLayout_29.addWidget(self.loadTasksAsWidgetBtn)
         self.mtTableWidget = QtGui.QTableWidget(self.myTasksTab)
         self.mtTableWidget.setShowGrid(False)
         self.mtTableWidget.setGridStyle(QtCore.Qt.SolidLine)
@@ -896,6 +896,9 @@ class Ui_Form(object):
         self.mtTableWidget.verticalHeader().setVisible(False)
         self.mtTableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_29.addWidget(self.mtTableWidget)
+        self.loadTasksAsWidgetBtn = QtGui.QPushButton(self.myTasksTab)
+        self.loadTasksAsWidgetBtn.setObjectName(_fromUtf8("loadTasksAsWidgetBtn"))
+        self.verticalLayout_29.addWidget(self.loadTasksAsWidgetBtn)
         self.Tabs.addTab(self.myTasksTab, _fromUtf8(""))
         self.assetCreatorTab = QtGui.QWidget()
         self.assetCreatorTab.setObjectName(_fromUtf8("assetCreatorTab"))
@@ -1247,7 +1250,7 @@ class Ui_Form(object):
         self.referenceThumbListWidget.setViewMode(QtGui.QListView.IconMode)
         self.referenceThumbListWidget.setUniformItemSizes(True)
         self.referenceThumbListWidget.setBatchSize(500)
-        self.referenceThumbListWidget.setWordWrap(False)
+        self.referenceThumbListWidget.setWordWrap(True)
         self.referenceThumbListWidget.setObjectName(_fromUtf8("referenceThumbListWidget"))
         self.verticalLayout_20.addWidget(self.referenceThumbListWidget)
         self.frame_2 = QtGui.QFrame(self.referenceThumbFrame)
@@ -1652,6 +1655,7 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Shot", None))
         item = self.tmTableWidget.horizontalHeaderItem(11)
         item.setText(_translate("Form", "Asset", None))
+        self.tmShowBidCurveBtn.setText(_translate("Form", "Show bid curve", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tmTab), _translate("Form", "Task Manager", None))
         self.mtFilterByGroupBox.setTitle(_translate("Form", "Filter by", None))
         self.mtProjectLbl.setText(_translate("Form", "Project:", None))
@@ -1663,7 +1667,6 @@ class Ui_Form(object):
         self.mtBidLbl.setText(_translate("Form", "Bid:", None))
         self.mtBidOperationComboBox.setItemText(0, _translate("Form", ">=", None))
         self.mtBidOperationComboBox.setItemText(1, _translate("Form", "<=", None))
-        self.loadTasksAsWidgetBtn.setText(_translate("Form", "Load as Desktop Widgets", None))
         self.mtTableWidget.setSortingEnabled(False)
         item = self.mtTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Form", "ID", None))
@@ -1689,7 +1692,8 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Shot", None))
         item = self.mtTableWidget.horizontalHeaderItem(11)
         item.setText(_translate("Form", "Asset", None))
-        self.Tabs.setTabText(self.Tabs.indexOf(self.myTasksTab), _translate("Form", "My Tasks", None))
+        self.loadTasksAsWidgetBtn.setText(_translate("Form", "Load as Desktop Widgets", None))
+        self.Tabs.setTabText(self.Tabs.indexOf(self.myTasksTab), _translate("Form", "Tasks", None))
         self.createAssetBtn.setText(_translate("Form", "Create Asset", None))
         self.departmentCreationList.setSortingEnabled(True)
         __sortingEnabled = self.departmentCreationList.isSortingEnabled()

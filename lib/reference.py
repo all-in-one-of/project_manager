@@ -9,7 +9,9 @@ from PIL import Image
 import urllib
 from functools import partial
 from lib.module import Lib
+import pafy
 import time
+import re
 
 class ReferenceTab(object):
 
@@ -83,12 +85,15 @@ class ReferenceTab(object):
         self.reload_filter_by_tags_list()
 
     def create_reference_from_web(self):
-
+        # Fetch image from web and compress it
+        URL = str(self.referenceWebLineEdit.text())
+        if len(URL) < 3:
+            self.message_box(text="Please enter a valid URL")
+            return
 
         asset_name = unicode(self.referenceNameLineEdit.text())
         asset_name = Lib.normalize_str(self, asset_name)
         asset_name = Lib.convert_to_camel_case(self, asset_name)
-
 
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -112,8 +117,6 @@ class ReferenceTab(object):
             self.message_box(text="Please select a sequence first")
             return
 
-
-
         # Check if a shot is selected
         try:
             selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
@@ -136,10 +139,47 @@ class ReferenceTab(object):
 
         asset_filename += ".jpg"
 
+        if "youtube" in URL or "vimeo" in URL: # Create youtube video reference
+            if "youtube" in URL.lower():
+                video = pafy.new(URL)
+                thumbnail_url = str(video.thumb).replace("default", "sddefault")
+                stream_link = video.streams[0].url
 
-        # Fetch image from web and compress it
-        URL = str(self.referenceWebLineEdit.text())
-        if len(URL) > 0:
+            elif "vimeo" in URL.lower():
+                stream_link = URL
+                id = re.search(r'[0-9]{3,12}', URL).group(0)
+                fetch_thumbnail = urllib.urlopen("https://vimeo.com/api/v2/video/{0}.xml".format(id))
+                page_source = fetch_thumbnail.read()
+                start = '<thumbnail_large>'
+                end = '</thumbnail_large>'
+                thumbnail_url = re.search('%s(.*)%s' % (start, end), page_source).group(1)
+
+
+            urllib.urlretrieve(thumbnail_url, self.selected_project_path + asset_filename)
+            downloaded_img = Image.open(self.selected_project_path + asset_filename)
+            image_width = downloaded_img.size[0]
+            if image_width > 1920: image_width = 1920
+            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, 90)
+            Lib.add_watermark(self, self.selected_project_path + asset_filename, "VIDEO", self.selected_project_path + asset_filename)
+
+           # Add reference to database
+            self.cursor.execute(
+                '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_dependency, asset_tags, creator) VALUES(?,?,?,?,?,?,?,?,?,?)''',
+                (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
+                 last_version, stream_link, "video", self.username))
+
+            self.db.commit()
+
+            self.add_log_entry("{0} added a reference from web (video format)".format(self.members[self.username]))
+
+            self.load_reference_thumbnails()
+
+            last_item = self.referenceThumbListWidget.item(self.referenceThumbListWidget.count() - 1)
+            self.referenceThumbListWidget.scrollToItem(last_item)
+            self.referenceThumbListWidget.setItemSelected(last_item, True)
+
+        else: # Create image reference
+
             urllib.urlretrieve(URL, self.selected_project_path + asset_filename)
             downloaded_img = Image.open(self.selected_project_path + asset_filename)
             image_width = downloaded_img.size[0]
@@ -147,22 +187,21 @@ class ReferenceTab(object):
             Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, 90)
 
 
-        # Add reference to database
-        self.cursor.execute(
-            '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
-            (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
-             last_version,
-             self.username))
+            # Add reference to database
+            self.cursor.execute(
+                '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
+                (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
+                 last_version, self.username))
 
-        self.db.commit()
+            self.db.commit()
 
-        self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
+            self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
 
-        self.load_reference_thumbnails()
+            self.load_reference_thumbnails()
 
-        last_item = self.referenceThumbListWidget.item(self.referenceThumbListWidget.count() - 1)
-        self.referenceThumbListWidget.scrollToItem(last_item)
-        self.referenceThumbListWidget.setItemSelected(last_item, True)
+            last_item = self.referenceThumbListWidget.item(self.referenceThumbListWidget.count() - 1)
+            self.referenceThumbListWidget.scrollToItem(last_item)
+            self.referenceThumbListWidget.setItemSelected(last_item, True)
 
     def create_reference_from_files(self):
 
@@ -273,7 +312,6 @@ class ReferenceTab(object):
         last_item = self.referenceThumbListWidget.item(self.referenceThumbListWidget.count() - 1)
         self.referenceThumbListWidget.scrollToItem(last_item)
         self.referenceThumbListWidget.setItemSelected(last_item, True)
-
 
     def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
         all_versions = self.cursor.execute(
@@ -584,6 +622,21 @@ class ReferenceTab(object):
 
             self.rename_dialog.exec_()
         else:
+            selected_ref = self.referenceThumbListWidget.selectedItems()[0]
+            ref_data = selected_ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_sequence_name = ref_data[0]
+            ref_shot_number = ref_data[1]
+            ref_name = ref_data[2]
+            ref_path = ref_data[3]
+            ref_version = ref_data[4]
+            ref_tags = ref_data[5]
+            isVideo = self.cursor.execute('''SELECT asset_dependency FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=? AND asset_tags=?''', (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, ref_tags,)).fetchone()
+            if isVideo[0]:
+                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", isVideo])
+                return
+
+
+
             # Open image in windows viewer
             selected_ref = self.referenceThumbListWidget.selectedItems()[0]
             ref_path = selected_ref.data(QtCore.Qt.UserRole).toPyObject()[3]
