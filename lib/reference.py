@@ -26,6 +26,7 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.rename_reference_layout)
         self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
+        self.referenceNameLineEdit.returnPressed.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
         self.removeRefsBtn.clicked.connect(self.remove_selected_references)
         self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
@@ -144,11 +145,11 @@ class ReferenceTab(object):
         selected_references = self.referenceThumbListWidget.selectedItems()
         for ref in selected_references:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()  # Get data associated with QListWidgetItem
-            ref_sequence_name = ref_data[0]
-            ref_shot_number = ref_data[1]
-            ref_name = ref_data[2]
-            ref_path = ref_data[3]
-            ref_version = ref_data[4]
+            ref_sequence_name = str(ref_data[0])
+            ref_shot_number = str(ref_data[1])
+            ref_name = str(ref_data[2])
+            ref_path = str(ref_data[3])
+            ref_version = str(ref_data[4])
             ref_tags = ref_data[5]
 
             if ref_tags and "," in ref_tags:
@@ -193,8 +194,6 @@ class ReferenceTab(object):
             item.setFont(font)
 
             self.filterByTagsListWidget.addItem(item)
-
-
 
     def create_reference_from_web(self):
 
@@ -698,11 +697,13 @@ class ReferenceTab(object):
         # If no tag is selected, unhide all references
         if not selected_tags:
             [ref.setHidden(False) for ref in all_references]
+            self.seqReferenceList_Clicked()
             return
 
         # Loop over all references and set them to hidden if any selected tag can't be found in reference's tags
         for ref in all_references:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+            ref_sequence = ref_data[0]
             ref_tags = ref_data[5]
             if ref_tags == None:
                 ref.setHidden(True)
@@ -713,10 +714,19 @@ class ReferenceTab(object):
             else:
                 ref_tags = ref_tags.split()
 
-            if set(ref_tags).isdisjoint(selected_tags):
-                ref.setHidden(True)
-            else:
-                ref.setHidden(False)
+            ref_tags = [str(i) for i in ref_tags]
+
+            if self.selected_sequence_name == "xxx": # If selected sequence is all, filter only by selected tags
+                if set(ref_tags).isdisjoint(selected_tags): # Can't find any selected tag in reference tags : hide item
+                    ref.setHidden(True)
+                else:
+                    ref.setHidden(False)
+            else: # If selected sequence is something else than all, filter by selected tags and by sequence name
+                if not set(ref_tags).isdisjoint(selected_tags) and self.selected_sequence_name == ref_sequence: # If current reference is in selected sequence and has tags from selected tags, then don't hide it
+                    ref.setHidden(False)
+                else:
+                    ref.setHidden(True)
+
 
     def load_ref_in_kuadro(self):
 
@@ -990,8 +1000,6 @@ class ReferenceTab(object):
         self.showUrlImageBtn.repaint()
 
         QDialog.exec_()
-
-
 
 
 

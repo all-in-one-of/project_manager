@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Tue Jul 14 13:49:46 2015
+# Created: Tue Jul 14 14:26:19 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1248,7 +1248,7 @@ class Ui_Form(object):
         self.referenceThumbListWidget.setResizeMode(QtGui.QListView.Adjust)
         self.referenceThumbListWidget.setLayoutMode(QtGui.QListView.SinglePass)
         self.referenceThumbListWidget.setViewMode(QtGui.QListView.IconMode)
-        self.referenceThumbListWidget.setUniformItemSizes(True)
+        self.referenceThumbListWidget.setUniformItemSizes(False)
         self.referenceThumbListWidget.setBatchSize(500)
         self.referenceThumbListWidget.setWordWrap(True)
         self.referenceThumbListWidget.setObjectName(_fromUtf8("referenceThumbListWidget"))
