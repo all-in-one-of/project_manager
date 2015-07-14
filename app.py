@@ -62,8 +62,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         #Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -546,8 +546,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
             # Add assets to asset list
             self.add_assets_to_asset_list(assets)
 
-
-
         # Mirror selection to Asset Creation tab
         seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
         self.seqCreationList.setCurrentRow(seq_list_selected_index)
@@ -555,9 +553,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         # Mirror selection to Reference Tool tab
         seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
         self.seqReferenceList.setCurrentRow(seq_list_selected_index)
-
-        # Load thumbnails on Reference Tool tab
-        ReferenceTab.load_reference_thumbnails(self)
 
     def seqCreationList_Clicked(self):
         self.selected_sequence_name = str(self.seqCreationList.selectedItems()[0].text())
@@ -601,7 +596,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
              self.selected_asset_version)).fetchone()[0]
 
         cur_asset = Asset(self.selected_asset_name, self.selected_asset_path)
-        print(cur_asset.name)
         cur_asset.create_version(self.selected_project_name)
 
         asset_extension = os.path.splitext(self.selected_asset_path)[-1]
@@ -642,7 +636,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
                                                                                                  QtCore.Qt.KeepAspectRatio,
                                                                                                  QtCore.Qt.SmoothTransformation)
                 self.assetImg.setPixmap(pixmap)
-
 
         # Change path label
         self.assetPathLbl.setText(self.selected_asset_path)
@@ -1274,6 +1267,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
                 self.showFullScreen()
         if key == QtCore.Qt.Key_Escape:
             sys.exit()
+        if key == QtCore.Qt.Key_Delete:
+            ReferenceTab.remove_selected_references(self)
+
 
     def closeEvent(self, event):
         self.save_tags_list()

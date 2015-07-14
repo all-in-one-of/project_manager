@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Tue Jul 14 14:26:19 2015
+# Created: Tue Jul 14 15:58:21 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,7 +27,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(1083, 910)
-        Form.setMinimumSize(QtCore.QSize(1050, 600))
+        Form.setMinimumSize(QtCore.QSize(600, 400))
         Form.setMaximumSize(QtCore.QSize(16777215, 16777215))
         Form.setMouseTracking(False)
         Form.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -1013,7 +1013,8 @@ class Ui_Form(object):
         self.horizontalLayout_23.setMargin(0)
         self.horizontalLayout_23.setObjectName(_fromUtf8("horizontalLayout_23"))
         self.referenceOptionsFrame = QtGui.QFrame(self.referenceToolMainFrame)
-        self.referenceOptionsFrame.setMaximumSize(QtCore.QSize(500, 16777215))
+        self.referenceOptionsFrame.setMinimumSize(QtCore.QSize(300, 0))
+        self.referenceOptionsFrame.setMaximumSize(QtCore.QSize(400, 16777215))
         self.referenceOptionsFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.referenceOptionsFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.referenceOptionsFrame.setObjectName(_fromUtf8("referenceOptionsFrame"))
@@ -1125,6 +1126,8 @@ class Ui_Form(object):
         self.horizontalLayout_25.addWidget(self.referenceNameLineEdit)
         self.verticalLayout_13.addWidget(self.referenceNameFrame)
         self.createReferenceFromWebBtn = QtGui.QPushButton(self.fromWebGroupBox)
+        self.createReferenceFromWebBtn.setAutoDefault(False)
+        self.createReferenceFromWebBtn.setDefault(False)
         self.createReferenceFromWebBtn.setObjectName(_fromUtf8("createReferenceFromWebBtn"))
         self.verticalLayout_13.addWidget(self.createReferenceFromWebBtn)
         self.horizontalLayout_27.addWidget(self.fromWebGroupBox)
@@ -1239,9 +1242,13 @@ class Ui_Form(object):
         self.verticalLayout_20.setMargin(0)
         self.verticalLayout_20.setObjectName(_fromUtf8("verticalLayout_20"))
         self.referenceThumbListWidget = QtGui.QListWidget(self.referenceThumbFrame)
-        self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(675, 0))
+        self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
+        self.referenceThumbListWidget.setAutoScroll(True)
+        self.referenceThumbListWidget.setAutoScrollMargin(2)
         self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.referenceThumbListWidget.setIconSize(QtCore.QSize(256, 256))
+        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.referenceThumbListWidget.setMovement(QtGui.QListView.Static)
         self.referenceThumbListWidget.setFlow(QtGui.QListView.LeftToRight)
         self.referenceThumbListWidget.setProperty("isWrapping", True)

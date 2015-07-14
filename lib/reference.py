@@ -8,10 +8,12 @@ import shutil
 from PIL import Image
 import urllib
 from functools import partial
-from lib.module import Lib
 import pafy
 import time
 import re
+
+from lib.module import Lib
+from lib.comments import CommentWidget
 
 class ReferenceTab(object):
 
@@ -19,11 +21,14 @@ class ReferenceTab(object):
 
         self.first_thumbnail_load = True
 
+        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+
         self.allTagsTreeWidget.sortItems(0, QtCore.Qt.AscendingOrder)
         self.seqReferenceList.itemClicked.connect(self.seqReferenceList_Clicked)
         self.shotReferenceList.itemClicked.connect(self.shotReferenceList_Clicked)
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
-        self.referenceThumbListWidget.itemDoubleClicked.connect(self.rename_reference_layout)
+        self.referenceThumbListWidget.itemDoubleClicked.connect(self.reference_doubleClicked)
         self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
         self.referenceNameLineEdit.returnPressed.connect(self.create_reference_from_web)
@@ -64,6 +69,8 @@ class ReferenceTab(object):
         # Add shots to shot list and shot creation list
         if self.selected_sequence_name == "All":
             self.selected_sequence_name = "xxx"
+            self.shotReferenceList.clear()
+            self.shotReferenceList.addItem("None")
 
         elif self.selected_sequence_name == "None":
             self.selected_sequence_name = "xxx"
@@ -727,7 +734,6 @@ class ReferenceTab(object):
                 else:
                     ref.setHidden(True)
 
-
     def load_ref_in_kuadro(self):
 
         os.system("taskkill /im kuadro.exe /f")
@@ -750,16 +756,25 @@ class ReferenceTab(object):
 
         for ref in self.selected_references:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_path = ref_data[3]
+            ref_path = str(ref_data[3])
             references_to_load.append(self.selected_project_path + ref_path)
 
         for ref_path in references_to_load:
             subprocess.Popen([self.photoshop_path, ref_path])
 
-    def rename_reference_layout(self):
+    def reference_doubleClicked(self):
 
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-            # Renaming reference
+        selected_ref = self.referenceThumbListWidget.selectedItems()[0]
+        ref_data = selected_ref.data(QtCore.Qt.UserRole).toPyObject()
+        ref_sequence_name = str(ref_data[0])
+        ref_shot_number = str(ref_data[1])
+        ref_name = str(ref_data[2])
+        ref_path = str(ref_data[3])
+        ref_version = str(ref_data[4])
+        ref_tags = str(ref_data[5])
+
+
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier: # Renaming reference
             self.old_reference_name = self.referenceThumbListWidget.selectedItems()[0]
             self.old_reference_name = self.old_reference_name.data(QtCore.Qt.UserRole).toPyObject()[2]
 
@@ -781,30 +796,19 @@ class ReferenceTab(object):
             self.acceptBtn.clicked.connect(self.rename_reference)
 
             self.rename_dialog.exec_()
-        else:
-            selected_ref = self.referenceThumbListWidget.selectedItems()[0]
-            ref_data = selected_ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence_name = str(ref_data[0])
-            ref_shot_number = str(ref_data[1])
-            ref_name = str(ref_data[2])
-            ref_path = str(ref_data[3])
-            ref_version = str(ref_data[4])
-            ref_tags = str(ref_data[5])
 
-            print(ref_sequence_name)
-            print(ref_shot_number)
-            print(ref_name)
-            print(ref_path)
-            print(ref_version)
-            print(ref_tags)
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier: # Viewing comments
+            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version, ref_path)
+
+        else: # Opening video / image in chrome / windows image view
 
             isVideo = self.cursor.execute('''SELECT asset_dependency FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=? AND asset_tags=?''', (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, ref_tags,)).fetchone()
-            if isVideo[0]:
+            try:
                 subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", isVideo[0]])
                 return
-
-            # Open image in windows viewer
-            os.system(self.selected_project_path + ref_path)
+            except:
+                # Open image in windows viewer
+                os.system(self.selected_project_path + ref_path)
 
         return
 
@@ -1000,6 +1004,9 @@ class ReferenceTab(object):
         self.showUrlImageBtn.repaint()
 
         QDialog.exec_()
+
+
+
 
 
 
