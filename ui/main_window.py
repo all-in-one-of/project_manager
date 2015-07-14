@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sun Jul 12 18:17:21 2015
+# Created: Tue Jul 14 13:49:46 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!

@@ -62,8 +62,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         #Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -233,9 +233,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)
         self.seqCreationList.itemClicked.connect(self.seqCreationList_Clicked)
-        self.seqReferenceList.itemClicked.connect(self.seqReferenceList_Clicked)
         self.shotList.itemClicked.connect(self.shotList_Clicked)
-        self.shotReferenceList.itemClicked.connect(self.shotReferenceList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
 
@@ -579,34 +577,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
             shots = sorted(shots)
             [self.shotCreationList.addItem(shot) for shot in shots]
 
-    def seqReferenceList_Clicked(self):
-        self.selected_sequence_name = str(self.seqReferenceList.selectedItems()[0].text())
 
-        # Add shots to shot list and shot creation list
-        if self.selected_sequence_name == "All":
-            self.selected_sequence_name = "xxx"
-            self.shotReferenceList.clear()
-            self.shotReferenceList.addItem("None")
 
-        else:
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
-            self.shotReferenceList.clear()
-            self.shotReferenceList.addItem("None")
-            shots = [i[0] for i in shots]
-            shots = sorted(shots)
-            [self.shotReferenceList.addItem(shot) for shot in shots]
-
-        # Load thumbnails
-        ReferenceTab.load_reference_thumbnails(self)
-
-    def shotReferenceList_Clicked(self):
-
-        if str(self.shotReferenceList.selectedItems()[0].text()) == "None":
-            self.selected_shot_number = "xxxx"
-
-        # Load thumbnails
-        ReferenceTab.load_reference_thumbnails(self)
 
     def shotList_Clicked(self):
 
@@ -1191,7 +1163,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         tags_frequency_tmp = [str(i) for i in tags_frequency_tmp] # Convert all items from unicode to string
         self.tags_frequency = Counter(tags_frequency_tmp) # Create a dictionary from list with number of occurences
 
-        self.maximum_tag_occurence = max(self.tags_frequency.values())
+        if len(self.tags_frequency.values()) > 0:
+            self.maximum_tag_occurence = max(self.tags_frequency.values())
+        else:
+            self.maximum_tag_occurence = 1
 
         parent_tags = []
         child_tags = []
@@ -1401,6 +1376,7 @@ if __name__ == "__main__":
     splash_pix = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen.jpg")
     splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     splash.setMask(splash_pix.mask())
+
     splash.show()
 
     time.sleep(0.05)
