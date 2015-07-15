@@ -20,7 +20,7 @@ class CommentWidget(QtGui.QDialog):
         self.asset_version = asset_version
         self.asset_path = asset_path
 
-        self.setWindowTitle("Comments for {0} {1}".format(self.asset_type, self.asset_name))
+        self.setWindowTitle("Comments for {0} '{1}'".format(self.asset_type, self.asset_name))
         Lib.apply_style(self.main, self)
 
         self.main_layout = QtGui.QVBoxLayout(self)
@@ -47,18 +47,43 @@ class CommentWidget(QtGui.QDialog):
         self.exec_()
 
     def load_comments(self, asset_type):
+        self.commentListWidget.clear()
         if asset_type == "ref":
             asset_comments = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE asset_name=? AND sequence_name=? AND shot_number=? AND asset_version=? AND asset_path=?''', (self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path,)).fetchone()[0]
             asset_comments = asset_comments.split(";")
+            asset_comments = filter(None, asset_comments)
 
-            if len(asset_comments[0]) == 0:
-                return
+            if not asset_comments: return
 
-            for each_comment in asset_comments:
+            comment_authors = []
+            cur_alignment = "left"
+
+            for i, each_comment in enumerate(asset_comments):
                 comment_text = each_comment.split("(")[0]
                 comment_time = each_comment.split("(")[1]
                 item = QtGui.QListWidgetItem(comment_text)
-                item.setToolTip(comment_time)
+                if i == 0:
+                    item.setTextAlignment(QtCore.Qt.AlignLeft)
+                    cur_alignment = "left"
+                    comment_author = comment_text.split(":")[0]
+                    comment_authors.append(comment_author)
+                else:
+                    comment_author = comment_text.split(":")[0]
+                    if comment_author == comment_authors[-1]: # Current author is the same as last author
+                        if cur_alignment == "left":
+                            item.setTextAlignment(QtCore.Qt.AlignLeft)
+                        elif cur_alignment == "right":
+                            item.setTextAlignment(QtCore.Qt.AlignRight)
+                    elif comment_author != comment_authors[-1]: # Current author is different from last author
+                        if cur_alignment == "left": # If current alignment is left, align right and change cur_alignment to opposite
+                            item.setTextAlignment(QtCore.Qt.AlignRight)
+                            cur_alignment = "right"
+                        elif cur_alignment == "right": # If current alignment is right, align left and change cur_alignment to opposite
+                            item.setTextAlignment(QtCore.Qt.AlignLeft)
+                            cur_alignment = "left"
+                    comment_authors.append(comment_author)
+
+                item.setToolTip(comment_time.replace(")", ""))
                 self.commentListWidget.addItem(item)
 
 
@@ -67,9 +92,10 @@ class CommentWidget(QtGui.QDialog):
 
 
     def add_comment(self):
-        comment = str(self.commentLineEdit.text())
+        comment = unicode(self.commentLineEdit.text())
+        comment = Lib.normalize_str(self.main, comment)
         current_time = time.strftime("%d/%m/%Y at %H:%M")
-        comment_with_time = "{0}: {1} ({2})".format(self.main.members[self.main.username], comment, current_time)
+        comment_with_time = "{0}: {1} ({2})".format(Lib.normalize_str(self.main, self.main.members[self.main.username]), comment, current_time)
 
         if self.asset_type == "ref":
             asset_comment = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=?''', (self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_version,)).fetchone()
@@ -85,21 +111,35 @@ class CommentWidget(QtGui.QDialog):
             pass
 
 
-        item = QtGui.QListWidgetItem(self.main.members[self.main.username] + ": " + comment)
+        item = QtGui.QListWidgetItem(Lib.normalize_str(self.main, self.main.members[self.main.username]) + ": " + comment)
         item.setToolTip(current_time)
         self.commentListWidget.addItem(item)
+        self.commentLineEdit.clear()
 
     def delete_comment(self):
         selected_comment = self.commentListWidget.selectedItems()
-
         try:
             selected_comment_text = str(selected_comment[0].text())
+            selected_comment_tooltip = str(selected_comment[0].toolTip())
         except:
             return
-
         if self.main.members[self.main.username] in selected_comment_text:
-            pass
             # Remove comment from database and reload comments
-            #self.commentListWidget.removeItemWidget(selected_comment[0])
+            comment_from_db = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=?''', (self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_version,)).fetchone()
+            try:
+                comment_from_db = str(comment_from_db[0])
+            except:
+                return
+            if len(comment_from_db) > 0:
+                text_to_remove = selected_comment_text + "(" + selected_comment_tooltip + ")"
+                new_comments = comment_from_db.replace(text_to_remove, "")
+                self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_comment=?''', (new_comments, comment_from_db))
+                self.main.db.commit()
+
+            self.load_comments(asset_type="ref")
+
+        else:
+            Lib.message_box(self.main, text="You can only delete your own comments")
+
 
 
