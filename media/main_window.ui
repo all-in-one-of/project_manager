@@ -3615,32 +3615,36 @@ p, li { white-space: pre-wrap; }
          <attribute name="title">
           <string>What's New</string>
          </attribute>
-         <widget class="QTreeWidget" name="whatsNewTreeWidget">
-          <property name="geometry">
-           <rect>
-            <x>100</x>
-            <y>70</y>
-            <width>801</width>
-            <height>321</height>
-           </rect>
-          </property>
-          <attribute name="headerVisible">
-           <bool>false</bool>
-          </attribute>
-         </widget>
-         <widget class="QPushButton" name="markAllAsReadBtn">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>420</y>
-            <width>761</width>
-            <height>23</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Mark all as read</string>
-          </property>
-         </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_31">
+          <item>
+           <widget class="QCheckBox" name="showOnlyMeWhatsNew">
+            <property name="text">
+             <string>Show only news concerning me</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeWidget" name="whatsNewTreeWidget">
+            <attribute name="headerVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refreshWhatsNewBtn">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="markAllAsReadBtn">
+            <property name="text">
+             <string>Mark all as read</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>

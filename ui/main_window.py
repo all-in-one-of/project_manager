@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 15 14:01:51 2015
+# Created: Wed Jul 15 15:08:35 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1550,6 +1550,12 @@ class Ui_Form(object):
         self.markAllAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
         self.markAllAsReadBtn.setGeometry(QtCore.QRect(130, 420, 761, 23))
         self.markAllAsReadBtn.setObjectName(_fromUtf8("markAllAsReadBtn"))
+        self.showOnlyMeWhatsNew = QtGui.QCheckBox(self.whatsNewTab)
+        self.showOnlyMeWhatsNew.setGeometry(QtCore.QRect(100, 40, 191, 18))
+        self.showOnlyMeWhatsNew.setObjectName(_fromUtf8("showOnlyMeWhatsNew"))
+        self.refreshWhatsNewBtn = QtGui.QPushButton(self.whatsNewTab)
+        self.refreshWhatsNewBtn.setGeometry(QtCore.QRect(400, 470, 75, 23))
+        self.refreshWhatsNewBtn.setObjectName(_fromUtf8("refreshWhatsNewBtn"))
         self.Tabs.addTab(self.whatsNewTab, _fromUtf8(""))
         self.verticalLayout_5.addWidget(self.Tabs)
         self.frame_3 = QtGui.QFrame(self.assetManagerFrame)
@@ -1841,6 +1847,8 @@ class Ui_Form(object):
         self.savePrefBtn.setText(_translate("Form", "Save Preferences", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.preferencesTab), _translate("Form", "Preferences", None))
         self.markAllAsReadBtn.setText(_translate("Form", "Mark all as read", None))
+        self.showOnlyMeWhatsNew.setText(_translate("Form", "Show only news including myself", None))
+        self.refreshWhatsNewBtn.setText(_translate("Form", "Refresh", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.whatsNewTab), _translate("Form", "What\'s New", None))
         self.label_3.setText(_translate("Form", "Disk usage:", None))
         self.label_4.setText(_translate("Form", "Time left:", None))
