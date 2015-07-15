@@ -15,11 +15,13 @@ import re
 from lib.module import Lib
 from lib.comments import CommentWidget
 
-class ReferenceTab(object):
 
+class ReferenceTab(object):
     def __init__(self):
 
         self.first_thumbnail_load = True
+        self.compression_level = 60
+        self.keep_size = False
 
         self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
@@ -29,11 +31,12 @@ class ReferenceTab(object):
         self.shotReferenceList.itemClicked.connect(self.shotReferenceList_Clicked)
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.reference_doubleClicked)
+        self.filterByNameLineEdit.textChanged.connect(self.filter_reference_by_name)
         self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
         self.referenceNameLineEdit.returnPressed.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
-        self.removeRefsBtn.clicked.connect(self.remove_selected_references)
+        self.keepQualityCheckBox.stateChanged.connect(self.change_quality)
         self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
         self.openRefInPhotoshopBtn.clicked.connect(self.load_ref_in_photoshop)
         self.addTagsBtn.clicked.connect(self.add_tags_to_selected_references)
@@ -46,8 +49,10 @@ class ReferenceTab(object):
         self.biggerRefPushButton_04.clicked.connect(partial(self.change_reference_thumb_size, 4))
         self.changeRefSeqShotBtn.clicked.connect(self.change_seq_shot_layout)
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
+        self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
 
-        icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
+        icon = QtGui.QIcon(
+            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
         self.biggerRefPushButton_01.setIcon(icon)
         self.biggerRefPushButton_02.setIcon(icon)
         self.biggerRefPushButton_03.setIcon(icon)
@@ -56,7 +61,6 @@ class ReferenceTab(object):
         self.biggerRefPushButton_02.setIconSize(QtCore.QSize(16, 16))
         self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
         self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
-
 
     def seqReferenceList_Clicked(self):
 
@@ -97,10 +101,11 @@ class ReferenceTab(object):
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
             ref_seq = ref_data[0]
             ref_tags = ref_data[5]
-            if str(self.seqReferenceList.selectedItems()[0].text()) == "All": # If "All" is selected, show all thumbnails
+            if str(self.seqReferenceList.selectedItems()[
+                       0].text()) == "All":  # If "All" is selected, show all thumbnails
                 all_tags.append(ref_tags)
                 self.referenceThumbListWidget.setItemHidden(ref, False)
-            else: # Else, show thumbnails for selected sequence only
+            else:  # Else, show thumbnails for selected sequence only
                 if ref_seq == self.selected_sequence_name:
                     all_tags.append(ref_tags)
                     self.referenceThumbListWidget.setItemHidden(ref, False)
@@ -127,13 +132,14 @@ class ReferenceTab(object):
             ref_seq = ref_data[0]
             ref_shot = ref_data[1]
             ref_tags = ref_data[5]
-            if str(self.shotReferenceList.selectedItems()[0].text()) == "None": # If "None" is selected, show all thumbnails
+            if str(self.shotReferenceList.selectedItems()[
+                       0].text()) == "None":  # If "None" is selected, show all thumbnails
                 if ref_seq == self.selected_sequence_name:
                     all_tags.append(ref_tags)
                     self.referenceThumbListWidget.setItemHidden(ref, False)
                 else:
                     self.referenceThumbListWidget.setItemHidden(ref, True)
-            else: # Else, show thumbnails for selected sequence only
+            else:  # Else, show thumbnails for selected sequence only
                 if ref_shot == self.selected_shot_number and ref_seq == self.selected_sequence_name:
                     all_tags.append(ref_tags)
                     self.referenceThumbListWidget.setItemHidden(ref, False)
@@ -192,8 +198,9 @@ class ReferenceTab(object):
 
         self.filterByTagsListWidget.clear()
         for tag in all_tags:
-            tag_frequency = self.tags_frequency[tag] # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10,
+                                          30)  # Fit frequency in the 10-30 range
             font = QtGui.QFont()
             font.setPointSize(tag_frequency)
 
@@ -276,23 +283,27 @@ class ReferenceTab(object):
                 end = '</thumbnail_large>'
                 thumbnail_url = re.search('%s(.*)%s' % (start, end), page_source).group(1)
 
-
             urllib.urlretrieve(thumbnail_url, self.selected_project_path + asset_filename)
             downloaded_img = Image.open(self.selected_project_path + asset_filename)
             image_width = downloaded_img.size[0]
-            if image_width > 1920: image_width = 1920
-            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, 60)
-            Lib.add_watermark(self, self.selected_project_path + asset_filename, "VIDEO", self.selected_project_path + asset_filename)
+            if self.keepSizeCheckBox.checkState() == 0:
+                if image_width > 1920:
+                    image_width = 1920
+            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, self.compression_level)
+            Lib.add_watermark(self, self.selected_project_path + asset_filename, "VIDEO",
+                              self.selected_project_path + asset_filename)
 
 
 
-        else: # Create image reference
+        else:  # Create image reference
             self.ref_type = "image"
             urllib.urlretrieve(URL, self.selected_project_path + asset_filename)
             downloaded_img = Image.open(self.selected_project_path + asset_filename)
             image_width = downloaded_img.size[0]
-            if image_width > 1920: image_width = 1920
-            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, 70)
+            if self.keepSizeCheckBox.checkState() == 0:
+                if image_width > 1920:
+                    image_width = 1920
+            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, self.compression_level)
 
         new_item = QtGui.QListWidgetItem()
         new_item.setIcon(QtGui.QIcon(self.selected_project_path + asset_filename))
@@ -306,7 +317,9 @@ class ReferenceTab(object):
 
             self.add_log_entry("{0} added a reference from web (video format)".format(self.members[self.username]))
 
-            new_item.setData(QtCore.Qt.UserRole, [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename), str(last_version), "video"])
+            new_item.setData(QtCore.Qt.UserRole,
+                             [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
+                              str(last_version), "video"])
 
         elif self.ref_type == "image":
             self.cursor.execute(
@@ -316,9 +329,9 @@ class ReferenceTab(object):
 
             self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
 
-
-            new_item.setData(QtCore.Qt.UserRole, [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename), str(last_version), ""])
-
+            new_item.setData(QtCore.Qt.UserRole,
+                             [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
+                              str(last_version), ""])
 
         self.db.commit()
 
@@ -329,7 +342,6 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.setItemSelected(new_item, True)
 
     def create_reference_from_files(self):
-
 
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -406,7 +418,10 @@ class ReferenceTab(object):
         for path in selected_files_name:
             img = Image.open(self.selected_project_path + path)
             image_width = img.size[0]
-            Lib.compress_image(self, self.selected_project_path + path, image_width, 90)
+            if self.keepSizeCheckBox.checkState() == 0:
+                if image_width > 1920:
+                    image_width = 1920
+            Lib.compress_image(self, self.selected_project_path + path, image_width, self.compression_level)
 
 
         # Add reference to database
@@ -420,21 +435,18 @@ class ReferenceTab(object):
                 (self.selected_project_name, selected_sequence, selected_shot, files_name[i], path, "ref", last_version,
                  self.username))
 
-
             new_item = QtGui.QListWidgetItem()
             new_item.setIcon(QtGui.QIcon(self.selected_project_path + path))
-            new_item.setData(QtCore.Qt.UserRole, [str(selected_sequence), str(selected_shot), str(files_name[i]), str(path), str(last_version), ""])
+            new_item.setData(QtCore.Qt.UserRole,
+                             [str(selected_sequence), str(selected_shot), str(files_name[i]), str(path),
+                              str(last_version), ""])
 
             self.referenceThumbListWidget.addItem(new_item)
-
-
 
         self.add_log_entry(
             "{0} added {1} references from files".format(self.members[self.username], number_of_refs_added))
 
         self.db.commit()
-
-
 
         self.referenceThumbListWidget.scrollToItem(new_item)
         self.referenceThumbListWidget.setItemSelected(new_item, True)
@@ -466,7 +478,6 @@ class ReferenceTab(object):
             ref_path = str(ref_data[3])
             ref_name = str(ref_data[2])
             ref_version = str(ref_data[4])
-
 
             os.remove(self.selected_project_path + str(ref_path))
             self.cursor.execute(
@@ -572,7 +583,7 @@ class ReferenceTab(object):
         elif selected_sequence == "xxx" and selected_shot == "xxxx":
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
-                ("xxx","xxxx",)).fetchall()
+                ("xxx", "xxxx",)).fetchall()
         else:
             references_list = self.cursor.execute(
                 '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
@@ -589,17 +600,16 @@ class ReferenceTab(object):
 
             for i, reference in enumerate(references_list):
                 reference_path = self.selected_project_path + reference[3]
-                reference_name = reference[2] + "_" + reference[4]
+                reference_name = reference[2]
                 reference_tags = reference[5]
 
                 all_tags.append(reference_tags)
 
-                reference_list_item = QtGui.QListWidgetItem()
+                reference_list_item = QtGui.QListWidgetItem(reference_name)
                 reference_list_item.setIcon(QtGui.QIcon(reference_path))
                 reference_list_item.setData(QtCore.Qt.UserRole, reference)
                 if os.path.isfile(reference_path):
                     self.referenceThumbListWidget.addItem(reference_list_item)
-
 
                 progressBar.setValue(i)
 
@@ -608,11 +618,11 @@ class ReferenceTab(object):
         all_tags = all_tags.split(",")
         all_tags = sorted(list(set(all_tags)))
 
-
         self.filterByTagsListWidget.clear()
         for tag in all_tags:
-            tag_frequency = self.tags_frequency[tag] # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10,
+                                          30)  # Fit frequency in the 10-30 range
             font = QtGui.QFont()
             font.setPointSize(tag_frequency)
 
@@ -635,8 +645,9 @@ class ReferenceTab(object):
 
         self.filterByTagsListWidget.clear()
         for tag in all_tags:
-            tag_frequency = self.tags_frequency[tag] # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30) # Fit frequency in the 10-30 range
+            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10,
+                                          30)  # Fit frequency in the 10-30 range
             font = QtGui.QFont()
             font.setPointSize(tag_frequency)
 
@@ -717,22 +728,48 @@ class ReferenceTab(object):
                 continue
 
             if "," in ref_tags:
-                ref_tags = ref_tags.split(",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
+                ref_tags = ref_tags.split(
+                    ",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
             else:
                 ref_tags = ref_tags.split()
 
             ref_tags = [str(i) for i in ref_tags]
 
-            if self.selected_sequence_name == "xxx": # If selected sequence is all, filter only by selected tags
-                if set(ref_tags).isdisjoint(selected_tags): # Can't find any selected tag in reference tags : hide item
+            if self.selected_sequence_name == "xxx":  # If selected sequence is all, filter only by selected tags
+                if set(ref_tags).isdisjoint(selected_tags):  # Can't find any selected tag in reference tags : hide item
                     ref.setHidden(True)
                 else:
                     ref.setHidden(False)
-            else: # If selected sequence is something else than all, filter by selected tags and by sequence name
-                if not set(ref_tags).isdisjoint(selected_tags) and self.selected_sequence_name == ref_sequence: # If current reference is in selected sequence and has tags from selected tags, then don't hide it
+            else:  # If selected sequence is something else than all, filter by selected tags and by sequence name
+                if not set(ref_tags).isdisjoint(
+                        selected_tags) and self.selected_sequence_name == ref_sequence:  # If current reference is in selected sequence and has tags from selected tags, then don't hide it
                     ref.setHidden(False)
                 else:
                     ref.setHidden(True)
+
+    def filter_reference_by_name(self):
+
+        filter_str = unicode(self.filterByNameLineEdit.text())
+        filter_str = Lib.normalize_str(self, filter_str)
+        filter_str = filter_str.lower()
+
+        if "*" in filter_str:
+            filter_str = filter_str.replace("*", ".*")
+            r = re.compile(filter_str)
+            for i in xrange(0, self.referenceThumbListWidget.count()):
+                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
+                if r.match(item_text):
+                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
+                else:
+                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
+        else:
+
+            for i in xrange(0, self.referenceThumbListWidget.count()):
+                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
+                if filter_str in item_text:
+                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
+                else:
+                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
 
     def load_ref_in_kuadro(self):
 
@@ -748,7 +785,7 @@ class ReferenceTab(object):
         references_to_load = " ".join(references_to_load)
 
         subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe",
-                         [references_to_load]], close_fds=True)
+                          [references_to_load]], close_fds=True)
 
     def load_ref_in_photoshop(self):
 
@@ -773,8 +810,7 @@ class ReferenceTab(object):
         ref_version = str(ref_data[4])
         ref_tags = str(ref_data[5])
 
-
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier: # Renaming reference
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:  # Renaming reference
             self.old_reference_name = self.referenceThumbListWidget.selectedItems()[0]
             self.old_reference_name = self.old_reference_name.data(QtCore.Qt.UserRole).toPyObject()[2]
 
@@ -797,12 +833,15 @@ class ReferenceTab(object):
 
             self.rename_dialog.exec_()
 
-        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier: # Viewing comments
-            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version, ref_path)
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
+            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version,
+                                           ref_path)
 
-        else: # Opening video / image in chrome / windows image view
+        else:  # Opening video / image in chrome / windows image view
 
-            isVideo = self.cursor.execute('''SELECT asset_dependency FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=? AND asset_tags=?''', (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, ref_tags,)).fetchone()
+            isVideo = self.cursor.execute(
+                '''SELECT asset_dependency FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=? AND asset_tags=?''',
+                (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, ref_tags,)).fetchone()
             try:
                 subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", isVideo[0]])
                 return
@@ -833,10 +872,8 @@ class ReferenceTab(object):
         ref_version = ref_data[4]
         ref_tags = ref_data[5]
 
-
         if self.old_reference_name == new_name:
-                return
-
+            return
 
         new_path = ref_path.replace(self.old_reference_name, new_name)
 
@@ -851,8 +888,8 @@ class ReferenceTab(object):
         os.rename(self.selected_project_path + ref_path, self.selected_project_path + new_path)
 
         self.cursor.execute(
-                '''UPDATE assets SET asset_name=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (new_name, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
+            '''UPDATE assets SET asset_name=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
+            (new_name, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
 
         self.db.commit()
 
@@ -924,7 +961,8 @@ class ReferenceTab(object):
             ref_tags = str(ref_data[5])
 
             new_path = ref_path
-            new_path = ref_path.replace("_" + ref_sequence_name + "_" + str(ref_shot_number), "_" + selected_sequence + "_" + selected_shot)
+            new_path = ref_path.replace("_" + ref_sequence_name + "_" + str(ref_shot_number),
+                                        "_" + selected_sequence + "_" + selected_shot)
             new_version = ref_version
 
             while os.path.isfile(self.selected_project_path + new_path):
@@ -937,13 +975,14 @@ class ReferenceTab(object):
 
             self.cursor.execute(
                 '''UPDATE assets SET sequence_name=?, shot_number=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (selected_sequence, selected_shot, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
+                (selected_sequence, selected_shot, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name,
+                 ref_version,))
 
             # Update reference QListWidgetItem data
             data = (selected_sequence, selected_shot, ref_name, new_path, new_version, ref_tags)
             ref.setData(QtCore.Qt.UserRole, data)
 
-            if selected_sequence == "xxx" and ref_sequence_name == "xxx": # If new sequence and old sequence is still "All", then leave the ref on None (= don't hide it)
+            if selected_sequence == "xxx" and ref_sequence_name == "xxx":  # If new sequence and old sequence is still "All", then leave the ref on None (= don't hide it)
                 self.referenceThumbListWidget.setItemHidden(ref, False)
             else:
                 self.referenceThumbListWidget.setItemHidden(ref, True)
@@ -975,7 +1014,8 @@ class ReferenceTab(object):
             Lib.message_box(self, text="Please enter a valid URL")
             return
 
-        eye_icon = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon_closed.png")
+        eye_icon = QtGui.QPixmap(
+            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon_closed.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
         self.showUrlImageBtn.repaint()
@@ -998,7 +1038,8 @@ class ReferenceTab(object):
 
         QDialog.resize(600, 600)
 
-        eye_icon = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
+        eye_icon = QtGui.QPixmap(
+            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
         self.showUrlImageBtn.repaint()
@@ -1006,11 +1047,14 @@ class ReferenceTab(object):
         QDialog.exec_()
 
 
+    def change_quality(self):
+        if self.keepQualityCheckBox.checkState() == 2:
+            self.compression_level = 70
+        elif self.keepQualityCheckBox.checkState() == 0:
+            self.compression_level = 40
 
-
-
-
-
-
-
-
+    def hide_reference_options_frame(self):
+        if self.referenceOptionsFrame.isHidden():
+            self.referenceOptionsFrame.show()
+        else:
+            self.referenceOptionsFrame.hide()

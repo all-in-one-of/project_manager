@@ -54,16 +54,18 @@ from lib.reference import ReferenceTab
 from lib.module import Lib
 from lib.task_manager import TaskManager
 from lib.my_tasks import MyTasks
+from lib.comments import CommentWidget
+from lib.whats_new import WhatsNew
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew):
     def __init__(self):
         super(Main, self).__init__()
         #QtGui.QMainWindow.__init__(self)
         #Ui_Form.__init__(self)
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -101,8 +103,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         #         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
 
 
-        # Initialize modules and connections
-        ReferenceTab.__init__(self)
 
 
         # Select default project
@@ -114,8 +114,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         self.selected_shot_number = "xxxx"
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
 
-        TaskManager.__init__(self)
-        MyTasks.__init__(self)
+
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
@@ -263,6 +262,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
 
         # Other connects
         self.update_log()
+
+
+        # Initialize modules and connections
+        ReferenceTab.__init__(self)
+        TaskManager.__init__(self)
+        MyTasks.__init__(self)
+        WhatsNew.__init__(self)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -571,9 +577,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
             shots = [i[0] for i in shots]
             shots = sorted(shots)
             [self.shotCreationList.addItem(shot) for shot in shots]
-
-
-
 
     def shotList_Clicked(self):
 
@@ -1103,14 +1106,17 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
-    def add_log_entry(self, text):
+    def add_log_entry(self, text, people=[]):
+
+        people = ",".join(people)
+
         cur_date = time.strftime("%d/%m/%Y")
         cur_time = time.strftime("%H:%M:%S")
 
         log_time = cur_date + " - " + cur_time
 
-        self.cursor.execute('''INSERT INTO log(log_time, log_entry) VALUES (?, ?)''',
-                            (log_time, text))
+        self.cursor.execute('''INSERT INTO log(log_time, log_entry, log_people) VALUES (?, ?, ?)''',
+                            (log_time, text, people))
 
         self.db.commit()
 
@@ -1270,7 +1276,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks):
         if key == QtCore.Qt.Key_Delete:
             ReferenceTab.remove_selected_references(self)
 
-
     def closeEvent(self, event):
         self.save_tags_list()
         # quit_msg = "Are you sure you want to exit the program?"
@@ -1375,26 +1380,17 @@ if __name__ == "__main__":
 
     splash.show()
 
-    time.sleep(0.05)
-
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-02.jpg"))
     splash.repaint()
-
-    time.sleep(0.1)
 
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-03.jpg"))
     splash.repaint()
 
-    time.sleep(0.05)
-
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-04.jpg"))
     splash.repaint()
 
-    time.sleep(0.02)
-
     splash.setPixmap(QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen-05.jpg"))
     splash.repaint()
-
 
     window = Main()
     window.show()
