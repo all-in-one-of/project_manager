@@ -46,7 +46,7 @@ class TaskManager(object):
         self.tmShowBidCurveBtn.clicked.connect(self.show_bid_curve)
 
         self.tmHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
-        self.tmHideDoneCheckBox.clicked.connect(self.hide_done_tasks)
+        self.tmHideDoneCheckBox.clicked.connect(self.filter)
 
         self.tmRemoveTaskBtn.setStyleSheet("QPushButton {background-color: #872d2c;} QPushButton:hover {background-color: #1b81ca;}")
         self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
@@ -452,7 +452,13 @@ class TaskManager(object):
             elif str(bid_operation) == "<=": bid_result = operator.ge(bid_filter, bid)
 
             if project_filter == project and sequence_filter == sequence and shot_filter == shot and department_filter == department and status_filter == status and member_filter == member and bid_result:
-                self.tmTableWidget.showRow(row_index)
+                if self.tmHideDoneCheckBox.isChecked():
+                    if status == "Done":
+                        self.tmTableWidget.hideRow(row_index)
+                    else:
+                        self.tmTableWidget.showRow(row_index)
+                else:
+                    self.tmTableWidget.showRow(row_index)
             else:
                 self.tmTableWidget.hideRow(row_index)
 
@@ -511,19 +517,6 @@ class TaskManager(object):
         self.tmFilterByShotComboBox.addItem("None")
         for shot in shots:
             self.tmFilterByShotComboBox.addItem(shot)
-
-    def hide_done_tasks(self):
-        number_of_rows = self.tmTableWidget.rowCount()
-        for row_index in xrange(number_of_rows):
-
-            if self.tmHideDoneCheckBox.isChecked():
-                status = self.tmTableWidget.cellWidget(row_index, 3).currentText()
-                if status == "Done":
-                    self.tmTableWidget.hideRow(row_index)
-                else:
-                    self.tmTableWidget.showRow(row_index)
-            else:
-                self.tmTableWidget.showRow(row_index)
 
     def show_bid_curve(self):
 

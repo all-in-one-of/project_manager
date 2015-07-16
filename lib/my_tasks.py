@@ -35,8 +35,9 @@ class MyTasks(object):
         self.mtFilterByShotComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByDeptComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByStatusComboBox.currentIndexChanged.connect(self.mt_filter)
-        self.mtMeOnlyCheckBox.stateChanged.connect(self.mt_filter_assets_for_me)
+        self.mtMeOnlyCheckBox.stateChanged.connect(self.mt_meCheckBox_Clicked)
         self.mtFilterByMemberComboBox.currentIndexChanged.connect(self.mt_filter)
+        self.mtFilterByMemberComboBox.setEnabled(False)
         self.mtBidOperationComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByBidComboBox.valueChanged.connect(self.mt_filter)
 
@@ -47,6 +48,7 @@ class MyTasks(object):
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_load_shots)
 
         self.loadTasksAsWidgetBtn.clicked.connect(self.open_tasks_as_desktop_widgets)
+        self.mtRefreshTasksBtn.clicked.connect(self.mt_add_tasks_from_database)
 
         self.mtFilterByShotComboBox.addItem("None")
         self.mtFilterByDeptComboBox.addItem("None")
@@ -56,13 +58,14 @@ class MyTasks(object):
         self.mtFilterByMemberComboBox.addItem("None")
         self.mtFilterByMemberComboBox.addItems(sorted(self.members.values()))
 
+        self.mtHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
+        self.mtHideDoneCheckBox.clicked.connect(self.mt_filter)
+
         # Add project to project filter combobox
         for project in self.projects:
             self.mtFilterByProjectComboBox.addItem(project)
 
-        self.mt_filter_assets_for_me()
         self.mt_add_tasks_from_database()
-        self.mt_filter()
 
     def mt_add_tasks_from_database(self):
 
@@ -213,12 +216,18 @@ class MyTasks(object):
             self.mtTableWidget.setCellWidget(0, 11, combo_box)
             self.mt_widgets[str(inversed_index) + ":11"] = combo_box
 
+            # If hide done checkbox is checked and current task is done, hide it
+            if self.mtHideDoneCheckBox.isChecked():
+                if task_status == "Done":
+                    self.mtTableWidget.hideRow(0)
+
             inversed_index -= 1
 
         self.mtTableWidget.cellChanged.connect(self.mt_update_tasks)
         self.mtTableWidget.resizeColumnsToContents()
 
         self.mt_item_added = False
+        self.mt_filter()
 
     def mt_update_tasks(self, value):
         if self.mt_item_added == True:
@@ -267,6 +276,9 @@ class MyTasks(object):
             bid_filter = self.mtFilterByBidComboBox.value()
             bid_operation = self.mtBidOperationComboBox.currentText()
 
+            if self.mtMeOnlyCheckBox.checkState():
+                member_filter = self.members[self.username]
+
             # Retrieve value of current row items
             task_id = str(self.mtTableWidget.item(row_index, 0).text())
             project = str(self.cursor.execute('''SELECT project_name FROM tasks WHERE task_id=?''', (task_id,)).fetchone()[0])
@@ -293,7 +305,13 @@ class MyTasks(object):
             elif str(bid_operation) == "<=": bid_result = operator.ge(bid_filter, bid)
 
             if project_filter == project and sequence_filter == sequence and shot_filter == shot and department_filter == department and status_filter == status and member_filter == member and bid_result:
-                self.mtTableWidget.showRow(row_index)
+                if self.mtHideDoneCheckBox.isChecked():
+                    if status == "Done":
+                        self.mtTableWidget.hideRow(row_index)
+                    else:
+                        self.mtTableWidget.showRow(row_index)
+                else:
+                    self.mtTableWidget.showRow(row_index)
             else:
                 self.mtTableWidget.hideRow(row_index)
 
@@ -323,47 +341,14 @@ class MyTasks(object):
         for shot in shots:
             self.mtFilterByShotComboBox.addItem(shot)
 
-    def mt_filter_assets_for_me(self):
+    def mt_meCheckBox_Clicked(self):
 
-        if not self.mtMeOnlyCheckBox.checkState():
-            self.mtFilterByMemberComboBox.setCurrentIndex(0)
+        if self.mtMeOnlyCheckBox.checkState():
+            self.mtFilterByMemberComboBox.setEnabled(False)
         else:
-            if self.username == "achaput":
-                self.mtFilterByMemberComboBox.setCurrentIndex(1)
-            elif self.username == "costiguy":
-                self.mtFilterByMemberComboBox.setCurrentIndex(2)
-            elif self.username == "cgonnord":
-                self.mtFilterByMemberComboBox.setCurrentIndex(3)
-            elif self.username == "dcayerdesforges":
-                self.mtFilterByMemberComboBox.setCurrentIndex(4)
-            elif self.username == "earismendez":
-                self.mtFilterByMemberComboBox.setCurrentIndex(5)
-            elif self.username == "erodrigue":
-                self.mtFilterByMemberComboBox.setCurrentIndex(6)
-            elif self.username == "jberger":
-                self.mtFilterByMemberComboBox.setCurrentIndex(7)
-            elif self.username == "lgregoire":
-                self.mtFilterByMemberComboBox.setCurrentIndex(8)
-            elif self.username == "lclavet":
-                self.mtFilterByMemberComboBox.setCurrentIndex(9)
-            elif self.username == "mchretien":
-                self.mtFilterByMemberComboBox.setCurrentIndex(10)
-            elif self.username == "mbeaudoin":
-                self.mtFilterByMemberComboBox.setCurrentIndex(11)
-            elif self.username == "mroz":
-                self.mtFilterByMemberComboBox.setCurrentIndex(12)
-            elif self.username == "obolduc":
-                self.mtFilterByMemberComboBox.setCurrentIndex(13)
-            elif self.username == "slachapelle":
-                self.mtFilterByMemberComboBox.setCurrentIndex(14)
-            elif self.username == "thoudon":
-                self.mtFilterByMemberComboBox.setCurrentIndex(15)
-            elif self.username == "yjobin":
-                self.mtFilterByMemberComboBox.setCurrentIndex(16)
-            elif self.username == "yshan":
-                self.mtFilterByMemberComboBox.setCurrentIndex(17)
-            elif self.username == "vdelbroucq":
-                self.mtFilterByMemberComboBox.setCurrentIndex(18)
+            self.mtFilterByMemberComboBox.setEnabled(True)
+
+        self.mt_filter()
 
     def open_tasks_as_desktop_widgets(self):
         all_tasks = self.cursor.execute('''SELECT * FROM tasks WHERE task_assignation=?''', (self.username,)).fetchall()

@@ -85,6 +85,12 @@ class CommentWidget(QtGui.QDialog):
         elif asset_type == "task":
             pass
 
+
+        # Get all comment authors except me
+        self.comment_authors = list(set(self.comment_authors))
+        #self.comment_authors = [str(i) for i in self.comment_authors if not self.main.members[self.main.username] in i]
+
+
     def add_comment(self):
         comment = unicode(self.commentLineEdit.text())
         comment = Lib.normalize_str(self.main, comment)
@@ -105,10 +111,6 @@ class CommentWidget(QtGui.QDialog):
         elif self.asset_type == "task":
             pass
 
-
-        # Get all comment authors except me
-        self.comment_authors = list(set(self.comment_authors))
-        self.comment_authors = [str(i) for i in self.comment_authors if not self.main.members[self.main.username] in i]
 
         self.load_comments(asset_type="ref")
         self.commentLineEdit.clear()

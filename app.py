@@ -236,6 +236,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
 
+        self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
+
+
         # Connect the buttons
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
@@ -1106,6 +1109,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
+    def change_username(self):
+        username = str(self.usernameAdminComboBox.currentText())
+        self.username = username
+
     def add_log_entry(self, text, people=[]):
 
         people = ",".join(people)
@@ -1275,6 +1282,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             sys.exit()
         if key == QtCore.Qt.Key_Delete:
             ReferenceTab.remove_selected_references(self)
+
 
 
     def closeEvent(self, event):

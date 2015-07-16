@@ -25,10 +25,8 @@ class WhatsNew(object):
         log_entries_length = str(len(self.cursor.execute('''SELECT * FROM log''').fetchall()))
 
 
-
-
         self.log_entries = {}
-        log_entries = self.cursor.execute('''SELECT * FROM log WHERE log_id >= ? AND log_id < ?''', (last_log_id_read, log_entries_length)).fetchall()
+        log_entries = self.cursor.execute('''SELECT * FROM log WHERE log_id > ? AND log_id <= ?''', (last_log_id_read, log_entries_length)).fetchall()
 
         if len(log_entries) == 0:
             top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
@@ -54,16 +52,16 @@ class WhatsNew(object):
             if "reference" in log_text:
                 if self.showOnlyMeWhatsNew.checkState() == 2:
                     if self.members[self.username] in log_people:
-                        reference_entries.append(log_time + "-" + log_text)
+                        reference_entries.append(log_time + " - " + log_text)
                 elif self.showOnlyMeWhatsNew.checkState() == 0:
-                    reference_entries.append(log_time + "-" + log_text)
+                    reference_entries.append(log_time + " - " + log_text)
 
             elif "comment" in log_text:
                 if self.showOnlyMeWhatsNew.checkState() == 2:
                     if self.members[self.username] in log_people:
-                        comment_entries.append(log_time + "-" + log_text)
+                        comment_entries.append(log_time + " - " + log_text)
                 elif self.showOnlyMeWhatsNew.checkState() == 0:
-                    comment_entries.append(log_time + "-" + log_text)
+                    comment_entries.append(log_time + " - " + log_text)
 
 
 

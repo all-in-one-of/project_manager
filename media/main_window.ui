@@ -56,7 +56,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>2</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -1864,6 +1864,19 @@
                  <number>0</number>
                 </property>
                 <item>
+                 <widget class="QLabel" name="mtMemberLbl">
+                  <property name="maximumSize">
+                   <size>
+                    <width>65</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Member: </string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QCheckBox" name="mtMeOnlyCheckBox">
                   <property name="maximumSize">
                    <size>
@@ -1980,10 +1993,33 @@
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_49">
+               <layout class="QHBoxLayout" name="horizontalLayout_50">
                 <property name="margin">
                  <number>0</number>
                 </property>
+                <item>
+                 <spacer name="mthorizontalSpacer05">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Maximum</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>70</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="mtHideDoneCheckBox">
+                  <property name="text">
+                   <string>Hide Done</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -2073,6 +2109,13 @@
               <string>Asset</string>
              </property>
             </column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="mtRefreshTasksBtn">
+            <property name="text">
+             <string>Refresh tasks list</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -2903,7 +2946,7 @@
                          <string>Click one or multiple tags in this list to filter the thumbnails by selected tags</string>
                         </property>
                         <property name="selectionMode">
-                         <enum>QAbstractItemView::ExtendedSelection</enum>
+                         <enum>QAbstractItemView::MultiSelection</enum>
                         </property>
                        </widget>
                       </item>
@@ -3446,6 +3489,127 @@ p, li { white-space: pre-wrap; }
           <string>Preferences</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QFrame" name="frame_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_33">
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QComboBox" name="usernameAdminComboBox">
+               <property name="editable">
+                <bool>false</bool>
+               </property>
+               <property name="frame">
+                <bool>true</bool>
+               </property>
+               <item>
+                <property name="text">
+                 <string>achaput</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>costiguy</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>cgonnord</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>dcayerdesforges</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>earismendez</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>erodrigue</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>jberger</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>lgregoire</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>lclavet</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>mchretien</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>mbeaudoin</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>mroz</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>obolduc</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>slachapelle</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>thoudon</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>vdelbroucq</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>yjobin</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>yshan</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
           <item>
            <widget class="QGroupBox" name="softwarePathGrpBox">
             <property name="title">
