@@ -64,8 +64,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -131,7 +131,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.publishBtn.setStyleSheet("background-color: #77D482;")
         self.loadBtn.setStyleSheet(
             "QPushButton {background-color: #77B0D4;} QPushButton:hover {background-color: #1BCAA7;}")
-        self.assetDependencyList.setEnabled(False)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.logTextEdit.setFont(font)
@@ -231,10 +230,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.projectList.itemDoubleClicked.connect(self.projectList_DoubleClicked)
         self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)
-        self.seqCreationList.itemClicked.connect(self.seqCreationList_Clicked)
         self.shotList.itemClicked.connect(self.shotList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
-        self.departmentCreationList.itemClicked.connect(self.departmentCreationList_Clicked)
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
@@ -252,9 +249,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.updateThumbBtn.clicked.connect(self.update_thumb)
 
         self.savePrefBtn.clicked.connect(partial(Lib.save_prefs, self))
-        self.createAssetBtn.clicked.connect(self.create_asset)
-
-
 
         self.updateLogBtn.clicked.connect(self.update_log)
 
@@ -436,19 +430,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # Populate the sequences lists
         self.seqList.clear()
         self.seqList.addItem("All")
-        self.seqCreationList.clear()
-        self.seqCreationList.addItem("All")
         self.seqReferenceList.clear()
         self.seqReferenceList.addItem("All")
         self.seqReferenceList.addItem("None")
         self.shotList.clear()
         self.shotList.addItem("None")
-        self.shotCreationList.clear()
-        self.shotCreationList.addItem("None")
         self.shotReferenceList.clear()
         self.shotReferenceList.addItem("None")
-        [(self.seqList.addItem(sequence[0]), self.seqCreationList.addItem(sequence[0]),
-          self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
+        [(self.seqList.addItem(sequence[0]), self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
 
 
         # Populate the assets list
@@ -456,60 +445,84 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                                               (self.selected_project_name,)).fetchall()
         self.add_assets_to_asset_list(self.all_assets)
 
-        # Populate the asset dependency list
-        self.assetDependencyList.clear()
-        for asset in self.all_assets:
-            self.assetDependencyList.addItem(asset[4])
+
+        # Select "All" from sequence list and "None" from shot list
+        self.seqList.setCurrentRow(0)
+        self.shotList.setCurrentRow(0)
 
     def projectList_DoubleClicked(self):
         subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
 
+    def load_assets_from_selected_proj_seq_shot_dept(self):
+        pass
+
     def departmentList_Clicked(self):
+
+        # Get selected department name
         self.selected_department = str(self.departmentList.selectedItems()[0].text())
 
-        if len(self.seqList.selectedItems()) == 0:
-            if self.selected_department == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
-                                             (self.selected_project_name,))
-            else:
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''',
-                                             (self.selected_project_name, self.selected_department,))
+        if len(self.departmentList.selectedItems()) == 0:
+            Lib.message_box(self, text="Please select a sequence first")
 
-            # Add assets to asset list
-            self.add_assets_to_asset_list(assets)
+        if len(self.shotList.selectedItems()) == 0:
+            Lib.message_box(self, text="Please select a shot first")
 
-        else:
+        query_str = "SELECT * FROM assets"
+        where_statment = []
+        if self.selected_sequence_name != "xxx":
+            where_statment.append("sequence_name='" + self.selected_sequence_name + "'")
 
-            if self.selected_department == "All" and self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
-                                             (self.selected_project_name,))
-            elif self.selected_department == "All" and self.selected_sequence_name != "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_id=?''',
-                                             (self.selected_project_name, self.selected_sequence_id))
-            elif self.selected_department != "All" and self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''',
-                                             (self.selected_project_name, self.selected_department))
-            else:
-                self.selected_sequence_id = str(
-                    self.cursor.execute('''SELECT sequence_id FROM sequences WHERE sequence_name=?''',
-                                        (self.selected_sequence_name,)).fetchone()[0])
-                assets = self.cursor.execute(
-                    '''SELECT * FROM assets WHERE project_name=? AND sequence_id=? AND asset_type=?''',
-                    (self.selected_project_name, self.selected_sequence_id, self.selected_department,))
+        if self.selected_shot_number != "xxxx":
+            where_statment.append("shot_number='" + self.selected_shot_number + "'")
 
-            # Add assets to asset list
-            self.add_assets_to_asset_list(assets)
+        if self.selected_department != "All":
+            where_statment.append("asset_type='" + self.selected_department + "'")
+
+        where_statment = " AND ".join(where_statment)
+        if len(where_statment) > 0:
+            query_str += " WHERE " + where_statment
+
+        print(query_str)
+
+        bls = self.cursor.execute(query_str).fetchall()
+        print(bls)
+        return
+
+
+
+
+        # and self.selected_shot_number == "xxxx" and self.selected_department == "All":
+        #
+        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
+        #
+        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
+        #
+        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
+        #
+        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
+        #
+
+
+
+
+            #assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,))
+        #else:
+            #assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (self.selected_project_name, self.selected_sequence_name, self.selected_department,))
+
+
+
+
+        # Add assets to asset list
+        self.add_assets_to_asset_list(assets)
 
     def seqList_Clicked(self):
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
 
-        # Add shots to shot list, shot creation list and reference tool shot list
+        # Add shots to shot list and reference tool shot list
         if self.selected_sequence_name == "All":
             self.selected_sequence_name = "xxx"
             self.shotList.clear()
             self.shotList.addItem("None")
-            self.shotCreationList.clear()
-            self.shotCreationList.addItem("None")
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
         else:
@@ -517,14 +530,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                                         (self.selected_project_name, self.selected_sequence_name,)).fetchall()
             self.shotList.clear()
             self.shotList.addItem("None")
-            self.shotCreationList.clear()
-            self.shotCreationList.addItem("None")
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
             shots = [i[0] for i in shots]
             shots = sorted(shots)
-            [(self.shotList.addItem(shot), self.shotCreationList.addItem(shot), self.shotReferenceList.addItem(shot))
-             for shot in shots]
+            [(self.shotList.addItem(shot), self.shotReferenceList.addItem(shot)) for shot in shots]
 
         if len(self.departmentList.selectedItems()) == 0:
             if self.selected_sequence_name == "All":
@@ -555,41 +565,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             # Add assets to asset list
             self.add_assets_to_asset_list(assets)
 
-        # Mirror selection to Asset Creation tab
-        seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
-        self.seqCreationList.setCurrentRow(seq_list_selected_index)
-
         # Mirror selection to Reference Tool tab
         seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
         self.seqReferenceList.setCurrentRow(seq_list_selected_index)
 
-    def seqCreationList_Clicked(self):
-        self.selected_sequence_name = str(self.seqCreationList.selectedItems()[0].text())
-
-        # Add shots to shot list and shot creation list
-        if self.selected_sequence_name == "All":
-            self.selected_sequence_name = "xxx"
-            self.shotCreationList.clear()
-            self.shotCreationList.addItem("None")
-
-        else:
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
-            self.shotCreationList.clear()
-            self.shotCreationList.addItem("None")
-            shots = [i[0] for i in shots]
-            shots = sorted(shots)
-            [self.shotCreationList.addItem(shot) for shot in shots]
+        # Select "None" from shotList
+        self.shotList.setCurrentRow(0)
 
     def shotList_Clicked(self):
-
         if str(self.shotList.selectedItems()[0].text()) == "None":
             self.selected_shot_number = "xxxx"
-
-        # Mirror selection to Asset Creation tab
-        shot_list_selected_index = self.shotList.selectedIndexes()[0].row()
-        self.shotCreationList.setCurrentRow(shot_list_selected_index)
-        self.shotReferenceList.setCurrentRow(shot_list_selected_index)
 
     def assetList_Clicked(self):
 
@@ -654,145 +639,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
              self.selected_asset_version)).fetchone()[0]
         if asset_comment:
             self.commentTxt.setText(asset_comment)
-
-    def departmentCreationList_Clicked(self):
-        '''Filter the softwareCreationList based on the type of department selected.
-        ex. if "Concept" is selected, only show Photoshop.
-        '''
-
-        # Global overrides
-        selected_department = str(self.departmentCreationList.selectedItems()[0].text())
-        self.webGroupBox.setEnabled(False)
-
-        if selected_department == "Concept":
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(0), True)  # Blender
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(1), True)  # Cinema 4D
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(2), True)  # Houdini
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(3), True)  # Maya
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(4), False)  # Photoshop
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(5), True)  # Softimage
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), True)  # ZBrush
-
-            self.assetDependencyList.setEnabled(False)
-            self.webGroupBox.setEnabled(True)
-            self.referenceWebLineEdit.setEnabled(True)
-            try:
-                self.softwareCreationList.setItemSelected(
-                    self.softwareCreationList.setItemSelected(self.softwareCreationList.item(4), True))
-            except:
-                pass
-
-        elif selected_department == "Modeling":
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(1), False)  # Cinema 4D
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(0), False)  # Blender
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(2), False)  # Houdini
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(3), False)  # Maya
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(4), True)  # Photoshop
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(5), False)  # Softimage
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), False)  # ZBrush
-            self.assetDependencyList.setEnabled(False)
-
-        elif selected_department == "Layout":
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(1), True)  # Cinema 4D
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(0), False)  # Blender
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(2), True)  # Houdini
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(3), False)  # Maya
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(4), True)  # Photoshop
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(5), False)  # Softimage
-            self.softwareCreationList.setItemHidden(self.softwareCreationList.item(6), False)  # ZBrush
-            self.assetDependencyList.setEnabled(True)
-
-        elif selected_department == "References":
-            self.softwareCreationList.setEnabled(False)
-            self.webGroupBox.setEnabled(True)
-            self.referenceWebLineEdit.setEnabled(True)
-
-    def create_asset(self):
-        '''Create asset
-        '''
-
-        asset_name = unicode(self.assetNameCreationLineEdit.text())
-        asset_name = Lib.normalize_str(asset_name)
-
-        # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
-            Lib.message_box(text="Please select a project first")
-            return
-
-        asset_filename = "\\assets\\" + self.selected_project_shortname + "_"
-
-        # Check if a department is selected
-        try:
-            selected_department = str(self.departmentCreationList.selectedItems()[0].text())
-        except:
-            Lib.message_box(text="You must first select a project and department")
-            return
-
-        # Check if a name is defined for the asset
-        if len(asset_name) == 0:
-            Lib.message_box(text="Please enter a name for the asset")
-            return
-
-        # Check if a sequence is selected
-        try:
-            selected_sequence = str(self.seqCreationList.selectedItems()[0].text())
-            asset_filename += selected_sequence + "_"
-        except:
-            selected_sequence = "xxx"
-            asset_filename += "xxx_"
-
-        # Check if a shot is selected
-        try:
-            selected_shot = str(self.shotCreationList.selectedItems()[0].text())
-            asset_filename += selected_shot + "_"
-        except:
-            selected_shot = "xxxx"
-            asset_filename += "xxxx_"
-
-
-        # Create asset depending on selected department
-        if selected_department == "References":
-
-            last_version = ReferenceTab.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
-            if last_version:
-                last_version = str(int(last_version) + 1).zfill(2)
-                asset_filename += "ref_" + asset_name + "_" + last_version
-            else:
-                asset_filename += "ref_" + asset_name + "_01"
-
-            print(asset_filename)
-
-
-
-        elif selected_department == "Concept":
-
-            oUrl = str(self.referenceWebLineEdit.text())
-            if not len(oUrl) == 0:
-                asset_path += "\\concepts\\concept_{0}_01.jpg".format(asset_name)
-                asset_path, asset_name = self.check_if_asset_already_exists(asset_path, asset_name, "jpg")
-                urllib.urlretrieve(oUrl, asset_path)
-            else:
-                asset_path += "\\concepts\\concept_{0}_01.psd".format(asset_name)
-                asset_path, asset_name = self.check_if_asset_already_exists(asset_path, asset_name, "psd")
-                shutil.copyfile("H:\\01-NAD\\_pipeline\\_utilities\\default_scenes\\photoshop.psd",
-                                asset_path)
-
-            self.cursor.execute(
-                '''INSERT INTO assets(project_id, sequence_id, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?)''',
-                (
-                    self.selected_project_name, selected_sequence_id, asset_name, asset_path, "concept", "01",
-                    self.username))
-
-            self.db.commit()
-
-        elif selected_department == "Modeling":
-            pass
-
-        elif selected_department == "Layout":
-            pass
-
-        #        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-        #            subprocess.Popen([self.photoshop_path, asset_path])
 
     def check_if_asset_already_exists(self, asset_path, asset_name, asset_type):
         if os.path.isfile(asset_path):
@@ -1376,7 +1222,6 @@ class SoftwareDialog(QtGui.QDialog):
 
 
             # Main Loop
-
 
 
 if __name__ == "__main__":

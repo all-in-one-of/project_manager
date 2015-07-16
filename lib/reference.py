@@ -8,7 +8,6 @@ import shutil
 from PIL import Image
 import urllib
 from functools import partial
-import pafy
 import time
 import re
 

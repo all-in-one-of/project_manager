@@ -56,7 +56,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>3</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -2127,306 +2127,6 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="assetCreatorTab">
-         <attribute name="title">
-          <string>Asset Creator</string>
-         </attribute>
-         <widget class="QPushButton" name="createAssetBtn">
-          <property name="geometry">
-           <rect>
-            <x>340</x>
-            <y>780</y>
-            <width>221</width>
-            <height>23</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Create Asset</string>
-          </property>
-         </widget>
-         <widget class="QListWidget" name="departmentCreationList">
-          <property name="geometry">
-           <rect>
-            <x>30</x>
-            <y>80</y>
-            <width>121</width>
-            <height>192</height>
-           </rect>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-          <item>
-           <property name="text">
-            <string>Concepts</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Layout</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Modeling</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>References</string>
-           </property>
-          </item>
-         </widget>
-         <widget class="QListWidget" name="softwareCreationList">
-          <property name="geometry">
-           <rect>
-            <x>210</x>
-            <y>70</y>
-            <width>121</width>
-            <height>192</height>
-           </rect>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-          <item>
-           <property name="text">
-            <string>Blender</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Cinema 4D</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Houdini</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Maya</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Photoshop</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Softimage</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>ZBrush</string>
-           </property>
-          </item>
-         </widget>
-         <widget class="QLineEdit" name="assetNameCreationLineEdit">
-          <property name="geometry">
-           <rect>
-            <x>440</x>
-            <y>680</y>
-            <width>113</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="placeholderText">
-           <string>ex: mainchar, house...</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="assetNameCreationLbl">
-          <property name="geometry">
-           <rect>
-            <x>350</x>
-            <y>690</y>
-            <width>81</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Asset name:</string>
-          </property>
-         </widget>
-         <widget class="QListWidget" name="assetDependencyList">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>850</x>
-            <y>90</y>
-            <width>161</width>
-            <height>192</height>
-           </rect>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QListWidget" name="seqCreationList">
-          <property name="geometry">
-           <rect>
-            <x>370</x>
-            <y>90</y>
-            <width>181</width>
-            <height>192</height>
-           </rect>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QLabel" name="sequencesCreationLbl">
-          <property name="geometry">
-           <rect>
-            <x>380</x>
-            <y>60</y>
-            <width>91</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Sequences</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="dependencyCreationLbl">
-          <property name="geometry">
-           <rect>
-            <x>830</x>
-            <y>60</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Dependency</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="departmentCreationLbl">
-          <property name="geometry">
-           <rect>
-            <x>30</x>
-            <y>50</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Departments</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="softwareCreationLbl">
-          <property name="geometry">
-           <rect>
-            <x>220</x>
-            <y>50</y>
-            <width>81</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Software</string>
-          </property>
-         </widget>
-         <widget class="QListWidget" name="shotCreationList">
-          <property name="geometry">
-           <rect>
-            <x>580</x>
-            <y>90</y>
-            <width>181</width>
-            <height>192</height>
-           </rect>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-         <widget class="QLabel" name="shotCreationLbl">
-          <property name="geometry">
-           <rect>
-            <x>590</x>
-            <y>70</y>
-            <width>51</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Shots</string>
-          </property>
-         </widget>
-        </widget>
         <widget class="QWidget" name="imagesManagerTab">
          <attribute name="title">
           <string>Images Manager</string>
@@ -2686,21 +2386,6 @@
                               </property>
                              </widget>
                             </item>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QFrame" name="referenceNameFrame">
-                           <property name="frameShape">
-                            <enum>QFrame::NoFrame</enum>
-                           </property>
-                           <property name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                           </property>
-                           <layout class="QHBoxLayout" name="horizontalLayout_25">
-                            <property name="margin">
-                             <number>0</number>
-                            </property>
                            </layout>
                           </widget>
                          </item>
@@ -3369,21 +3054,6 @@ Shift + double click on a thumbnail to open the rename dialog.</string>
             </layout>
            </widget>
           </item>
-          <item>
-           <widget class="QFrame" name="progressBarFrame">
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_22">
-             <property name="margin">
-              <number>0</number>
-             </property>
-            </layout>
-           </widget>
-          </item>
          </layout>
         </widget>
         <widget class="QWidget" name="tagsManagerTab">
@@ -3993,7 +3663,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="frame_3">
+       <widget class="QFrame" name="diskUsageFrame">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -4005,7 +3675,7 @@ p, li { white-space: pre-wrap; }
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_3">
+          <widget class="QLabel" name="diskUsageLbl">
            <property name="text">
             <string>Disk usage:</string>
            </property>
@@ -4028,7 +3698,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="frame_4">
+       <widget class="QFrame" name="deadlineFrame">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -4040,7 +3710,7 @@ p, li { white-space: pre-wrap; }
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_4">
+          <widget class="QLabel" name="deadlineLbl">
            <property name="text">
             <string>Time left:</string>
            </property>

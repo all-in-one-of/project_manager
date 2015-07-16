@@ -538,3 +538,4 @@ class TaskManager(object):
         plt.plot(bid_log_days, bid_log_amounts)
         plt.gcf().autofmt_xdate()
         plt.show()
+
