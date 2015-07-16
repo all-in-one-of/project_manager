@@ -1276,6 +1276,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         if key == QtCore.Qt.Key_Delete:
             ReferenceTab.remove_selected_references(self)
 
+
     def closeEvent(self, event):
         self.save_tags_list()
         # quit_msg = "Are you sure you want to exit the program?"

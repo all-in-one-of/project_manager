@@ -24,7 +24,13 @@ class WhatsNew(object):
         last_log_id_read = self.cursor.execute('''SELECT last_log_id_read FROM whats_new WHERE member=?''', (self.username,)).fetchone()[0]
         log_entries_length = str(len(self.cursor.execute('''SELECT * FROM log''').fetchall()))
 
-        if last_log_id_read == log_entries_length:
+
+
+
+        self.log_entries = {}
+        log_entries = self.cursor.execute('''SELECT * FROM log WHERE log_id >= ? AND log_id < ?''', (last_log_id_read, log_entries_length)).fetchall()
+
+        if len(log_entries) == 0:
             top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
             top_item.setText(0, "There's nothing new :(")
             top_item.setFont(0, big_font)
@@ -33,17 +39,13 @@ class WhatsNew(object):
             return
 
 
-        self.log_entries = {}
-        log_entries = self.cursor.execute('''SELECT * FROM log WHERE log_id >= ? AND log_id < ?''', (last_log_id_read, log_entries_length)).fetchall()
-
-
         self.Tabs.setTabText(self.Tabs.count() - 1, "What's New (" + str(len(log_entries)) + ")")
         reference_entries = []
         comment_entries = []
 
 
 
-        for log_entry in log_entries:
+        for log_entry in reversed(log_entries):
             log_time = log_entry[1]
             log_text = log_entry[2]
             log_people = log_entry[3]
@@ -69,6 +71,8 @@ class WhatsNew(object):
         self.log_entries["Comments"] = comment_entries
 
         for top_items, child_items in self.log_entries.items():
+            if len(child_items) == 0:
+                continue
             top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
             top_item.setText(0, top_items + " (" + str(len(child_items)) + ")")
             top_item.setFont(0, big_font)
@@ -81,6 +85,18 @@ class WhatsNew(object):
 
 
     def mark_all_as_read(self):
+
+        msgbox = QtGui.QMessageBox()
+        msgbox.setStandardButtons(QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)
+        msgbox.setDefaultButton(QtGui.QMessageBox.Yes)
+        Lib.apply_style(self, msgbox)
+        msgbox.setText("Are you sure ?")
+        msgbox.setWindowTitle("Mark all as read")
+        msgbox.setIcon(QtGui.QMessageBox.Warning)
+        button_clicked = msgbox.exec_()
+        if button_clicked == 65536:
+            return
+
         log_entries = str(len(self.cursor.execute('''SELECT * FROM log''').fetchall()))
         self.cursor.execute('''UPDATE whats_new SET last_log_id_read=? WHERE member=?''', (log_entries, self.username))
         self.db.commit()

@@ -34,7 +34,6 @@ class ReferenceTab(object):
         self.filterByNameLineEdit.textChanged.connect(self.filter_reference_by_name)
         self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
-        self.referenceNameLineEdit.returnPressed.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
         self.keepQualityCheckBox.stateChanged.connect(self.change_quality)
         self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
@@ -217,10 +216,25 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a valid URL")
             return
 
+        asset_name_dialog = QtGui.QDialog()
+        asset_name_dialog.setWindowTitle("Asset name")
+        Lib.apply_style(self, asset_name_dialog)
+        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
+
+        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
+        lineEdit = QtGui.QLineEdit(asset_name_dialog)
+        lineEdit.returnPressed.connect(asset_name_dialog.close)
+
+        main_layout.addWidget(lbl)
+        main_layout.addWidget(lineEdit)
+
+        asset_name_dialog.exec_()
+
         # Convert asset name
-        asset_name = unicode(self.referenceNameLineEdit.text())
+        asset_name = unicode(lineEdit.text())
         asset_name = Lib.normalize_str(self, asset_name)
         asset_name = Lib.convert_to_camel_case(self, asset_name)
+
 
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -608,6 +622,7 @@ class ReferenceTab(object):
                 reference_list_item = QtGui.QListWidgetItem(reference_name)
                 reference_list_item.setIcon(QtGui.QIcon(reference_path))
                 reference_list_item.setData(QtCore.Qt.UserRole, reference)
+
                 if os.path.isfile(reference_path):
                     self.referenceThumbListWidget.addItem(reference_list_item)
 
@@ -679,11 +694,10 @@ class ReferenceTab(object):
 
         for ref in references_list:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_tags = ref_data[5]
+            ref_tags = str(ref_data[5])
             all_tags.append(ref_tags)
             all_tags = filter(None, all_tags)
-            all_tags = ",".join(
-                all_tags)  # convert all_tags = ["", "architecture", "architecture,lighting"] to all_tags = "architecture,architecture,lighting"
+            all_tags = ",".join(all_tags)  # convert all_tags = ["", "architecture", "architecture,lighting"] to all_tags = "architecture,architecture,lighting"
             all_tags = all_tags.split(
                 ",")  # convert all_tags = "architecture,architecture,lighting" to ["architecture", "architecture", "lighting"]
             all_tags = sorted(list(set(all_tags)))  # sort list and remove duplicates
@@ -897,7 +911,7 @@ class ReferenceTab(object):
         data = (ref_sequence_name, ref_shot_number, new_name, new_path, ref_version, ref_tags)
         selected_reference.setData(QtCore.Qt.UserRole, data)
 
-        self.load_reference_thumbnails()
+        selected_reference.setText(new_name)
 
     def change_seq_shot_layout(self):
         self.change_dialog = QtGui.QDialog()
@@ -1045,7 +1059,6 @@ class ReferenceTab(object):
         self.showUrlImageBtn.repaint()
 
         QDialog.exec_()
-
 
     def change_quality(self):
         if self.keepQualityCheckBox.checkState() == 2:
