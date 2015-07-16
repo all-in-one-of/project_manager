@@ -35,6 +35,7 @@ class ReferenceTab(object):
         self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
+        self.createReferencesFromScreenshotBtn.clicked.connect(self.create_reference_from_screenshot)
         self.keepQualityCheckBox.stateChanged.connect(self.change_quality)
         self.openRefInKuadroBtn.clicked.connect(self.load_ref_in_kuadro)
         self.openRefInPhotoshopBtn.clicked.connect(self.load_ref_in_photoshop)
@@ -463,6 +464,99 @@ class ReferenceTab(object):
         self.db.commit()
 
         self.referenceThumbListWidget.scrollToItem(new_item)
+        self.referenceThumbListWidget.setItemSelected(new_item, True)
+
+    def create_reference_from_screenshot(self):
+
+        asset_name_dialog = QtGui.QDialog()
+        asset_name_dialog.setWindowTitle("Asset name")
+        Lib.apply_style(self, asset_name_dialog)
+        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
+
+        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
+        lineEdit = QtGui.QLineEdit(asset_name_dialog)
+        lineEdit.returnPressed.connect(asset_name_dialog.close)
+
+        main_layout.addWidget(lbl)
+        main_layout.addWidget(lineEdit)
+
+        asset_name_dialog.exec_()
+
+        # Convert asset name
+        asset_name = unicode(lineEdit.text())
+        asset_name = Lib.normalize_str(self, asset_name)
+        asset_name = Lib.convert_to_camel_case(self, asset_name)
+
+        # Check if a project is selected
+        if len(self.projectList.selectedItems()) == 0:
+            self.message_box(text="Please select a project first")
+            return
+
+        asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
+
+        # Check if a name is defined for the asset
+        if len(asset_name) == 0:
+            self.message_box(text="Please enter a name for the asset")
+            return
+
+        # Check if a sequence is selected
+        try:
+            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
+            if selected_sequence == "All" or selected_sequence == "None":
+                selected_sequence = "xxx"
+            asset_filename += selected_sequence + "_"
+        except:
+            self.message_box(text="Please select a sequence first")
+            return
+
+        # Check if a shot is selected
+        try:
+            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
+            if selected_shot == "None":
+                selected_shot = "xxxx"
+            asset_filename += selected_shot + "_"
+        except:
+            selected_shot = "xxxx"
+            asset_filename += "xxxx_"
+
+        # Check if a version already exists
+        last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
+        if last_version:
+            last_version = str(int(last_version) + 1).zfill(2)
+            asset_filename += "ref_" + asset_name + "_" + last_version
+        else:
+            last_version = "01"
+            asset_filename += "ref_" + asset_name + "_" + last_version
+
+        asset_filename += ".jpg"
+
+        # Create reference from capture
+        Lib.take_screenshot(self, path=self.selected_project_path + asset_filename)
+        downloaded_img = Image.open(self.selected_project_path + asset_filename)
+        image_width = downloaded_img.size[0]
+        Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, self.compression_level)
+
+        new_item = QtGui.QListWidgetItem()
+        new_item.setIcon(QtGui.QIcon(self.selected_project_path + asset_filename))
+
+        # Add reference to database
+        self.cursor.execute(
+            '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
+            (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
+             last_version, self.username))
+
+        self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
+
+        new_item.setData(QtCore.Qt.UserRole,
+                         [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
+                          str(last_version), ""])
+
+        self.db.commit()
+
+        self.referenceThumbListWidget.addItem(new_item)
+
+        self.referenceThumbListWidget.scrollToItem(new_item)
+        self.referenceThumbListWidget.clearSelection()
         self.referenceThumbListWidget.setItemSelected(new_item, True)
 
     def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):

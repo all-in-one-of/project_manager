@@ -2442,6 +2442,12 @@
                    </property>
                    <item>
                     <widget class="QFrame" name="seqAndShotsFrame">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>155</height>
+                      </size>
+                     </property>
                      <property name="maximumSize">
                       <size>
                        <width>16777215</width>
@@ -2553,6 +2559,12 @@
                    </item>
                    <item>
                     <widget class="QFrame" name="addReferenceOptionsFrame">
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>65</height>
+                      </size>
+                     </property>
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
                      </property>
@@ -2591,7 +2603,7 @@
                           <number>0</number>
                          </property>
                          <item>
-                          <widget class="QFrame" name="frame_7">
+                          <widget class="QFrame" name="urlFrame">
                            <property name="frameShape">
                             <enum>QFrame::NoFrame</enum>
                            </property>
@@ -2710,7 +2722,7 @@
                        </widget>
                       </item>
                       <item>
-                       <widget class="Line" name="referenceCreationLine_2">
+                       <widget class="Line" name="referenceCreationLine02">
                         <property name="orientation">
                          <enum>Qt::Vertical</enum>
                         </property>
@@ -2732,7 +2744,7 @@
                           <number>0</number>
                          </property>
                          <item>
-                          <widget class="QPushButton" name="pushButton">
+                          <widget class="QPushButton" name="createReferencesFromScreenshotBtn">
                            <property name="text">
                             <string>Capture</string>
                            </property>
@@ -2746,6 +2758,18 @@
                    </item>
                    <item>
                     <widget class="QGroupBox" name="qualityOptionsGroupBox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>35</height>
+                      </size>
+                     </property>
                      <property name="title">
                       <string>Options</string>
                      </property>
@@ -2800,21 +2824,6 @@
                         </property>
                        </widget>
                       </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QFrame" name="compressionFrame">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QHBoxLayout" name="horizontalLayout_50">
-                      <property name="margin">
-                       <number>0</number>
-                      </property>
                      </layout>
                     </widget>
                    </item>

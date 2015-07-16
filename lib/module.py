@@ -141,19 +141,22 @@ class Lib(object):
         img = img.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
         img.save(image_path, 'JPEG', quality=quality)
 
-    def take_screenshot(self, path="H:\\01-NAD\\Session-06\\_pipeline\\_utilities\\_database\\screenshots", name="tmp"):
+    def take_screenshot(self, path):
+
+        self.showMinimized()
 
         # constants
-        cur_dir = os.path.dirname(os.path.realpath(__file__))
-        SCREEN_GRABBER = cur_dir + "\\screenshot_grabber\\MiniCap.exe"
+        SCREEN_GRABBER = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\MiniCap.exe"
 
         # filename
-        extension = ".jpg"
-        file_name = path + "\\" + name + extension
+        file_name = path
 
         # run the screen grabber
         subprocess.call([SCREEN_GRABBER, '-captureregselect', '-exit', '-save', file_name])
-        winsound.PlaySound(cur_dir + "\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
+        #winsound.PlaySound("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
+
+        self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+        self.activateWindow()
 
     def fit_range(self, base_value=2.5, base_min=0, base_max=5, limit_min=0, limit_max=1):
         return ((limit_max - limit_min) * (base_value - base_min) / (base_max - base_min)) + limit_min
