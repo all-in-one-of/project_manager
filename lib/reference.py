@@ -50,6 +50,7 @@ class ReferenceTab(object):
         self.changeRefSeqShotBtn.clicked.connect(self.change_seq_shot_layout)
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
+        self.filterByNoTagsCheckBox.stateChanged.connect(self.show_reference_with_no_tags)
 
         icon = QtGui.QIcon(
             "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
@@ -92,17 +93,14 @@ class ReferenceTab(object):
 
 
         # Filter thumbnails based on which sequence was clicked
-        all_references = []
+        all_references = self.get_all_references()
         all_tags = []
-        for i in xrange(self.referenceThumbListWidget.count()):
-            all_references.append(self.referenceThumbListWidget.item(i))
 
         for ref in all_references:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
             ref_seq = ref_data[0]
             ref_tags = ref_data[5]
-            if str(self.seqReferenceList.selectedItems()[
-                       0].text()) == "All":  # If "All" is selected, show all thumbnails
+            if str(self.seqReferenceList.selectedItems()[0].text()) == "All":  # If "All" is selected, show all thumbnails
                 all_tags.append(ref_tags)
                 self.referenceThumbListWidget.setItemHidden(ref, False)
             else:  # Else, show thumbnails for selected sequence only
@@ -122,10 +120,8 @@ class ReferenceTab(object):
             self.selected_shot_number = str(self.shotReferenceList.selectedItems()[0].text())
 
         # Filter thumbnails based on which shot was clicked
-        all_references = []
+        all_references = self.get_all_references()
         all_tags = []
-        for i in xrange(self.referenceThumbListWidget.count()):
-            all_references.append(self.referenceThumbListWidget.item(i))
 
         for ref in all_references:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
@@ -717,7 +713,7 @@ class ReferenceTab(object):
                 reference_list_item.setIcon(QtGui.QIcon(reference_path))
                 reference_list_item.setData(QtCore.Qt.UserRole, reference)
 
-                if os.path.isfile(reference_path):
+                if os.path.isfile(reference_path): # Check if image exists to prevent errors
                     self.referenceThumbListWidget.addItem(reference_list_item)
 
                 progressBar.setValue(i)
@@ -746,24 +742,11 @@ class ReferenceTab(object):
 
     def reload_filter_by_tags_list(self):
 
-        all_references = []
-        for i in xrange(self.referenceThumbListWidget.count()):
-            all_references.append(self.referenceThumbListWidget.item(i))
+        all_references = self.get_all_loaded_references()
 
         all_tags = self.get_all_tags_from_loaded_references(all_references)
 
-        self.filterByTagsListWidget.clear()
-        for tag in all_tags:
-            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10,
-                                          30)  # Fit frequency in the 10-30 range
-            font = QtGui.QFont()
-            font.setPointSize(tag_frequency)
-
-            item = QtGui.QListWidgetItem(tag)
-            item.setFont(font)
-
-            self.filterByTagsListWidget.addItem(item)
+        self.add_tags_to_filter_tags_list(all_tags)
 
     def referenceThumbListWidget_itemSelectionChanged(self):
 
@@ -788,13 +771,14 @@ class ReferenceTab(object):
 
         for ref in references_list:
             ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_tags = str(ref_data[5])
+            ref_tags = ref_data[5]
             all_tags.append(ref_tags)
             all_tags = filter(None, all_tags)
             all_tags = ",".join(all_tags)  # convert all_tags = ["", "architecture", "architecture,lighting"] to all_tags = "architecture,architecture,lighting"
             all_tags = all_tags.split(
                 ",")  # convert all_tags = "architecture,architecture,lighting" to ["architecture", "architecture", "lighting"]
             all_tags = sorted(list(set(all_tags)))  # sort list and remove duplicates
+
 
         return all_tags
 
@@ -816,9 +800,7 @@ class ReferenceTab(object):
         selected_tags = [str(i.text()) for i in selected_tags]
 
         # Get all references currently loaded in the referenceThumbListWidget view
-        all_references = []
-        for i in xrange(self.referenceThumbListWidget.count()):
-            all_references.append(self.referenceThumbListWidget.item(i))
+        all_references = self.get_all_loaded_references()
 
         # If no tag is selected, unhide all references
         if not selected_tags:
@@ -836,8 +818,7 @@ class ReferenceTab(object):
                 continue
 
             if "," in ref_tags:
-                ref_tags = ref_tags.split(
-                    ",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
+                ref_tags = ref_tags.split(",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
             else:
                 ref_tags = ref_tags.split()
 
@@ -878,6 +859,24 @@ class ReferenceTab(object):
                     self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
                 else:
                     self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
+
+    def show_reference_with_no_tags(self):
+
+        if self.filterByNoTagsCheckBox.checkState() == 2:
+            all_references = self.get_all_loaded_references()
+
+            # Loop over all references and set them to hidden if they have no tags
+            for ref in all_references:
+                ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
+                ref_tags = ref_data[5]
+                if ref_tags == None:
+                    ref.setHidden(False)
+                else:
+                    ref.setHidden(True)
+        else:
+            all_references = self.get_all_references()
+            for ref in all_references:
+                ref.setHidden(False)
 
     def load_ref_in_kuadro(self):
 
@@ -1165,3 +1164,18 @@ class ReferenceTab(object):
             self.referenceOptionsFrame.show()
         else:
             self.referenceOptionsFrame.hide()
+
+    def get_all_loaded_references(self):
+        all_references = []
+        for i in xrange(self.referenceThumbListWidget.count()):
+            if not self.referenceThumbListWidget.item(i).isHidden():
+                all_references.append(self.referenceThumbListWidget.item(i))
+
+        return all_references
+
+    def get_all_references(self):
+        all_references = []
+        for i in xrange(self.referenceThumbListWidget.count()):
+            all_references.append(self.referenceThumbListWidget.item(i))
+
+        return all_references

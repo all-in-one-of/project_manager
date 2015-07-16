@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Thu Jul 16 12:27:08 2015
+# Created: Thu Jul 16 14:16:50 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1225,6 +1225,9 @@ class Ui_Form(object):
         self.filterByTagsListWidget.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
         self.filterByTagsListWidget.setObjectName(_fromUtf8("filterByTagsListWidget"))
         self.verticalLayout_10.addWidget(self.filterByTagsListWidget)
+        self.filterByNoTagsCheckBox = QtGui.QCheckBox(self.filterByTagsGroupBox)
+        self.filterByNoTagsCheckBox.setObjectName(_fromUtf8("filterByNoTagsCheckBox"))
+        self.verticalLayout_10.addWidget(self.filterByNoTagsCheckBox)
         self.verticalLayout_12.addWidget(self.filterByTagsGroupBox)
         self.verticalLayout_21.addWidget(self.filterByFrame)
         self.addTagsFrame = QtGui.QFrame(self.referenceOptionsFrame)
@@ -1663,7 +1666,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(2)
+        self.Tabs.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1883,6 +1886,7 @@ class Ui_Form(object):
         self.filterByNameLineEdit.setToolTip(_translate("Form", "Filter thumbnails by name. You can use wildcards (*), for example gir* will show thumbnails named \"Giraffe\" and \"Giroscope\".", None))
         self.filterByTagsGroupBox.setTitle(_translate("Form", "Filter by tags", None))
         self.filterByTagsListWidget.setToolTip(_translate("Form", "Click one or multiple tags in this list to filter the thumbnails by selected tags", None))
+        self.filterByNoTagsCheckBox.setText(_translate("Form", "Images with no tags", None))
         self.addTagsGroupBox.setTitle(_translate("Form", "Add/remove tags", None))
         self.allTagsTreeWidget.setToolTip(_translate("Form", "Add selected tags to selected images. You can double click on a tag to add it or select multiple tags and click on the corresponding arrow to add them.", None))
         self.allTagsTreeWidget.setSortingEnabled(True)
