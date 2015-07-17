@@ -459,7 +459,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         # Populate the sequences lists
         self.seqList.clear()
-        self.seqList.addItem("All")
+        self.seqList.addItem("None")
         self.seqReferenceList.clear()
         self.seqReferenceList.addItem("All")
         self.seqReferenceList.addItem("None")
@@ -479,7 +479,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
 
         # Add shots to shot list and reference tool shot list
-        if self.selected_sequence_name == "All":
+        if self.selected_sequence_name == "None":
             self.selected_sequence_name = "xxx"
             self.shotList.clear()
             self.shotList.addItem("None")
@@ -499,71 +499,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.shotList.setCurrentRow(0)
         self.load_assets_from_selected_proj_seq_shot_dept()
 
-    def projectList_DoubleClicked(self):
-        subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
-
-    def load_assets_from_selected_proj_seq_shot_dept(self):
-        return
-        # Get selected sequence name
-        try:
-            self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
-            if self.selected_sequence_name == "All": self.selected_sequence_name = "xxx"
-        except:
-            self.selected_sequence_name = "xxx"
-
-
-        # Get selected shot number
-        try:
-            self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
-            if self.selected_shot_number == "None": self.selected_shot_number = "xxxx"
-        except:
-            self.selected_shot_number = "xxxx"
-
-        # Get selected department name
-        try:
-            self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
-        except:
-            self.selected_department_name = "xxx"
-
-        query_str = "SELECT * FROM assets"
-        where_statment = []
-        if self.selected_sequence_name != "xxx":
-            where_statment.append("sequence_name='" + self.selected_sequence_name + "'")
-
-        if self.selected_shot_number != "xxxx":
-            where_statment.append("shot_number='" + self.selected_shot_number + "'")
-
-        if self.selected_department_name != "xxx":
-            where_statment.append("asset_type='" + self.selected_department_name + "'")
-
-        where_statment = " AND ".join(where_statment)
-        if len(where_statment) > 0:
-            query_str += " WHERE " + where_statment
-
-        assets = self.cursor.execute(query_str).fetchall()
-
-
-        for asset in assets:
-            sequence_name = asset[2]
-            shot_number = asset[3]
-            asset_name = asset[4]
-            asset_path = asset[5]
-            asset_type = asset[6]
-            asset_version = asset[7]
-            asset_comment = asset[8]
-            asset_tags = asset[9]
-            asset_dependency = asset[11]
-            last_access = asset[12]
-            creator = asset[13]
-
-            asset_item = QtGui.QListWidgetItem(asset_name)
-            asset = Asset(sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version,
-                           asset_comment, asset_tags, asset_dependency, last_access, creator)
-
-            #self.assetList.addItem(asset_name)
-
     def assetList_Clicked(self, item_clicked=None):
-
         self.selected_asset_name = str(item_clicked.text())
         all_versions = self.cursor.execute('''SELECT asset_version FROM assets WHERE project_name=? AND asset_name=?''',
                                            (self.selected_project_name, self.selected_asset_name,)).fetchall()
@@ -572,20 +508,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         self.versionList.clear()
         for version in all_versions:
-            asset = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_name=? AND asset_version=? AND asset_type=?''', (self.selected_project_name, self.selected_asset_name, version, self.selected_department_name)).fetchone()
+            asset = self.cursor.execute(
+                '''SELECT * FROM assets WHERE project_name=? AND asset_name=? AND asset_version=? AND asset_type=?''',
+                (self.selected_project_name, self.selected_asset_name, version, self.selected_department_name)).fetchone()
             self.versionList.addItem(asset[7])
 
-
         return
-
-
 
         self.versionList.addItems()
-        #print(selected_asset.data(QtCore.Qt.UserRole).toPyObject())
+        # print(selected_asset.data(QtCore.Qt.UserRole).toPyObject())
         return
-
-
-
 
         self.selected_asset_type = str(self.assetList.selectedItems()[0].text()).split("_")[0]
         self.selected_asset_name = str(self.assetList.selectedItems()[0].text()).split("_")[1]
@@ -651,6 +583,69 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def versionList_Clicked(self, item_clicked=None):
         selected_version = item_clicked
+
+    def projectList_DoubleClicked(self):
+        subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
+
+    def load_assets_from_selected_proj_seq_shot_dept(self):
+        return
+        # Get selected sequence name
+        try:
+            self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
+            if self.selected_sequence_name == "None": self.selected_sequence_name = "xxx"
+        except:
+            self.selected_sequence_name = "xxx"
+
+
+        # Get selected shot number
+        try:
+            self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
+            if self.selected_shot_number == "None": self.selected_shot_number = "xxxx"
+        except:
+            self.selected_shot_number = "xxxx"
+
+        # Get selected department name
+        try:
+            self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
+        except:
+            self.selected_department_name = "xxx"
+
+        query_str = "SELECT * FROM assets"
+        where_statment = []
+        if self.selected_sequence_name != "xxx":
+            where_statment.append("sequence_name='" + self.selected_sequence_name + "'")
+
+        if self.selected_shot_number != "xxxx":
+            where_statment.append("shot_number='" + self.selected_shot_number + "'")
+
+        if self.selected_department_name != "xxx":
+            where_statment.append("asset_type='" + self.selected_department_name + "'")
+
+        where_statment = " AND ".join(where_statment)
+        if len(where_statment) > 0:
+            query_str += " WHERE " + where_statment
+
+        assets = self.cursor.execute(query_str).fetchall()
+
+
+        for asset in assets:
+            sequence_name = asset[2]
+            shot_number = asset[3]
+            asset_name = asset[4]
+            asset_path = asset[5]
+            asset_type = asset[6]
+            asset_version = asset[7]
+            asset_comment = asset[8]
+            asset_tags = asset[9]
+            asset_dependency = asset[11]
+            last_access = asset[12]
+            creator = asset[13]
+
+            asset_item = QtGui.QListWidgetItem(asset_name)
+            asset = Asset(sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version,
+                           asset_comment, asset_tags, asset_dependency, last_access, creator)
+
+            #self.assetList.addItem(asset_name)
 
     def check_if_asset_already_exists(self, asset_path, asset_name, asset_type):
         if os.path.isfile(asset_path):

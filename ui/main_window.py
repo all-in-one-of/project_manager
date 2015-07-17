@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Fri Jul 17 09:25:20 2015
+# Created: Fri Jul 17 13:43:11 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1520,7 +1520,23 @@ class Ui_Form(object):
         self.verticalLayout_31.addWidget(self.markAllAsReadBtn)
         self.Tabs.addTab(self.whatsNewTab, _fromUtf8(""))
         self.verticalLayout_5.addWidget(self.Tabs)
-        self.diskUsageFrame = QtGui.QFrame(self.assetManagerFrame)
+        self.BottomFrame = QtGui.QFrame(self.assetManagerFrame)
+        self.BottomFrame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.BottomFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.BottomFrame.setObjectName(_fromUtf8("BottomFrame"))
+        self.horizontalLayout_25 = QtGui.QHBoxLayout(self.BottomFrame)
+        self.horizontalLayout_25.setSpacing(2)
+        self.horizontalLayout_25.setMargin(0)
+        self.horizontalLayout_25.setObjectName(_fromUtf8("horizontalLayout_25"))
+        self.importantInfoFrame = QtGui.QFrame(self.BottomFrame)
+        self.importantInfoFrame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.importantInfoFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.importantInfoFrame.setObjectName(_fromUtf8("importantInfoFrame"))
+        self.verticalLayout_34 = QtGui.QVBoxLayout(self.importantInfoFrame)
+        self.verticalLayout_34.setSpacing(2)
+        self.verticalLayout_34.setMargin(0)
+        self.verticalLayout_34.setObjectName(_fromUtf8("verticalLayout_34"))
+        self.diskUsageFrame = QtGui.QFrame(self.importantInfoFrame)
         self.diskUsageFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.diskUsageFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.diskUsageFrame.setObjectName(_fromUtf8("diskUsageFrame"))
@@ -1537,8 +1553,8 @@ class Ui_Form(object):
         self.diskUsageProgressBar.setProperty("value", 24)
         self.diskUsageProgressBar.setObjectName(_fromUtf8("diskUsageProgressBar"))
         self.horizontalLayout_41.addWidget(self.diskUsageProgressBar)
-        self.verticalLayout_5.addWidget(self.diskUsageFrame)
-        self.deadlineFrame = QtGui.QFrame(self.assetManagerFrame)
+        self.verticalLayout_34.addWidget(self.diskUsageFrame)
+        self.deadlineFrame = QtGui.QFrame(self.importantInfoFrame)
         self.deadlineFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.deadlineFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.deadlineFrame.setObjectName(_fromUtf8("deadlineFrame"))
@@ -1555,11 +1571,19 @@ class Ui_Form(object):
         self.deadlineProgressBar.setProperty("value", 100)
         self.deadlineProgressBar.setObjectName(_fromUtf8("deadlineProgressBar"))
         self.horizontalLayout_40.addWidget(self.deadlineProgressBar)
-        self.verticalLayout_5.addWidget(self.deadlineFrame)
+        self.verticalLayout_34.addWidget(self.deadlineFrame)
+        self.horizontalLayout_25.addWidget(self.importantInfoFrame)
+        self.refreshAllBtn = QtGui.QPushButton(self.BottomFrame)
+        self.refreshAllBtn.setMinimumSize(QtCore.QSize(40, 40))
+        self.refreshAllBtn.setMaximumSize(QtCore.QSize(40, 40))
+        self.refreshAllBtn.setText(_fromUtf8(""))
+        self.refreshAllBtn.setObjectName(_fromUtf8("refreshAllBtn"))
+        self.horizontalLayout_25.addWidget(self.refreshAllBtn)
+        self.verticalLayout_5.addWidget(self.BottomFrame)
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(3)
+        self.Tabs.setCurrentIndex(7)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

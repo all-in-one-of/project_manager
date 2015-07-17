@@ -10,6 +10,7 @@ import urllib
 from functools import partial
 import time
 import re
+import pafy
 
 from lib.module import Lib
 from lib.comments import CommentWidget
@@ -211,32 +212,6 @@ class ReferenceTab(object):
 
     def create_reference_from_web(self):
 
-        # Check if URL is valid
-        URL = str(self.referenceWebLineEdit.text())
-        if len(URL) < 3:
-            self.message_box(text="Please enter a valid URL")
-            return
-
-        asset_name_dialog = QtGui.QDialog()
-        asset_name_dialog.setWindowTitle("Asset name")
-        Lib.apply_style(self, asset_name_dialog)
-        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
-
-        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
-        lineEdit = QtGui.QLineEdit(asset_name_dialog)
-        lineEdit.returnPressed.connect(asset_name_dialog.close)
-
-        main_layout.addWidget(lbl)
-        main_layout.addWidget(lineEdit)
-
-        asset_name_dialog.exec_()
-
-        # Convert asset name
-        asset_name = unicode(lineEdit.text())
-        asset_name = Lib.normalize_str(self, asset_name)
-        asset_name = Lib.convert_to_camel_case(self, asset_name)
-
-
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
             self.message_box(text="Please select a project first")
@@ -244,10 +219,6 @@ class ReferenceTab(object):
 
         asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
 
-        # Check if a name is defined for the asset
-        if len(asset_name) == 0:
-            self.message_box(text="Please enter a name for the asset")
-            return
 
         # Check if a sequence is selected
         try:
@@ -268,6 +239,33 @@ class ReferenceTab(object):
         except:
             selected_shot = "xxxx"
             asset_filename += "xxxx_"
+
+
+        # Check if URL is valid
+        URL = str(self.referenceWebLineEdit.text())
+        if len(URL) < 3:
+            self.message_box(text="Please enter a valid URL")
+            return
+
+        # Enter asset name dialog
+        asset_name_dialog = QtGui.QDialog()
+        asset_name_dialog.setWindowTitle("Asset name")
+        Lib.apply_style(self, asset_name_dialog)
+        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
+
+        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
+        lineEdit = QtGui.QLineEdit(asset_name_dialog)
+        lineEdit.returnPressed.connect(asset_name_dialog.close)
+
+        main_layout.addWidget(lbl)
+        main_layout.addWidget(lineEdit)
+
+        asset_name_dialog.exec_()
+
+        # Convert asset name
+        asset_name = unicode(lineEdit.text())
+        asset_name = Lib.normalize_str(self, asset_name)
+        asset_name = Lib.convert_to_camel_case(self, asset_name)
 
 
         # Check if a version already exists
@@ -330,7 +328,7 @@ class ReferenceTab(object):
                 (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
                  last_version, stream_link, "video", self.username))
 
-            self.add_log_entry("{0} added a reference from web ({1}) (video format)".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
+            self.add_log_entry("{0} added a reference from web ({1}) (video format)".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, stream_link]))
 
             new_item.setData(QtCore.Qt.UserRole,
                              [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -1204,3 +1202,5 @@ class ReferenceTab(object):
 
 
         pass
+
+

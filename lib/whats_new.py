@@ -5,6 +5,7 @@ from PyQt4 import QtGui, QtCore
 from lib.module import Lib
 from lib.comments import CommentWidget
 import os
+import subprocess
 
 class WhatsNew(object):
     def __init__(self):
@@ -24,11 +25,12 @@ class WhatsNew(object):
         small_font.setPointSize(12)
 
         last_log_id_read = self.cursor.execute('''SELECT last_log_id_read FROM whats_new WHERE member=?''', (self.username,)).fetchone()[0]
-        log_entries_length = str(len(self.cursor.execute('''SELECT * FROM log''').fetchall()))
+        log_entries_length = str(self.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0])
 
 
         self.log_entries = {}
         log_entries = self.cursor.execute('''SELECT * FROM log WHERE log_id > ? AND log_id <= ?''', (last_log_id_read, log_entries_length)).fetchall()
+
 
         if len(log_entries) == 0:
             top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
@@ -102,7 +104,7 @@ class WhatsNew(object):
         if button_clicked == 65536:
             return
 
-        log_entries = str(len(self.cursor.execute('''SELECT * FROM log''').fetchall()))
+        log_entries = str(self.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0])
         self.cursor.execute('''UPDATE whats_new SET last_log_id_read=? WHERE member=?''', (log_entries, self.username))
         self.db.commit()
         self.load_whats_new()
@@ -134,7 +136,10 @@ class WhatsNew(object):
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
                 comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
             else:
-                os.system(self.selected_project_path + asset_path)
+                if "video" in selected_item_description:
+                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset_path])
+                else:
+                    os.system(self.selected_project_path + asset_path)
 
         elif "comment" in selected_item_description:
             comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
