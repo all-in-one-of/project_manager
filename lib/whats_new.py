@@ -3,7 +3,8 @@
 
 from PyQt4 import QtGui, QtCore
 from lib.module import Lib
-
+from lib.comments import CommentWidget
+import os
 
 class WhatsNew(object):
     def __init__(self):
@@ -11,6 +12,7 @@ class WhatsNew(object):
         self.showOnlyMeWhatsNew.stateChanged.connect(self.load_whats_new)
         self.markAllAsReadBtn.clicked.connect(self.mark_all_as_read)
         self.refreshWhatsNewBtn.clicked.connect(self.load_whats_new)
+        self.whatsNewTreeWidget.itemDoubleClicked.connect(self.tree_double_clicked)
         self.load_whats_new()
 
     def load_whats_new(self):
@@ -81,7 +83,6 @@ class WhatsNew(object):
                 child_item.setFont(0, small_font)
                 top_item.addChild(child_item)
 
-
     def mark_all_as_read(self):
 
         msgbox = QtGui.QMessageBox()
@@ -99,3 +100,25 @@ class WhatsNew(object):
         self.cursor.execute('''UPDATE whats_new SET last_log_id_read=? WHERE member=?''', (log_entries, self.username))
         self.db.commit()
         self.load_whats_new()
+
+    def tree_double_clicked(self):
+
+        selected_item = self.whatsNewTreeWidget.selectedItems()[0]
+        selected_item_str = str(selected_item.text(0))
+        selected_item_time = " - ".join(selected_item_str.split(" - ")[0:2])
+        selected_item_description = selected_item_str.split(" - ")[-1]
+
+        clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_time=? AND log_entry=?''', (selected_item_time, selected_item_description,)).fetchone()[0]
+        if len(clicked_log_entry) == 0:
+            return
+
+        if "reference" in selected_item_description:
+            os.system(clicked_log_entry)
+
+        elif "comment" in selected_item_description:
+            if "image" in selected_item_description:
+                ref_data = clicked_log_entry.split("|")
+                comment_dialog = CommentWidget(self, 1, "ref", ref_data[0], ref_data[1], ref_data[2], ref_data[3], ref_data[4])
+            pass
+
+        return

@@ -113,7 +113,7 @@ class CommentWidget(QtGui.QDialog):
 
         self.load_comments(asset_type="ref")
         self.commentLineEdit.clear()
-        self.main.add_log_entry(text="{0} added a comment on asset {1} (seq: {2})".format(self.main.members[self.main.username], self.asset_name, self.sequence_name), people=self.comment_authors)
+        self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset_name, self.sequence_name), people=self.comment_authors, value="|".join([self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path]))
 
     def delete_comment(self):
         selected_comment = self.commentListWidget.selectedItems()

@@ -50,17 +50,21 @@ class ReferenceTab(object):
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
         self.filterByNoTagsCheckBox.stateChanged.connect(self.show_reference_with_no_tags)
+        self.refreshReferenceThumbListWidgetBtn.clicked.connect(self.refresh_reference_list)
 
-        icon = QtGui.QIcon(
-            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
-        self.biggerRefPushButton_01.setIcon(icon)
-        self.biggerRefPushButton_02.setIcon(icon)
-        self.biggerRefPushButton_03.setIcon(icon)
-        self.biggerRefPushButton_04.setIcon(icon)
+        resize_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
+        refresh_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\refresh.png")
+        self.biggerRefPushButton_01.setIcon(resize_icon)
+        self.biggerRefPushButton_02.setIcon(resize_icon)
+        self.biggerRefPushButton_03.setIcon(resize_icon)
+        self.biggerRefPushButton_04.setIcon(resize_icon)
         self.biggerRefPushButton_01.setIconSize(QtCore.QSize(8, 8))
         self.biggerRefPushButton_02.setIconSize(QtCore.QSize(16, 16))
         self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
         self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
+
+        self.refreshReferenceThumbListWidgetBtn.setIcon(refresh_icon)
+        self.refreshReferenceThumbListWidgetBtn.setIconSize(QtCore.QSize(24, 24))
 
     def seqReferenceList_Clicked(self):
 
@@ -317,7 +321,7 @@ class ReferenceTab(object):
 
         new_item = QtGui.QListWidgetItem()
         new_item.setIcon(QtGui.QIcon(self.selected_project_path + asset_filename))
-
+        new_item.setText(asset_name)
         # Add reference to database
         if self.ref_type == "video":
             self.cursor.execute(
@@ -325,7 +329,7 @@ class ReferenceTab(object):
                 (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
                  last_version, stream_link, "video", self.username))
 
-            self.add_log_entry("{0} added a reference from web (video format)".format(self.members[self.username]))
+            self.add_log_entry("{0} added a reference from web (video format)".format(self.members[self.username]), value=self.selected_project_path + asset_filename)
 
             new_item.setData(QtCore.Qt.UserRole,
                              [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -337,7 +341,7 @@ class ReferenceTab(object):
                 (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
                  last_version, self.username))
 
-            self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
+            self.add_log_entry("{0} added a reference from web".format(self.members[self.username]), value=self.selected_project_path + asset_filename)
 
             new_item.setData(QtCore.Qt.UserRole,
                              [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -540,7 +544,7 @@ class ReferenceTab(object):
             (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
              last_version, self.username))
 
-        self.add_log_entry("{0} added a reference from web".format(self.members[self.username]))
+        self.add_log_entry("{0} added a reference from web".format(self.members[self.username]), value=self.selected_project_path + asset_filename)
 
         new_item.setData(QtCore.Qt.UserRole,
                          [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -872,10 +876,14 @@ class ReferenceTab(object):
                     ref.setHidden(False)
                 else:
                     ref.setHidden(True)
+            self.reload_filter_by_tags_list()
         else:
-            all_references = self.get_all_references()
+            self.seqReferenceList_Clicked()
+            all_references = self.get_all_loaded_references()
             for ref in all_references:
                 ref.setHidden(False)
+
+            self.reload_filter_by_tags_list()
 
     def load_ref_in_kuadro(self):
 
@@ -940,8 +948,7 @@ class ReferenceTab(object):
             self.rename_dialog.exec_()
 
         elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version,
-                                           ref_path)
+            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version, ref_path)
 
         else:  # Opening video / image in chrome / windows image view
 
@@ -1178,3 +1185,7 @@ class ReferenceTab(object):
             all_references.append(self.referenceThumbListWidget.item(i))
 
         return all_references
+
+    def refresh_reference_list(self):
+
+        pass

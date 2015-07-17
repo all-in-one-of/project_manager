@@ -16,8 +16,9 @@ class Asset(object):
         self.creator = creator
 
 
-    def __str__(self):
-        return "Sequence name: {0} | Shot number: {1} | Asset name: {2} | Asset path: {3} | Asset type: {4} | Asset version: {5} | Asset comment: {6} | Asset tags: {7} | Asset dependency: {8} | Last access: {9} | Creator: {10}".format(self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_type, self.asset_version, self.asset_comment, self.asset_tags, self.asset_dependency, self.last_access, self.creator)
+    def print_asset(self):
+        print("Sequence name: {0} | Shot number: {1} | Asset name: {2} | Asset path: {3} | Asset type: {4} | Asset version: {5} | Asset comment: {6} | Asset tags: {7} | Asset dependency: {8} | Last access: {9} | Creator: {10}".format(self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_type, self.asset_version, self.asset_comment, self.asset_tags, self.asset_dependency, self.last_access, self.creator))
+
 
 
 

@@ -65,8 +65,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -266,7 +266,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         TaskManager.__init__(self)
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
-
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -956,7 +955,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         username = str(self.usernameAdminComboBox.currentText())
         self.username = username
 
-    def add_log_entry(self, text, people=[]):
+    def add_log_entry(self, text, people=[], value=""):
 
         people = ",".join(people)
 
@@ -965,8 +964,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         log_time = cur_date + " - " + cur_time
 
-        self.cursor.execute('''INSERT INTO log(log_time, log_entry, log_people) VALUES (?, ?, ?)''',
-                            (log_time, text, people))
+        self.cursor.execute('''INSERT INTO log(log_time, log_entry, log_people, log_value) VALUES (?, ?, ?, ?)''',
+                            (log_time, text, people, value))
 
         self.db.commit()
 
