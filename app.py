@@ -56,16 +56,17 @@ from lib.task_manager import TaskManager
 from lib.my_tasks import MyTasks
 from lib.comments import CommentWidget
 from lib.whats_new import WhatsNew
+from lib.asset import Asset
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew, Asset):
     def __init__(self):
         super(Main, self).__init__()
         #QtGui.QMainWindow.__init__(self)
         #Ui_Form.__init__(self)
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -83,8 +84,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.projects = [str(i[0]) for i in self.projects]
         for project in self.projects:
             self.projectList.addItem(project)
-
-
 
         # Global Variables
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
@@ -112,6 +111,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.selected_project_name = str(self.projectList.selectedItems()[0].text())
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
+        self.selected_department_name = str(self.departmentList.item(0).text())
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
 
 
@@ -228,10 +228,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # Connect the lists
         self.projectList.itemClicked.connect(self.projectList_Clicked)
         self.projectList.itemDoubleClicked.connect(self.projectList_DoubleClicked)
-        self.departmentList.itemClicked.connect(self.departmentList_Clicked)
-        self.seqList.itemClicked.connect(self.seqList_Clicked)
-        self.shotList.itemClicked.connect(self.shotList_Clicked)
+        self.departmentList.itemClicked.connect(self.load_assets_from_selected_proj_seq_shot_dept)
+        self.seqList.itemClicked.connect(self.seqList_Clicked) # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
+        self.shotList.itemClicked.connect(self.load_assets_from_selected_proj_seq_shot_dept)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
+        self.versionList.itemClicked.connect(self.versionList_Clicked)
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
@@ -260,12 +261,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # Other connects
         self.update_log()
 
-
         # Initialize modules and connections
         ReferenceTab.__init__(self)
         TaskManager.__init__(self)
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
+
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -379,6 +380,32 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.shotList.addItem(shot_number)
         self.seqList_Clicked()
 
+    def load_all_assets_for_first_time(self):
+        '''
+        Add all assets from selected project. Only run once to rebuild assets objects from Asset class.
+        '''
+
+        all_assets = self.cursor.execute('''SELECT DISTINCT asset_name FROM assets WHERE project_name=?''', (self.selected_project_name,)).fetchall()
+        for asset in all_assets:
+            asset_name = asset[0]
+            # sequence_name = asset[2]
+            # shot_number = asset[3]
+            # asset_name = asset[4]
+            # asset_path = asset[5]
+            # asset_type = asset[6]
+            # asset_version = asset[7]
+            # asset_comment = asset[8]
+            # asset_tags = asset[9]
+            # asset_dependency = asset[11]
+            # last_access = asset[12]
+            # creator = asset[13]
+            #
+            # asset_item = QtGui.QListWidgetItem(asset_name)
+            # asset = Asset(sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version,
+            #               asset_comment, asset_tags, asset_dependency, last_access, creator)
+            # asset_item.setData(QtCore.Qt.UserRole, asset)
+            self.assetList.addItem(asset_name)
+
     def filterList_textChanged(self, list_type):
 
         if list_type == "sequence":
@@ -419,8 +446,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         # Populate the departments list
         self.departmentList.clear()
-        self.departmentList.addItem("All")
         [self.departmentList.addItem(department[0]) for department in self.departments]
+        try:
+            self.departmentList.setCurrentRow(0)
+        except:
+            pass
+
 
         # Query the sequences associated with the project
         self.sequences = (self.cursor.execute('''SELECT DISTINCT sequence_name FROM sequences WHERE project_name=?''',
@@ -439,81 +470,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.shotReferenceList.addItem("None")
         [(self.seqList.addItem(sequence[0]), self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
 
-
-        # Populate the assets list
-        self.all_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
-                                              (self.selected_project_name,)).fetchall()
-        self.add_assets_to_asset_list(self.all_assets)
-
+        self.load_all_assets_for_first_time()
 
         # Select "All" from sequence list and "None" from shot list
         self.seqList.setCurrentRow(0)
         self.shotList.setCurrentRow(0)
-
-    def projectList_DoubleClicked(self):
-        subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
-
-    def load_assets_from_selected_proj_seq_shot_dept(self):
-        pass
-
-    def departmentList_Clicked(self):
-
-        # Get selected department name
-        self.selected_department = str(self.departmentList.selectedItems()[0].text())
-
-        if len(self.departmentList.selectedItems()) == 0:
-            Lib.message_box(self, text="Please select a sequence first")
-
-        if len(self.shotList.selectedItems()) == 0:
-            Lib.message_box(self, text="Please select a shot first")
-
-        query_str = "SELECT * FROM assets"
-        where_statment = []
-        if self.selected_sequence_name != "xxx":
-            where_statment.append("sequence_name='" + self.selected_sequence_name + "'")
-
-        if self.selected_shot_number != "xxxx":
-            where_statment.append("shot_number='" + self.selected_shot_number + "'")
-
-        if self.selected_department != "All":
-            where_statment.append("asset_type='" + self.selected_department + "'")
-
-        where_statment = " AND ".join(where_statment)
-        if len(where_statment) > 0:
-            query_str += " WHERE " + where_statment
-
-        print(query_str)
-
-        bls = self.cursor.execute(query_str).fetchall()
-        print(bls)
-        return
-
-
-
-
-        # and self.selected_shot_number == "xxxx" and self.selected_department == "All":
-        #
-        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
-        #
-        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
-        #
-        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
-        #
-        # elif self.selected_sequence_name == "xxx" and self.selected_shot_number == "xxxx" and self.selected_department == "All":
-        #
-
-
-
-
-            #assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,))
-        #else:
-            #assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (self.selected_project_name, self.selected_sequence_name, self.selected_department,))
-
-
-
-
-        # Add assets to asset list
-        self.add_assets_to_asset_list(assets)
 
     def seqList_Clicked(self):
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
@@ -536,47 +497,96 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             shots = sorted(shots)
             [(self.shotList.addItem(shot), self.shotReferenceList.addItem(shot)) for shot in shots]
 
-        if len(self.departmentList.selectedItems()) == 0:
-            if self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
-                                             (self.selected_project_name,))
-            else:
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_name=?''',
-                                             (self.selected_project_name, self.selected_sequence_name,))
-
-            # Add assets to asset list
-            self.add_assets_to_asset_list(assets)
-
-        else:
-            if self.selected_department == "All" and self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''',
-                                             (self.selected_project_name,))
-            elif self.selected_department == "All" and self.selected_sequence_name != "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND sequence_name=?''',
-                                             (self.selected_project_name, self.selected_sequence_name))
-            elif self.selected_department != "All" and self.selected_sequence_name == "All":
-                assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''',
-                                             (self.selected_project_name, self.selected_department))
-            else:
-                assets = self.cursor.execute(
-                    '''SELECT * FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''',
-                    (self.selected_project_name, self.selected_sequence_name, self.selected_department,))
-
-            # Add assets to asset list
-            self.add_assets_to_asset_list(assets)
-
-        # Mirror selection to Reference Tool tab
-        seq_list_selected_index = self.seqList.selectedIndexes()[0].row()
-        self.seqReferenceList.setCurrentRow(seq_list_selected_index)
-
-        # Select "None" from shotList
         self.shotList.setCurrentRow(0)
+        self.load_assets_from_selected_proj_seq_shot_dept()
 
-    def shotList_Clicked(self):
-        if str(self.shotList.selectedItems()[0].text()) == "None":
+    def projectList_DoubleClicked(self):
+        subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
+
+    def load_assets_from_selected_proj_seq_shot_dept(self):
+        return
+        # Get selected sequence name
+        try:
+            self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
+            if self.selected_sequence_name == "All": self.selected_sequence_name = "xxx"
+        except:
+            self.selected_sequence_name = "xxx"
+
+
+        # Get selected shot number
+        try:
+            self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
+            if self.selected_shot_number == "None": self.selected_shot_number = "xxxx"
+        except:
             self.selected_shot_number = "xxxx"
 
-    def assetList_Clicked(self):
+        # Get selected department name
+        try:
+            self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
+        except:
+            self.selected_department_name = "xxx"
+
+        query_str = "SELECT * FROM assets"
+        where_statment = []
+        if self.selected_sequence_name != "xxx":
+            where_statment.append("sequence_name='" + self.selected_sequence_name + "'")
+
+        if self.selected_shot_number != "xxxx":
+            where_statment.append("shot_number='" + self.selected_shot_number + "'")
+
+        if self.selected_department_name != "xxx":
+            where_statment.append("asset_type='" + self.selected_department_name + "'")
+
+        where_statment = " AND ".join(where_statment)
+        if len(where_statment) > 0:
+            query_str += " WHERE " + where_statment
+
+        assets = self.cursor.execute(query_str).fetchall()
+
+
+        for asset in assets:
+            sequence_name = asset[2]
+            shot_number = asset[3]
+            asset_name = asset[4]
+            asset_path = asset[5]
+            asset_type = asset[6]
+            asset_version = asset[7]
+            asset_comment = asset[8]
+            asset_tags = asset[9]
+            asset_dependency = asset[11]
+            last_access = asset[12]
+            creator = asset[13]
+
+            asset_item = QtGui.QListWidgetItem(asset_name)
+            asset = Asset(sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version,
+                           asset_comment, asset_tags, asset_dependency, last_access, creator)
+
+            #self.assetList.addItem(asset_name)
+
+    def assetList_Clicked(self, item_clicked=None):
+
+        self.selected_asset_name = str(item_clicked.text())
+        all_versions = self.cursor.execute('''SELECT asset_version FROM assets WHERE project_name=? AND asset_name=?''',
+                                           (self.selected_project_name, self.selected_asset_name,)).fetchall()
+
+        all_versions = [str(i[0]) for i in all_versions]
+
+        self.versionList.clear()
+        for version in all_versions:
+            asset = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_name=? AND asset_version=? AND asset_type=?''', (self.selected_project_name, self.selected_asset_name, version, self.selected_department_name)).fetchone()
+            self.versionList.addItem(asset[7])
+
+
+        return
+
+
+
+        self.versionList.addItems()
+        #print(selected_asset.data(QtCore.Qt.UserRole).toPyObject())
+        return
+
+
+
 
         self.selected_asset_type = str(self.assetList.selectedItems()[0].text()).split("_")[0]
         self.selected_asset_name = str(self.assetList.selectedItems()[0].text()).split("_")[1]
@@ -639,6 +649,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
              self.selected_asset_version)).fetchone()[0]
         if asset_comment:
             self.commentTxt.setText(asset_comment)
+
+    def versionList_Clicked(self, item_clicked=None):
+        selected_version = item_clicked
 
     def check_if_asset_already_exists(self, asset_path, asset_name, asset_type):
         if os.path.isfile(asset_path):
@@ -851,54 +864,46 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             self.addSequenceFrame.hide()
             self.addShotFrame.hide()
 
-        tabs_list = {"Asset Loader":0, "Task Manager":1, "My Tasks":2, "Asset Creator":3, "References Tool":4,
-                     "Tags Manager":5, "Log":6, "Preferences":7}
+        tabs_list = {"Asset Loader":0, "Task Manager":1, "My Tasks":2, "References Tool":3,
+                     "Tags Manager":4, "Log":5, "Preferences":6}
 
         if self.members[self.username] == "Amelie":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Chloe":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Christopher":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "David":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Edwin":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Jeremy":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Laurence":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
@@ -907,31 +912,26 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         elif self.members[self.username] == "Marc-Antoine":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Mathieu":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Maxime":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Olivier":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Simon":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
@@ -940,18 +940,15 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         elif self.members[self.username] == "Yann":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
-            self.Tabs.removeTab(5)
+            self.Tabs.removeTab(6)
 
         elif self.members[self.username] == "Yi":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
         elif self.members[self.username] == "Valentin":
             self.Tabs.removeTab(1)
-            self.Tabs.removeTab(2)
             self.Tabs.removeTab(3)
             self.Tabs.removeTab(4)
 
@@ -1129,8 +1126,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         if key == QtCore.Qt.Key_Delete:
             ReferenceTab.remove_selected_references(self)
 
-
-
     def closeEvent(self, event):
         self.save_tags_list()
         # quit_msg = "Are you sure you want to exit the program?"
@@ -1143,85 +1138,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # else:
         #     event.ignore()
 
-class SoftwareDialog(QtGui.QDialog):
-    def __init__(self, asset, parent=None):
-        super(SoftwareDialog, self).__init__(parent)
-
-        self.asset = asset
-
-        self.setWindowTitle("Choose a software")
-        self.horizontalLayout = QtGui.QHBoxLayout(self)
-
-        if self.asset.endswith(".jpg"):
-            self.photoshopBtn = QtGui.QPushButton("Photoshop")
-            self.pictureviewerBtn = QtGui.QPushButton("Picture Viewer")
-
-            self.photoshopBtn.clicked.connect(partial(self.btn_clicked, "photoshop"))
-            self.pictureviewerBtn.clicked.connect(partial(self.btn_clicked, "pictureviewer"))
-
-            self.horizontalLayout.addWidget(self.photoshopBtn)
-            self.horizontalLayout.addWidget(self.pictureviewerBtn)
-
-        elif self.asset.endswith(".obj"):
-            self.mayaBtn = QtGui.QPushButton("Maya")
-            self.softimageBtn = QtGui.QPushButton("Softimage")
-            self.blenderBtn = QtGui.QPushButton("Blender")
-            self.c4dBtn = QtGui.QPushButton("Cinema 4D")
-
-            self.mayaBtn.clicked.connect(partial(self.btn_clicked, "maya"))
-            self.softimageBtn.clicked.connect(partial(self.btn_clicked, "softimage"))
-            self.blenderBtn.clicked.connect(partial(self.btn_clicked, "blender"))
-            self.c4dBtn.clicked.connect(partial(self.btn_clicked, "c4d"))
-
-            self.horizontalLayout.addWidget(self.mayaBtn)
-            self.horizontalLayout.addWidget(self.softimageBtn)
-            self.horizontalLayout.addWidget(self.blenderBtn)
-            self.horizontalLayout.addWidget(self.c4dBtn)
-
-    def btn_clicked(self, software):
-        self.close()
-        if software == "photoshop":
-            subprocess.Popen(["C:\\Program Files\\Adobe\\Adobe Photoshop CS6 (64 Bit)\\Photoshop.exe", self.asset])
-        elif software == "pictureviewer":
-            os.system(self.asset)
-        elif software == "maya":
-            subprocess.Popen(["C:\\Program Files\\Autodesk\\Maya2015\\bin\\maya.exe", self.asset])
-        elif software == "softimage":
-            subprocess.Popen(["", self.asset])
-        elif software == "blender":
-            subprocess.Popen(["H:\\Dossiers Importants\\Google Drive\\Blender\\2.74\\blender.exe", "--python",
-                              "H:\\01-NAD\\_pipeline\\_utilities\\software_scripts\\blender\\blender_obj_load.py",
-                              self.asset])
-        elif software == "c4d":
-            subprocess.Popen(["H:\\Programmes\\Cinema 4D R16\\CINEMA 4D.exe", self.asset])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            # Main Loop
 
 
 if __name__ == "__main__":

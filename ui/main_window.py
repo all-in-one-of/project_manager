@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Thu Jul 16 16:42:11 2015
+# Created: Thu Jul 16 20:17:32 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1522,6 +1522,8 @@ class Ui_Form(object):
         self.horizontalLayout_41.setMargin(0)
         self.horizontalLayout_41.setObjectName(_fromUtf8("horizontalLayout_41"))
         self.diskUsageLbl = QtGui.QLabel(self.diskUsageFrame)
+        self.diskUsageLbl.setMinimumSize(QtCore.QSize(55, 0))
+        self.diskUsageLbl.setMaximumSize(QtCore.QSize(55, 16777215))
         self.diskUsageLbl.setObjectName(_fromUtf8("diskUsageLbl"))
         self.horizontalLayout_41.addWidget(self.diskUsageLbl)
         self.diskUsageProgressBar = QtGui.QProgressBar(self.diskUsageFrame)
@@ -1538,6 +1540,8 @@ class Ui_Form(object):
         self.horizontalLayout_40.setMargin(0)
         self.horizontalLayout_40.setObjectName(_fromUtf8("horizontalLayout_40"))
         self.deadlineLbl = QtGui.QLabel(self.deadlineFrame)
+        self.deadlineLbl.setMinimumSize(QtCore.QSize(55, 0))
+        self.deadlineLbl.setMaximumSize(QtCore.QSize(55, 16777215))
         self.deadlineLbl.setObjectName(_fromUtf8("deadlineLbl"))
         self.horizontalLayout_40.addWidget(self.deadlineLbl)
         self.deadlineProgressBar = QtGui.QProgressBar(self.deadlineFrame)
@@ -1549,7 +1553,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(3)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

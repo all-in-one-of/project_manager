@@ -56,7 +56,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -3676,6 +3676,18 @@ p, li { white-space: pre-wrap; }
          </property>
          <item>
           <widget class="QLabel" name="diskUsageLbl">
+           <property name="minimumSize">
+            <size>
+             <width>55</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>55</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Disk usage:</string>
            </property>
@@ -3711,6 +3723,18 @@ p, li { white-space: pre-wrap; }
          </property>
          <item>
           <widget class="QLabel" name="deadlineLbl">
+           <property name="minimumSize">
+            <size>
+             <width>55</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>55</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
             <string>Time left:</string>
            </property>
