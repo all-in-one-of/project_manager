@@ -329,7 +329,7 @@ class ReferenceTab(object):
                 (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
                  last_version, stream_link, "video", self.username))
 
-            self.add_log_entry("{0} added a reference from web (video format)".format(self.members[self.username]), value=self.selected_project_path + asset_filename)
+            self.add_log_entry("{0} added a reference from web ({1}) (video format)".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
 
             new_item.setData(QtCore.Qt.UserRole,
                              [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -341,7 +341,7 @@ class ReferenceTab(object):
                 (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
                  last_version, self.username))
 
-            self.add_log_entry("{0} added a reference from web".format(self.members[self.username]), value=self.selected_project_path + asset_filename)
+            self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
 
             new_item.setData(QtCore.Qt.UserRole,
                              [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -544,7 +544,7 @@ class ReferenceTab(object):
             (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
              last_version, self.username))
 
-        self.add_log_entry("{0} added a reference from web".format(self.members[self.username]), value=self.selected_project_path + asset_filename)
+        self.add_log_entry("{0} added a reference from web {1}".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
 
         new_item.setData(QtCore.Qt.UserRole,
                          [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),

@@ -83,6 +83,12 @@ class WhatsNew(object):
                 child_item.setFont(0, small_font)
                 top_item.addChild(child_item)
 
+        if self.whatsNewTreeWidget.topLevelItemCount() == 0:
+            top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
+            top_item.setText(0, "There's nothing new :(")
+            top_item.setFont(0, big_font)
+            self.whatsNewTreeWidget.addTopLevelItem(top_item)
+
     def mark_all_as_read(self):
 
         msgbox = QtGui.QMessageBox()
@@ -112,13 +118,21 @@ class WhatsNew(object):
         if len(clicked_log_entry) == 0:
             return
 
+        ref_data = clicked_log_entry.split("|")
+        asset_type = ref_data[0]
+        asset_name = ref_data[1]
+        sequence_name = ref_data[2]
+        shot_number = ref_data[3]
+        asset_version = ref_data[4]
+        asset_path = ref_data[5]
+
         if "reference" in selected_item_description:
-            os.system(clicked_log_entry)
+            if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
+                comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
+            else:
+                os.system(self.selected_project_path + asset_path)
 
         elif "comment" in selected_item_description:
-            if "image" in selected_item_description:
-                ref_data = clicked_log_entry.split("|")
-                comment_dialog = CommentWidget(self, 1, "ref", ref_data[0], ref_data[1], ref_data[2], ref_data[3], ref_data[4])
-            pass
+            comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
 
         return
