@@ -58,7 +58,7 @@ from lib.comments import CommentWidget
 from lib.whats_new import WhatsNew
 from lib.asset import Asset
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew, Asset):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew):
     def __init__(self):
         super(Main, self).__init__()
         #QtGui.QMainWindow.__init__(self)
@@ -100,8 +100,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
         #         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
         #         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
-
-
+        refresh_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\refresh.png")
+        self.refreshAllBtn.setIcon(refresh_icon)
+        self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
+        self.refreshAllBtn.clicked.connect(self.refresh_all)
 
 
         # Select default project
@@ -983,6 +985,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def setup_tags(self):
 
+        self.allTagsTreeWidget.clear()
+        self.tagsTreeWidget.clear()
+
         self.tagsTreeWidget.itemSelectionChanged.connect(self.save_tags_list)
 
         # Select all tags
@@ -1108,6 +1113,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             backup_database_filename = fileName.replace(str(last_database_file_version).zfill(4), new_version) + ".sqlite"
             shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
 
+    def refresh_all(self):
+        self.setup_tags()
+        self.mt_item_added = True
+        MyTasks.mt_add_tasks_from_database(self)
+        WhatsNew.load_whats_new(self)
+
     def keyPressEvent(self, event):
         key = event.key()
         if key == QtCore.Qt.Key_F11:
@@ -1137,6 +1148,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
+    trayIcon = QtGui.QSystemTrayIcon(QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png"), app)
+
     # Show Splashscreen
     splash_pix = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen.jpg")
     splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
@@ -1160,4 +1173,7 @@ if __name__ == "__main__":
     window.show()
 
     splash.finish(window)
+
+    trayIcon.show()
+
     sys.exit(app.exec_())

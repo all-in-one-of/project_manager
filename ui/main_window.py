@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Fri Jul 17 13:43:11 2015
+# Created: Fri Jul 17 13:59:39 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1235,12 +1235,6 @@ class Ui_Form(object):
         self.horizontalLayout_38.addWidget(self.biggerRefPushButton_04)
         spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_38.addItem(spacerItem6)
-        self.refreshReferenceThumbListWidgetBtn = QtGui.QPushButton(self.changeThumbnailSizeFrame)
-        self.refreshReferenceThumbListWidgetBtn.setMinimumSize(QtCore.QSize(32, 32))
-        self.refreshReferenceThumbListWidgetBtn.setMaximumSize(QtCore.QSize(32, 32))
-        self.refreshReferenceThumbListWidgetBtn.setText(_fromUtf8(""))
-        self.refreshReferenceThumbListWidgetBtn.setObjectName(_fromUtf8("refreshReferenceThumbListWidgetBtn"))
-        self.horizontalLayout_38.addWidget(self.refreshReferenceThumbListWidgetBtn)
         self.verticalLayout_20.addWidget(self.changeThumbnailSizeFrame)
         self.referenceThumbListWidget = QtGui.QListWidget(self.referenceThumbFrame)
         self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
@@ -1583,7 +1577,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

@@ -22,6 +22,7 @@ class ReferenceTab(object):
         self.first_thumbnail_load = True
         self.compression_level = 60
         self.keep_size = False
+        self.last_asset_name = ""
 
         self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
@@ -51,10 +52,9 @@ class ReferenceTab(object):
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
         self.filterByNoTagsCheckBox.stateChanged.connect(self.show_reference_with_no_tags)
-        self.refreshReferenceThumbListWidgetBtn.clicked.connect(self.refresh_reference_list)
 
         resize_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
-        refresh_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\refresh.png")
+
         self.biggerRefPushButton_01.setIcon(resize_icon)
         self.biggerRefPushButton_02.setIcon(resize_icon)
         self.biggerRefPushButton_03.setIcon(resize_icon)
@@ -63,9 +63,6 @@ class ReferenceTab(object):
         self.biggerRefPushButton_02.setIconSize(QtCore.QSize(16, 16))
         self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
         self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
-
-        self.refreshReferenceThumbListWidgetBtn.setIcon(refresh_icon)
-        self.refreshReferenceThumbListWidgetBtn.setIconSize(QtCore.QSize(24, 24))
 
     def seqReferenceList_Clicked(self):
 
@@ -225,10 +222,9 @@ class ReferenceTab(object):
             selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
             if selected_sequence == "All" or selected_sequence == "None":
                 selected_sequence = "xxx"
-            asset_filename += selected_sequence + "_"
         except:
-            self.message_box(text="Please select a sequence first")
-            return
+            selected_sequence = "xxx"
+        asset_filename += selected_sequence + "_"
 
         # Check if a shot is selected
         try:
@@ -247,26 +243,8 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a valid URL")
             return
 
-        # Enter asset name dialog
-        asset_name_dialog = QtGui.QDialog()
-        asset_name_dialog.setWindowTitle("Asset name")
-        Lib.apply_style(self, asset_name_dialog)
-        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
-
-        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
-        lineEdit = QtGui.QLineEdit(asset_name_dialog)
-        lineEdit.returnPressed.connect(asset_name_dialog.close)
-
-        main_layout.addWidget(lbl)
-        main_layout.addWidget(lineEdit)
-
-        asset_name_dialog.exec_()
-
-        # Convert asset name
-        asset_name = unicode(lineEdit.text())
-        asset_name = Lib.normalize_str(self, asset_name)
-        asset_name = Lib.convert_to_camel_case(self, asset_name)
-
+        asset_name = self.asset_name_dialog()
+        if asset_name == None: return
 
         # Check if a version already exists
         last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
@@ -466,25 +444,6 @@ class ReferenceTab(object):
 
     def create_reference_from_screenshot(self):
 
-        asset_name_dialog = QtGui.QDialog()
-        asset_name_dialog.setWindowTitle("Asset name")
-        Lib.apply_style(self, asset_name_dialog)
-        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
-
-        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
-        lineEdit = QtGui.QLineEdit(asset_name_dialog)
-        lineEdit.returnPressed.connect(asset_name_dialog.close)
-
-        main_layout.addWidget(lbl)
-        main_layout.addWidget(lineEdit)
-
-        asset_name_dialog.exec_()
-
-        # Convert asset name
-        asset_name = unicode(lineEdit.text())
-        asset_name = Lib.normalize_str(self, asset_name)
-        asset_name = Lib.convert_to_camel_case(self, asset_name)
-
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
             self.message_box(text="Please select a project first")
@@ -492,20 +451,14 @@ class ReferenceTab(object):
 
         asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
 
-        # Check if a name is defined for the asset
-        if len(asset_name) == 0:
-            self.message_box(text="Please enter a name for the asset")
-            return
-
         # Check if a sequence is selected
         try:
             selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
             if selected_sequence == "All" or selected_sequence == "None":
                 selected_sequence = "xxx"
-            asset_filename += selected_sequence + "_"
         except:
-            self.message_box(text="Please select a sequence first")
-            return
+            selected_sequence = "xxx"
+        asset_filename += selected_sequence + "_"
 
         # Check if a shot is selected
         try:
@@ -516,6 +469,14 @@ class ReferenceTab(object):
         except:
             selected_shot = "xxxx"
             asset_filename += "xxxx_"
+
+        asset_name = self.asset_name_dialog()
+        if asset_name == None: return
+
+        # Check if a name is defined for the asset
+        if len(asset_name) == 0:
+            self.message_box(text="Please enter a name for the asset")
+            return
 
         # Check if a version already exists
         last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
@@ -536,6 +497,7 @@ class ReferenceTab(object):
 
         new_item = QtGui.QListWidgetItem()
         new_item.setIcon(QtGui.QIcon(self.selected_project_path + asset_filename))
+        new_item.setText(asset_name)
 
         # Add reference to database
         self.cursor.execute(
@@ -556,6 +518,34 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.scrollToItem(new_item)
         self.referenceThumbListWidget.clearSelection()
         self.referenceThumbListWidget.setItemSelected(new_item, True)
+
+    def asset_name_dialog(self):
+
+        # Enter asset name dialog
+        asset_name_dialog = QtGui.QDialog()
+        asset_name_dialog.setWindowTitle("Asset name")
+        Lib.apply_style(self, asset_name_dialog)
+        main_layout = QtGui.QVBoxLayout(asset_name_dialog)
+
+        lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
+        lineEdit = QtGui.QLineEdit(self.last_asset_name, asset_name_dialog)
+        lineEdit.selectAll()
+        lineEdit.returnPressed.connect(asset_name_dialog.accept)
+
+        main_layout.addWidget(lbl)
+        main_layout.addWidget(lineEdit)
+
+
+        asset_name_dialog.exec_()
+        if asset_name_dialog.result() == 0:
+            return None
+
+        # Convert asset name
+        asset_name = self.last_asset_name = unicode(lineEdit.text())
+        asset_name = Lib.normalize_str(self, asset_name)
+        asset_name = Lib.convert_to_camel_case(self, asset_name)
+
+        return asset_name
 
     def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
         all_versions = self.cursor.execute(

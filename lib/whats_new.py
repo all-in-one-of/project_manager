@@ -139,7 +139,10 @@ class WhatsNew(object):
                 if "video" in selected_item_description:
                     subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset_path])
                 else:
-                    os.system(self.selected_project_path + asset_path)
+                    if os.path.isfile(self.selected_project_path + asset_path):
+                        os.system(self.selected_project_path + asset_path)
+                    else:
+                        Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         elif "comment" in selected_item_description:
             comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)

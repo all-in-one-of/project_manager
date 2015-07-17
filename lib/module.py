@@ -131,6 +131,13 @@ class Lib(object):
         str = str.replace("'", "")
         str = str.replace("_", "")
         str = str.replace("-", "")
+        str = str.replace(":", "")
+        str = str.replace(";", "")
+        str = str.replace("|", "")
+        str = str.replace("#", "")
+        str = str.replace("!", "")
+        str = str.replace("?", "")
+        str = str.replace("?", "")
         return str
 
     def compress_image(self, image_path, width, quality):
