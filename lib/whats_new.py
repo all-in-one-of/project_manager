@@ -119,12 +119,16 @@ class WhatsNew(object):
             return
 
         ref_data = clicked_log_entry.split("|")
-        asset_type = ref_data[0]
-        asset_name = ref_data[1]
-        sequence_name = ref_data[2]
-        shot_number = ref_data[3]
-        asset_version = ref_data[4]
-        asset_path = ref_data[5]
+        try:
+            asset_type = ref_data[0]
+            asset_name = ref_data[1]
+            sequence_name = ref_data[2]
+            shot_number = ref_data[3]
+            asset_version = ref_data[4]
+            asset_path = ref_data[5]
+        except:
+            return
+
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:

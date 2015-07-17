@@ -31,7 +31,7 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.reference_doubleClicked)
         self.filterByNameLineEdit.textChanged.connect(self.filter_reference_by_name)
-        self.filterByTagsListWidget.itemSelectionChanged.connect(self.filter_reference_by_tags)
+        self.filterByTagsListWidget.itemClicked.connect(self.filter_reference_by_tags)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
         self.createReferencesFromScreenshotBtn.clicked.connect(self.create_reference_from_screenshot)
@@ -114,6 +114,7 @@ class ReferenceTab(object):
                     self.referenceThumbListWidget.setItemHidden(ref, True)
 
         self.add_tags_to_filter_tags_list(all_tags)
+        self.filterByNoTagsCheckBox.setCheckState(0)
 
     def shotReferenceList_Clicked(self):
 
@@ -544,7 +545,7 @@ class ReferenceTab(object):
             (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
              last_version, self.username))
 
-        self.add_log_entry("{0} added a reference from web {1}".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
+        self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
 
         new_item.setData(QtCore.Qt.UserRole,
                          [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
@@ -798,6 +799,9 @@ class ReferenceTab(object):
 
     def filter_reference_by_tags(self):
 
+        all_references = self.get_all_references()
+        [ref.setHidden(False) for ref in all_references]
+
         # Get all selected tags from the filter tags list
         selected_tags = self.filterByTagsListWidget.selectedItems()
         selected_tags = [str(i.text()) for i in selected_tags]
@@ -827,14 +831,16 @@ class ReferenceTab(object):
 
             ref_tags = [str(i) for i in ref_tags]
 
+            ref_tags = set(ref_tags)
+            selected_tags = set(selected_tags)
+
             if self.selected_sequence_name == "xxx":  # If selected sequence is all, filter only by selected tags
-                if set(ref_tags).isdisjoint(selected_tags):  # Can't find any selected tag in reference tags : hide item
-                    ref.setHidden(True)
-                else:
+                if selected_tags.issubset(ref_tags):  # ref_tags is contained in selected_tags (ex: ref_tags = ["lumiere", "feu"], selected_tags = ["lumiere"]
                     ref.setHidden(False)
+                else:
+                    ref.setHidden(True)
             else:  # If selected sequence is something else than all, filter by selected tags and by sequence name
-                if not set(ref_tags).isdisjoint(
-                        selected_tags) and self.selected_sequence_name == ref_sequence:  # If current reference is in selected sequence and has tags from selected tags, then don't hide it
+                if selected_tags.issubset(ref_tags) and self.selected_sequence_name == ref_sequence:  # If current reference is in selected sequence and has tags from selected tags, then don't hide it
                     ref.setHidden(False)
                 else:
                     ref.setHidden(True)
@@ -1187,5 +1193,14 @@ class ReferenceTab(object):
         return all_references
 
     def refresh_reference_list(self):
+        all_references = self.cursor.execute('''SELECT * FROM assets''')
+        ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()  # Get data associated with QListWidgetItem
+        ref_sequence_name = str(ref_data[0])
+        ref_shot_number = str(ref_data[1])
+        ref_name = str(ref_data[2])
+        ref_path = str(ref_data[3])
+        ref_version = str(ref_data[4])
+        ref_tags = ref_data[5]
+
 
         pass
