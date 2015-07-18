@@ -85,19 +85,17 @@ class Asset(object):
         self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (comment, self.id,))
         self.main.db.commit()
         self.version = comment
-        self.update_asset_path()
 
     def add_tags(self, tags):
         self.tags.extend(tags)
-        self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (tags, self.id,))
+        self.tags = list(set(self.tags))
+        self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (",".join(self.tags), self.id,))
         self.main.db.commit()
-        self.update_asset_path()
 
     def remove_tags(self, tags):
         self.tags = list(set(self.tags) - set(tags))
         self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (",".join(self.tags), self.id,))
         self.main.db.commit()
-        self.update_asset_path()
 
 
 

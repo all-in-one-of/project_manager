@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Fri Jul 17 13:59:39 2015
+# Created: Sat Jul 18 14:41:50 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1207,6 +1207,17 @@ class Ui_Form(object):
         self.horizontalLayout_38 = QtGui.QHBoxLayout(self.changeThumbnailSizeFrame)
         self.horizontalLayout_38.setMargin(0)
         self.horizontalLayout_38.setObjectName(_fromUtf8("horizontalLayout_38"))
+        self.refShowLbl = QtGui.QLabel(self.changeThumbnailSizeFrame)
+        self.refShowLbl.setObjectName(_fromUtf8("refShowLbl"))
+        self.horizontalLayout_38.addWidget(self.refShowLbl)
+        self.refShowNamesCheckBox = QtGui.QCheckBox(self.changeThumbnailSizeFrame)
+        self.refShowNamesCheckBox.setChecked(True)
+        self.refShowNamesCheckBox.setObjectName(_fromUtf8("refShowNamesCheckBox"))
+        self.horizontalLayout_38.addWidget(self.refShowNamesCheckBox)
+        self.refShowSequencesCheckBox = QtGui.QCheckBox(self.changeThumbnailSizeFrame)
+        self.refShowSequencesCheckBox.setChecked(False)
+        self.refShowSequencesCheckBox.setObjectName(_fromUtf8("refShowSequencesCheckBox"))
+        self.horizontalLayout_38.addWidget(self.refShowSequencesCheckBox)
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_38.addItem(spacerItem5)
         self.biggerRefPushButton_01 = QtGui.QPushButton(self.changeThumbnailSizeFrame)
@@ -1233,8 +1244,6 @@ class Ui_Form(object):
         self.biggerRefPushButton_04.setText(_fromUtf8(""))
         self.biggerRefPushButton_04.setObjectName(_fromUtf8("biggerRefPushButton_04"))
         self.horizontalLayout_38.addWidget(self.biggerRefPushButton_04)
-        spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_38.addItem(spacerItem6)
         self.verticalLayout_20.addWidget(self.changeThumbnailSizeFrame)
         self.referenceThumbListWidget = QtGui.QListWidget(self.referenceThumbFrame)
         self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
@@ -1766,6 +1775,9 @@ class Ui_Form(object):
         self.openRefInPhotoshopBtn.setText(_translate("Form", "Photoshop", None))
         self.openRefInKuadroBtn.setText(_translate("Form", "Kuadro", None))
         self.hideReferenceOptionsFrameBtn.setToolTip(_translate("Form", "Collapse left pane.", None))
+        self.refShowLbl.setText(_translate("Form", "Show:", None))
+        self.refShowNamesCheckBox.setText(_translate("Form", "Names", None))
+        self.refShowSequencesCheckBox.setText(_translate("Form", "Sequences", None))
         self.referenceThumbListWidget.setToolTip(_translate("Form", "Double click on a thumbnail to open it with windows picture viewer.\n"
 "Alt + double click on a thumbnail to open the comments dialog.\n"
 "Shift + double click on a thumbnail to open the rename dialog.", None))

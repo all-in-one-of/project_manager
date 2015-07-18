@@ -59,7 +59,8 @@ class ReferenceTab(object):
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
         self.filterByNoTagsCheckBox.stateChanged.connect(self.ref_filter_images_with_no_tags_clicked)
-
+        self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
+        self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         resize_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
 
         self.biggerRefPushButton_01.setIcon(resize_icon)
@@ -74,6 +75,7 @@ class ReferenceTab(object):
 
 
     def ref_load_all_references(self):
+        '''Load all references when clicking sequence for the first time'''
         ref_all_references_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''', (self.selected_project_name, "ref")).fetchall()
         for ref in ref_all_references_assets:
             id = ref[0]
@@ -114,14 +116,16 @@ class ReferenceTab(object):
                 self.all_references_ListWidgetItems.append(ref_item)
                 self.referenceThumbListWidget.addItem(ref_item)
 
-        self.add_tags_to_filter_tags_list()
+        self.load_filter_by_tags_list()
 
     def ref_filter_references(self):
-
+        '''Filter references by sequence / shot / tags'''
         [ref.setHidden(False) for ref in self.all_references_ListWidgetItems]
 
         # Filter by sequence
-        all_references, all_tags_from_visible_references = self.get_all_visible_references()
+        all_references = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             if self.seqReferenceList.selectedItems()[0].text() == "All":
@@ -133,9 +137,10 @@ class ReferenceTab(object):
                 if asset.sequence != self.ref_selected_sequence_name:
                     ref.setHidden(True)
 
-
         # Filter by shot
-        all_references, all_tags_from_visible_references = self.get_all_visible_references()
+        all_references = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             if self.shotReferenceList.selectedItems()[0].text() != "None":
@@ -143,30 +148,32 @@ class ReferenceTab(object):
                     ref.setHidden(True)
 
         # Filter by tags
-        all_references, all_tags_from_visible_references = self.get_all_visible_references()
+        all_references = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             if len(self.filterByTagsListWidget.selectedItems()) > 0:
                 if not set(self.ref_selected_filter_tags).issubset(set(asset.tags)):
                     ref.setHidden(True)
 
-        # Check only assets with no tags if checkbox is checked
+        # Show only assets with no tags if checkbox is checked
         if self.images_with_no_tags_state == 2:
-            all_references, all_tags_from_visible_references = self.get_all_visible_references()
+            all_references = self.get_all_visible_references()
+            all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
             for ref in all_references:
                 asset = ref.data(QtCore.Qt.UserRole).toPyObject()
                 if len(asset.tags[0]) != 0:
                     ref.setHidden(True)
 
-
-
-        if len(self.filterByTagsListWidget.selectedItems()) == 0: # If no tags is selected in filter tags list, refresh filter tags list
-            self.add_tags_to_filter_tags_list()
+        # If no tags is selected in filter tags list, refresh filter tags list
+        if len(self.filterByTagsListWidget.selectedItems()) == 0:
+            self.load_filter_by_tags_list()
 
     def ref_filter_by_name(self):
-        # Filter by name
-        all_references, all_tags_from_visible_references = self.get_all_visible_references()
-        for ref in all_references:
+        '''Filter references by name'''
+        all_visible_references = self.get_all_visible_references()
+        for ref in all_visible_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             if len(self.filterByNameLineEdit.text()) > 0:
                 filter_str = unicode(self.filterByNameLineEdit.text())
@@ -184,6 +191,8 @@ class ReferenceTab(object):
                 self.ref_filter_references()
 
     def ref_sequence_list_clicked(self):
+        '''Set variables, load shots from selected reference and filter references'''
+
         # If reference thumb list widget is empty, load all references for the first time
         if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
 
@@ -196,33 +205,33 @@ class ReferenceTab(object):
         self.shotReferenceList.clear()
         self.shotReferenceList.addItem("None")
         if not self.ref_selected_sequence_name == "xxx":
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, self.ref_selected_sequence_name,)).fetchall()
-            shots = [i[0] for i in shots]
-            shots = sorted(shots)
-            [self.shotReferenceList.addItem(shot) for shot in shots]
-
+            [self.shotReferenceList.addItem(shot) for shot in self.shots[self.ref_selected_sequence_name]]
         self.shotReferenceList.setCurrentRow(0)
 
         # Filter references
         self.ref_filter_references()
 
     def ref_shot_list_clicked(self):
+        '''Set variables and filter references'''
         self.ref_selected_shot_number = str(self.shotReferenceList.selectedItems()[0].text())
         if self.ref_selected_shot_number == "None": self.ref_selected_shot_number = "xxxx"
         self.ref_filter_references()
 
     def ref_filter_by_tags_clicked(self):
+        '''Set variables and filter references'''
         self.ref_selected_filter_tags = self.filterByTagsListWidget.selectedItems()
         self.ref_selected_filter_tags = [str(i.text()) for i in self.ref_selected_filter_tags]
-
         self.ref_filter_references()
 
     def ref_filter_images_with_no_tags_clicked(self):
+        '''Set variable and filter references'''
         self.images_with_no_tags_state = self.filterByNoTagsCheckBox.checkState()
         self.ref_filter_references()
 
-    def add_tags_to_filter_tags_list(self):
-        all_visible_references, all_tags_from_visible_references = self.get_all_visible_references()
+    def load_filter_by_tags_list(self):
+        '''Add tags to filterByTagsList based on visible references'''
+        all_visible_references  = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_visible_references)
 
         self.filterByTagsListWidget.clear()
         for tag in all_tags_from_visible_references:
@@ -235,29 +244,39 @@ class ReferenceTab(object):
             self.filterByTagsListWidget.addItem(item)
 
     def get_all_visible_references(self):
+        '''
+        Get all references currently visible in the reference list widget
+        :return: list of all visible references
+        '''
         all_visible_references = []
 
         for ref in self.all_references_ListWidgetItems:
             if not ref.isHidden():
                 all_visible_references.append(ref)
 
-        all_tags_from_visible_references = self.get_all_tags_from_references(all_visible_references)
+        return all_visible_references
 
-        return all_visible_references, all_tags_from_visible_references
+    def get_all_tags_from_references(self, references):
+        '''
+        Get all tags from references
+        :param references: list of references list widget item
+        :return: list of tags from list of reference
+        '''
+        all_tags_from_references = []
 
-    def get_all_tags_from_references(self, all_visible_references):
-
-        all_tags_from_visible_references = []
-
-        for ref in all_visible_references:
+        for ref in references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
-            all_tags_from_visible_references.append(asset.tags)
+            all_tags_from_references.append(asset.tags)
 
-        all_tags_from_visible_references = list(set(sum(all_tags_from_visible_references, []))) # Convert into one single list and remove duplicates
-        all_tags_from_visible_references = filter(None, all_tags_from_visible_references) # Remove empty entries
-        return all_tags_from_visible_references
+        all_tags_from_references = list(set(sum(all_tags_from_references, []))) # Convert into one single list and remove duplicates
+        all_tags_from_references = filter(None, all_tags_from_references) # Remove empty entries
+
+        return all_tags_from_references
 
     def referenceThumbListWidget_itemSelectionChanged(self):
+        '''
+        Add tags to existing tags list so user can remove them
+        '''
         self.selected_references = self.referenceThumbListWidget.selectedItems()
         all_tags = self.get_all_tags_from_references(self.selected_references)
 
@@ -267,27 +286,28 @@ class ReferenceTab(object):
             self.existingTagsListWidget.addItem(tag)
 
     def remove_selected_references(self):
+        '''
+        Remove selected reference from database and reference list widget
+        '''
         # Retrieve selected references
         selected_references = self.referenceThumbListWidget.selectedItems()
-
-
 
         # Delete references on database and on disk
         number_of_refs_removed = 0
         for ref in selected_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             asset.remove_asset_from_db()
-
             self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
 
         if number_of_refs_removed > 1:
-            self.add_log_entry(
-                "{0} deleted {1} reference(s)".format(self.members[self.username], number_of_refs_removed))
+            self.add_log_entry("{0} deleted {1} reference(s)".format(self.members[self.username], number_of_refs_removed))
         else:
             self.add_log_entry("{0} deleted {1} reference".format(self.members[self.username], number_of_refs_removed))
 
     def reference_doubleClicked(self):
-
+        '''
+        Trigger action based when user double click an item
+        '''
         selected_reference = self.referenceThumbListWidget.selectedItems()[0]
         asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
@@ -307,7 +327,9 @@ class ReferenceTab(object):
                 os.system(asset.full_path)
 
     def rename_reference(self, asset):
-
+        '''
+        Rename reference
+        '''
         rename_dialog = QtGui.QDialog()
         rename_dialog.setWindowIcon(self.app_icon)
         rename_dialog.setWindowTitle("Rename reference")
@@ -344,7 +366,9 @@ class ReferenceTab(object):
         selected_reference.setText(new_name)
 
     def ref_change_seq_shot(self):
-
+        '''
+        Change sequence and shot for selected references
+        '''
         # Create the change seq shot dialog
         change_dialog = QtGui.QDialog()
         change_dialog.setWindowTitle("Change Sequence / Shot")
@@ -403,6 +427,9 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.clearSelection()
 
     def ref_change_seq_shot_filter_shots(self):
+        '''
+        Add shots based on what sequence was clicked on the ref_change_seq_shot layout
+        '''
         selected_sequence_name = str(self.change_ref_seq_combobox.currentText())
 
         # Add shots to shot list and shot creation list
@@ -411,16 +438,72 @@ class ReferenceTab(object):
         if selected_sequence_name != "All":
             [self.change_ref_shot_combobox.addItem(shot) for shot in self.shots[selected_sequence_name]]
 
-    def change_reference_thumb_size(self, size):
+    def add_tags_to_selected_references(self):
+        # Retrieve selected tags to add
+        selected_tags = self.allTagsTreeWidget.selectedItems()
+        selected_tags = [str(i.text(0)) for i in selected_tags]
 
+        # Retrieve selected QListWidgetItem
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.add_tags(selected_tags)
+
+        self.referenceThumbListWidget_itemSelectionChanged() # Reload tags from selected references
+        self.load_filter_by_tags_list()
+
+    def remove_tags_from_selected_references(self):
+        # Retrieve selected tags to remove
+        selected_tags = self.existingTagsListWidget.selectedItems()
+        selected_tags = [str(i.text()) for i in selected_tags]
+
+        # Retrieve selected QListWidgetItem
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.remove_tags(selected_tags)
+
+        self.referenceThumbListWidget_itemSelectionChanged()  # Reload tags from selected references
+        self.load_filter_by_tags_list()
+
+    def change_reference_thumb_size(self, size):
+        '''
+        Change reference thumbnail size
+        :param size: New size of icon
+        '''
         icon_size = QtCore.QSize(128 * size, 128 * size)
         self.referenceThumbListWidget.setIconSize(icon_size)
 
-        try:
-            selected_reference = self.referenceThumbListWidget.selectedItems()[0]
-            self.referenceThumbListWidget.scrollToItem(selected_reference, QtGui.QAbstractItemView.EnsureVisible)
-        except:
-            pass
+        # Check if an image is selected, if yes, scroll the view to ensure reference is visible
+        selected_reference = self.referenceThumbListWidget.selectedItems()
+        if len(selected_reference) > 0:
+            self.referenceThumbListWidget.scrollToItem(selected_reference[0], QtGui.QAbstractItemView.EnsureVisible)
+
+    def toggle_thumbnail_text(self):
+        '''
+        Toggle visibility of names/sequence under reference thumbnails
+        '''
+        all_references = self.all_references_ListWidgetItems
+        for ref in all_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            if (self.refShowNamesCheckBox.checkState() and self.refShowSequencesCheckBox.checkState()) == 2:
+                thumb_text = "{0} ({1})".format(asset.name, asset.sequence)
+            elif self.refShowNamesCheckBox.checkState() == 2 and self.refShowSequencesCheckBox.checkState() == 0:
+                thumb_text = asset.name
+            elif self.refShowNamesCheckBox.checkState() == 0 and self.refShowSequencesCheckBox.checkState() == 2:
+                thumb_text = asset.sequence
+            elif self.refShowNamesCheckBox.checkState() == 0 and self.refShowSequencesCheckBox.checkState() == 0:
+                thumb_text = ""
+            ref.setText(thumb_text)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -457,46 +540,8 @@ class ReferenceTab(object):
                 else:
                     self.referenceThumbListWidget.setItemHidden(ref, True)
 
-        self.add_tags_to_filter_tags_list(all_tags)
+        self.load_filter_by_tags_list(all_tags)
 
-    def add_tags_to_selected_references(self):
-
-        # Retrieve selected tags to add
-        selected_tags = self.allTagsTreeWidget.selectedItems()
-        selected_tags = [str(i.text(0)) for i in selected_tags]
-
-        # Retrieve selected QListWidgetItem
-        selected_references = self.referenceThumbListWidget.selectedItems()
-        for ref in selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()  # Get data associated with QListWidgetItem
-            ref_sequence_name = str(ref_data[0])
-            ref_shot_number = str(ref_data[1])
-            ref_name = str(ref_data[2])
-            ref_path = str(ref_data[3])
-            ref_version = str(ref_data[4])
-            ref_tags = ref_data[5]
-
-            if ref_tags and "," in ref_tags:
-                ref_tags = ref_data[5].split(",")
-            else:
-                ref_tags = [ref_tags]
-
-            tags_to_add = sorted(list(set(ref_tags + selected_tags)))
-            tags_to_add = filter(None, tags_to_add)
-            tags_to_add = ",".join(tags_to_add)
-
-            # Update reference QListWidgetItem data
-            data = (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, tags_to_add)
-            ref.setData(QtCore.Qt.UserRole, data)
-
-            self.cursor.execute(
-                '''UPDATE assets SET asset_tags=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (tags_to_add, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
-
-        self.db.commit()
-
-        self.referenceThumbListWidget_itemSelectionChanged()
-        self.reload_filter_by_tags_list()
 
     def create_reference_from_web(self):
 
@@ -792,42 +837,6 @@ class ReferenceTab(object):
             last_version = all_versions[-1]
             return last_version
 
-    def remove_tags_from_selected_references(self):
-        # Retrieve selected tags to remove
-        selected_tags = self.existingTagsListWidget.selectedItems()
-        selected_tags = [str(i.text()) for i in selected_tags]
-
-        # Retrieve selected references thumbnails names
-        selected_references = self.referenceThumbListWidget.selectedItems()
-        for ref in selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence_name = ref_data[0]
-            ref_shot_number = ref_data[1]
-            ref_name = ref_data[2]
-            ref_version = ref_data[4]
-            ref_tags = ref_data[5]
-
-            if ref_tags and "," in ref_tags:
-                ref_tags = ref_data[5].split(",")
-            else:
-                ref_tags = [ref_tags]
-
-            tags_to_add = list(set(ref_tags) - set(selected_tags))
-            tags_to_add = filter(None, tags_to_add)
-            tags_to_add = ",".join(tags_to_add)
-
-            # Update reference QListWidgetItem data
-            data = (ref_sequence_name, ref_shot_number, ref_name, ref_data[3], ref_version, tags_to_add)
-            ref.setData(QtCore.Qt.UserRole, data)
-
-            self.cursor.execute(
-                '''UPDATE assets SET asset_tags=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (tags_to_add, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
-
-        self.db.commit()
-
-        self.referenceThumbListWidget_itemSelectionChanged()
-        self.reload_filter_by_tags_list()
 
     def load_reference_thumbnails(self, first_load=False):
 
@@ -933,14 +942,6 @@ class ReferenceTab(object):
         # Close progress bar dialog
         dialog.close()
         self.first_thumbnail_load = False
-
-    def reload_filter_by_tags_list(self):
-
-        all_references = self.get_all_loaded_references()
-
-        all_tags = self.get_all_tags_from_loaded_references(all_references)
-
-        self.add_tags_to_filter_tags_list(all_tags)
 
     def get_all_tags_from_loaded_references(self, references_list):
 
