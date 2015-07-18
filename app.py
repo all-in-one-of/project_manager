@@ -52,11 +52,14 @@ from PyQt4 import QtGui, QtCore, Qt
 from ui.main_window import Ui_Form
 from lib.reference import ReferenceTab
 from lib.module import Lib
+from lib.module import CheckNews
 from lib.task_manager import TaskManager
 from lib.my_tasks import MyTasks
 from lib.comments import CommentWidget
 from lib.whats_new import WhatsNew
 from lib.asset import Asset
+
+from threading import Thread
 
 class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew):
     def __init__(self):
@@ -65,14 +68,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
         self.backup_database()
 
-        self.db = sqlite3.connect(self.db_path)
+        self.db = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.db.cursor()
 
         # Initialize the guis
@@ -263,11 +266,23 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # Other connects
         self.update_log()
 
+        # Systray icon
+        self.tray_icon_log_id = ""
+        self.tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(
+            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png"),
+            app)
+        self.tray_icon.messageClicked.connect(self.tray_icon_clicked)
+        self.tray_icon.show()
+
         # Initialize modules and connections
         ReferenceTab.__init__(self)
         TaskManager.__init__(self)
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
+
+        self.check_news_thread = CheckNews(self)
+        self.check_news_thread.daemon = True
+        self.check_news_thread.start()
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -1119,6 +1134,44 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         MyTasks.mt_add_tasks_from_database(self)
         WhatsNew.load_whats_new(self)
 
+    def tray_icon_clicked(self):
+
+        clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
+        selected_item_description = self.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
+
+        if len(clicked_log_entry) == 0:
+            return
+
+        ref_data = clicked_log_entry.split("|")
+        try:
+            asset_type = ref_data[0]
+            asset_name = ref_data[1]
+            sequence_name = ref_data[2]
+            shot_number = ref_data[3]
+            asset_version = ref_data[4]
+            asset_path = ref_data[5]
+        except:
+            return
+
+        if "reference" in selected_item_description:
+            if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
+                comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number,
+                                               asset_version, asset_path)
+            else:
+                if "video" in selected_item_description:
+                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset_path])
+                else:
+                    if os.path.isfile(self.selected_project_path + asset_path):
+                        os.system(self.selected_project_path + asset_path)
+                    else:
+                        Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+
+        elif "comment" in selected_item_description:
+            comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version,
+                                           asset_path)
+
+        return
+
     def keyPressEvent(self, event):
         key = event.key()
         if key == QtCore.Qt.Key_F11:
@@ -1133,7 +1186,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def closeEvent(self, event):
         self.save_tags_list()
-        # quit_msg = "Are you sure you want to exit the program?"
+        # self.quit_msg = "Are you sure you want to exit the program?"
         # reply = QtGui.QMessageBox.question(self, 'Are you leaving :(',
         #                  quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         #
@@ -1145,10 +1198,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
 
 
+
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
-    trayIcon = QtGui.QSystemTrayIcon(QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png"), app)
+
 
     # Show Splashscreen
     splash_pix = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\splashscreen.jpg")
@@ -1174,6 +1228,5 @@ if __name__ == "__main__":
 
     splash.finish(window)
 
-    trayIcon.show()
 
     sys.exit(app.exec_())

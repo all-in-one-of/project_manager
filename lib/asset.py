@@ -19,8 +19,6 @@ class Asset(object):
     def __str__(self):
         return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_type, self.asset_version, self.asset_comment, self.asset_tags, self.asset_dependency, self.last_access, self.creator)
 
-ref = Asset("xxx", "xxxx", "lion", "C:\\", "ref", "01", "", "animal", "", "", "thoudon")
-print(ref)
 
 
 

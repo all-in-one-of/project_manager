@@ -11,6 +11,8 @@ import os
 import collections
 import ctypes
 import sys
+from threading import Thread
+import time
 
 class Lib(object):
 
@@ -352,3 +354,38 @@ class DesktopWidget(QtGui.QWidget):
             cell_item.setStyleSheet("background-color: #872d2c")
         elif task_status == "Done":
             cell_item.setStyleSheet("background-color: #4b4b4b;")
+
+class CheckNews(Thread):
+    def __init__(self, main):
+        Thread.__init__(self)
+        self.last_news = ""
+        self.main = main
+        self.last_news_id = self.main.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
+
+    def run(self):
+        while True:
+            self.check_news()
+            time.sleep(2)
+
+    def check_news(self):
+        last_news_id = self.main.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
+
+        if last_news_id > self.last_news_id: # There are new entries on the log
+            log_entry = self.main.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]
+
+            if "reference" in log_entry:
+                title = "New reference added"
+                msg = "A new reference was added"
+            elif "comment" in log_entry:
+                title = "New comment added"
+                msg = "A new comment was added"
+            else:
+                title = "New event"
+                msg = "Unknown"
+
+            self.main.tray_icon_log_id = last_news_id
+            self.main.tray_icon.showMessage(title, msg, QtGui.QSystemTrayIcon.Information, 8000)
+            self.last_news_id = last_news_id
+        elif last_news_id < self.last_news_id:
+            self.last_news_id = last_news_id
+
