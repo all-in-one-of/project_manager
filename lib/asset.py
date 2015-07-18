@@ -34,7 +34,7 @@ class Asset(object):
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence,
                                                                    self.shot, self.type, self.name, self.version, self.extension)
-        self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (new_path, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
         self.main.db.commit()
         os.rename(self.full_path, self.project_path + new_path)
         self.full_path = self.project_path + new_path
@@ -46,14 +46,11 @@ class Asset(object):
         self.main.db.commit()
 
     def remove_asset_from_db(self):
-        self.main.cursor.execute('''DELETE FROM assets WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
         self.main.db.commit()
 
     def change_name(self, new_name):
-        print(new_name, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator)
-        test = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_name=?''', (self.name,)).fetchone()
-        print(test)
-        self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (new_name, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (new_name, self.id,))
         self.main.db.commit()
         self.name = new_name
         self.update_asset_path()
