@@ -256,7 +256,6 @@ class Lib(object):
 
         return selected_sequence, selected_shot
 
-
 class DesktopWidget(QtGui.QWidget):
 
     def __init__(self, task_name, task_department, task_status, task_start, task_end, task_bid):

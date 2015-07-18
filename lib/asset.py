@@ -44,6 +44,10 @@ class Asset(object):
         self.path = new_path
 
     def add_asset_to_db(self):
+        while os.path.isfile(self.project_path + self.path):
+            self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
+            self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+        self.full_path = self.project_path + self.path
         self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
@@ -51,6 +55,11 @@ class Asset(object):
     def remove_asset_from_db(self):
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
         self.main.db.commit()
+
+    def change_version_if_asset_already_exists(self, new_version):
+        self.main.cursor.execute('''UPDATE assets SET asset_version=? WHERE asset_id=?''', (new_version, self.id,))
+        self.main.db.commit()
+        self.version = new_version
 
     def change_name(self, new_name):
         self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (new_name, self.id,))
@@ -76,10 +85,10 @@ class Asset(object):
         self.version = new_version
         self.update_asset_path()
 
-    def change_version_if_asset_already_exists(self, new_version):
-        self.main.cursor.execute('''UPDATE assets SET asset_version=? WHERE asset_id=?''', (new_version, self.id,))
+    def change_dependency(self, new_dependency):
+        self.main.cursor.execute('''UPDATE assets SET asset_dependency=? WHERE asset_id=?''', (new_dependency, self.id,))
         self.main.db.commit()
-        self.version = new_version
+        self.dependency = new_dependency
 
     def add_comment(self, comment):
         self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (comment, self.id,))
