@@ -55,6 +55,7 @@ class Lib(object):
         self.db.commit()
 
     def message_box(self, type="Warning", text="Warning"):
+
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
 
@@ -229,6 +230,32 @@ class Lib(object):
         alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
         watermark.putalpha(alpha)
         Image.composite(watermark, img, watermark).save(out_file, 'JPEG')
+
+    def reference_check_if_projSeqShot_is_selected(self):
+
+
+        # Check if a project is selected
+        if len(self.projectList.selectedItems()) == 0:
+            self.message_box(text="Please select a project first")
+            return None, None
+
+        # Check if a sequence is selected
+        if len(self.seqReferenceList.selectedItems()) == 0:
+            selected_sequence = "xxx"
+        else:
+            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
+            if selected_sequence == "All" or selected_sequence == "None": selected_sequence = "xxx"
+
+        # Check if a shot is selected
+        if len(self.shotReferenceList.selectedItems()) == 0:
+            selected_shot = "xxxx"
+        else:
+            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
+            if selected_shot == "All" or selected_shot == "None": selected_shot = "xxxx"
+
+
+        return selected_sequence, selected_shot
+
 
 class DesktopWidget(QtGui.QWidget):
 
