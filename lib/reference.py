@@ -286,36 +286,76 @@ class ReferenceTab(object):
         else:
             self.add_log_entry("{0} deleted {1} reference".format(self.members[self.username], number_of_refs_removed))
 
-    def seqReferenceList_Clicked(self):
+    def reference_doubleClicked(self):
 
-        # If no thumbnail is loaded, load all reference thumbnails for first load.
-        if self.referenceThumbListWidget.count() == 0:
-            self.load_reference_thumbnails(self.first_thumbnail_load)
+        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+        asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
-        self.selected_sequence_name = str(self.seqReferenceList.selectedItems()[0].text())
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:  # Renaming reference
+
+            self.rename_reference(asset)
+
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
+            comment_dialog = CommentWidget(self, asset.id, asset.type, asset.name, asset.sequence, asset.shot, asset.version, asset.path)
+
+        else:  # Opening video / image in chrome / windows image view
+
+            if "vimeo" in asset.dependency or "youtube" in asset.dependency:
+                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
+            else:
+                # Open image in windows viewer
+                os.system(asset.full_path)
+
+
+    def rename_reference(self, asset):
+
+        rename_dialog = QtGui.QDialog()
+        rename_dialog.setWindowIcon(self.app_icon)
+        rename_dialog.setWindowTitle("Rename reference")
+
+        Lib.apply_style(self, rename_dialog)
+
+        horizontalLayout = QtGui.QVBoxLayout(rename_dialog)
+
+        reference_new_name = QtGui.QLineEdit()
+        reference_new_name.returnPressed.connect(rename_dialog.accept)
+        reference_new_name.selectAll()
+        reference_new_name.setText(asset.name)
+        horizontalLayout.addWidget(reference_new_name)
+
+        rename_dialog.exec_()
+
+        if rename_dialog.result() == 0:
+            return
+
+        new_name = unicode(reference_new_name.text())
+        new_name = Lib.normalize_str(self, new_name)
+        new_name = Lib.convert_to_camel_case(self, new_name)
+
+        if len(new_name) <= 3:
+            Lib.message_box(self, text="Please enter a name with more than 3 letters")
+            return
+
+        if asset.name == new_name:
+            return
+
+        asset.change_name(new_name)
+
+        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+        selected_reference.setText(new_name)
 
 
 
-        # Filter thumbnails based on which sequence was clicked
-        all_references = self.get_all_references()
-        all_tags = []
 
-        for ref in all_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_seq = ref_data[0]
-            ref_tags = ref_data[5]
-            if str(self.seqReferenceList.selectedItems()[0].text()) == "All":  # If "All" is selected, show all thumbnails
-                all_tags.append(ref_tags)
-                self.referenceThumbListWidget.setItemHidden(ref, False)
-            else:  # Else, show thumbnails for selected sequence only
-                if ref_seq == self.selected_sequence_name:
-                    all_tags.append(ref_tags)
-                    self.referenceThumbListWidget.setItemHidden(ref, False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(ref, True)
 
-        self.add_tags_to_filter_tags_list(all_tags)
-        self.filterByNoTagsCheckBox.setCheckState(0)
+
+
+
+
+
+
+
+
 
 
 
@@ -992,104 +1032,6 @@ class ReferenceTab(object):
         for ref_path in references_to_load:
             subprocess.Popen([self.photoshop_path, ref_path])
 
-    def reference_doubleClicked(self):
-
-        selected_ref = self.referenceThumbListWidget.selectedItems()[0]
-        ref_data = selected_ref.data(QtCore.Qt.UserRole).toPyObject()
-        ref_sequence_name = str(ref_data[0])
-        ref_shot_number = str(ref_data[1])
-        ref_name = str(ref_data[2])
-        ref_path = str(ref_data[3])
-        ref_version = str(ref_data[4])
-        ref_tags = str(ref_data[5])
-
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:  # Renaming reference
-            self.old_reference_name = self.referenceThumbListWidget.selectedItems()[0]
-            self.old_reference_name = self.old_reference_name.data(QtCore.Qt.UserRole).toPyObject()[2]
-
-            self.rename_dialog = QtGui.QDialog()
-            self.rename_dialog.setWindowIcon(self.app_icon)
-            self.rename_dialog.setWindowTitle("Rename reference")
-
-            Lib.apply_style(self, self.rename_dialog)
-
-            self.horizontalLayout = QtGui.QVBoxLayout(self.rename_dialog)
-
-            self.reference_new_name = QtGui.QLineEdit()
-            self.reference_new_name.setText(self.old_reference_name)
-            self.horizontalLayout.addWidget(self.reference_new_name)
-
-            self.acceptBtn = QtGui.QPushButton("Accept")
-            self.horizontalLayout.addWidget(self.acceptBtn)
-
-            self.acceptBtn.clicked.connect(self.rename_reference)
-
-            self.rename_dialog.exec_()
-
-        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version, ref_path)
-
-        else:  # Opening video / image in chrome / windows image view
-
-            isVideo = self.cursor.execute(
-                '''SELECT asset_dependency FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=? AND asset_tags=?''',
-                (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, ref_tags,)).fetchone()
-            try:
-                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", isVideo[0]])
-                return
-            except:
-                # Open image in windows viewer
-                os.system(self.selected_project_path + ref_path)
-
-        return
-
-    def rename_reference(self):
-
-        new_name = unicode(self.reference_new_name.text())
-        new_name = Lib.normalize_str(self, new_name)
-        new_name = Lib.convert_to_camel_case(self, new_name)
-
-        if len(new_name) >= 3:
-            self.rename_dialog.close()
-        else:
-            return
-
-        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
-
-        ref_data = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
-        ref_sequence_name = ref_data[0]
-        ref_shot_number = ref_data[1]
-        ref_name = ref_data[2]
-        ref_path = ref_data[3]
-        ref_version = ref_data[4]
-        ref_tags = ref_data[5]
-
-        if self.old_reference_name == new_name:
-            return
-
-        new_path = ref_path.replace(self.old_reference_name, new_name)
-
-        new_version = ref_version
-        # Check if file exist, if yes, increment new_version and change new_path based on new_version.
-        while os.path.isfile(self.selected_project_path + new_path):
-            fileName, fileExtension = os.path.splitext(new_path)
-            current_version = int(fileName.split("_")[-1])
-            new_version = str(current_version + 1).zfill(2)
-            new_path = new_path.replace("_" + str(current_version).zfill(2), "_" + new_version)
-
-        os.rename(self.selected_project_path + ref_path, self.selected_project_path + new_path)
-
-        self.cursor.execute(
-            '''UPDATE assets SET asset_name=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-            (new_name, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
-
-        self.db.commit()
-
-        # Update reference QListWidgetItem data
-        data = (ref_sequence_name, ref_shot_number, new_name, new_path, ref_version, ref_tags)
-        selected_reference.setData(QtCore.Qt.UserRole, data)
-
-        selected_reference.setText(new_name)
 
     def change_seq_shot_layout(self):
         self.change_dialog = QtGui.QDialog()

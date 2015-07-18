@@ -32,11 +32,14 @@ class Asset(object):
 
 
     def update_asset_path(self):
-        new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence,
-                                                                   self.shot, self.type, self.name, self.version, self.extension)
+        new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+        while os.path.isfile(self.project_path + new_path):
+            self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
+            new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+
+        os.rename(self.full_path, self.project_path + new_path)
         self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
         self.main.db.commit()
-        os.rename(self.full_path, self.project_path + new_path)
         self.full_path = self.project_path + new_path
         self.path = new_path
 
@@ -56,41 +59,45 @@ class Asset(object):
         self.update_asset_path()
 
     def change_sequence(self, new_sequence):
-        self.main.cursor.execute('''UPDATE assets SET sequence_name=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (new_sequence, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET sequence_name=? WHERE asset_id=?''', (new_sequence, self.id,))
         self.main.db.commit()
         self.sequence = new_sequence
         self.update_asset_path()
 
     def change_shot(self, new_shot):
-        self.main.cursor.execute('''UPDATE assets SET shot_number=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (new_shot, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET shot_number=? WHERE asset_id=?''', (new_shot, self.id,))
         self.main.db.commit()
         self.shot = new_shot
         self.update_asset_path()
 
     def change_version(self, new_version):
-        self.main.cursor.execute('''UPDATE assets SET asset_version=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (new_version, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET asset_version=? WHERE asset_id=?''', (new_version, self.id,))
         self.main.db.commit()
         self.version = new_version
         self.update_asset_path()
 
+    def change_version_if_asset_already_exists(self, new_version):
+        self.main.cursor.execute('''UPDATE assets SET asset_version=? WHERE asset_id=?''', (new_version, self.id,))
+        self.main.db.commit()
+        self.version = new_version
+
     def add_comment(self, comment):
-        self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_tags=? AND asset_dependency=? AND last_access=? AND creator=?''', (comment, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (comment, self.id,))
         self.main.db.commit()
         self.version = comment
         self.update_asset_path()
 
     def add_tags(self, tags):
         self.tags.extend(tags)
-        self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_dependency=? AND last_access=? AND creator=?''', (",".join(self.tags), self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (tags, self.id,))
         self.main.db.commit()
         self.update_asset_path()
 
     def remove_tags(self, tags):
         self.tags = list(set(self.tags) - set(tags))
-        self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_type=? AND asset_version=? AND asset_comment=? AND asset_dependency=? AND last_access=? AND creator=?''', (",".join(self.tags), self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (",".join(self.tags), self.id,))
         self.main.db.commit()
         self.update_asset_path()
-
 
 
 
