@@ -14,7 +14,7 @@ import pafy
 
 from lib.module import Lib
 from lib.comments import CommentWidget
-
+from lib.asset import Asset
 
 class ReferenceTab(object):
     def __init__(self):
@@ -24,16 +24,22 @@ class ReferenceTab(object):
         self.keep_size = False
         self.last_asset_name = ""
 
+        self.ref_selected_sequence_name = "xxx"
+        self.ref_selected_shot_number = "xxxx"
+        self.ref_selected_filter_tags = [""]
+        self.all_references_ListWidgetItems = []
+        self.images_with_no_tags_state = 0
+
         self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
         self.allTagsTreeWidget.sortItems(0, QtCore.Qt.AscendingOrder)
-        self.seqReferenceList.itemClicked.connect(self.seqReferenceList_Clicked)
-        self.shotReferenceList.itemClicked.connect(self.shotReferenceList_Clicked)
+        self.seqReferenceList.itemClicked.connect(self.ref_sequence_list_clicked)
+        self.shotReferenceList.itemClicked.connect(self.ref_shot_list_clicked)
         self.referenceThumbListWidget.itemSelectionChanged.connect(self.referenceThumbListWidget_itemSelectionChanged)
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.reference_doubleClicked)
-        self.filterByNameLineEdit.textChanged.connect(self.filter_reference_by_name)
-        self.filterByTagsListWidget.itemClicked.connect(self.filter_reference_by_tags)
+        self.filterByNameLineEdit.textChanged.connect(self.ref_filter_by_name)
+        self.filterByTagsListWidget.itemClicked.connect(self.ref_filter_by_tags_clicked)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
         self.createReferencesFromScreenshotBtn.clicked.connect(self.create_reference_from_screenshot)
@@ -48,11 +54,12 @@ class ReferenceTab(object):
         self.biggerRefPushButton_02.clicked.connect(partial(self.change_reference_thumb_size, 2))
         self.biggerRefPushButton_03.clicked.connect(partial(self.change_reference_thumb_size, 3))
         self.biggerRefPushButton_04.clicked.connect(partial(self.change_reference_thumb_size, 4))
-        self.changeRefSeqShotBtn.clicked.connect(self.change_seq_shot_layout)
+        self.changeRefSeqShotBtn.clicked.connect(self.ref_change_seq_shot)
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
-        self.filterByNoTagsCheckBox.stateChanged.connect(self.show_reference_with_no_tags)
-
+        self.filterByNoTagsCheckBox.stateChanged.connect(self.ref_filter_images_with_no_tags_clicked)
+        self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
+        self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         resize_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
 
         self.biggerRefPushButton_01.setIcon(resize_icon)
@@ -64,90 +71,397 @@ class ReferenceTab(object):
         self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
         self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
 
-    def seqReferenceList_Clicked(self):
 
-        # If no thumbnail is loaded, load all reference thumbnails for first load.
-        if self.referenceThumbListWidget.count() == 0:
-            self.load_reference_thumbnails(self.first_thumbnail_load)
 
-        self.selected_sequence_name = str(self.seqReferenceList.selectedItems()[0].text())
+    def ref_load_all_references(self):
+        '''Load all references when clicking sequence for the first time'''
+
+        if len(self.seqReferenceList.selectedItems()) == 0:
+            self.seqReferenceList.setCurrentRow(0)
+            self.shotReferenceList.setCurrentRow(0)
+
+        # Show progress bar dialog
+        dialog = QtGui.QDialog()
+        dialog.setWindowTitle("Please wait...")
+        main_layout = QtGui.QVBoxLayout(dialog)
+
+        mainLbl = QtGui.QLabel("Loading thumbnails:", self)
+        progressBar = QtGui.QProgressBar(self)
+
+        main_layout.addWidget(mainLbl)
+        main_layout.addWidget(progressBar)
+
+        Lib.apply_style(self, dialog)
+
+        dialog.show()
+        dialog.repaint()
+
+
+        ref_all_references_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''', (self.selected_project_name, "ref")).fetchall()
+        progressBar.setMaximum(len(ref_all_references_assets))
+
+        for i, ref in enumerate(ref_all_references_assets):
+            id = ref[0]
+            project_name = ref[1]
+            sequence_name = ref[2]
+            shot_number = ref[3]
+            name = ref[4]
+            path = ref[5]
+            type = ref[6]
+            version = ref[7]
+            comments = ref[8]
+            tags = ref[9]
+            dependency = ref[10]
+            last_access = ref[11]
+            creator = ref[12]
+            if id == None : id = ""
+            if project_name == None : project_name = ""
+            if sequence_name == None : sequence_name = ""
+            if shot_number == None : shot_number = ""
+            if name == None : name = ""
+            if path == None : path = ""
+            if type == None : type = ""
+            if version == None : version = ""
+            if comments == None : comments = ""
+            if tags == None : tags = ""
+            if dependency == None : dependency = ""
+            if last_access == None : last_access = ""
+            if creator == None : creator = ""
+
+            asset = Asset(self, id ,project_name, sequence_name, shot_number, name, path, "jpg", type, version, comments, tags, dependency, last_access, creator)
+            ref_item = QtGui.QListWidgetItem(asset.name)
+            ref_item.setIcon(QtGui.QIcon(asset.full_path))
+            ref_item.setData(QtCore.Qt.UserRole, asset)
+
+            if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors
+                self.all_references_ListWidgetItems.append(ref_item)
+                self.referenceThumbListWidget.addItem(ref_item)
+
+            progressBar.setValue(i)
+
+        self.load_filter_by_tags_list()
+
+    def ref_filter_references(self):
+        '''Filter references by sequence / shot / tags'''
+        [ref.setHidden(False) for ref in self.all_references_ListWidgetItems]
+
+        # Filter by sequence
+        all_references = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+
+        for ref in all_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            if self.seqReferenceList.selectedItems()[0].text() == "All":
+                continue
+            elif self.seqReferenceList.selectedItems()[0].text() == "None":
+                if asset.sequence != "xxx":
+                    ref.setHidden(True)
+            elif self.seqReferenceList.selectedItems()[0].text() != "None":
+                if asset.sequence != self.ref_selected_sequence_name:
+                    ref.setHidden(True)
+
+        # Filter by shot
+        all_references = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+
+        for ref in all_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            if self.shotReferenceList.selectedItems()[0].text() != "None":
+                if asset.shot != self.ref_selected_shot_number:
+                    ref.setHidden(True)
+
+        # Filter by tags
+        all_references = self.get_all_visible_references()
+        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+
+        for ref in all_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            if len(self.filterByTagsListWidget.selectedItems()) > 0:
+                if not set(self.ref_selected_filter_tags).issubset(set(asset.tags)):
+                    ref.setHidden(True)
+
+        # Show only assets with no tags if checkbox is checked
+        if self.images_with_no_tags_state == 2:
+            all_references = self.get_all_visible_references()
+            all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
+            for ref in all_references:
+                asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+                if len(asset.tags[0]) != 0:
+                    ref.setHidden(True)
+
+        # If no tags is selected in filter tags list, refresh filter tags list
+        if len(self.filterByTagsListWidget.selectedItems()) == 0:
+            self.load_filter_by_tags_list()
+
+    def ref_filter_by_name(self):
+        '''Filter references by name'''
+        all_visible_references = self.get_all_visible_references()
+        for ref in all_visible_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            if len(self.filterByNameLineEdit.text()) > 0:
+                filter_str = unicode(self.filterByNameLineEdit.text())
+                filter_str = Lib.normalize_str(self, filter_str)
+                filter_str = filter_str.lower()
+                if "*" in filter_str:
+                    filter_str = filter_str.replace("*", ".*")
+                    r = re.compile(filter_str)
+                    if not r.match(asset.name):
+                        ref.setHidden(True)
+                else:
+                    if not filter_str in asset.name:
+                        ref.setHidden(True)
+            else:
+                self.ref_filter_references()
+
+    def ref_sequence_list_clicked(self):
+        '''Set variables, load shots from selected reference and filter references'''
+
+        # If reference thumb list widget is empty, load all references for the first time
+        if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
+
+        # Set selected reference name variable
+        self.ref_selected_sequence_name = str(self.seqReferenceList.selectedItems()[0].text())
+        if self.ref_selected_sequence_name == "All" or self.ref_selected_sequence_name == "None" :
+            self.ref_selected_sequence_name = "xxx"
 
         # Add shots to shot list and shot creation list
-        if self.selected_sequence_name == "All":
-            self.selected_sequence_name = "xxx"
-            self.shotReferenceList.clear()
-            self.shotReferenceList.addItem("None")
+        self.shotReferenceList.clear()
+        self.shotReferenceList.addItem("None")
+        if not self.ref_selected_sequence_name == "xxx":
+            [self.shotReferenceList.addItem(shot) for shot in self.shots[self.ref_selected_sequence_name]]
+        self.shotReferenceList.setCurrentRow(0)
 
-        elif self.selected_sequence_name == "None":
-            self.selected_sequence_name = "xxx"
-            self.shotReferenceList.clear()
-            self.shotReferenceList.addItem("None")
+        # Filter references
+        self.ref_filter_references()
 
+    def ref_shot_list_clicked(self):
+        '''Set variables and filter references'''
+        self.ref_selected_shot_number = str(self.shotReferenceList.selectedItems()[0].text())
+        if self.ref_selected_shot_number == "None": self.ref_selected_shot_number = "xxxx"
+        self.ref_filter_references()
+
+    def ref_filter_by_tags_clicked(self):
+        '''Set variables and filter references'''
+        self.ref_selected_filter_tags = self.filterByTagsListWidget.selectedItems()
+        self.ref_selected_filter_tags = [str(i.text()) for i in self.ref_selected_filter_tags]
+        self.ref_filter_references()
+
+    def ref_filter_images_with_no_tags_clicked(self):
+        '''Set variable and filter references'''
+        self.images_with_no_tags_state = self.filterByNoTagsCheckBox.checkState()
+        self.ref_filter_references()
+
+    def load_filter_by_tags_list(self):
+        '''Add tags to filterByTagsList based on visible references'''
+        all_visible_references  = self.get_all_visible_references()
+        all_tags_from_visible_references = sorted(self.get_all_tags_from_references(all_visible_references))
+
+        self.filterByTagsListWidget.clear()
+        for tag in all_tags_from_visible_references:
+            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30)  # Fit frequency in the 10-30 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+            item = QtGui.QListWidgetItem(tag)
+            item.setFont(font)
+            self.filterByTagsListWidget.addItem(item)
+
+    def get_all_visible_references(self):
+        '''
+        Get all references currently visible in the reference list widget
+        :return: list of all visible references
+        '''
+        all_visible_references = []
+
+        for ref in self.all_references_ListWidgetItems:
+            if not ref.isHidden():
+                all_visible_references.append(ref)
+
+        return all_visible_references
+
+    def get_all_tags_from_references(self, references):
+        '''
+        Get all tags from references
+        :param references: list of references list widget item
+        :return: list of tags from list of reference
+        '''
+        all_tags_from_references = []
+
+        for ref in references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            all_tags_from_references.append(asset.tags)
+
+        all_tags_from_references = list(set(sum(all_tags_from_references, []))) # Convert into one single list and remove duplicates
+        all_tags_from_references = filter(None, all_tags_from_references) # Remove empty entries
+
+        return all_tags_from_references
+
+    def referenceThumbListWidget_itemSelectionChanged(self):
+        '''
+        Add tags to existing tags list so user can remove them
+        '''
+        self.selected_references = self.referenceThumbListWidget.selectedItems()
+        all_tags = self.get_all_tags_from_references(self.selected_references)
+
+        # Add tags to existing tags list
+        self.existingTagsListWidget.clear()
+        for tag in sorted(all_tags):
+            self.existingTagsListWidget.addItem(tag)
+
+    def remove_selected_references(self):
+        '''
+        Remove selected reference from database and reference list widget
+        '''
+        # Retrieve selected references
+        selected_references = self.referenceThumbListWidget.selectedItems()
+
+        # Delete references on database and on disk
+        number_of_refs_removed = 0
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.remove_asset_from_db()
+            self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
+
+        if number_of_refs_removed > 1:
+            self.add_log_entry("{0} deleted {1} reference(s)".format(self.members[self.username], number_of_refs_removed))
         else:
-            self.shotReferenceList.clear()
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
-            self.shotReferenceList.addItem("None")
-            shots = [i[0] for i in shots]
-            shots = sorted(shots)
-            [self.shotReferenceList.addItem(shot) for shot in shots]
+            self.add_log_entry("{0} deleted {1} reference".format(self.members[self.username], number_of_refs_removed))
 
+    def reference_doubleClicked(self):
+        '''
+        Trigger action based when user double click an item
+        '''
+        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+        asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
-        # Filter thumbnails based on which sequence was clicked
-        all_references = self.get_all_references()
-        all_tags = []
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:  # Renaming reference
 
-        for ref in all_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_seq = ref_data[0]
-            ref_tags = ref_data[5]
-            if str(self.seqReferenceList.selectedItems()[0].text()) == "All":  # If "All" is selected, show all thumbnails
-                all_tags.append(ref_tags)
-                self.referenceThumbListWidget.setItemHidden(ref, False)
-            else:  # Else, show thumbnails for selected sequence only
-                if ref_seq == self.selected_sequence_name:
-                    all_tags.append(ref_tags)
-                    self.referenceThumbListWidget.setItemHidden(ref, False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(ref, True)
+            self.rename_reference(asset)
 
-        self.add_tags_to_filter_tags_list(all_tags)
-        self.filterByNoTagsCheckBox.setCheckState(0)
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
+            comment_dialog = CommentWidget(self, asset.id, asset.type, asset.name, asset.sequence, asset.shot, asset.version, asset.path)
 
-    def shotReferenceList_Clicked(self):
+        else:  # Opening video / image in chrome / windows image view
 
-        if str(self.shotReferenceList.selectedItems()[0].text()) == "None":
-            self.selected_shot_number = "xxxx"
-        else:
-            self.selected_shot_number = str(self.shotReferenceList.selectedItems()[0].text())
+            if "vimeo" in asset.dependency or "youtube" in asset.dependency:
+                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
+            else:
+                # Open image in windows viewer
+                os.system(asset.full_path)
 
-        # Filter thumbnails based on which shot was clicked
-        all_references = self.get_all_references()
-        all_tags = []
+    def rename_reference(self, asset):
+        '''
+        Rename reference
+        '''
+        rename_dialog = QtGui.QDialog()
+        rename_dialog.setWindowIcon(self.app_icon)
+        rename_dialog.setWindowTitle("Rename reference")
 
-        for ref in all_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_seq = ref_data[0]
-            ref_shot = ref_data[1]
-            ref_tags = ref_data[5]
-            if str(self.shotReferenceList.selectedItems()[
-                       0].text()) == "None":  # If "None" is selected, show all thumbnails
-                if ref_seq == self.selected_sequence_name:
-                    all_tags.append(ref_tags)
-                    self.referenceThumbListWidget.setItemHidden(ref, False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(ref, True)
-            else:  # Else, show thumbnails for selected sequence only
-                if ref_shot == self.selected_shot_number and ref_seq == self.selected_sequence_name:
-                    all_tags.append(ref_tags)
-                    self.referenceThumbListWidget.setItemHidden(ref, False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(ref, True)
+        Lib.apply_style(self, rename_dialog)
 
-        self.add_tags_to_filter_tags_list(all_tags)
+        horizontalLayout = QtGui.QVBoxLayout(rename_dialog)
+
+        reference_new_name = QtGui.QLineEdit()
+        reference_new_name.returnPressed.connect(rename_dialog.accept)
+        reference_new_name.selectAll()
+        reference_new_name.setText(asset.name)
+        horizontalLayout.addWidget(reference_new_name)
+
+        rename_dialog.exec_()
+
+        if rename_dialog.result() == 0:
+            return
+
+        new_name = unicode(reference_new_name.text())
+        new_name = Lib.normalize_str(self, new_name)
+        new_name = Lib.convert_to_camel_case(self, new_name)
+
+        if len(new_name) <= 3:
+            Lib.message_box(self, text="Please enter a name with more than 3 letters")
+            return
+
+        if asset.name == new_name:
+            return
+
+        asset.change_name(new_name)
+
+        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+        selected_reference.setText(new_name)
+
+    def ref_change_seq_shot(self):
+        '''
+        Change sequence and shot for selected references
+        '''
+        # Create the change seq shot dialog
+        change_dialog = QtGui.QDialog()
+        change_dialog.setWindowTitle("Change Sequence / Shot")
+        change_dialog.setMinimumWidth(200)
+        Lib.apply_style(self, change_dialog)
+
+        # Create main layout
+        main_layout = QtGui.QVBoxLayout(change_dialog)
+
+        # Create seq and shot combo box
+        self.change_ref_seq_combobox = QtGui.QComboBox()
+        self.change_ref_seq_combobox.addItem("All")
+        self.change_ref_seq_combobox.addItems([str(i[0]) for i in self.sequences])
+        self.change_ref_shot_combobox = QtGui.QComboBox()
+        self.change_ref_shot_combobox.addItem("None")
+
+        # Create accept button
+        apply_btn = QtGui.QPushButton("Accept")
+
+        # Create labels
+        sequence_lbl = QtGui.QLabel("Sequence Name:")
+        shot_lbl = QtGui.QLabel("Shot Number:")
+
+        # Add widgets to layout
+        main_layout.addWidget(sequence_lbl)
+        main_layout.addWidget(self.change_ref_seq_combobox)
+        main_layout.addWidget(shot_lbl)
+        main_layout.addWidget(self.change_ref_shot_combobox)
+        main_layout.addWidget(apply_btn)
+
+        # Connect the widgets to the functions
+        apply_btn.clicked.connect(change_dialog.accept)
+        self.change_ref_seq_combobox.currentIndexChanged.connect(self.ref_change_seq_shot_filter_shots)
+
+        # Execute the QDialog
+        change_dialog.exec_()
+
+        # If user close dialog, return
+        if change_dialog.result() == 0:
+            return
+
+        # Get selected references and change seq shot
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        selected_sequence = str(self.change_ref_seq_combobox.currentText())
+        selected_shot = str(self.change_ref_shot_combobox.currentText())
+        if selected_sequence == "All": selected_sequence = "xxx"
+        if selected_shot == "None": selected_shot = "xxxx"
+
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.change_sequence(selected_sequence)
+            asset.change_shot(selected_shot)
+
+        # Filter references and clear selection
+        self.ref_filter_references()
+        self.referenceThumbListWidget.clearSelection()
+
+    def ref_change_seq_shot_filter_shots(self):
+        '''
+        Add shots based on what sequence was clicked on the ref_change_seq_shot layout
+        '''
+        selected_sequence_name = str(self.change_ref_seq_combobox.currentText())
+
+        # Add shots to shot list and shot creation list
+        self.change_ref_shot_combobox.clear()
+        self.change_ref_shot_combobox.addItem("None")
+        if selected_sequence_name != "All":
+            [self.change_ref_shot_combobox.addItem(shot) for shot in self.shots[selected_sequence_name]]
 
     def add_tags_to_selected_references(self):
-
         # Retrieve selected tags to add
         selected_tags = self.allTagsTreeWidget.selectedItems()
         selected_tags = [str(i.text(0)) for i in selected_tags]
@@ -155,87 +469,33 @@ class ReferenceTab(object):
         # Retrieve selected QListWidgetItem
         selected_references = self.referenceThumbListWidget.selectedItems()
         for ref in selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()  # Get data associated with QListWidgetItem
-            ref_sequence_name = str(ref_data[0])
-            ref_shot_number = str(ref_data[1])
-            ref_name = str(ref_data[2])
-            ref_path = str(ref_data[3])
-            ref_version = str(ref_data[4])
-            ref_tags = ref_data[5]
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.add_tags(selected_tags)
 
-            if ref_tags and "," in ref_tags:
-                ref_tags = ref_data[5].split(",")
-            else:
-                ref_tags = [ref_tags]
+        self.referenceThumbListWidget_itemSelectionChanged() # Reload tags from selected references
 
-            tags_to_add = sorted(list(set(ref_tags + selected_tags)))
-            tags_to_add = filter(None, tags_to_add)
-            tags_to_add = ",".join(tags_to_add)
+    def remove_tags_from_selected_references(self):
+        # Retrieve selected tags to remove
+        selected_tags = self.existingTagsListWidget.selectedItems()
+        selected_tags = [str(i.text()) for i in selected_tags]
 
-            # Update reference QListWidgetItem data
-            data = (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, tags_to_add)
-            ref.setData(QtCore.Qt.UserRole, data)
+        # Retrieve selected QListWidgetItem
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.remove_tags(selected_tags)
 
-            self.cursor.execute(
-                '''UPDATE assets SET asset_tags=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (tags_to_add, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
-
-        self.db.commit()
-
-        self.referenceThumbListWidget_itemSelectionChanged()
-        self.reload_filter_by_tags_list()
-
-    def add_tags_to_filter_tags_list(self, tags):
-
-        all_tags = tags
-
-        all_tags = filter(None, all_tags)
-        all_tags = ",".join(all_tags)
-        all_tags = all_tags.split(",")
-        all_tags = sorted(list(set(all_tags)))
-
-        self.filterByTagsListWidget.clear()
-        for tag in all_tags:
-            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10,
-                                          30)  # Fit frequency in the 10-30 range
-            font = QtGui.QFont()
-            font.setPointSize(tag_frequency)
-
-            item = QtGui.QListWidgetItem(tag)
-            item.setFont(font)
-
-            self.filterByTagsListWidget.addItem(item)
+        self.referenceThumbListWidget_itemSelectionChanged()  # Reload tags from selected references
 
     def create_reference_from_web(self):
 
-        # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
-            self.message_box(text="Please select a project first")
-            return
+        # If reference thumb list widget is empty, load all references for the first time
+        if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
 
-        asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
+        self.referenceThumbListWidget.clearSelection()
 
-
-        # Check if a sequence is selected
-        try:
-            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
-            if selected_sequence == "All" or selected_sequence == "None":
-                selected_sequence = "xxx"
-        except:
-            selected_sequence = "xxx"
-        asset_filename += selected_sequence + "_"
-
-        # Check if a shot is selected
-        try:
-            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
-            if selected_shot == "None":
-                selected_shot = "xxxx"
-            asset_filename += selected_shot + "_"
-        except:
-            selected_shot = "xxxx"
-            asset_filename += "xxxx_"
-
+        selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
+        if selected_sequence == None: return
 
         # Check if URL is valid
         URL = str(self.referenceWebLineEdit.text())
@@ -246,24 +506,15 @@ class ReferenceTab(object):
         asset_name = self.asset_name_dialog()
         if asset_name == None: return
 
-        # Check if a version already exists
-        last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
-        if last_version:
-            last_version = str(int(last_version) + 1).zfill(2)
-            asset_filename += "ref_" + asset_name + "_" + last_version
-        else:
-            last_version = "01"
-            asset_filename += "ref_" + asset_name + "_" + last_version
-
-        asset_filename += ".jpg"
+        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
+        asset.add_asset_to_db()
 
         # Create reference from video
         if "youtube" in URL or "vimeo" in URL:
-            self.ref_type = "video"
             if "youtube" in URL.lower():
+                stream_link = URL
                 video = pafy.new(URL)
                 thumbnail_url = str(video.thumb).replace("default", "sddefault")
-                stream_link = video.streams[0].url
 
             elif "vimeo" in URL.lower():
                 stream_link = URL
@@ -274,247 +525,133 @@ class ReferenceTab(object):
                 end = '</thumbnail_large>'
                 thumbnail_url = re.search('%s(.*)%s' % (start, end), page_source).group(1)
 
-            urllib.urlretrieve(thumbnail_url, self.selected_project_path + asset_filename)
-            downloaded_img = Image.open(self.selected_project_path + asset_filename)
+            urllib.urlretrieve(thumbnail_url, asset.full_path)
+            downloaded_img = Image.open(asset.full_path)
             image_width = downloaded_img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
                     image_width = 1920
-            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, self.compression_level)
-            Lib.add_watermark(self, self.selected_project_path + asset_filename, "VIDEO",
-                              self.selected_project_path + asset_filename)
-
-
+            Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
+            Lib.add_watermark(self, asset.full_path, "VIDEO", asset.full_path)
+            asset.change_dependency(URL)
+            asset.add_tags(["_VIDEO"])
 
         else:  # Create image reference
-            self.ref_type = "image"
-            urllib.urlretrieve(URL, self.selected_project_path + asset_filename)
-            downloaded_img = Image.open(self.selected_project_path + asset_filename)
+            urllib.urlretrieve(URL, asset.full_path)
+            downloaded_img = Image.open(asset.full_path)
             image_width = downloaded_img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
                     image_width = 1920
-            Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, self.compression_level)
+            Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
         new_item = QtGui.QListWidgetItem()
-        new_item.setIcon(QtGui.QIcon(self.selected_project_path + asset_filename))
-        new_item.setText(asset_name)
-        # Add reference to database
-        if self.ref_type == "video":
-            self.cursor.execute(
-                '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_dependency, asset_tags, creator) VALUES(?,?,?,?,?,?,?,?,?,?)''',
-                (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
-                 last_version, stream_link, "video", self.username))
-
-            self.add_log_entry("{0} added a reference from web ({1}) (video format)".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, stream_link]))
-
-            new_item.setData(QtCore.Qt.UserRole,
-                             [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
-                              str(last_version), "video"])
-
-        elif self.ref_type == "image":
-            self.cursor.execute(
-                '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
-                (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
-                 last_version, self.username))
-
-            self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
-
-            new_item.setData(QtCore.Qt.UserRole,
-                             [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
-                              str(last_version), ""])
-
-        self.db.commit()
-
+        new_item.setData(QtCore.Qt.UserRole, asset)
+        new_item.setIcon(QtGui.QIcon(asset.full_path))
+        self.all_references_ListWidgetItems.append(new_item)
         self.referenceThumbListWidget.addItem(new_item)
 
+        self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
-        self.referenceThumbListWidget.clearSelection()
         self.referenceThumbListWidget.setItemSelected(new_item, True)
 
     def create_reference_from_files(self):
+        '''
+        Create references from selected files
+        '''
 
-        # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
-            self.message_box(text="Please select a project first")
-            return
+        # If reference thumb list widget is empty, load all references for the first time
+        if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
 
-        asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
+        self.referenceThumbListWidget.clearSelection()
 
-        # Check if a sequence is selected
-        try:
-            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
-            if selected_sequence == "All":
-                selected_sequence = "xxx"
-            asset_filename += selected_sequence + "_"
-        except:
-            self.message_box(text="Please select a sequence first")
-            return
-
-        # Check if a shot is selected
-        try:
-            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
-            if selected_shot == "None":
-                selected_sequence = "xxxx"
-            asset_filename += selected_shot + "_"
-        except:
-            selected_shot = "xxxx"
-            asset_filename += "xxxx_"
-
+        selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
+        if selected_sequence == None: return
 
         # Ask for user to select files
-        selected_files_path = QtGui.QFileDialog.getOpenFileNames(self, 'Select Files',
-                                                                 'Z:\\Groupes-cours\\NAND999-A15-N01\\Nature',
-                                                                 "Images Files (*.jpg *.png *bmp)")
+        selected_files = QtGui.QFileDialog.getOpenFileNames(self, 'Select Files', 'Z:\\Groupes-cours\\NAND999-A15-N01\\Nature', "Images Files (*.jpg *.png *bmp)")
 
-        if len(selected_files_path) < 1:
+        if len(selected_files) < 1:
             return
 
+        # Add each file
+        assets = []
+        for file_path in selected_files:
+            file_path = unicode(file_path)
+            file_path = os.path.abspath(file_path)
 
-        # Get file name
-        selected_files_name = []
-        files_name = []
-        for path in selected_files_path:
-            file_name = unicode(path.split("\\")[-1].split(".")[0])
-            file_name = Lib.normalize_str(self, file_name)
-            file_name = Lib.convert_to_camel_case(self, file_name)
-            last_version = self.check_if_ref_already_exists(file_name, selected_sequence, selected_shot)
-            if last_version:
-                last_version = str(int(last_version) + 1).zfill(2)
-            else:
-                last_version = "01"
-            files_name.append(file_name)
-            file_path = asset_filename + file_name + "_" + last_version + ".jpg"
-            selected_files_name.append(file_path)
+            # Convert file name to normalized camel case name
+            asset_name = unicode(file_path.split("\\")[-1].split(".")[0])
+            asset_name = Lib.normalize_str(self, asset_name)
+            asset_name = Lib.convert_to_camel_case(self, asset_name)
 
-        # Convert file paths to ascii
-        selected_files_path = [str(i.toAscii()) for i in selected_files_path]
+            # Create asset
+            asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
+            asset.add_asset_to_db()
+            assets.append(asset)
 
 
+            # Rename file and place it in correct folder
+            os.rename(file_path, asset.full_path)
 
-        # Rename images
-        for i, path in enumerate(selected_files_path):
-            if not os.path.isfile(self.selected_project_path + selected_files_name[i]):
-                # Backup file
-                file_name, file_extension = os.path.splitext(path)
-                backup_path = path.replace(file_extension, "") + "_backup" + ".jpg"
-                shutil.copy(path, backup_path)
-
-                # Rename file and place it in correct folder
-                os.rename(path, self.selected_project_path + selected_files_name[i])
-
-                # Update progress bar
-
-        # Compress images
-        for path in selected_files_name:
-            img = Image.open(self.selected_project_path + path)
+            # Compress image
+            img = Image.open(asset.full_path)
             image_width = img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
                     image_width = 1920
-            Lib.compress_image(self, self.selected_project_path + path, image_width, self.compression_level)
+            Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
-
-        # Add reference to database
-        number_of_refs_added = 0
-        for i, path in enumerate(selected_files_name):
-            number_of_refs_added += 1
-            last_version = path.split("\\")[-1].split(".")[0].split("_")[-1]
-
-            self.cursor.execute(
-                '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
-                (self.selected_project_name, selected_sequence, selected_shot, files_name[i], path, "ref", last_version,
-                 self.username))
-
+            # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
-            new_item.setIcon(QtGui.QIcon(self.selected_project_path + path))
-            new_item.setData(QtCore.Qt.UserRole,
-                             [str(selected_sequence), str(selected_shot), str(files_name[i]), str(path),
-                              str(last_version), ""])
+            new_item.setIcon(QtGui.QIcon(asset.full_path))
+            new_item.setData(QtCore.Qt.UserRole, asset)
 
             self.referenceThumbListWidget.addItem(new_item)
+            self.all_references_ListWidgetItems.append(new_item)
+            self.add_log_entry("{0} added a reference from files ({1})".format(self.members[self.username], asset.name))
+            self.referenceThumbListWidget.setItemSelected(new_item, True)
 
-        self.add_log_entry(
-            "{0} added {1} references from files".format(self.members[self.username], number_of_refs_added))
-
-        self.db.commit()
-
+        self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
-        self.referenceThumbListWidget.setItemSelected(new_item, True)
 
     def create_reference_from_screenshot(self):
+        '''
+        Create reference from screenshot
+        '''
 
-        # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
-            self.message_box(text="Please select a project first")
-            return
+        selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
+        if selected_sequence == None: return
 
-        asset_filename = "\\assets\\ref\\" + self.selected_project_shortname + "_"
-
-        # Check if a sequence is selected
-        try:
-            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
-            if selected_sequence == "All" or selected_sequence == "None":
-                selected_sequence = "xxx"
-        except:
-            selected_sequence = "xxx"
-        asset_filename += selected_sequence + "_"
-
-        # Check if a shot is selected
-        try:
-            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
-            if selected_shot == "None":
-                selected_shot = "xxxx"
-            asset_filename += selected_shot + "_"
-        except:
-            selected_shot = "xxxx"
-            asset_filename += "xxxx_"
+        self.referenceThumbListWidget.clearSelection()
 
         asset_name = self.asset_name_dialog()
         if asset_name == None: return
 
         # Check if a name is defined for the asset
-        if len(asset_name) == 0:
-            self.message_box(text="Please enter a name for the asset")
+        if len(asset_name) <= 3:
+            self.message_box(text="Please enter a name with more than 3 characters for the asset")
             return
 
-        # Check if a version already exists
-        last_version = self.check_if_ref_already_exists(asset_name, selected_sequence, selected_shot)
-        if last_version:
-            last_version = str(int(last_version) + 1).zfill(2)
-            asset_filename += "ref_" + asset_name + "_" + last_version
-        else:
-            last_version = "01"
-            asset_filename += "ref_" + asset_name + "_" + last_version
-
-        asset_filename += ".jpg"
+        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
+        asset.add_asset_to_db()
 
         # Create reference from capture
-        Lib.take_screenshot(self, path=self.selected_project_path + asset_filename)
-        downloaded_img = Image.open(self.selected_project_path + asset_filename)
+        Lib.take_screenshot(self, path=asset.full_path)
+        downloaded_img = Image.open(asset.full_path)
         image_width = downloaded_img.size[0]
-        Lib.compress_image(self, self.selected_project_path + asset_filename, image_width, self.compression_level)
+        Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
+        # Add reference to reference list
         new_item = QtGui.QListWidgetItem()
-        new_item.setIcon(QtGui.QIcon(self.selected_project_path + asset_filename))
-        new_item.setText(asset_name)
-
-        # Add reference to database
-        self.cursor.execute(
-            '''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, creator) VALUES(?,?,?,?,?,?,?,?)''',
-            (self.selected_project_name, selected_sequence, selected_shot, asset_name, asset_filename, "ref",
-             last_version, self.username))
-
-        self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset_name), value="|".join(["ref", asset_name, selected_sequence, selected_shot, last_version, asset_filename]))
-
-        new_item.setData(QtCore.Qt.UserRole,
-                         [str(selected_sequence), str(selected_shot), str(asset_name), str(asset_filename),
-                          str(last_version), ""])
-
-        self.db.commit()
+        new_item.setIcon(QtGui.QIcon(asset.full_path))
+        new_item.setData(QtCore.Qt.UserRole, asset)
 
         self.referenceThumbListWidget.addItem(new_item)
+        self.all_references_ListWidgetItems.append(new_item)
+        self.add_log_entry("{0} added a reference from screenshot ({1})".format(self.members[self.username], asset.name))
 
+        self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
         self.referenceThumbListWidget.clearSelection()
         self.referenceThumbListWidget.setItemSelected(new_item, True)
@@ -547,338 +684,6 @@ class ReferenceTab(object):
 
         return asset_name
 
-    def check_if_ref_already_exists(self, ref_name, sequence_name, shot_number):
-        all_versions = self.cursor.execute(
-            '''SELECT asset_version FROM assets WHERE asset_name=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
-            (ref_name, sequence_name, shot_number)).fetchall()
-        if len(all_versions) == 0:
-            return
-        else:
-            all_versions = [str(i[0]) for i in all_versions]
-            all_versions = sorted(all_versions)
-            last_version = all_versions[-1]
-            return last_version
-
-    def remove_selected_references(self):
-
-        # Retrieve selected references
-        selected_references = self.referenceThumbListWidget.selectedItems()
-
-        # Delete references on database and on disk
-        number_of_refs_removed = 0
-        for ref in selected_references:
-            number_of_refs_removed += 1
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence = str(ref_data[0])
-            ref_shot_number = str(ref_data[1])
-            ref_path = str(ref_data[3])
-            ref_name = str(ref_data[2])
-            ref_version = str(ref_data[4])
-
-            os.remove(self.selected_project_path + str(ref_path))
-            self.cursor.execute(
-                '''DELETE FROM assets WHERE asset_name=? AND asset_version=? AND asset_type="ref" AND sequence_name=? AND shot_number=?''',
-                (ref_name, ref_version, ref_sequence, ref_shot_number,))
-
-            self.db.commit()
-
-            self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
-
-        if number_of_refs_removed > 1:
-            self.add_log_entry(
-                "{0} deleted {1} reference(s)".format(self.members[self.username], number_of_refs_removed))
-        else:
-            self.add_log_entry("{0} deleted {1} reference".format(self.members[self.username], number_of_refs_removed))
-
-    def remove_tags_from_selected_references(self):
-        # Retrieve selected tags to remove
-        selected_tags = self.existingTagsListWidget.selectedItems()
-        selected_tags = [str(i.text()) for i in selected_tags]
-
-        # Retrieve selected references thumbnails names
-        selected_references = self.referenceThumbListWidget.selectedItems()
-        for ref in selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence_name = ref_data[0]
-            ref_shot_number = ref_data[1]
-            ref_name = ref_data[2]
-            ref_version = ref_data[4]
-            ref_tags = ref_data[5]
-
-            if ref_tags and "," in ref_tags:
-                ref_tags = ref_data[5].split(",")
-            else:
-                ref_tags = [ref_tags]
-
-            tags_to_add = list(set(ref_tags) - set(selected_tags))
-            tags_to_add = filter(None, tags_to_add)
-            tags_to_add = ",".join(tags_to_add)
-
-            # Update reference QListWidgetItem data
-            data = (ref_sequence_name, ref_shot_number, ref_name, ref_data[3], ref_version, tags_to_add)
-            ref.setData(QtCore.Qt.UserRole, data)
-
-            self.cursor.execute(
-                '''UPDATE assets SET asset_tags=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (tags_to_add, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
-
-        self.db.commit()
-
-        self.referenceThumbListWidget_itemSelectionChanged()
-        self.reload_filter_by_tags_list()
-
-    def load_reference_thumbnails(self, first_load=False):
-
-        # Show progress bar dialog
-        dialog = QtGui.QDialog()
-        dialog.setWindowTitle("Please wait...")
-        main_layout = QtGui.QVBoxLayout(dialog)
-
-        mainLbl = QtGui.QLabel("Loading thumbnails:", self)
-        progressBar = QtGui.QProgressBar(self)
-
-        main_layout.addWidget(mainLbl)
-        main_layout.addWidget(progressBar)
-
-        Lib.apply_style(self, dialog)
-
-        dialog.show()
-        dialog.repaint()
-
-        self.referenceThumbListWidget.clear()
-
-        # Retrieve selected sequence and shot
-        try:
-            selected_sequence = str(self.seqReferenceList.selectedItems()[0].text())
-        except:
-            selected_sequence = "xxx"
-        try:
-            selected_shot = str(self.shotReferenceList.selectedItems()[0].text())
-        except:
-            selected_shot = "xxxx"
-
-        if selected_sequence == "None": selected_sequence = "xxx"
-        if selected_shot == "None": selected_shot = "xxxx"
-
-        # Load all thumbnails for first load, no matter what sequence is selected.
-        if first_load == True:
-            selected_sequence = "All"
-
-        # Get reference paths from database based on selected sequence and shot
-        if selected_sequence == "All" and selected_shot == "xxxx":
-            references_list = self.cursor.execute(
-                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets''').fetchall()
-        elif selected_sequence == "xxx" and selected_shot != "xxxx":
-            references_list = self.cursor.execute(
-                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE shot_number=?''',
-                (selected_shot,)).fetchall()
-        elif selected_sequence != "xxx" and selected_shot == "xxxx":
-            references_list = self.cursor.execute(
-                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=?''',
-                (selected_sequence,)).fetchall()
-        elif selected_sequence == "xxx" and selected_shot == "xxxx":
-            references_list = self.cursor.execute(
-                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
-                ("xxx", "xxxx",)).fetchall()
-        else:
-            references_list = self.cursor.execute(
-                '''SELECT sequence_name, shot_number, asset_name, asset_path, asset_version, asset_tags FROM assets WHERE sequence_name=? AND shot_number=?''',
-                (selected_sequence, selected_shot,)).fetchall()
-
-        # references_list = (u'mus', u'xxxx', u'musee', u'\\assets\\ref\\nat_mus_xxxx_ref_musee_01.jpg', u'01', u'lighting,tree,architecture')
-
-        all_tags = []
-
-        progressBar.setMaximum(len(references_list))
-
-        # Load thumbnails
-        if len(references_list) > 0:
-
-            for i, reference in enumerate(references_list):
-                reference_path = self.selected_project_path + reference[3]
-                reference_name = reference[2]
-                reference_tags = reference[5]
-
-                all_tags.append(reference_tags)
-
-                reference_list_item = QtGui.QListWidgetItem(reference_name)
-                reference_list_item.setIcon(QtGui.QIcon(reference_path))
-                reference_list_item.setData(QtCore.Qt.UserRole, reference)
-
-                if os.path.isfile(reference_path): # Check if image exists to prevent errors
-                    self.referenceThumbListWidget.addItem(reference_list_item)
-
-                progressBar.setValue(i)
-
-        all_tags = filter(None, all_tags)
-        all_tags = ",".join(all_tags)
-        all_tags = all_tags.split(",")
-        all_tags = sorted(list(set(all_tags)))
-
-        self.filterByTagsListWidget.clear()
-        for tag in all_tags:
-            tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10,
-                                          30)  # Fit frequency in the 10-30 range
-            font = QtGui.QFont()
-            font.setPointSize(tag_frequency)
-
-            item = QtGui.QListWidgetItem(tag)
-            item.setFont(font)
-
-            self.filterByTagsListWidget.addItem(item)
-
-        # Close progress bar dialog
-        dialog.close()
-        self.first_thumbnail_load = False
-
-    def reload_filter_by_tags_list(self):
-
-        all_references = self.get_all_loaded_references()
-
-        all_tags = self.get_all_tags_from_loaded_references(all_references)
-
-        self.add_tags_to_filter_tags_list(all_tags)
-
-    def referenceThumbListWidget_itemSelectionChanged(self):
-
-        self.selected_references = self.referenceThumbListWidget.selectedItems()
-
-        all_tags = self.get_all_tags_from_loaded_references(self.selected_references)
-
-        # Add tags to existing tags list
-        self.existingTagsListWidget.clear()
-        for tag in all_tags:
-            self.existingTagsListWidget.addItem(tag)
-
-    def get_all_tags_from_loaded_references(self, references_list):
-
-        """This function gets tags from a list of QListWidgetItem.
-
-        :param references_list: list of QListWidgetItems
-        :return: list of tags from QListWidgetItems. Ex: ["lighting", "character", "architecture"]
-        """
-
-        all_tags = []
-
-        for ref in references_list:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_tags = ref_data[5]
-            all_tags.append(ref_tags)
-            all_tags = filter(None, all_tags)
-            all_tags = ",".join(all_tags)  # convert all_tags = ["", "architecture", "architecture,lighting"] to all_tags = "architecture,architecture,lighting"
-            all_tags = all_tags.split(
-                ",")  # convert all_tags = "architecture,architecture,lighting" to ["architecture", "architecture", "lighting"]
-            all_tags = sorted(list(set(all_tags)))  # sort list and remove duplicates
-
-
-        return all_tags
-
-    def change_reference_thumb_size(self, size):
-
-        icon_size = QtCore.QSize(128 * size, 128 * size)
-        self.referenceThumbListWidget.setIconSize(icon_size)
-
-        try:
-            selected_reference = self.referenceThumbListWidget.selectedItems()[0]
-            self.referenceThumbListWidget.scrollToItem(selected_reference, QtGui.QAbstractItemView.EnsureVisible)
-        except:
-            pass
-
-    def filter_reference_by_tags(self):
-
-        all_references = self.get_all_references()
-        [ref.setHidden(False) for ref in all_references]
-
-        # Get all selected tags from the filter tags list
-        selected_tags = self.filterByTagsListWidget.selectedItems()
-        selected_tags = [str(i.text()) for i in selected_tags]
-
-        # Get all references currently loaded in the referenceThumbListWidget view
-        all_references = self.get_all_loaded_references()
-
-        # If no tag is selected, unhide all references
-        if not selected_tags:
-            [ref.setHidden(False) for ref in all_references]
-            self.seqReferenceList_Clicked()
-            return
-
-        # Loop over all references and set them to hidden if any selected tag can't be found in reference's tags
-        for ref in all_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence = ref_data[0]
-            ref_tags = ref_data[5]
-            if ref_tags == None:
-                ref.setHidden(True)
-                continue
-
-            if "," in ref_tags:
-                ref_tags = ref_tags.split(",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
-            else:
-                ref_tags = ref_tags.split()
-
-            ref_tags = [str(i) for i in ref_tags]
-
-            ref_tags = set(ref_tags)
-            selected_tags = set(selected_tags)
-
-            if self.selected_sequence_name == "xxx":  # If selected sequence is all, filter only by selected tags
-                if selected_tags.issubset(ref_tags):  # ref_tags is contained in selected_tags (ex: ref_tags = ["lumiere", "feu"], selected_tags = ["lumiere"]
-                    ref.setHidden(False)
-                else:
-                    ref.setHidden(True)
-            else:  # If selected sequence is something else than all, filter by selected tags and by sequence name
-                if selected_tags.issubset(ref_tags) and self.selected_sequence_name == ref_sequence:  # If current reference is in selected sequence and has tags from selected tags, then don't hide it
-                    ref.setHidden(False)
-                else:
-                    ref.setHidden(True)
-
-    def filter_reference_by_name(self):
-
-        filter_str = unicode(self.filterByNameLineEdit.text())
-        filter_str = Lib.normalize_str(self, filter_str)
-        filter_str = filter_str.lower()
-
-        if "*" in filter_str:
-            filter_str = filter_str.replace("*", ".*")
-            r = re.compile(filter_str)
-            for i in xrange(0, self.referenceThumbListWidget.count()):
-                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
-                if r.match(item_text):
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
-        else:
-
-            for i in xrange(0, self.referenceThumbListWidget.count()):
-                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
-                if filter_str in item_text:
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
-
-    def show_reference_with_no_tags(self):
-
-        if self.filterByNoTagsCheckBox.checkState() == 2:
-            all_references = self.get_all_loaded_references()
-
-            # Loop over all references and set them to hidden if they have no tags
-            for ref in all_references:
-                ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-                ref_tags = ref_data[5]
-                if ref_tags == None:
-                    ref.setHidden(False)
-                else:
-                    ref.setHidden(True)
-            self.reload_filter_by_tags_list()
-        else:
-            self.seqReferenceList_Clicked()
-            all_references = self.get_all_loaded_references()
-            for ref in all_references:
-                ref.setHidden(False)
-
-            self.reload_filter_by_tags_list()
-
     def load_ref_in_kuadro(self):
 
         os.system("taskkill /im kuadro.exe /f")
@@ -886,12 +691,10 @@ class ReferenceTab(object):
         references_to_load = []
 
         for ref in self.selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_path = ref_data[3]
-            references_to_load.append(self.selected_project_path + ref_path)
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            references_to_load.append(asset.full_path)
 
         references_to_load = " ".join(references_to_load)
-
         subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe",
                           [references_to_load]], close_fds=True)
 
@@ -900,218 +703,11 @@ class ReferenceTab(object):
         references_to_load = []
 
         for ref in self.selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_path = str(ref_data[3])
-            references_to_load.append(self.selected_project_path + ref_path)
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            references_to_load.append(asset.full_path)
 
         for ref_path in references_to_load:
             subprocess.Popen([self.photoshop_path, ref_path])
-
-    def reference_doubleClicked(self):
-
-        selected_ref = self.referenceThumbListWidget.selectedItems()[0]
-        ref_data = selected_ref.data(QtCore.Qt.UserRole).toPyObject()
-        ref_sequence_name = str(ref_data[0])
-        ref_shot_number = str(ref_data[1])
-        ref_name = str(ref_data[2])
-        ref_path = str(ref_data[3])
-        ref_version = str(ref_data[4])
-        ref_tags = str(ref_data[5])
-
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:  # Renaming reference
-            self.old_reference_name = self.referenceThumbListWidget.selectedItems()[0]
-            self.old_reference_name = self.old_reference_name.data(QtCore.Qt.UserRole).toPyObject()[2]
-
-            self.rename_dialog = QtGui.QDialog()
-            self.rename_dialog.setWindowIcon(self.app_icon)
-            self.rename_dialog.setWindowTitle("Rename reference")
-
-            Lib.apply_style(self, self.rename_dialog)
-
-            self.horizontalLayout = QtGui.QVBoxLayout(self.rename_dialog)
-
-            self.reference_new_name = QtGui.QLineEdit()
-            self.reference_new_name.setText(self.old_reference_name)
-            self.horizontalLayout.addWidget(self.reference_new_name)
-
-            self.acceptBtn = QtGui.QPushButton("Accept")
-            self.horizontalLayout.addWidget(self.acceptBtn)
-
-            self.acceptBtn.clicked.connect(self.rename_reference)
-
-            self.rename_dialog.exec_()
-
-        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            comment_dialog = CommentWidget(self, 1, "ref", ref_name, ref_sequence_name, ref_shot_number, ref_version, ref_path)
-
-        else:  # Opening video / image in chrome / windows image view
-
-            isVideo = self.cursor.execute(
-                '''SELECT asset_dependency FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=? AND asset_tags=?''',
-                (ref_sequence_name, ref_shot_number, ref_name, ref_path, ref_version, ref_tags,)).fetchone()
-            try:
-                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", isVideo[0]])
-                return
-            except:
-                # Open image in windows viewer
-                os.system(self.selected_project_path + ref_path)
-
-        return
-
-    def rename_reference(self):
-
-        new_name = unicode(self.reference_new_name.text())
-        new_name = Lib.normalize_str(self, new_name)
-        new_name = Lib.convert_to_camel_case(self, new_name)
-
-        if len(new_name) >= 3:
-            self.rename_dialog.close()
-        else:
-            return
-
-        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
-
-        ref_data = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
-        ref_sequence_name = ref_data[0]
-        ref_shot_number = ref_data[1]
-        ref_name = ref_data[2]
-        ref_path = ref_data[3]
-        ref_version = ref_data[4]
-        ref_tags = ref_data[5]
-
-        if self.old_reference_name == new_name:
-            return
-
-        new_path = ref_path.replace(self.old_reference_name, new_name)
-
-        new_version = ref_version
-        # Check if file exist, if yes, increment new_version and change new_path based on new_version.
-        while os.path.isfile(self.selected_project_path + new_path):
-            fileName, fileExtension = os.path.splitext(new_path)
-            current_version = int(fileName.split("_")[-1])
-            new_version = str(current_version + 1).zfill(2)
-            new_path = new_path.replace("_" + str(current_version).zfill(2), "_" + new_version)
-
-        os.rename(self.selected_project_path + ref_path, self.selected_project_path + new_path)
-
-        self.cursor.execute(
-            '''UPDATE assets SET asset_name=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-            (new_name, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name, ref_version,))
-
-        self.db.commit()
-
-        # Update reference QListWidgetItem data
-        data = (ref_sequence_name, ref_shot_number, new_name, new_path, ref_version, ref_tags)
-        selected_reference.setData(QtCore.Qt.UserRole, data)
-
-        selected_reference.setText(new_name)
-
-    def change_seq_shot_layout(self):
-        self.change_dialog = QtGui.QDialog()
-        self.change_dialog.setWindowTitle("Change Sequence / Shot")
-        self.change_dialog.resize(300, 200)
-
-        Lib.apply_style(self, self.change_dialog)
-
-        # Create main layout
-        main_layout = QtGui.QVBoxLayout(self.change_dialog)
-
-        # Create seq and shot combo box
-        self.seq_combobox = QtGui.QComboBox()
-        self.seq_combobox.addItem("All")
-        self.seq_combobox.addItems([str(i[0]) for i in self.sequences])
-
-        self.shot_combobox = QtGui.QComboBox()
-        self.shot_combobox.addItem("None")
-
-        # Create accept button
-        apply_btn = QtGui.QPushButton("Accept")
-
-        # Create labels
-        sequence_lbl = QtGui.QLabel("Sequence Name:")
-        shot_lbl = QtGui.QLabel("Shot Number:")
-
-        # Add widgets to layout
-        main_layout.addWidget(sequence_lbl)
-        main_layout.addWidget(self.seq_combobox)
-        main_layout.addWidget(shot_lbl)
-        main_layout.addWidget(self.shot_combobox)
-        main_layout.addWidget(apply_btn)
-
-        # Connect the widgets to the functions
-        apply_btn.clicked.connect(self.change_seq_shot)
-        self.seq_combobox.currentIndexChanged.connect(self.filter_shots_from_sequences)
-
-        # Execute the QDialog
-        self.change_dialog.exec_()
-
-    def change_seq_shot(self):
-        self.change_dialog.close()
-
-        selected_sequence = str(self.seq_combobox.currentText())
-        selected_shot = str(self.shot_combobox.currentText())
-        selected_references = self.referenceThumbListWidget.selectedItems()
-
-        if selected_sequence == "All":
-            selected_sequence = "xxx"
-
-        if selected_shot == "None":
-            selected_shot = "xxxx"
-
-        for ref in selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence_name = str(ref_data[0])
-            ref_shot_number = str(ref_data[1])
-            ref_name = str(ref_data[2])
-            ref_path = str(ref_data[3])
-            ref_version = str(ref_data[4])
-            ref_tags = str(ref_data[5])
-
-            new_path = ref_path
-            new_path = ref_path.replace("_" + ref_sequence_name + "_" + str(ref_shot_number),
-                                        "_" + selected_sequence + "_" + selected_shot)
-            new_version = ref_version
-
-            while os.path.isfile(self.selected_project_path + new_path):
-                fileName, fileExtension = os.path.splitext(new_path)
-                current_version = int(fileName.split("_")[-1])
-                new_version = str(current_version + 1).zfill(2)
-                new_path = new_path.replace("_" + str(current_version).zfill(2), "_" + new_version)
-
-            os.rename(self.selected_project_path + ref_path, self.selected_project_path + new_path)
-
-            self.cursor.execute(
-                '''UPDATE assets SET sequence_name=?, shot_number=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (selected_sequence, selected_shot, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name,
-                 ref_version,))
-
-            # Update reference QListWidgetItem data
-            data = (selected_sequence, selected_shot, ref_name, new_path, new_version, ref_tags)
-            ref.setData(QtCore.Qt.UserRole, data)
-
-            if selected_sequence == "xxx" and ref_sequence_name == "xxx":  # If new sequence and old sequence is still "All", then leave the ref on None (= don't hide it)
-                self.referenceThumbListWidget.setItemHidden(ref, False)
-            else:
-                self.referenceThumbListWidget.setItemHidden(ref, True)
-
-        self.referenceThumbListWidget.clearSelection()
-        self.db.commit()
-
-    def filter_shots_from_sequences(self):
-        selected_sequence_name = str(self.seq_combobox.currentText())
-
-        # Add shots to shot list and shot creation list
-        if selected_sequence_name == "All":
-            self.shot_combobox.addItem("None")
-
-        else:
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                        (self.selected_project_name, selected_sequence_name,)).fetchall()
-            self.shot_combobox.clear()
-            self.shot_combobox.addItem("None")
-            shots = [i[0] for i in shots]
-            shots = sorted(shots)
-            [self.shot_combobox.addItem(shot) for shot in shots]
 
     def show_url_image(self):
 
@@ -1165,32 +761,113 @@ class ReferenceTab(object):
         else:
             self.referenceOptionsFrame.hide()
 
-    def get_all_loaded_references(self):
-        all_references = []
-        for i in xrange(self.referenceThumbListWidget.count()):
-            if not self.referenceThumbListWidget.item(i).isHidden():
-                all_references.append(self.referenceThumbListWidget.item(i))
+    def change_reference_thumb_size(self, size):
+        '''
+        Change reference thumbnail size
+        :param size: New size of icon
+        '''
+        icon_size = QtCore.QSize(128 * size, 128 * size)
+        self.referenceThumbListWidget.setIconSize(icon_size)
 
-        return all_references
+        # Check if an image is selected, if yes, scroll the view to ensure reference is visible
+        selected_reference = self.referenceThumbListWidget.selectedItems()
+        if len(selected_reference) > 0:
+            self.referenceThumbListWidget.scrollToItem(selected_reference[0], QtGui.QAbstractItemView.EnsureVisible)
 
-    def get_all_references(self):
-        all_references = []
-        for i in xrange(self.referenceThumbListWidget.count()):
-            all_references.append(self.referenceThumbListWidget.item(i))
-
-        return all_references
+    def toggle_thumbnail_text(self):
+        '''
+        Toggle visibility of names/sequence under reference thumbnails
+        '''
+        all_references = self.all_references_ListWidgetItems
+        for ref in all_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            if (self.refShowNamesCheckBox.checkState() and self.refShowSequencesCheckBox.checkState()) == 2:
+                thumb_text = "{0} ({1})".format(asset.name, asset.sequence)
+            elif self.refShowNamesCheckBox.checkState() == 2 and self.refShowSequencesCheckBox.checkState() == 0:
+                thumb_text = asset.name
+            elif self.refShowNamesCheckBox.checkState() == 0 and self.refShowSequencesCheckBox.checkState() == 2:
+                thumb_text = asset.sequence
+            elif self.refShowNamesCheckBox.checkState() == 0 and self.refShowSequencesCheckBox.checkState() == 0:
+                thumb_text = ""
+            ref.setText(thumb_text)
 
     def refresh_reference_list(self):
-        all_references = self.cursor.execute('''SELECT * FROM assets''')
-        ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()  # Get data associated with QListWidgetItem
-        ref_sequence_name = str(ref_data[0])
-        ref_shot_number = str(ref_data[1])
-        ref_name = str(ref_data[2])
-        ref_path = str(ref_data[3])
-        ref_version = str(ref_data[4])
-        ref_tags = ref_data[5]
+        '''
+        Get all assets IDs from database and compare them to the current asset ID loaded to see if there are
+        new asset in database or assets which have been removed
+        '''
+        all_references_id_loaded = self.cursor.execute('''SELECT asset_id FROM assets WHERE project_name=? AND asset_type=?''', (self.selected_project_name, "ref")).fetchall()
+        all_references_id_loaded = [int(i[0]) for i in all_references_id_loaded]
+
+        all_references_id = []
+        for ref in self.all_references_ListWidgetItems:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            all_references_id.append(asset.id)
+
+        if all_references_id_loaded > all_references_id:
+            self.id_to_load_or_remove = list(set(all_references_id_loaded) - set(all_references_id))
+            self.load_new_references("add")
+        elif all_references_id_loaded < all_references_id:
+            self.id_to_load_or_remove = list(set(all_references_id) - set(all_references_id_loaded))
+            self.load_new_references("remove")
+
+    def load_new_references(self, operation):
+        '''
+        If operation is add, add new assets from database to reference view.
+        If operation is remove, remove assets which are no longer in database from reference view.
+        '''
+        if operation == "add":
+
+            for id in self.id_to_load_or_remove:
+                ref_all_references_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=? AND asset_id=?''',(self.selected_project_name, "ref", id)).fetchall()
+
+                for i, ref in enumerate(ref_all_references_assets):
+                    id = ref[0]
+                    project_name = ref[1]
+                    sequence_name = ref[2]
+                    shot_number = ref[3]
+                    name = ref[4]
+                    path = ref[5]
+                    type = ref[6]
+                    version = ref[7]
+                    comments = ref[8]
+                    tags = ref[9]
+                    dependency = ref[10]
+                    last_access = ref[11]
+                    creator = ref[12]
+                    if id == None: id = ""
+                    if project_name == None: project_name = ""
+                    if sequence_name == None: sequence_name = ""
+                    if shot_number == None: shot_number = ""
+                    if name == None: name = ""
+                    if path == None: path = ""
+                    if type == None: type = ""
+                    if version == None: version = ""
+                    if comments == None: comments = ""
+                    if tags == None: tags = ""
+                    if dependency == None: dependency = ""
+                    if last_access == None: last_access = ""
+                    if creator == None: creator = ""
+
+                    asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
+                                  comments, tags, dependency, last_access, creator)
+                    ref_item = QtGui.QListWidgetItem(asset.name)
+                    ref_item.setIcon(QtGui.QIcon(asset.full_path))
+                    ref_item.setData(QtCore.Qt.UserRole, asset)
+
+                    if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors
+                        self.all_references_ListWidgetItems.append(ref_item)
+                        self.referenceThumbListWidget.addItem(ref_item)
+
+        elif operation == "remove":
+            print(self.id_to_load_or_remove)
+            for id in self.id_to_load_or_remove:
+                for ref in self.all_references_ListWidgetItems:
+                    asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+                    if asset.id == id:
+                        self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
 
 
-        pass
+        self.load_filter_by_tags_list()
 
 

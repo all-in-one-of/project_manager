@@ -116,7 +116,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.selected_project_name = str(self.projectList.selectedItems()[0].text())
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
-        self.selected_department_name = str(self.departmentList.item(0).text())
+        #self.selected_department_name = str(self.departmentList.item(0).text())
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
 
 
@@ -280,9 +280,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
 
+
         self.check_news_thread = CheckNews(self)
         self.check_news_thread.daemon = True
         self.check_news_thread.start()
+
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -473,6 +475,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.sequences = (self.cursor.execute('''SELECT DISTINCT sequence_name FROM sequences WHERE project_name=?''',
                                               (self.selected_project_name,))).fetchall()
         self.sequences = sorted(self.sequences)
+
+        # Query the shots associated with each sequence
+        self.shots = {}
+        for seq in self.sequences:
+            shots = (self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, seq[0],))).fetchall()
+            shots = [str(shot[0]) for shot in shots]
+            self.shots[str(seq[0])] = shots
 
         # Populate the sequences lists
         self.seqList.clear()
@@ -1133,6 +1142,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.mt_item_added = True
         MyTasks.mt_add_tasks_from_database(self)
         WhatsNew.load_whats_new(self)
+        ReferenceTab.refresh_reference_list(self)
 
     def tray_icon_clicked(self):
 
