@@ -55,7 +55,7 @@ class ReferenceTab(object):
         self.biggerRefPushButton_02.clicked.connect(partial(self.change_reference_thumb_size, 2))
         self.biggerRefPushButton_03.clicked.connect(partial(self.change_reference_thumb_size, 3))
         self.biggerRefPushButton_04.clicked.connect(partial(self.change_reference_thumb_size, 4))
-        self.changeRefSeqShotBtn.clicked.connect(self.change_seq_shot_layout)
+        self.changeRefSeqShotBtn.clicked.connect(self.ref_change_seq_shot)
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
         self.filterByNoTagsCheckBox.stateChanged.connect(self.ref_filter_images_with_no_tags_clicked)
@@ -306,7 +306,6 @@ class ReferenceTab(object):
                 # Open image in windows viewer
                 os.system(asset.full_path)
 
-
     def rename_reference(self, asset):
 
         rename_dialog = QtGui.QDialog()
@@ -344,17 +343,84 @@ class ReferenceTab(object):
         selected_reference = self.referenceThumbListWidget.selectedItems()[0]
         selected_reference.setText(new_name)
 
+    def ref_change_seq_shot(self):
 
+        # Create the change seq shot dialog
+        change_dialog = QtGui.QDialog()
+        change_dialog.setWindowTitle("Change Sequence / Shot")
+        change_dialog.setMinimumWidth(200)
+        Lib.apply_style(self, change_dialog)
 
+        # Create main layout
+        main_layout = QtGui.QVBoxLayout(change_dialog)
 
+        # Create seq and shot combo box
+        self.change_ref_seq_combobox = QtGui.QComboBox()
+        self.change_ref_seq_combobox.addItem("All")
+        self.change_ref_seq_combobox.addItems([str(i[0]) for i in self.sequences])
+        self.change_ref_shot_combobox = QtGui.QComboBox()
+        self.change_ref_shot_combobox.addItem("None")
 
+        # Create accept button
+        apply_btn = QtGui.QPushButton("Accept")
 
+        # Create labels
+        sequence_lbl = QtGui.QLabel("Sequence Name:")
+        shot_lbl = QtGui.QLabel("Shot Number:")
 
+        # Add widgets to layout
+        main_layout.addWidget(sequence_lbl)
+        main_layout.addWidget(self.change_ref_seq_combobox)
+        main_layout.addWidget(shot_lbl)
+        main_layout.addWidget(self.change_ref_shot_combobox)
+        main_layout.addWidget(apply_btn)
 
+        # Connect the widgets to the functions
+        apply_btn.clicked.connect(change_dialog.accept)
+        self.change_ref_seq_combobox.currentIndexChanged.connect(self.ref_change_seq_shot_filter_shots)
 
+        # Execute the QDialog
+        change_dialog.exec_()
 
+        # If user close dialog, return
+        if change_dialog.result() == 0:
+            return
 
+        # Get selected references and change seq shot
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        selected_sequence = str(self.change_ref_seq_combobox.currentText())
+        selected_shot = str(self.change_ref_shot_combobox.currentText())
+        if selected_sequence == "All": selected_sequence = "xxx"
+        if selected_shot == "None": selected_shot = "xxxx"
 
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.change_sequence(selected_sequence)
+            asset.change_shot(selected_shot)
+
+        # Filter references and clear selection
+        self.ref_filter_references()
+        self.referenceThumbListWidget.clearSelection()
+
+    def ref_change_seq_shot_filter_shots(self):
+        selected_sequence_name = str(self.change_ref_seq_combobox.currentText())
+
+        # Add shots to shot list and shot creation list
+        self.change_ref_shot_combobox.clear()
+        self.change_ref_shot_combobox.addItem("None")
+        if selected_sequence_name != "All":
+            [self.change_ref_shot_combobox.addItem(shot) for shot in self.shots[selected_sequence_name]]
+
+    def change_reference_thumb_size(self, size):
+
+        icon_size = QtCore.QSize(128 * size, 128 * size)
+        self.referenceThumbListWidget.setIconSize(icon_size)
+
+        try:
+            selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+            self.referenceThumbListWidget.scrollToItem(selected_reference, QtGui.QAbstractItemView.EnsureVisible)
+        except:
+            pass
 
 
 
@@ -899,110 +965,7 @@ class ReferenceTab(object):
 
         return all_tags
 
-    def change_reference_thumb_size(self, size):
 
-        icon_size = QtCore.QSize(128 * size, 128 * size)
-        self.referenceThumbListWidget.setIconSize(icon_size)
-
-        try:
-            selected_reference = self.referenceThumbListWidget.selectedItems()[0]
-            self.referenceThumbListWidget.scrollToItem(selected_reference, QtGui.QAbstractItemView.EnsureVisible)
-        except:
-            pass
-
-    def filter_reference_by_tags(self):
-
-        all_references = self.get_all_references()
-        [ref.setHidden(False) for ref in all_references]
-
-        # Get all selected tags from the filter tags list
-        selected_tags = self.filterByTagsListWidget.selectedItems()
-        selected_tags = [str(i.text()) for i in selected_tags]
-
-        # Get all references currently loaded in the referenceThumbListWidget view
-        all_references = self.get_all_loaded_references()
-
-        # If no tag is selected, unhide all references
-        if not selected_tags:
-            [ref.setHidden(False) for ref in all_references]
-            self.seqReferenceList_Clicked()
-            return
-
-        # Loop over all references and set them to hidden if any selected tag can't be found in reference's tags
-        for ref in all_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence = ref_data[0]
-            ref_tags = ref_data[5]
-            if ref_tags == None:
-                ref.setHidden(True)
-                continue
-
-            if "," in ref_tags:
-                ref_tags = ref_tags.split(",")  # Convert string to list (ex: "character, lighting" to ["character", "statue"]
-            else:
-                ref_tags = ref_tags.split()
-
-            ref_tags = [str(i) for i in ref_tags]
-
-            ref_tags = set(ref_tags)
-            selected_tags = set(selected_tags)
-
-            if self.selected_sequence_name == "xxx":  # If selected sequence is all, filter only by selected tags
-                if selected_tags.issubset(ref_tags):  # ref_tags is contained in selected_tags (ex: ref_tags = ["lumiere", "feu"], selected_tags = ["lumiere"]
-                    ref.setHidden(False)
-                else:
-                    ref.setHidden(True)
-            else:  # If selected sequence is something else than all, filter by selected tags and by sequence name
-                if selected_tags.issubset(ref_tags) and self.selected_sequence_name == ref_sequence:  # If current reference is in selected sequence and has tags from selected tags, then don't hide it
-                    ref.setHidden(False)
-                else:
-                    ref.setHidden(True)
-
-    def filter_reference_by_name(self):
-
-        filter_str = unicode(self.filterByNameLineEdit.text())
-        filter_str = Lib.normalize_str(self, filter_str)
-        filter_str = filter_str.lower()
-
-        if "*" in filter_str:
-            filter_str = filter_str.replace("*", ".*")
-            r = re.compile(filter_str)
-            for i in xrange(0, self.referenceThumbListWidget.count()):
-                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
-                if r.match(item_text):
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
-        else:
-
-            for i in xrange(0, self.referenceThumbListWidget.count()):
-                item_text = str(self.referenceThumbListWidget.item(i).text()).lower()
-                if filter_str in item_text:
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), False)
-                else:
-                    self.referenceThumbListWidget.setItemHidden(self.referenceThumbListWidget.item(i), True)
-
-    def show_reference_with_no_tags(self):
-
-        if self.filterByNoTagsCheckBox.checkState() == 2:
-            all_references = self.get_all_loaded_references()
-
-            # Loop over all references and set them to hidden if they have no tags
-            for ref in all_references:
-                ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-                ref_tags = ref_data[5]
-                if ref_tags == None:
-                    ref.setHidden(False)
-                else:
-                    ref.setHidden(True)
-            self.reload_filter_by_tags_list()
-        else:
-            self.seqReferenceList_Clicked()
-            all_references = self.get_all_loaded_references()
-            for ref in all_references:
-                ref.setHidden(False)
-
-            self.reload_filter_by_tags_list()
 
     def load_ref_in_kuadro(self):
 
@@ -1033,112 +996,7 @@ class ReferenceTab(object):
             subprocess.Popen([self.photoshop_path, ref_path])
 
 
-    def change_seq_shot_layout(self):
-        self.change_dialog = QtGui.QDialog()
-        self.change_dialog.setWindowTitle("Change Sequence / Shot")
-        self.change_dialog.resize(300, 200)
 
-        Lib.apply_style(self, self.change_dialog)
-
-        # Create main layout
-        main_layout = QtGui.QVBoxLayout(self.change_dialog)
-
-        # Create seq and shot combo box
-        self.seq_combobox = QtGui.QComboBox()
-        self.seq_combobox.addItem("All")
-        self.seq_combobox.addItems([str(i[0]) for i in self.sequences])
-
-        self.shot_combobox = QtGui.QComboBox()
-        self.shot_combobox.addItem("None")
-
-        # Create accept button
-        apply_btn = QtGui.QPushButton("Accept")
-
-        # Create labels
-        sequence_lbl = QtGui.QLabel("Sequence Name:")
-        shot_lbl = QtGui.QLabel("Shot Number:")
-
-        # Add widgets to layout
-        main_layout.addWidget(sequence_lbl)
-        main_layout.addWidget(self.seq_combobox)
-        main_layout.addWidget(shot_lbl)
-        main_layout.addWidget(self.shot_combobox)
-        main_layout.addWidget(apply_btn)
-
-        # Connect the widgets to the functions
-        apply_btn.clicked.connect(self.change_seq_shot)
-        self.seq_combobox.currentIndexChanged.connect(self.filter_shots_from_sequences)
-
-        # Execute the QDialog
-        self.change_dialog.exec_()
-
-    def change_seq_shot(self):
-        self.change_dialog.close()
-
-        selected_sequence = str(self.seq_combobox.currentText())
-        selected_shot = str(self.shot_combobox.currentText())
-        selected_references = self.referenceThumbListWidget.selectedItems()
-
-        if selected_sequence == "All":
-            selected_sequence = "xxx"
-
-        if selected_shot == "None":
-            selected_shot = "xxxx"
-
-        for ref in selected_references:
-            ref_data = ref.data(QtCore.Qt.UserRole).toPyObject()
-            ref_sequence_name = str(ref_data[0])
-            ref_shot_number = str(ref_data[1])
-            ref_name = str(ref_data[2])
-            ref_path = str(ref_data[3])
-            ref_version = str(ref_data[4])
-            ref_tags = str(ref_data[5])
-
-            new_path = ref_path
-            new_path = ref_path.replace("_" + ref_sequence_name + "_" + str(ref_shot_number),
-                                        "_" + selected_sequence + "_" + selected_shot)
-            new_version = ref_version
-
-            while os.path.isfile(self.selected_project_path + new_path):
-                fileName, fileExtension = os.path.splitext(new_path)
-                current_version = int(fileName.split("_")[-1])
-                new_version = str(current_version + 1).zfill(2)
-                new_path = new_path.replace("_" + str(current_version).zfill(2), "_" + new_version)
-
-            os.rename(self.selected_project_path + ref_path, self.selected_project_path + new_path)
-
-            self.cursor.execute(
-                '''UPDATE assets SET sequence_name=?, shot_number=?, asset_path=?, asset_version=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_version=?''',
-                (selected_sequence, selected_shot, new_path, new_version, ref_sequence_name, ref_shot_number, ref_name,
-                 ref_version,))
-
-            # Update reference QListWidgetItem data
-            data = (selected_sequence, selected_shot, ref_name, new_path, new_version, ref_tags)
-            ref.setData(QtCore.Qt.UserRole, data)
-
-            if selected_sequence == "xxx" and ref_sequence_name == "xxx":  # If new sequence and old sequence is still "All", then leave the ref on None (= don't hide it)
-                self.referenceThumbListWidget.setItemHidden(ref, False)
-            else:
-                self.referenceThumbListWidget.setItemHidden(ref, True)
-
-        self.referenceThumbListWidget.clearSelection()
-        self.db.commit()
-
-    def filter_shots_from_sequences(self):
-        selected_sequence_name = str(self.seq_combobox.currentText())
-
-        # Add shots to shot list and shot creation list
-        if selected_sequence_name == "All":
-            self.shot_combobox.addItem("None")
-
-        else:
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                        (self.selected_project_name, selected_sequence_name,)).fetchall()
-            self.shot_combobox.clear()
-            self.shot_combobox.addItem("None")
-            shots = [i[0] for i in shots]
-            shots = sorted(shots)
-            [self.shot_combobox.addItem(shot) for shot in shots]
 
     def show_url_image(self):
 

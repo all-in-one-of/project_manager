@@ -461,6 +461,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                                               (self.selected_project_name,))).fetchall()
         self.sequences = sorted(self.sequences)
 
+        # Query the shots associated with each sequence
+        self.shots = {}
+        for seq in self.sequences:
+            shots = (self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, seq[0],))).fetchall()
+            shots = [str(shot[0]) for shot in shots]
+            self.shots[str(seq[0])] = shots
+
         # Populate the sequences lists
         self.seqList.clear()
         self.seqList.addItem("None")
