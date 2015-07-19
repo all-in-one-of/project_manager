@@ -273,7 +273,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             app)
         self.tray_icon.messageClicked.connect(self.tray_icon_message_clicked)
         self.tray_icon.activated.connect(self.tray_icon_clicked)
-        self.tray_icon.show()
+        self.tray_message = ""
 
         # Initialize modules and connections
         ReferenceTab.__init__(self)
@@ -1147,6 +1147,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def tray_icon_message_clicked(self):
 
+        if self.tray_message == "Manager is in background mode.": return
+
         clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
         selected_item_description = self.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
 
@@ -1183,8 +1185,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         return
 
-    def tray_icon_clicked(self):
-        pass
+    def tray_icon_clicked(self, reason):
+        if reason == QtGui.QSystemTrayIcon.DoubleClick:
+            if self.isHidden():
+                self.setWindowFlags(QtCore.Qt.Widget)
+                self.show()
+                self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+                self.tray_icon.hide()
+            else:
+                self.hide()
+                self.tray_icon.show()
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -1198,8 +1208,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         if key == QtCore.Qt.Key_Delete:
             ReferenceTab.remove_selected_references(self)
 
+
     def closeEvent(self, event):
         self.save_tags_list()
+        self.close()
+        app.exit()
+
         # self.quit_msg = "Are you sure you want to exit the program?"
         # reply = QtGui.QMessageBox.question(self, 'Are you leaving :(',
         #                  quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
@@ -1209,6 +1223,21 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #     event.accept()
         # else:
         #     event.ignore()
+
+
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            if self.windowState() & QtCore.Qt.WindowMinimized:
+                self.setWindowFlags(QtCore.Qt.Tool)
+                self.hide()
+                self.tray_icon.show()
+                self.tray_message = "Manager is in background mode."
+                self.tray_icon.showMessage('Still running...', self.tray_message)
+
+
+
+
+
 
 
 
