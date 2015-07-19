@@ -68,8 +68,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #Ui_Form.__init__(self)
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -271,7 +271,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(
             "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\favicon.png"),
             app)
-        self.tray_icon.messageClicked.connect(self.tray_icon_clicked)
+        self.tray_icon.messageClicked.connect(self.tray_icon_message_clicked)
+        self.tray_icon.activated.connect(self.tray_icon_clicked)
         self.tray_icon.show()
 
         # Initialize modules and connections
@@ -1144,7 +1145,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         WhatsNew.load_whats_new(self)
         ReferenceTab.refresh_reference_list(self)
 
-    def tray_icon_clicked(self):
+    def tray_icon_message_clicked(self):
 
         clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
         selected_item_description = self.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
@@ -1181,6 +1182,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                                            asset_path)
 
         return
+
+    def tray_icon_clicked(self):
+        pass
 
     def keyPressEvent(self, event):
         key = event.key()

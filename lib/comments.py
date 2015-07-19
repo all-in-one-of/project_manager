@@ -38,13 +38,13 @@ class CommentWidget(QtGui.QDialog):
         self.commentLineEdit.setFocus()
 
 
-        self.load_comments(self.asset_type)
+        self.load_comments()
         self.exec_()
 
-    def load_comments(self, asset_type):
+    def load_comments(self):
         self.comment_authors = []
         self.commentListWidget.clear()
-        if asset_type == "ref":
+        if self.asset_type == "ref":
             asset_comments = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE asset_name=? AND sequence_name=? AND shot_number=? AND asset_version=? AND asset_path=?''', (self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path,)).fetchone()[0]
             if asset_comments != None:
                 asset_comments = asset_comments.split(";")
@@ -82,7 +82,7 @@ class CommentWidget(QtGui.QDialog):
                 self.commentListWidget.addItem(item)
 
 
-        elif asset_type == "task":
+        elif self.asset_type == "task":
             pass
 
 
@@ -111,9 +111,9 @@ class CommentWidget(QtGui.QDialog):
             pass
 
 
-        self.load_comments(asset_type="ref")
+        self.load_comments()
         self.commentLineEdit.clear()
-        self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset_name, self.sequence_name), people=self.comment_authors, value="|".join([self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path]))
+        self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset_name, self.sequence_name), people=self.comment_authors, value="|".join([self.asset_type, self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path]))
 
     def delete_comment(self):
         selected_comment = self.commentListWidget.selectedItems()

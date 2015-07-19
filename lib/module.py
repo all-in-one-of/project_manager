@@ -386,7 +386,8 @@ class CheckNews(Thread):
         Thread.__init__(self)
         self.last_news = ""
         self.main = main
-        self.last_news_id = self.main.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
+        self.check_news_cursor = self.main.db.cursor()
+        self.last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
 
     def run(self):
         while True:
@@ -394,10 +395,10 @@ class CheckNews(Thread):
             time.sleep(2)
 
     def check_news(self):
-        last_news_id = self.main.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
+        last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
 
         if last_news_id > self.last_news_id: # There are new entries on the log
-            log_entry = self.main.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]
+            log_entry = self.check_news_cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]
 
             if "reference" in log_entry:
                 title = "New reference added"

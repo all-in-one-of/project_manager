@@ -138,7 +138,7 @@ class ReferenceTab(object):
                 self.referenceThumbListWidget.addItem(ref_item)
 
             progressBar.setValue(i)
-
+        dialog.close()
         self.load_filter_by_tags_list()
 
     def ref_filter_references(self):
@@ -316,16 +316,11 @@ class ReferenceTab(object):
         selected_references = self.referenceThumbListWidget.selectedItems()
 
         # Delete references on database and on disk
-        number_of_refs_removed = 0
         for ref in selected_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             asset.remove_asset_from_db()
+            del asset
             self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
-
-        if number_of_refs_removed > 1:
-            self.add_log_entry("{0} deleted {1} reference(s)".format(self.members[self.username], number_of_refs_removed))
-        else:
-            self.add_log_entry("{0} deleted {1} reference".format(self.members[self.username], number_of_refs_removed))
 
     def reference_doubleClicked(self):
         '''

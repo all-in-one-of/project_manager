@@ -113,10 +113,12 @@ class WhatsNew(object):
 
         selected_item = self.whatsNewTreeWidget.selectedItems()[0]
         selected_item_str = str(selected_item.text(0))
+        if "Comment" in selected_item_str: return
         selected_item_time = " - ".join(selected_item_str.split(" - ")[0:2])
         selected_item_description = selected_item_str.split(" - ")[-1]
 
         clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_time=? AND log_entry=?''', (selected_item_time, selected_item_description,)).fetchone()[0]
+
         if len(clicked_log_entry) == 0:
             return
 
@@ -145,6 +147,7 @@ class WhatsNew(object):
                         Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         elif "comment" in selected_item_description:
+            print("yeah")
             comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
 
         return
