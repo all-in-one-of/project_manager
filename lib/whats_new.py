@@ -93,16 +93,12 @@ class WhatsNew(object):
 
     def mark_all_as_read(self):
 
-        msgbox = QtGui.QMessageBox()
-        msgbox.setStandardButtons(QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)
-        msgbox.setDefaultButton(QtGui.QMessageBox.Yes)
-        Lib.apply_style(self, msgbox)
-        msgbox.setText("Are you sure ?")
-        msgbox.setWindowTitle("Mark all as read")
-        msgbox.setIcon(QtGui.QMessageBox.Warning)
-        button_clicked = msgbox.exec_()
-        if button_clicked == 65536:
+        confirm_dialog = QtGui.QMessageBox()
+        reply = confirm_dialog.question(self, 'Mark all as read', "Are you sure ?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        Lib.apply_style(self, confirm_dialog)
+        if reply != QtGui.QMessageBox.Yes:
             return
+
 
         log_entries = str(self.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0])
         self.cursor.execute('''UPDATE whats_new SET last_log_id_read=? WHERE member=?''', (log_entries, self.username))
@@ -114,6 +110,7 @@ class WhatsNew(object):
         selected_item = self.whatsNewTreeWidget.selectedItems()[0]
         selected_item_str = str(selected_item.text(0))
         if "Comment" in selected_item_str: return
+
         selected_item_time = " - ".join(selected_item_str.split(" - ")[0:2])
         selected_item_description = selected_item_str.split(" - ")[-1]
 
@@ -132,7 +129,6 @@ class WhatsNew(object):
             asset_path = ref_data[5]
         except:
             return
-
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:

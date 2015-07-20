@@ -71,8 +71,6 @@ class ReferenceTab(object):
         self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
         self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
 
-
-
     def ref_load_all_references(self):
         '''Load all references when clicking sequence for the first time'''
 
@@ -128,7 +126,7 @@ class ReferenceTab(object):
             if last_access == None : last_access = ""
             if creator == None : creator = ""
 
-            asset = Asset(self, id ,project_name, sequence_name, shot_number, name, path, "jpg", type, version, comments, tags, dependency, last_access, creator)
+            asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version, comments, tags, dependency, last_access, creator)
             ref_item = QtGui.QListWidgetItem(asset.name)
             ref_item.setIcon(QtGui.QIcon(asset.full_path))
             ref_item.setData(QtCore.Qt.UserRole, asset)
@@ -137,8 +135,10 @@ class ReferenceTab(object):
                 self.all_references_ListWidgetItems.append(ref_item)
                 self.referenceThumbListWidget.addItem(ref_item)
 
+
             progressBar.setValue(i)
         dialog.close()
+
         self.load_filter_by_tags_list()
 
     def ref_filter_references(self):
@@ -312,15 +312,26 @@ class ReferenceTab(object):
         '''
         Remove selected reference from database and reference list widget
         '''
+        # Confirm dialog
+        confirm_dialog = QtGui.QMessageBox()
+        reply = confirm_dialog.question(self, 'Delete selected references', "Are you sure ?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        Lib.apply_style(self, confirm_dialog)
+        if reply != QtGui.QMessageBox.Yes:
+            return
+
         # Retrieve selected references
         selected_references = self.referenceThumbListWidget.selectedItems()
 
         # Delete references on database and on disk
         for ref in selected_references:
-            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
-            asset.remove_asset_from_db()
-            del asset
-            self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
+            try:
+                asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+                asset.remove_asset_from_db()
+                del asset
+                self.all_references_ListWidgetItems.remove(ref)
+                self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
+            except:
+                pass
 
     def reference_doubleClicked(self):
         '''
@@ -329,11 +340,8 @@ class ReferenceTab(object):
         selected_reference = self.referenceThumbListWidget.selectedItems()[0]
         asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:  # Renaming reference
 
-            self.rename_reference(asset)
-
-        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
             comment_dialog = CommentWidget(self, asset.id, asset.type, asset.name, asset.sequence, asset.shot, asset.version, asset.path)
 
         else:  # Opening video / image in chrome / windows image view
@@ -620,13 +628,13 @@ class ReferenceTab(object):
 
         self.referenceThumbListWidget.clearSelection()
 
-        asset_name = self.asset_name_dialog()
-        if asset_name == None: return
-
+        asset_name = ""
         # Check if a name is defined for the asset
-        if len(asset_name) <= 3:
+        while len(asset_name) <= 3:
+            asset_name = self.asset_name_dialog()
+            if len(asset_name) > 3: break
             self.message_box(text="Please enter a name with more than 3 characters for the asset")
-            return
+
 
         asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
         asset.add_asset_to_db()
@@ -800,10 +808,10 @@ class ReferenceTab(object):
             all_references_id.append(asset.id)
 
         if all_references_id_loaded > all_references_id:
-            self.id_to_load_or_remove = list(set(all_references_id_loaded) - set(all_references_id))
+            self.id_to_load_or_remove = Lib.get_diff_between_lists(self, all_references_id, all_references_id_loaded)
             self.load_new_references("add")
         elif all_references_id_loaded < all_references_id:
-            self.id_to_load_or_remove = list(set(all_references_id) - set(all_references_id_loaded))
+            self.id_to_load_or_remove = Lib.get_diff_between_lists(self, all_references_id, all_references_id_loaded)
             self.load_new_references("remove")
 
     def load_new_references(self, operation):
@@ -812,7 +820,6 @@ class ReferenceTab(object):
         If operation is remove, remove assets which are no longer in database from reference view.
         '''
         if operation == "add":
-
             for id in self.id_to_load_or_remove:
                 ref_all_references_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=? AND asset_id=?''',(self.selected_project_name, "ref", id)).fetchall()
 
@@ -855,14 +862,28 @@ class ReferenceTab(object):
                         self.referenceThumbListWidget.addItem(ref_item)
 
         elif operation == "remove":
-            print(self.id_to_load_or_remove)
             for id in self.id_to_load_or_remove:
                 for ref in self.all_references_ListWidgetItems:
                     asset = ref.data(QtCore.Qt.UserRole).toPyObject()
                     if asset.id == id:
+                        self.all_references_ListWidgetItems.remove(ref)
                         self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
 
 
         self.load_filter_by_tags_list()
+
+    def print_all_assets(self):
+        for ref_object in self.all_references_ListWidgetItems:
+            asset = ref_object.data(QtCore.Qt.UserRole).toPyObject()
+            print(asset)
+
+        print("##################")
+
+        for i in range(self.referenceThumbListWidget.count()):
+            ref = self.referenceThumbListWidget.item(i)
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            print(asset)
+
+        print("-----------------")
 
 

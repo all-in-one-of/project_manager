@@ -26,16 +26,24 @@ class Asset(object):
                                                                     self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
 
-
     def __str__(self):
         return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, self.tags, self.dependency, self.last_access, self.creator)
 
-
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
-        while os.path.isfile(self.project_path + new_path):
-            self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-            new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+        if int(self.version) > 1:  # If version is higher than 1, go back to level 1
+            while not os.path.isfile(self.project_path + new_path) and int(self.version) > 1: # Decrement asset to lowest possible version
+                self.change_version_if_asset_already_exists(str(int(self.version) - 1).zfill(2))
+                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+
+            while os.path.isfile(self.project_path + new_path): # Increment version until there is no file already existing with same version
+                self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
+                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+
+        elif int(self.version) == 1: # If asset is at version 1, increment its version until there is no file already existing with same version
+            while os.path.isfile(self.project_path + new_path):
+                self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
+                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
 
         os.rename(self.full_path, self.project_path + new_path)
         self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
@@ -62,24 +70,28 @@ class Asset(object):
         self.version = new_version
 
     def change_name(self, new_name):
+        if self.name == new_name: return
         self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (new_name, self.id,))
         self.main.db.commit()
         self.name = new_name
         self.update_asset_path()
 
     def change_sequence(self, new_sequence):
+        if self.sequence == new_sequence: return
         self.main.cursor.execute('''UPDATE assets SET sequence_name=? WHERE asset_id=?''', (new_sequence, self.id,))
         self.main.db.commit()
         self.sequence = new_sequence
         self.update_asset_path()
 
     def change_shot(self, new_shot):
+        if self.shot == new_shot: return
         self.main.cursor.execute('''UPDATE assets SET shot_number=? WHERE asset_id=?''', (new_shot, self.id,))
         self.main.db.commit()
         self.shot = new_shot
         self.update_asset_path()
 
     def change_version(self, new_version):
+        if self.version == new_version: return
         self.main.cursor.execute('''UPDATE assets SET asset_version=? WHERE asset_id=?''', (new_version, self.id,))
         self.main.db.commit()
         self.version = new_version

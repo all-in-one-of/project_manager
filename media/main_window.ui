@@ -3006,10 +3006,13 @@ Alt + double click on a thumbnail to open the comments dialog.
 Shift + double click on a thumbnail to open the rename dialog.</string>
                   </property>
                   <property name="autoScroll">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                   <property name="autoScrollMargin">
                    <number>2</number>
+                  </property>
+                  <property name="alternatingRowColors">
+                   <bool>false</bool>
                   </property>
                   <property name="selectionMode">
                    <enum>QAbstractItemView::ExtendedSelection</enum>

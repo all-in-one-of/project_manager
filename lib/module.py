@@ -121,7 +121,27 @@ class Lib(object):
 
     def convert_to_camel_case(self, str):
         str = str
+        str = str.replace("'", "")
+        str = str.replace("_", " ")
+        str = str.replace("-", " ")
+        str = str.replace(":", "")
+        str = str.replace(";", "")
+        str = str.replace("|", "")
+        str = str.replace("#", "")
+        str = str.replace("!", "")
+        str = str.replace("?", "")
+        str = str.replace("0", "")
+        str = str.replace("1", "")
+        str = str.replace("2", "")
+        str = str.replace("3", "")
+        str = str.replace("4", "")
+        str = str.replace("5", "")
+        str = str.replace("6", "")
+        str = str.replace("7", "")
+        str = str.replace("8", "")
+        str = str.replace("9", "")
         liste = str.split(" ")
+        liste = filter(None, liste)
         liste_finale = []
         for i, item in enumerate(liste):
             if i != 0:
@@ -131,16 +151,6 @@ class Lib(object):
                 liste_finale.append(item)
 
         str = "".join(liste_finale)
-        str = str.replace("'", "")
-        str = str.replace("_", "")
-        str = str.replace("-", "")
-        str = str.replace(":", "")
-        str = str.replace(";", "")
-        str = str.replace("|", "")
-        str = str.replace("#", "")
-        str = str.replace("!", "")
-        str = str.replace("?", "")
-        str = str.replace("?", "")
         return str
 
     def compress_image(self, image_path, width, quality):
@@ -153,7 +163,7 @@ class Lib(object):
 
     def take_screenshot(self, path):
 
-        self.showMinimized()
+        self.hide()
 
         # constants
         SCREEN_GRABBER = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\MiniCap.exe"
@@ -165,6 +175,7 @@ class Lib(object):
         subprocess.call([SCREEN_GRABBER, '-captureregselect', '-exit', '-save', file_name])
         #winsound.PlaySound("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
 
+        self.show()
         self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
         self.activateWindow()
 
@@ -257,6 +268,11 @@ class Lib(object):
 
 
         return selected_sequence, selected_shot
+
+    def get_diff_between_lists(self, list1, list2):
+        c = set(list1).union(set(list2))
+        d = set(list1).intersection(set(list2))
+        return list(c - d)
 
 class DesktopWidget(QtGui.QWidget):
 
@@ -395,7 +411,9 @@ class CheckNews(Thread):
             time.sleep(2)
 
     def check_news(self):
-        last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
+        last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()
+        last_news_id = last_news_id[0]
+
 
         if last_news_id > self.last_news_id: # There are new entries on the log
             log_entry = self.check_news_cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]

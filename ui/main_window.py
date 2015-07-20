@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sat Jul 18 14:41:50 2015
+# Created: Sun Jul 19 10:16:14 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1247,8 +1247,9 @@ class Ui_Form(object):
         self.verticalLayout_20.addWidget(self.changeThumbnailSizeFrame)
         self.referenceThumbListWidget = QtGui.QListWidget(self.referenceThumbFrame)
         self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
-        self.referenceThumbListWidget.setAutoScroll(True)
+        self.referenceThumbListWidget.setAutoScroll(False)
         self.referenceThumbListWidget.setAutoScrollMargin(2)
+        self.referenceThumbListWidget.setAlternatingRowColors(False)
         self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.referenceThumbListWidget.setIconSize(QtCore.QSize(256, 256))
         self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)

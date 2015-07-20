@@ -68,8 +68,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         #Ui_Form.__init__(self)
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -118,7 +118,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.selected_shot_number = "xxxx"
         #self.selected_department_name = str(self.departmentList.item(0).text())
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
-
 
 
         # Create Favicon
@@ -193,8 +192,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.photoshop_path = str(self.cursor.execute(
             '''SELECT software_path FROM software_paths WHERE software_name="Photoshop"''').fetchone()[0])
         self.maya_path = str(
-            self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[
-                0])
+            self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[0])
         self.softimage_path = str(self.cursor.execute(
             '''SELECT software_path FROM software_paths WHERE software_name="Softimage"''').fetchone()[0])
         self.houdini_path = str(self.cursor.execute(
@@ -282,10 +280,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         WhatsNew.__init__(self)
 
 
-        self.check_news_thread = CheckNews(self)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
-
+        #self.check_news_thread = CheckNews(self)
+        #self.check_news_thread.daemon = True
+        #self.check_news_thread.start()
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -1207,7 +1204,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             sys.exit()
         if key == QtCore.Qt.Key_Delete:
             ReferenceTab.remove_selected_references(self)
-
+        if key == QtCore.Qt.Key_F2:
+            selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+            asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
+            ReferenceTab.rename_reference(self, asset)
 
     def closeEvent(self, event):
         self.save_tags_list()
@@ -1224,7 +1224,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # else:
         #     event.ignore()
 
-
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.WindowStateChange:
             if self.windowState() & QtCore.Qt.WindowMinimized:
@@ -1233,14 +1232,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                 self.tray_icon.show()
                 self.tray_message = "Manager is in background mode."
                 self.tray_icon.showMessage('Still running...', self.tray_message)
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
