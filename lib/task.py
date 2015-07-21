@@ -26,10 +26,8 @@ class Task(object):
             self.comments = []
         self.confirmation = task_confirmation
 
-
     def __str__(self):
         return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.comments, task_confirmation)
-
 
     def add_task_to_db(self):
         self.main.cursor.execute(
@@ -60,7 +58,6 @@ class Task(object):
         self.main.db.commit()
         self.asset_id = new_asset_id
 
-
     def change_description(self, new_description):
         if self.description == new_description: return
         self.main.cursor.execute('''UPDATE tasks SET task_description=? WHERE task_id=?''', (new_description, self.id,))
@@ -73,13 +70,11 @@ class Task(object):
         self.main.db.commit()
         self.department = new_department
 
-
     def change_status(self, new_status):
         if self.status == new_status: return
         self.main.cursor.execute('''UPDATE tasks SET task_status=? WHERE task_id=?''', (new_status, self.id,))
         self.main.db.commit()
         self.status = new_status
-
 
     def change_assignation(self, new_assignation):
         if self.assignation == new_assignation: return
@@ -98,7 +93,6 @@ class Task(object):
         self.main.cursor.execute('''UPDATE tasks SET task_end=? WHERE task_id=?''', (new_end, self.id,))
         self.main.db.commit()
         self.end = new_end
-
 
     def change_bid(self, new_bid):
         if self.bid == new_bid: return

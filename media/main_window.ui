@@ -56,7 +56,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -2061,7 +2061,7 @@
             </column>
             <column>
              <property name="text">
-              <string>Task Name</string>
+              <string>Task Description</string>
              </property>
             </column>
             <column>

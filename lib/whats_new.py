@@ -119,14 +119,14 @@ class WhatsNew(object):
         if len(clicked_log_value) == 0: return
 
         try:
-            asset = Asset(self, id=clicked_log_value)
+            asset = self.Asset(self, id=clicked_log_value)
             asset.get_asset_infos_from_id()
         except:
             self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
-                comment_dialog = CommentWidget(self, asset)
+                comment_dialog = self.CommentWidget(self, asset)
             else:
                 if "video" in selected_item_description:
                     subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
@@ -137,7 +137,7 @@ class WhatsNew(object):
                         self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         elif "comment" in selected_item_description:
-            comment_dialog = CommentWidget(self, asset)
+            comment_dialog = self.CommentWidget(self, asset)
 
         elif "task" in selected_item_description:
             pass

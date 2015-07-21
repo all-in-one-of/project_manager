@@ -9,7 +9,6 @@ import datetime
 
 from random import randint
 
-
 class TaskManager(object):
 
     def __init__(self):
@@ -221,7 +220,7 @@ class TaskManager(object):
             self.widgets[str(inversed_index) + ":8"] = task_bid_item
 
             # Adding sequence name
-            all_sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (self.selected_project_name,)).fetchall()
+            all_sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (task.project,)).fetchall()
             all_sequences = [str(i[0]) for i in all_sequences]
             all_sequences.insert(0, "xxx")
             combo_box = QtGui.QComboBox()
@@ -478,31 +477,26 @@ class TaskManager(object):
             bid_filter = self.tmFilterByBidComboBox.value()
             bid_operation = self.tmBidOperationComboBox.currentText()
 
-            # Retrieve value of current row items
             task_id = str(self.tmTableWidget.item(row_index, 0).text())
-            project = str(self.cursor.execute('''SELECT project_name FROM tasks WHERE task_id=?''', (task_id,)).fetchone()[0])
-            sequence = str(self.tmTableWidget.cellWidget(row_index, 9).currentText())
-            shot = str(self.tmTableWidget.cellWidget(row_index, 10).currentText())
-            department = self.tmTableWidget.cellWidget(row_index, 2).currentText()
-            status = self.tmTableWidget.cellWidget(row_index, 3).currentText()
-            member = self.tmTableWidget.cellWidget(row_index, 4).currentText()
-            bid = self.tmTableWidget.cellWidget(row_index, 8).value()
+            task = self.Task(self, task_id)
+            task.get_task_infos_from_id()
 
             # If filters are set to default value, set the filters variables to the current row values
-            if project_filter == "None": project_filter = project
-            if sequence_filter == "None": sequence_filter = sequence
-            if shot_filter == "None": shot_filter = shot
-            if department_filter == "None": department_filter = department
-            if status_filter == "None" : status_filter = status
-            if member_filter == "None" : member_filter = member
-            if bid_filter == 0: bid_filter = bid
+            if project_filter == "None": project_filter = task.project
+            if sequence_filter == "None": sequence_filter = task.sequence
+            if shot_filter == "None": shot_filter = task.shot
+            if department_filter == "None": department_filter = task.department
+            if status_filter == "None" : status_filter = task.status
+            if member_filter == "None" : member_filter = self.members[task.assignation]
+            if bid_filter == 0: bid_filter = task.bid
 
-            if str(bid_operation) == ">=": bid_result = operator.le(bid_filter, bid)
-            elif str(bid_operation) == "<=": bid_result = operator.ge(bid_filter, bid)
 
-            if project_filter == project and sequence_filter == sequence and shot_filter == shot and department_filter == department and status_filter == status and member_filter == member and bid_result:
+            if str(bid_operation) == ">=": bid_result = operator.le(int(bid_filter), int(task.bid))
+            elif str(bid_operation) == "<=": bid_result = operator.ge(int(bid_filter), int(task.bid))
+
+            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == self.members[task.assignation] and bid_result:
                 if self.tmHideDoneCheckBox.isChecked():
-                    if status == "Done":
+                    if task.status == "Done":
                         self.tmTableWidget.hideRow(row_index)
                     else:
                         self.tmTableWidget.showRow(row_index)
@@ -575,7 +569,6 @@ class TaskManager(object):
         d1 = datetime.datetime(2015,07,11)
         d2 = datetime.datetime.now()
         total_days = (d2-d1).days
-        total_days = 100
 
         bid_log_days = self.cursor.execute('''SELECT bid_log_day FROM bid_log WHERE project_name=? LIMIT ?''', (self.selected_project_name, total_days,)).fetchall()
         bid_log_amounts = self.cursor.execute('''SELECT bid_log_amount FROM bid_log WHERE project_name=? LIMIT ?''', (self.selected_project_name, total_days,)).fetchall()

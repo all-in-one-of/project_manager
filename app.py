@@ -284,7 +284,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # Initialize modules and connections
         ReferenceTab.__init__(self)
         TaskManager.__init__(self)
-        #MyTasks.__init__(self)
+        MyTasks.__init__(self)
         WhatsNew.__init__(self)
 
 

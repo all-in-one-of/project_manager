@@ -404,6 +404,7 @@ class CheckNews(Thread):
         Thread.__init__(self)
         self.last_news = ""
         self.main = main
+        self.add_to_check_news = 0
         self.check_news_cursor = self.main.db.cursor()
         self.last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
 
@@ -437,6 +438,9 @@ class CheckNews(Thread):
         elif last_news_id < self.last_news_id:
             self.last_news_id = last_news_id
 
-        self.main.WhatsNew.load_whats_new(self.main)
+        self.add_to_check_news += 1
+        if self.add_to_check_news > 3:
+            self.main.WhatsNew.load_whats_new(self.main)
+            self.add_to_check_news = 0
 
 
