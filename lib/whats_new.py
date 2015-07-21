@@ -2,10 +2,12 @@
 # coding=utf-8
 
 from PyQt4 import QtGui, QtCore
-from lib.module import Lib
-from lib.comments import CommentWidget
 import os
 import subprocess
+
+from lib.module import Lib
+from lib.comments import CommentWidget
+from lib.asset import Asset
 
 class WhatsNew(object):
     def __init__(self):
@@ -109,41 +111,34 @@ class WhatsNew(object):
 
         selected_item = self.whatsNewTreeWidget.selectedItems()[0]
         selected_item_str = str(selected_item.text(0))
-        if "Comment" in selected_item_str: return
+        # Top level object clicked
+        if ("Comment" or "Reference") in selected_item_str: return
 
+        # Get clicked item time and description
         selected_item_time = " - ".join(selected_item_str.split(" - ")[0:2])
         selected_item_description = selected_item_str.split(" - ")[-1]
+        clicked_log_value = self.cursor.execute('''SELECT log_value FROM log WHERE log_time=? AND log_entry=?''', (selected_item_time, selected_item_description,)).fetchone()[0]
+        if len(clicked_log_value) == 0: return
 
-        clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_time=? AND log_entry=?''', (selected_item_time, selected_item_description,)).fetchone()[0]
 
-        if len(clicked_log_entry) == 0:
-            return
+        asset = Asset(self, id=clicked_log_value)
+        asset.get_asset_infos_from_id()
 
-        ref_data = clicked_log_entry.split("|")
-        try:
-            asset_type = ref_data[0]
-            asset_name = ref_data[1]
-            sequence_name = ref_data[2]
-            shot_number = ref_data[3]
-            asset_version = ref_data[4]
-            asset_path = ref_data[5]
-        except:
-            return
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
-                comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
+                comment_dialog = CommentWidget(self, asset)
             else:
                 if "video" in selected_item_description:
-                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset_path])
+                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
                 else:
-                    if os.path.isfile(self.selected_project_path + asset_path):
-                        os.system(self.selected_project_path + asset_path)
+                    print(asset.full_path)
+                    if os.path.isfile(asset.full_path):
+                        os.system(asset.full_path)
                     else:
                         Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         elif "comment" in selected_item_description:
-            print("yeah")
-            comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version, asset_path)
+            comment_dialog = CommentWidget(self, asset)
 
         return

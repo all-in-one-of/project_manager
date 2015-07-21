@@ -3003,7 +3003,7 @@
                   <property name="toolTip">
                    <string>Double click on a thumbnail to open it with windows picture viewer.
 Alt + double click on a thumbnail to open the comments dialog.
-Shift + double click on a thumbnail to open the rename dialog.</string>
+Select a thumbnail and hit F2 to rename a reference.</string>
                   </property>
                   <property name="autoScroll">
                    <bool>false</bool>

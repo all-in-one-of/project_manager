@@ -11,15 +11,16 @@ from functools import partial
 import time
 import re
 import pafy
+from threading import Thread
 
 from lib.module import Lib
 from lib.comments import CommentWidget
 from lib.asset import Asset
 
+
 class ReferenceTab(object):
     def __init__(self):
 
-        self.first_thumbnail_load = True
         self.compression_level = 60
         self.keep_size = False
         self.last_asset_name = ""
@@ -29,6 +30,8 @@ class ReferenceTab(object):
         self.ref_selected_filter_tags = [""]
         self.all_references_ListWidgetItems = []
         self.images_with_no_tags_state = 0
+
+        self.ref_assets_instances = []
 
         self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
@@ -60,7 +63,7 @@ class ReferenceTab(object):
         self.filterByNoTagsCheckBox.stateChanged.connect(self.ref_filter_images_with_no_tags_clicked)
         self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
-        resize_icon = QtGui.QIcon("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\thumbnail.png")
+        resize_icon = QtGui.QIcon(self.cur_path + "\\media\\thumbnail.png")
 
         self.biggerRefPushButton_01.setIcon(resize_icon)
         self.biggerRefPushButton_02.setIcon(resize_icon)
@@ -94,8 +97,9 @@ class ReferenceTab(object):
         dialog.show()
         dialog.repaint()
 
-
-        ref_all_references_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=? AND asset_type=?''', (self.selected_project_name, "ref")).fetchall()
+        ref_all_references_assets = self.cursor.execute(
+            '''SELECT * FROM assets WHERE project_name=? AND asset_type=?''',
+            (self.selected_project_name, "ref")).fetchall()
         progressBar.setMaximum(len(ref_all_references_assets))
 
         for i, ref in enumerate(ref_all_references_assets):
@@ -112,21 +116,23 @@ class ReferenceTab(object):
             dependency = ref[10]
             last_access = ref[11]
             creator = ref[12]
-            if id == None : id = ""
-            if project_name == None : project_name = ""
-            if sequence_name == None : sequence_name = ""
-            if shot_number == None : shot_number = ""
-            if name == None : name = ""
-            if path == None : path = ""
-            if type == None : type = ""
-            if version == None : version = ""
-            if comments == None : comments = ""
-            if tags == None : tags = ""
-            if dependency == None : dependency = ""
-            if last_access == None : last_access = ""
-            if creator == None : creator = ""
+            if id == None: id = ""
+            if project_name == None: project_name = ""
+            if sequence_name == None: sequence_name = ""
+            if shot_number == None: shot_number = ""
+            if name == None: name = ""
+            if path == None: path = ""
+            if type == None: type = ""
+            if version == None: version = ""
+            if comments == None: comments = ""
+            if tags == None: tags = ""
+            if dependency == None: dependency = ""
+            if last_access == None: last_access = ""
+            if creator == None: creator = ""
 
-            asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version, comments, tags, dependency, last_access, creator)
+            asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
+                          comments, tags, dependency, last_access, creator)
+            self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem(asset.name)
             ref_item.setIcon(QtGui.QIcon(asset.full_path))
             ref_item.setData(QtCore.Qt.UserRole, asset)
@@ -135,8 +141,12 @@ class ReferenceTab(object):
                 self.all_references_ListWidgetItems.append(ref_item)
                 self.referenceThumbListWidget.addItem(ref_item)
 
-
             progressBar.setValue(i)
+            mainLbl.setText("Adding image #" + str(i))
+            dialog.repaint()
+
+        mainLbl.setText("Refreshing view, please wait...")
+        dialog.repaint()
         dialog.close()
 
         self.load_filter_by_tags_list()
@@ -342,7 +352,7 @@ class ReferenceTab(object):
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            comment_dialog = CommentWidget(self, asset.id, asset.type, asset.name, asset.sequence, asset.shot, asset.version, asset.path)
+            comment_dialog = CommentWidget(self, asset)
 
         else:  # Opening video / image in chrome / windows image view
 
@@ -494,9 +504,9 @@ class ReferenceTab(object):
 
         # If reference thumb list widget is empty, load all references for the first time
         if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
-
         self.referenceThumbListWidget.clearSelection()
 
+        # Check if a sequence is selected
         selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
         if selected_sequence == None: return
 
@@ -506,11 +516,14 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a valid URL")
             return
 
+        # Open name dialog
         asset_name = self.asset_name_dialog()
         if asset_name == None: return
 
-        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
+        # Instanciate asset
+        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
+        self.ref_assets_instances.append(asset)
 
         # Create reference from video
         if "youtube" in URL or "vimeo" in URL:
@@ -528,8 +541,13 @@ class ReferenceTab(object):
                 end = '</thumbnail_large>'
                 thumbnail_url = re.search('%s(.*)%s' % (start, end), page_source).group(1)
 
+            # Download video thumbnail
             urllib.urlretrieve(thumbnail_url, asset.full_path)
-            downloaded_img = Image.open(asset.full_path)
+            try:
+                downloaded_img = Image.open(asset.full_path)
+            except:
+                Lib.message_box(self, text="Cannot download file. Try to save it and add it as a file.")
+                return
             image_width = downloaded_img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
@@ -541,7 +559,11 @@ class ReferenceTab(object):
 
         else:  # Create image reference
             urllib.urlretrieve(URL, asset.full_path)
-            downloaded_img = Image.open(asset.full_path)
+            try:
+                downloaded_img = Image.open(asset.full_path)
+            except:
+                Lib.message_box(self, text="Cannot download file. Try to save it and add it as a file.")
+                return
             image_width = downloaded_img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
@@ -553,6 +575,7 @@ class ReferenceTab(object):
         new_item.setIcon(QtGui.QIcon(asset.full_path))
         self.all_references_ListWidgetItems.append(new_item)
         self.referenceThumbListWidget.addItem(new_item)
+        self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset.name), value=asset.id)
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
@@ -589,8 +612,9 @@ class ReferenceTab(object):
             asset_name = Lib.convert_to_camel_case(self, asset_name)
 
             # Create asset
-            asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
+            asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
             asset.add_asset_to_db()
+            self.ref_assets_instances.append(asset)
             assets.append(asset)
 
 
@@ -612,7 +636,7 @@ class ReferenceTab(object):
 
             self.referenceThumbListWidget.addItem(new_item)
             self.all_references_ListWidgetItems.append(new_item)
-            self.add_log_entry("{0} added a reference from files ({1})".format(self.members[self.username], asset.name))
+            self.add_log_entry("{0} added a reference from files ({1})".format(self.members[self.username], asset.name), value=asset.id)
             self.referenceThumbListWidget.setItemSelected(new_item, True)
 
         self.toggle_thumbnail_text()
@@ -636,8 +660,9 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a name with more than 3 characters for the asset")
 
 
-        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
+        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
+        self.ref_assets_instances.append(asset)
 
         # Create reference from capture
         Lib.take_screenshot(self, path=asset.full_path)
@@ -652,7 +677,7 @@ class ReferenceTab(object):
 
         self.referenceThumbListWidget.addItem(new_item)
         self.all_references_ListWidgetItems.append(new_item)
-        self.add_log_entry("{0} added a reference from screenshot ({1})".format(self.members[self.username], asset.name))
+        self.add_log_entry("{0} added a reference from screenshot ({1})".format(self.members[self.username], asset.name), value=asset.id)
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
@@ -721,7 +746,7 @@ class ReferenceTab(object):
             return
 
         eye_icon = QtGui.QPixmap(
-            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon_closed.png")
+            self.cur_path + "\\media\\eye_icon_closed.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
         self.showUrlImageBtn.repaint()
@@ -745,7 +770,7 @@ class ReferenceTab(object):
         QDialog.resize(600, 600)
 
         eye_icon = QtGui.QPixmap(
-            "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\eye_icon.png")
+            self.cur_path + "\\media\\eye_icon.png")
         eye_icon = QtGui.QIcon(eye_icon)
         self.showUrlImageBtn.setIcon(eye_icon)
         self.showUrlImageBtn.repaint()
@@ -853,6 +878,7 @@ class ReferenceTab(object):
 
                     asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
                                   comments, tags, dependency, last_access, creator)
+                    self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)
                     ref_item.setIcon(QtGui.QIcon(asset.full_path))
                     ref_item.setData(QtCore.Qt.UserRole, asset)

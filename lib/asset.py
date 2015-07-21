@@ -4,21 +4,32 @@
 import os
 
 class Asset(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_comment="", asset_tags=[], asset_dependency="", last_access="", creator=""):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_comments=[], asset_tags=[], asset_dependency="", last_access="", creator=""):
         self.main = main
         self.id = id
         self.project = project_name
-        self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
-        self.project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
+        try:
+            self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
+        except:
+            self.project_shortname = ""
+        try:
+            self.project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
+        except:
+            self.project_path = ""
         self.sequence = sequence_name
         self.shot = shot_number
         self.name = asset_name
         self.extension = asset_extension
         self.type = asset_type
         self.version = asset_version
-        self.comment = asset_comment
-        if asset_tags != None: self.tags = asset_tags.split(",")
-        else: self.tags = []
+        if asset_comments != None and len(asset_comments) > 0:
+            self.comments = asset_comments.split(",")
+        else:
+            self.comments = []
+        if asset_tags != None and len(asset_tags) > 0:
+            self.tags = asset_tags.split(",")
+        else:
+            self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
         self.creator = creator
@@ -27,15 +38,13 @@ class Asset(object):
         self.full_path = self.project_path + self.path
 
     def __str__(self):
-        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, self.tags, self.dependency, self.last_access, self.creator)
+        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, self.tags, self.dependency, self.last_access, self.creator)
 
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
-        if int(self.version) > 1:  # If version is higher than 1, go back to level 1
-            while not os.path.isfile(self.project_path + new_path) and int(self.version) > 1: # Decrement asset to lowest possible version
-                self.change_version_if_asset_already_exists(str(int(self.version) - 1).zfill(2))
-                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
-
+        if int(self.version) > 1:  # If version is higher than 1, go back to level 1 and increment until there is no existing file with version
+            self.change_version_if_asset_already_exists(str(1).zfill(2))
+            new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
             while os.path.isfile(self.project_path + new_path): # Increment version until there is no file already existing with same version
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
                 new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
@@ -56,7 +65,7 @@ class Asset(object):
             self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
             self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comment, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -103,9 +112,14 @@ class Asset(object):
         self.dependency = new_dependency
 
     def add_comment(self, comment):
-        self.main.cursor.execute('''UPDATE assets SET asset_name=? WHERE asset_id=?''', (comment, self.id,))
+        self.comments.extend(comment)
+        self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
         self.main.db.commit()
-        self.version = comment
+
+    def remove_comment(self, comment):
+        self.comments = list(set(self.comments) - set(comment))
+        self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
+        self.main.db.commit()
 
     def add_tags(self, tags):
         self.tags.extend(tags)
@@ -118,9 +132,47 @@ class Asset(object):
         self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (",".join(self.tags), self.id,))
         self.main.db.commit()
 
+    def get_asset_infos_from_id(self):
+        asset = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_id=?''', (self.id,)).fetchone()
+        project_name = asset[1]
+        sequence_name = asset[2]
+        shot_number = asset[3]
+        asset_name = asset[4]
+        asset_type = asset[6]
+        asset_version = asset[7]
+        asset_comment = asset[8]
+        asset_tags = asset[9]
+        asset_dependency = asset[10]
+        last_access = asset[11]
+        creator = asset[12]
 
+        self.project = project_name
+        self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
+        self.project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
+        self.sequence = sequence_name
+        self.shot = shot_number
+        self.name = asset_name
+        self.type = asset_type
+        self.extension = self.get_asset_extension_from_type()
+        self.version = asset_version
+        self.comment = asset_comment
+        if asset_tags != None:
+            self.tags = asset_tags.split(",")
+        else:
+            self.tags = []
+        self.dependency = asset_dependency
+        self.last_access = last_access
+        self.creator = creator
+        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname,
+                                                                        self.sequence,
+                                                                        self.shot, self.type, self.name, self.version,
+                                                                        self.extension)
+        self.full_path = self.project_path + self.path
 
-
-
+    def get_asset_extension_from_type(self):
+        if self.type == "ref":
+            return "jpg"
+        elif self.type == "lay":
+            return "hip"
 
 

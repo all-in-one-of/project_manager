@@ -7,20 +7,13 @@ import time
 
 class CommentWidget(QtGui.QDialog):
 
-    def __init__(self, main, task_id=1, asset_type="ref", asset_name="", sequence_name="", shot_number="", asset_version="", asset_path=""):
+    def __init__(self, main, asset):
         super(CommentWidget, self).__init__()
 
         self.main = main
+        self.asset = asset
 
-        self.asset_id = task_id
-        self.asset_type = asset_type
-        self.asset_name = asset_name
-        self.sequence_name = sequence_name
-        self.shot_number = shot_number
-        self.asset_version = asset_version
-        self.asset_path = asset_path
-
-        self.setWindowTitle("Comments for {0} '{1}'".format(self.asset_type, self.asset_name))
+        self.setWindowTitle("Comments for {0} '{1}'".format(self.asset.type, self.asset.name))
         Lib.apply_style(self.main, self)
 
         self.main_layout = QtGui.QVBoxLayout(self)
@@ -44,17 +37,10 @@ class CommentWidget(QtGui.QDialog):
     def load_comments(self):
         self.comment_authors = []
         self.commentListWidget.clear()
-        if self.asset_type == "ref":
-            asset_comments = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE asset_name=? AND sequence_name=? AND shot_number=? AND asset_version=? AND asset_path=?''', (self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path,)).fetchone()[0]
-            if asset_comments != None:
-                asset_comments = asset_comments.split(";")
-                asset_comments = filter(None, asset_comments)
-
-            if not asset_comments: return
-
+        if self.asset.type == "ref":
             cur_alignment = "left"
 
-            for i, each_comment in enumerate(asset_comments):
+            for i, each_comment in enumerate(self.asset.comments):
                 comment_text = each_comment.split("(")[0]
                 comment_time = each_comment.split("(")[1]
                 item = QtGui.QListWidgetItem(comment_text)
@@ -82,7 +68,7 @@ class CommentWidget(QtGui.QDialog):
                 self.commentListWidget.addItem(item)
 
 
-        elif self.asset_type == "task":
+        elif self.asset.type == "task":
             pass
 
 
@@ -96,24 +82,18 @@ class CommentWidget(QtGui.QDialog):
         comment = comment.replace(":", "")
         current_time = time.strftime("%d/%m/%Y at %H:%M")
         comment_with_time = "{0}: {1} ({2})".format(Lib.normalize_str(self.main, self.main.members[self.main.username]), comment, current_time)
+        comment_with_time.replace(";", "")
 
-        if self.asset_type == "ref":
-            asset_comment = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=?''', (self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_version,)).fetchone()
+        if self.asset.type == "ref":
+            self.asset.add_comment([comment_with_time])
 
-            if asset_comment[0] == None or asset_comment[0] == "":
-                asset_comment = comment_with_time
-            else:
-                asset_comment = asset_comment[0]
-                asset_comment += ";" + comment_with_time
-            self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=?''', (asset_comment, self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_version,))
-            self.main.db.commit()
-        elif self.asset_type == "task":
+        elif self.asset.type == "task":
             pass
 
 
         self.load_comments()
         self.commentLineEdit.clear()
-        self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset_name, self.sequence_name), people=self.comment_authors, value="|".join([self.asset_type, self.asset_name, self.sequence_name, self.shot_number, self.asset_version, self.asset_path]))
+        self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset.name, self.asset.sequence), people=self.comment_authors, value=self.asset.id)
 
     def delete_comment(self):
         selected_comment = self.commentListWidget.selectedItems()
@@ -124,19 +104,8 @@ class CommentWidget(QtGui.QDialog):
             return
 
         if self.main.members[self.main.username] in selected_comment_text or self.main.username == "thoudon":
-            # Remove comment from database and reload comments
-            comment_from_db = self.main.cursor.execute('''SELECT asset_comment FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_path=? AND asset_version=?''', (self.sequence_name, self.shot_number, self.asset_name, self.asset_path, self.asset_version,)).fetchone()
-            try:
-                comment_from_db = str(comment_from_db[0])
-            except:
-                return
-            if len(comment_from_db) > 0:
-                text_to_remove = selected_comment_text + "(" + selected_comment_tooltip + ")"
-                new_comments = comment_from_db.replace(text_to_remove, "")
-                self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_comment=?''', (new_comments, comment_from_db))
-                self.main.db.commit()
-
-            self.load_comments(asset_type="ref")
+            self.asset.remove_comment([selected_comment_text + "(" + selected_comment_tooltip + ")"])
+            self.load_comments()
 
         else:
             Lib.message_box(self.main, text="You can only delete your own comments")
