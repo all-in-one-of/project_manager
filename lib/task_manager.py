@@ -132,6 +132,7 @@ class TaskManager(object):
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
+            task_id_item.setData(QtCore.Qt.UserRole, task)
             task_id_item.setText(str(task.id))
             task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
             task_id_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
@@ -337,7 +338,7 @@ class TaskManager(object):
         task_asset_name = str(task_asset_widget.currentText())
 
         task = self.Task(self, task_id)
-        task.get_task_infos_from_id()
+        task.get_infos_from_id()
 
         # If clicked widget is a pushbutton, then confirm task
         if type(clicked_widget) == QtGui.QPushButton:
@@ -423,7 +424,7 @@ class TaskManager(object):
             task_id_widget = self.widgets[str(row.row()) + ":0"]
             task_id = str(task_id_widget.text())
             task = self.Task(self, task_id)
-            task.get_task_infos_from_id()
+            task.get_infos_from_id()
             task.remove_task_from_db()
 
         self.item_added = True
@@ -443,7 +444,7 @@ class TaskManager(object):
             task_id_widget = self.widgets[str(row.row()) + ":0"]
             task_id = str(task_id_widget.text())
             task = self.Task(self, task_id)
-            task.get_task_infos_from_id()
+            task.get_infos_from_id()
             task.change_confirmation(0)
             task.change_status("Done")
 
@@ -479,7 +480,7 @@ class TaskManager(object):
 
             task_id = str(self.tmTableWidget.item(row_index, 0).text())
             task = self.Task(self, task_id)
-            task.get_task_infos_from_id()
+            task.get_infos_from_id()
 
             # If filters are set to default value, set the filters variables to the current row values
             if project_filter == "None": project_filter = task.project
@@ -524,8 +525,18 @@ class TaskManager(object):
         self.tmTableWidget.resizeColumnsToContents()
         self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
 
-    def tmTableWidget_DoubleClicked(self):
-        print("yeah")
+    def tmTableWidget_DoubleClicked(self, value):
+        row = value.row()
+        column = value.column()
+
+        task_item = self.tmTableWidget.item(row, column)
+        task = task_item.data(QtCore.Qt.UserRole).toPyObject()
+        if task == None: return # User clicked on the days left cell
+
+        self.CommentWidget(self, task)
+
+
+
 
     def calculate_days_left(self, task_start_widget, task_end_widget, task_time_left_widget):
 

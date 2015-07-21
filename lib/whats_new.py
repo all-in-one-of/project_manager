@@ -110,7 +110,7 @@ class WhatsNew(object):
         selected_item = self.whatsNewTreeWidget.selectedItems()[0]
         selected_item_str = str(selected_item.text(0))
         # Top level object clicked
-        if ("Comment" or "Reference") in selected_item_str: return
+        if "Comments" in selected_item_str or "References" in selected_item_str or "Tasks" in selected_item_str: return
 
         # Get clicked item time and description
         selected_item_time = " - ".join(selected_item_str.split(" - ")[0:2])
@@ -118,11 +118,20 @@ class WhatsNew(object):
         clicked_log_value = self.cursor.execute('''SELECT log_value FROM log WHERE log_time=? AND log_entry=?''', (selected_item_time, selected_item_description,)).fetchone()[0]
         if len(clicked_log_value) == 0: return
 
-        try:
-            asset = self.Asset(self, id=clicked_log_value)
-            asset.get_asset_infos_from_id()
-        except:
-            self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+        # Create asset based on clicked log entry description
+        if "reference" in selected_item_description or "comment on image" in selected_item_description:
+            try:
+                asset = self.Asset(self, id=clicked_log_value)
+                asset.get_infos_from_id()
+            except:
+                self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+        elif "comment on task" in selected_item_description:
+            try:
+                asset = self.Task(self, id=clicked_log_value)
+                asset.get_infos_from_id()
+            except:
+                self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
@@ -139,7 +148,7 @@ class WhatsNew(object):
         elif "comment" in selected_item_description:
             comment_dialog = self.CommentWidget(self, asset)
 
-        elif "task" in selected_item_description:
-            pass
+
+
 
         return

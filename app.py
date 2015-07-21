@@ -893,6 +893,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         tabs_list = {"Asset Loader":0, "Task Manager":1, "My Tasks":2, "References Tool":3,
                      "Tags Manager":4, "Log":5, "Preferences":6}
 
+        #for i in xrange(self.main.Tabs.count()):
+        #    print(self.main.Tabs.tabText(i))
+
         if self.members[self.username] == "Amelie":
             self.Tabs.removeTab(1)
             self.Tabs.removeTab(3)
@@ -1160,7 +1163,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         if len(clicked_log_entry) == 0: return
 
         asset = Asset(self, id=clicked_log_entry)
-        asset.get_asset_infos_from_id()
+        asset.get_infos_from_id()
 
         if "reference" in clicked_log_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:

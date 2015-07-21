@@ -11,8 +11,13 @@ class CommentWidget(QtGui.QDialog):
 
         self.main = main
         self.asset = asset
+        self.type = self.asset.__class__.__name__
 
-        self.setWindowTitle("Comments for {0} '{1}'".format(self.asset.type, self.asset.name))
+        if self.type == "Asset":
+            self.setWindowTitle("Comments for {0} '{1}'".format(self.type, self.asset.name))
+        elif self.type == "Task":
+            self.setWindowTitle("Comments for {0} #{1}".format(self.type, self.asset.id))
+
         self.main.Lib.apply_style(self.main, self)
 
         self.main_layout = QtGui.QVBoxLayout(self)
@@ -35,39 +40,35 @@ class CommentWidget(QtGui.QDialog):
     def load_comments(self):
         self.comment_authors = []
         self.commentListWidget.clear()
-        if self.asset.type == "ref":
-            cur_alignment = "left"
+        cur_alignment = "left"
 
-            for i, each_comment in enumerate(self.asset.comments):
-                comment_text = each_comment.split("(")[0]
-                comment_time = each_comment.split("(")[1]
-                item = QtGui.QListWidgetItem(comment_text)
-                if i == 0: # If first comment, align it to left
-                    item.setTextAlignment(QtCore.Qt.AlignLeft)
-                    comment_author = comment_text.split(":")[0]
-                    self.comment_authors.append(comment_author)
-                else:
-                    comment_author = comment_text.split(":")[0]
-                    if comment_author == self.comment_authors[-1]: # Current author is the same as last author
-                        if cur_alignment == "left":
-                            item.setTextAlignment(QtCore.Qt.AlignLeft)
-                        elif cur_alignment == "right":
-                            item.setTextAlignment(QtCore.Qt.AlignRight)
-                    elif comment_author != self.comment_authors[-1]: # Current author is different from last author
-                        if cur_alignment == "left": # If current alignment is left, align right and change cur_alignment to opposite
-                            item.setTextAlignment(QtCore.Qt.AlignRight)
-                            cur_alignment = "right"
-                        elif cur_alignment == "right": # If current alignment is right, align left and change cur_alignment to opposite
-                            item.setTextAlignment(QtCore.Qt.AlignLeft)
-                            cur_alignment = "left"
-                    self.comment_authors.append(comment_author)
+        for i, each_comment in enumerate(self.asset.comments):
+            comment_text = each_comment.split("(")[0]
+            comment_time = each_comment.split("(")[1]
+            item = QtGui.QListWidgetItem(comment_text)
+            if i == 0: # If first comment, align it to left
+                item.setTextAlignment(QtCore.Qt.AlignLeft)
+                comment_author = comment_text.split(":")[0]
+                self.comment_authors.append(comment_author)
+            else:
+                comment_author = comment_text.split(":")[0]
+                if comment_author == self.comment_authors[-1]: # Current author is the same as last author
+                    if cur_alignment == "left":
+                        item.setTextAlignment(QtCore.Qt.AlignLeft)
+                    elif cur_alignment == "right":
+                        item.setTextAlignment(QtCore.Qt.AlignRight)
+                elif comment_author != self.comment_authors[-1]: # Current author is different from last author
+                    if cur_alignment == "left": # If current alignment is left, align right and change cur_alignment to opposite
+                        item.setTextAlignment(QtCore.Qt.AlignRight)
+                        cur_alignment = "right"
+                    elif cur_alignment == "right": # If current alignment is right, align left and change cur_alignment to opposite
+                        item.setTextAlignment(QtCore.Qt.AlignLeft)
+                        cur_alignment = "left"
+                self.comment_authors.append(comment_author)
 
-                item.setToolTip(comment_time.replace(")", ""))
-                self.commentListWidget.addItem(item)
+            item.setToolTip(comment_time.replace(")", ""))
+            self.commentListWidget.addItem(item)
 
-
-        elif self.asset.type == "task":
-            pass
 
 
         # Get all comment authors except me
@@ -82,16 +83,17 @@ class CommentWidget(QtGui.QDialog):
         comment_with_time = "{0}: {1} ({2})".format(self.main.Lib.normalize_str(self.main, self.main.members[self.main.username]), comment, current_time)
         comment_with_time.replace(";", "")
 
-        if self.asset.type == "ref":
+        if self.type == "Asset":
             self.asset.add_comment([comment_with_time])
+            self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset.name, self.asset.sequence), people=self.comment_authors, value=self.asset.id)
 
-        elif self.asset.type == "task":
-            pass
 
+        elif self.type == "Task":
+            self.asset.add_comment([comment_with_time])
+            self.main.add_log_entry(text="{0} added a comment on task #{1}".format(self.main.members[self.main.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
 
         self.load_comments()
         self.commentLineEdit.clear()
-        self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset.name, self.asset.sequence), people=self.comment_authors, value=self.asset.id)
 
     def delete_comment(self):
         selected_comment = self.commentListWidget.selectedItems()

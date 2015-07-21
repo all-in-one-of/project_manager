@@ -132,7 +132,7 @@ class Asset(object):
         self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (",".join(self.tags), self.id,))
         self.main.db.commit()
 
-    def get_asset_infos_from_id(self):
+    def get_infos_from_id(self):
         asset = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_id=?''', (self.id,)).fetchone()
         project_name = asset[1]
         sequence_name = asset[2]
@@ -153,7 +153,7 @@ class Asset(object):
         self.shot = shot_number
         self.name = asset_name
         self.type = asset_type
-        self.extension = self.get_asset_extension_from_type()
+        self.extension = self.get_extension_from_type()
         self.version = asset_version
         if not asset_comments == None and len(asset_comments) > 0:
             self.comments = asset_comments.split(";")
@@ -172,7 +172,7 @@ class Asset(object):
                                                                         self.extension)
         self.full_path = self.project_path + self.path
 
-    def get_asset_extension_from_type(self):
+    def get_extension_from_type(self):
         if self.type == "ref":
             return "jpg"
         elif self.type == "lay":

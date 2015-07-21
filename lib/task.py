@@ -27,7 +27,7 @@ class Task(object):
         self.confirmation = task_confirmation
 
     def __str__(self):
-        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.comments, task_confirmation)
+        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.comments, self.confirmation)
 
     def add_task_to_db(self):
         self.main.cursor.execute(
@@ -106,19 +106,17 @@ class Task(object):
         self.main.db.commit()
         self.confirmation = new_confirmation
 
-    def add_comment(self, new_comment):
-        if self.comment == new_comment: return
-        self.main.cursor.execute('''UPDATE tasks SET task_comment=? WHERE task_id=?''', (new_comment, self.id,))
+    def add_comment(self, comment):
+        self.comments.extend(comment)
+        self.main.cursor.execute('''UPDATE tasks SET task_comment=? WHERE task_id=?''', (";".join(self.comments), self.id,))
         self.main.db.commit()
-        self.comment = new_comment
 
-    def remove_comment(self, new_comment):
-        if self.comment == new_comment: return
-        self.main.cursor.execute('''UPDATE tasks SET task_comment=? WHERE task_id=?''', (new_comment, self.id,))
+    def remove_comment(self, comment):
+        self.comments = list(set(self.comments) - set(comment))
+        self.main.cursor.execute('''UPDATE tasks SET task_comment=? WHERE task_id=?''', (";".join(self.comments), self.id,))
         self.main.db.commit()
-        self.comment = new_comment
 
-    def get_task_infos_from_id(self):
+    def get_infos_from_id(self):
         task = self.main.cursor.execute('''SELECT * FROM tasks WHERE task_id=?''', (self.id,)).fetchone()
         project_name = task[1]
         sequence = task[2]

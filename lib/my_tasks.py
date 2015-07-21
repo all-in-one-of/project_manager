@@ -268,7 +268,7 @@ class MyTasks(object):
         task_status = str(task_status_widget.currentText())
 
         task = self.Task(self, task_id)
-        task.get_task_infos_from_id()
+        task.get_infos_from_id()
 
         if task_status != task.status: task.change_status(task_status)
 
@@ -294,7 +294,7 @@ class MyTasks(object):
             # Retrieve value of current row items
             task_id = str(self.mtTableWidget.item(row_index, 0).text())
             task = self.Task(self, task_id)
-            task.get_task_infos_from_id()
+            task.get_infos_from_id()
 
             # If task is not confirmed, hide it:
             if task.confirmation == "0":
