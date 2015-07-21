@@ -14,6 +14,8 @@ import sys
 from threading import Thread
 import time
 
+
+
 class Lib(object):
 
     def save_prefs(self):
@@ -434,4 +436,7 @@ class CheckNews(Thread):
             self.last_news_id = last_news_id
         elif last_news_id < self.last_news_id:
             self.last_news_id = last_news_id
+
+        self.main.WhatsNew.load_whats_new(self.main)
+
 

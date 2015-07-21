@@ -13,11 +13,6 @@ import re
 import pafy
 from threading import Thread
 
-from lib.module import Lib
-from lib.comments import CommentWidget
-from lib.asset import Asset
-
-
 class ReferenceTab(object):
     def __init__(self):
 
@@ -92,7 +87,7 @@ class ReferenceTab(object):
         main_layout.addWidget(mainLbl)
         main_layout.addWidget(progressBar)
 
-        Lib.apply_style(self, dialog)
+        self.Lib.apply_style(self, dialog)
 
         dialog.show()
         dialog.repaint()
@@ -130,7 +125,7 @@ class ReferenceTab(object):
             if last_access == None: last_access = ""
             if creator == None: creator = ""
 
-            asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
+            asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
                           comments, tags, dependency, last_access, creator)
             self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem(asset.name)
@@ -210,7 +205,7 @@ class ReferenceTab(object):
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             if len(self.filterByNameLineEdit.text()) > 0:
                 filter_str = unicode(self.filterByNameLineEdit.text())
-                filter_str = Lib.normalize_str(self, filter_str)
+                filter_str = self.Lib.normalize_str(self, filter_str)
                 filter_str = filter_str.lower()
                 if "*" in filter_str:
                     filter_str = filter_str.replace("*", ".*")
@@ -269,7 +264,7 @@ class ReferenceTab(object):
         self.filterByTagsListWidget.clear()
         for tag in all_tags_from_visible_references:
             tag_frequency = self.tags_frequency[tag]  # Get the frequency of current tag (ex: 1, 5, 15)
-            tag_frequency = Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30)  # Fit frequency in the 10-30 range
+            tag_frequency = self.Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30)  # Fit frequency in the 10-30 range
             font = QtGui.QFont()
             font.setPointSize(tag_frequency)
             item = QtGui.QListWidgetItem(tag)
@@ -325,7 +320,7 @@ class ReferenceTab(object):
         # Confirm dialog
         confirm_dialog = QtGui.QMessageBox()
         reply = confirm_dialog.question(self, 'Delete selected references', "Are you sure ?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        Lib.apply_style(self, confirm_dialog)
+        self.Lib.apply_style(self, confirm_dialog)
         if reply != QtGui.QMessageBox.Yes:
             return
 
@@ -352,7 +347,7 @@ class ReferenceTab(object):
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            comment_dialog = CommentWidget(self, asset)
+            comment_dialog = self.CommentWidget(self, asset)
 
         else:  # Opening video / image in chrome / windows image view
 
@@ -370,7 +365,7 @@ class ReferenceTab(object):
         rename_dialog.setWindowIcon(self.app_icon)
         rename_dialog.setWindowTitle("Rename reference")
 
-        Lib.apply_style(self, rename_dialog)
+        self.Lib.apply_style(self, rename_dialog)
 
         horizontalLayout = QtGui.QVBoxLayout(rename_dialog)
 
@@ -386,11 +381,11 @@ class ReferenceTab(object):
             return
 
         new_name = unicode(reference_new_name.text())
-        new_name = Lib.normalize_str(self, new_name)
-        new_name = Lib.convert_to_camel_case(self, new_name)
+        new_name = self.Lib.normalize_str(self, new_name)
+        new_name = self.Lib.convert_to_camel_case(self, new_name)
 
         if len(new_name) <= 3:
-            Lib.message_box(self, text="Please enter a name with more than 3 letters")
+            self.Lib.message_box(self, text="Please enter a name with more than 3 letters")
             return
 
         if asset.name == new_name:
@@ -409,7 +404,7 @@ class ReferenceTab(object):
         change_dialog = QtGui.QDialog()
         change_dialog.setWindowTitle("Change Sequence / Shot")
         change_dialog.setMinimumWidth(200)
-        Lib.apply_style(self, change_dialog)
+        self.Lib.apply_style(self, change_dialog)
 
         # Create main layout
         main_layout = QtGui.QVBoxLayout(change_dialog)
@@ -507,7 +502,7 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.clearSelection()
 
         # Check if a sequence is selected
-        selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
+        selected_sequence, selected_shot = self.Lib.reference_check_if_projSeqShot_is_selected(self)
         if selected_sequence == None: return
 
         # Check if URL is valid
@@ -521,7 +516,7 @@ class ReferenceTab(object):
         if asset_name == None: return
 
         # Instanciate asset
-        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
         self.ref_assets_instances.append(asset)
 
@@ -546,14 +541,14 @@ class ReferenceTab(object):
             try:
                 downloaded_img = Image.open(asset.full_path)
             except:
-                Lib.message_box(self, text="Cannot download file. Try to save it and add it as a file.")
+                self.Lib.message_box(self, text="Cannot download file. Try to save it and add it as a file.")
                 return
             image_width = downloaded_img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
                     image_width = 1920
-            Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
-            Lib.add_watermark(self, asset.full_path, "VIDEO", asset.full_path)
+            self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
+            self.Lib.add_watermark(self, asset.full_path, "VIDEO", asset.full_path)
             asset.change_dependency(URL)
             asset.add_tags(["_VIDEO"])
 
@@ -562,13 +557,13 @@ class ReferenceTab(object):
             try:
                 downloaded_img = Image.open(asset.full_path)
             except:
-                Lib.message_box(self, text="Cannot download file. Try to save it and add it as a file.")
+                self.Lib.message_box(self, text="Cannot download file. Try to save it and add it as a file.")
                 return
             image_width = downloaded_img.size[0]
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
                     image_width = 1920
-            Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
+            self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
         new_item = QtGui.QListWidgetItem()
         new_item.setData(QtCore.Qt.UserRole, asset)
@@ -591,7 +586,7 @@ class ReferenceTab(object):
 
         self.referenceThumbListWidget.clearSelection()
 
-        selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
+        selected_sequence, selected_shot = self.Lib.reference_check_if_projSeqShot_is_selected(self)
         if selected_sequence == None: return
 
         # Ask for user to select files
@@ -608,11 +603,11 @@ class ReferenceTab(object):
 
             # Convert file name to normalized camel case name
             asset_name = unicode(file_path.split("\\")[-1].split(".")[0])
-            asset_name = Lib.normalize_str(self, asset_name)
-            asset_name = Lib.convert_to_camel_case(self, asset_name)
+            asset_name = self.Lib.normalize_str(self, asset_name)
+            asset_name = self.Lib.convert_to_camel_case(self, asset_name)
 
             # Create asset
-            asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
+            asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
             asset.add_asset_to_db()
             self.ref_assets_instances.append(asset)
             assets.append(asset)
@@ -627,7 +622,7 @@ class ReferenceTab(object):
             if self.keepSizeCheckBox.checkState() == 0:
                 if image_width > 1920:
                     image_width = 1920
-            Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
+            self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
             # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
@@ -647,7 +642,7 @@ class ReferenceTab(object):
         Create reference from screenshot
         '''
 
-        selected_sequence, selected_shot = Lib.reference_check_if_projSeqShot_is_selected(self)
+        selected_sequence, selected_shot = self.Lib.reference_check_if_projSeqShot_is_selected(self)
         if selected_sequence == None: return
 
         self.referenceThumbListWidget.clearSelection()
@@ -661,15 +656,15 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a name with more than 3 characters for the asset")
 
 
-        asset = Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
         self.ref_assets_instances.append(asset)
 
         # Create reference from capture
-        Lib.take_screenshot(self, path=asset.full_path)
+        self.Lib.take_screenshot(self, path=asset.full_path)
         downloaded_img = Image.open(asset.full_path)
         image_width = downloaded_img.size[0]
-        Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
+        self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
         # Add reference to reference list
         new_item = QtGui.QListWidgetItem()
@@ -690,7 +685,7 @@ class ReferenceTab(object):
         # Enter asset name dialog
         asset_name_dialog = QtGui.QDialog()
         asset_name_dialog.setWindowTitle("Asset name")
-        Lib.apply_style(self, asset_name_dialog)
+        self.Lib.apply_style(self, asset_name_dialog)
         main_layout = QtGui.QVBoxLayout(asset_name_dialog)
 
         lbl = QtGui.QLabel("Type a name for the asset and press enter:", asset_name_dialog)
@@ -708,8 +703,8 @@ class ReferenceTab(object):
 
         # Convert asset name
         asset_name = self.last_asset_name = unicode(lineEdit.text())
-        asset_name = Lib.normalize_str(self, asset_name)
-        asset_name = Lib.convert_to_camel_case(self, asset_name)
+        asset_name = self.Lib.normalize_str(self, asset_name)
+        asset_name = self.Lib.convert_to_camel_case(self, asset_name)
 
         return asset_name
 
@@ -743,7 +738,7 @@ class ReferenceTab(object):
         URL = str(self.referenceWebLineEdit.text())
 
         if len(URL) < 5:
-            Lib.message_box(self, text="Please enter a valid URL")
+            self.Lib.message_box(self, text="Please enter a valid URL")
             return
 
         eye_icon = QtGui.QPixmap(
@@ -755,7 +750,7 @@ class ReferenceTab(object):
         QDialog = QtGui.QDialog()
         QDialog.setWindowTitle("URL Preview")
         QDialog.setMaximumSize(600, 600)
-        Lib.apply_style(self, QDialog)
+        self.Lib.apply_style(self, QDialog)
 
         data = urllib.urlopen(URL).read()
         pixmap = QtGui.QPixmap()
@@ -834,10 +829,10 @@ class ReferenceTab(object):
             all_references_id.append(asset.id)
 
         if all_references_id_loaded > all_references_id:
-            self.id_to_load_or_remove = Lib.get_diff_between_lists(self, all_references_id, all_references_id_loaded)
+            self.id_to_load_or_remove = self.Lib.get_diff_between_lists(self, all_references_id, all_references_id_loaded)
             self.load_new_references("add")
         elif all_references_id_loaded < all_references_id:
-            self.id_to_load_or_remove = Lib.get_diff_between_lists(self, all_references_id, all_references_id_loaded)
+            self.id_to_load_or_remove = self.Lib.get_diff_between_lists(self, all_references_id, all_references_id_loaded)
             self.load_new_references("remove")
 
     def load_new_references(self, operation):
@@ -877,7 +872,7 @@ class ReferenceTab(object):
                     if last_access == None: last_access = ""
                     if creator == None: creator = ""
 
-                    asset = Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
+                    asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
                                   comments, tags, dependency, last_access, creator)
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)

@@ -55,17 +55,27 @@ from lib.module import Lib
 from lib.module import CheckNews
 from lib.task_manager import TaskManager
 from lib.my_tasks import MyTasks
+from lib.task import Task
 from lib.comments import CommentWidget
 from lib.whats_new import WhatsNew
 from lib.asset import Asset
 
 from threading import Thread
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task):
     def __init__(self):
         super(Main, self).__init__()
         #QtGui.QMainWindow.__init__(self)
         #Ui_Form.__init__(self)
+
+        self.ReferenceTab = ReferenceTab
+        self.Lib = Lib
+        self.TaskManager = TaskManager
+        self.MyTasks = MyTasks
+        self.WhatsNew = WhatsNew
+        self.CommentWidget = CommentWidget
+        self.Task = Task
+        self.Asset = Asset
 
         # Database Setup
         self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
@@ -274,7 +284,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         # Initialize modules and connections
         ReferenceTab.__init__(self)
         TaskManager.__init__(self)
-        MyTasks.__init__(self)
+        #MyTasks.__init__(self)
         WhatsNew.__init__(self)
 
 

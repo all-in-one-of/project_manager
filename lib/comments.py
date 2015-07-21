@@ -2,7 +2,6 @@
 # coding=utf-8
 
 from PyQt4 import QtGui, QtCore
-from lib.module import Lib
 import time
 
 class CommentWidget(QtGui.QDialog):
@@ -14,7 +13,7 @@ class CommentWidget(QtGui.QDialog):
         self.asset = asset
 
         self.setWindowTitle("Comments for {0} '{1}'".format(self.asset.type, self.asset.name))
-        Lib.apply_style(self.main, self)
+        self.main.Lib.apply_style(self.main, self)
 
         self.main_layout = QtGui.QVBoxLayout(self)
 
@@ -77,10 +76,10 @@ class CommentWidget(QtGui.QDialog):
 
     def add_comment(self):
         comment = unicode(self.commentLineEdit.text())
-        comment = Lib.normalize_str(self.main, comment)
+        comment = self.main.Lib.normalize_str(self.main, comment)
         comment = comment.replace(":", "")
         current_time = time.strftime("%d/%m/%Y at %H:%M")
-        comment_with_time = "{0}: {1} ({2})".format(Lib.normalize_str(self.main, self.main.members[self.main.username]), comment, current_time)
+        comment_with_time = "{0}: {1} ({2})".format(self.main.Lib.normalize_str(self.main, self.main.members[self.main.username]), comment, current_time)
         comment_with_time.replace(";", "")
 
         if self.asset.type == "ref":
@@ -107,7 +106,7 @@ class CommentWidget(QtGui.QDialog):
             self.load_comments()
 
         else:
-            Lib.message_box(self.main, text="You can only delete your own comments")
+            self.main.Lib.message_box(self.main, text="You can only delete your own comments")
 
     def keyPressEvent(self, event):
         key = event.key()

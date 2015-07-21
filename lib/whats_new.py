@@ -5,9 +5,7 @@ from PyQt4 import QtGui, QtCore
 import os
 import subprocess
 
-from lib.module import Lib
-from lib.comments import CommentWidget
-from lib.asset import Asset
+
 
 class WhatsNew(object):
     def __init__(self):
@@ -97,7 +95,7 @@ class WhatsNew(object):
 
         confirm_dialog = QtGui.QMessageBox()
         reply = confirm_dialog.question(self, 'Mark all as read', "Are you sure ?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        Lib.apply_style(self, confirm_dialog)
+        self.Lib.apply_style(self, confirm_dialog)
         if reply != QtGui.QMessageBox.Yes:
             return
 
@@ -124,7 +122,7 @@ class WhatsNew(object):
             asset = Asset(self, id=clicked_log_value)
             asset.get_asset_infos_from_id()
         except:
-            Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+            self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
@@ -136,9 +134,12 @@ class WhatsNew(object):
                     if os.path.isfile(asset.full_path):
                         os.system(asset.full_path)
                     else:
-                        Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+                        self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         elif "comment" in selected_item_description:
             comment_dialog = CommentWidget(self, asset)
+
+        elif "task" in selected_item_description:
+            pass
 
         return

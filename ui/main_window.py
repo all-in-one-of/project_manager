@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Tue Jul 21 11:37:48 2015
+# Created: Tue Jul 21 15:10:45 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -684,7 +684,7 @@ class Ui_Form(object):
         self.tmTableWidget.setShowGrid(False)
         self.tmTableWidget.setGridStyle(QtCore.Qt.SolidLine)
         self.tmTableWidget.setObjectName(_fromUtf8("tmTableWidget"))
-        self.tmTableWidget.setColumnCount(12)
+        self.tmTableWidget.setColumnCount(13)
         self.tmTableWidget.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.tmTableWidget.setHorizontalHeaderItem(0, item)
@@ -710,8 +710,10 @@ class Ui_Form(object):
         self.tmTableWidget.setHorizontalHeaderItem(10, item)
         item = QtGui.QTableWidgetItem()
         self.tmTableWidget.setHorizontalHeaderItem(11, item)
+        item = QtGui.QTableWidgetItem()
+        self.tmTableWidget.setHorizontalHeaderItem(12, item)
         self.tmTableWidget.horizontalHeader().setDefaultSectionSize(100)
-        self.tmTableWidget.horizontalHeader().setStretchLastSection(True)
+        self.tmTableWidget.horizontalHeader().setStretchLastSection(False)
         self.tmTableWidget.verticalHeader().setVisible(False)
         self.tmTableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_27.addWidget(self.tmTableWidget)
@@ -1587,7 +1589,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1681,7 +1683,7 @@ class Ui_Form(object):
         item = self.tmTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Form", "ID", None))
         item = self.tmTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("Form", "Task Name", None))
+        item.setText(_translate("Form", "Task Description", None))
         item = self.tmTableWidget.horizontalHeaderItem(2)
         item.setText(_translate("Form", "Department", None))
         item = self.tmTableWidget.horizontalHeaderItem(3)
@@ -1702,6 +1704,8 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Shot", None))
         item = self.tmTableWidget.horizontalHeaderItem(11)
         item.setText(_translate("Form", "Asset", None))
+        item = self.tmTableWidget.horizontalHeaderItem(12)
+        item.setText(_translate("Form", "Confirm", None))
         self.tmShowBidCurveBtn.setText(_translate("Form", "Show bid curve", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tmTab), _translate("Form", "Task Manager", None))
         self.mtFilterByGroupBox.setTitle(_translate("Form", "Filter by", None))
