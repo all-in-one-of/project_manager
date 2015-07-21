@@ -45,7 +45,7 @@ class MyTasks(object):
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_load_shots)
 
         self.loadTasksAsWidgetBtn.clicked.connect(self.open_tasks_as_desktop_widgets)
-        self.mtRefreshTasksBtn.clicked.connect(self.mt_add_tasks_from_database)
+        self.mtRefreshTasksBtn.clicked.connect(self.mt_refresh_tasks_list)
 
         self.mtFilterByShotComboBox.addItem("None")
         self.mtFilterByDeptComboBox.addItem("None")
@@ -229,6 +229,10 @@ class MyTasks(object):
                 if task.status == "Done":
                     self.mtTableWidget.hideRow(0)
 
+            # If task is not confirmed, hide it:
+            if task.confirmation == "0":
+                self.mtTableWidget.hideRow(0)
+
             inversed_index -= 1
 
         self.mtTableWidget.cellChanged.connect(self.mt_update_tasks)
@@ -270,7 +274,6 @@ class MyTasks(object):
 
         self.change_cell_status_color(task_status_widget, task_status)
 
-
     def mt_filter(self):
 
         number_of_rows = self.mtTableWidget.rowCount()
@@ -292,6 +295,11 @@ class MyTasks(object):
             task_id = str(self.mtTableWidget.item(row_index, 0).text())
             task = self.Task(self, task_id)
             task.get_task_infos_from_id()
+
+            # If task is not confirmed, hide it:
+            if task.confirmation == "0":
+                self.mtTableWidget.hideRow(row_index)
+                break
 
             # If filters are set to default value, set the filters variables to the current row values
             if project_filter == "None": project_filter = task.project
@@ -319,6 +327,10 @@ class MyTasks(object):
 
         self.mtTableWidget.resizeColumnsToContents()
         self.mtTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+
+    def mt_refresh_tasks_list(self):
+        self.mt_item_added = True
+        self.mt_add_tasks_from_database()
 
     def mt_load_sequences(self):
         current_project = str(self.mtFilterByProjectComboBox.currentText())
@@ -359,9 +371,8 @@ class MyTasks(object):
         all_tasks = self.cursor.execute('''SELECT * FROM tasks WHERE task_assignation=?''', (self.username,)).fetchall()
         self.tasks = {}
         for i, task in enumerate(all_tasks):
-            self.tasks[task] = DesktopWidget(task[5], task[6], task[7], task[9], task[10], task[11])
+            self.tasks[task] = self.Lib.DesktopWidget(task[5], task[6], task[7], task[9], task[10], task[11])
             self.tasks[task].show()
 
             self.tasks[task].move(10, 10 + (i * 60))
-
 

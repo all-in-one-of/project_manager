@@ -88,8 +88,6 @@ class TaskManager(object):
 
         all_tasks = self.cursor.execute('''SELECT * FROM tasks''').fetchall()
 
-
-
         self.widgets = {}
 
         inversed_index = len(all_tasks) - 1
