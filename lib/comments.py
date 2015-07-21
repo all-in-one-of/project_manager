@@ -30,7 +30,6 @@ class CommentWidget(QtGui.QDialog):
 
         self.commentLineEdit.setFocus()
 
-
         self.load_comments()
         self.exec_()
 
@@ -114,3 +113,4 @@ class CommentWidget(QtGui.QDialog):
         key = event.key()
         if key == QtCore.Qt.Key_Delete:
             self.delete_comment()
+

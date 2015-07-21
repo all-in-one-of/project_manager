@@ -22,11 +22,11 @@ class Asset(object):
         self.extension = asset_extension
         self.type = asset_type
         self.version = asset_version
-        if asset_comments != None and len(asset_comments) > 0:
-            self.comments = asset_comments.split(",")
+        if not asset_comments == None and len(asset_comments) > 0:
+            self.comments = asset_comments.split(";")
         else:
             self.comments = []
-        if asset_tags != None and len(asset_tags) > 0:
+        if not asset_tags == None and len(asset_tags) > 0:
             self.tags = asset_tags.split(",")
         else:
             self.tags = []
@@ -65,7 +65,7 @@ class Asset(object):
             self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
             self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, ";".join(self.comments), ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -140,7 +140,7 @@ class Asset(object):
         asset_name = asset[4]
         asset_type = asset[6]
         asset_version = asset[7]
-        asset_comment = asset[8]
+        asset_comments = asset[8]
         asset_tags = asset[9]
         asset_dependency = asset[10]
         last_access = asset[11]
@@ -155,7 +155,10 @@ class Asset(object):
         self.type = asset_type
         self.extension = self.get_asset_extension_from_type()
         self.version = asset_version
-        self.comment = asset_comment
+        if not asset_comments == None and len(asset_comments) > 0:
+            self.comments = asset_comments.split(";")
+        else:
+            self.comments = []
         if asset_tags != None:
             self.tags = asset_tags.split(",")
         else:

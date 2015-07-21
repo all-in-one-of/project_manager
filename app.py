@@ -278,9 +278,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         WhatsNew.__init__(self)
 
 
-        #self.check_news_thread = CheckNews(self)
-        #self.check_news_thread.daemon = True
-        #self.check_news_thread.start()
+        self.check_news_thread = CheckNews(self)
+        self.check_news_thread.daemon = True
+        self.check_news_thread.start()
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -1145,40 +1145,31 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         if self.tray_message == "Manager is in background mode.": return
 
         clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
-        selected_item_description = self.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
+        clicked_log_description = self.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
 
-        if len(clicked_log_entry) == 0:
-            return
+        if len(clicked_log_entry) == 0: return
 
-        ref_data = clicked_log_entry.split("|")
-        try:
-            asset_type = ref_data[0]
-            asset_name = ref_data[1]
-            sequence_name = ref_data[2]
-            shot_number = ref_data[3]
-            asset_version = ref_data[4]
-            asset_path = ref_data[5]
-        except:
-            return
+        asset = Asset(self, id=clicked_log_entry)
+        asset.get_asset_infos_from_id()
 
-        if "reference" in selected_item_description:
+        if "reference" in clicked_log_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
-                comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number,
-                                               asset_version, asset_path)
+                comment_dialog = CommentWidget(self, asset)
             else:
-                if "video" in selected_item_description:
-                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset_path])
+                if "video" in clicked_log_description:
+                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
                 else:
-                    if os.path.isfile(self.selected_project_path + asset_path):
-                        os.system(self.selected_project_path + asset_path)
+                    if os.path.isfile(asset.full_path):
+                        os.system(asset.full_path)
                     else:
                         Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
-        elif "comment" in selected_item_description:
-            comment_dialog = CommentWidget(self, 1, asset_type, asset_name, sequence_name, shot_number, asset_version,
-                                           asset_path)
-
-        return
+        #elif "comment" in clicked_log_description:
+            #self.setWindowFlags(QtCore.Qt.Widget)
+            #self.show()
+            #self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+            #self.tray_icon.hide()
+            #comment_dialog = CommentWidget(self, asset)
 
     def tray_icon_clicked(self, reason):
         if reason == QtGui.QSystemTrayIcon.DoubleClick:
@@ -1229,7 +1220,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                 self.hide()
                 self.tray_icon.show()
                 self.tray_message = "Manager is in background mode."
-                self.tray_icon.showMessage('Still running...', self.tray_message)
+                self.tray_icon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

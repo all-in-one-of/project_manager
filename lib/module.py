@@ -408,7 +408,7 @@ class CheckNews(Thread):
     def run(self):
         while True:
             self.check_news()
-            time.sleep(2)
+            time.sleep(10)
 
     def check_news(self):
         last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()
@@ -417,19 +417,20 @@ class CheckNews(Thread):
 
         if last_news_id > self.last_news_id: # There are new entries on the log
             log_entry = self.check_news_cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]
+            username = log_entry.split(" ")[0]
 
             if "reference" in log_entry:
-                title = "New reference added"
-                msg = "A new reference was added"
+                title = "{0} added a new reference!".format(username)
+                self.main.tray_message = "Click here to see it"
             elif "comment" in log_entry:
-                title = "New comment added"
-                msg = "A new comment was added"
+                title = "{0} added a new comment!".format(username)
+                self.main.tray_message = "Click here to see it"
             else:
                 title = "New event"
-                msg = "Unknown"
+                self.main.tray_message = "Unknown"
 
             self.main.tray_icon_log_id = last_news_id
-            self.main.tray_icon.showMessage(title, msg, QtGui.QSystemTrayIcon.Information, 8000)
+            self.main.tray_icon.showMessage(title, self.main.tray_message, QtGui.QSystemTrayIcon.Information, 10000)
             self.last_news_id = last_news_id
         elif last_news_id < self.last_news_id:
             self.last_news_id = last_news_id

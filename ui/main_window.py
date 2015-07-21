@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sun Jul 19 10:16:14 2015
+# Created: Tue Jul 21 11:37:48 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1587,7 +1587,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(3)
+        self.Tabs.setCurrentIndex(7)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1781,7 +1781,7 @@ class Ui_Form(object):
         self.refShowSequencesCheckBox.setText(_translate("Form", "Sequences", None))
         self.referenceThumbListWidget.setToolTip(_translate("Form", "Double click on a thumbnail to open it with windows picture viewer.\n"
 "Alt + double click on a thumbnail to open the comments dialog.\n"
-"Shift + double click on a thumbnail to open the rename dialog.", None))
+"Select a thumbnail and hit F2 to rename a reference.", None))
         self.changeRefSeqShotBtn.setText(_translate("Form", "Change sequence / shot for selected ", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.imagesManagerTab), _translate("Form", "Images Manager", None))
         self.addTagLineEdit.setPlaceholderText(_translate("Form", "lighting, statue, architecture, tree, character...", None))

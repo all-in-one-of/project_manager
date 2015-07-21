@@ -656,6 +656,7 @@ class ReferenceTab(object):
         # Check if a name is defined for the asset
         while len(asset_name) <= 3:
             asset_name = self.asset_name_dialog()
+            if asset_name == None: return
             if len(asset_name) > 3: break
             self.message_box(text="Please enter a name with more than 3 characters for the asset")
 

@@ -120,10 +120,11 @@ class WhatsNew(object):
         clicked_log_value = self.cursor.execute('''SELECT log_value FROM log WHERE log_time=? AND log_entry=?''', (selected_item_time, selected_item_description,)).fetchone()[0]
         if len(clicked_log_value) == 0: return
 
-
-        asset = Asset(self, id=clicked_log_value)
-        asset.get_asset_infos_from_id()
-
+        try:
+            asset = Asset(self, id=clicked_log_value)
+            asset.get_asset_infos_from_id()
+        except:
+            Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
         if "reference" in selected_item_description:
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
@@ -132,7 +133,6 @@ class WhatsNew(object):
                 if "video" in selected_item_description:
                     subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
                 else:
-                    print(asset.full_path)
                     if os.path.isfile(asset.full_path):
                         os.system(asset.full_path)
                     else:
