@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Tue Jul 21 16:24:38 2015
+# Created: Tue Jul 21 17:15:55 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -646,11 +646,18 @@ class Ui_Form(object):
         self.horizontalLayout_39 = QtGui.QHBoxLayout(self.tmDoneFilterFrame)
         self.horizontalLayout_39.setMargin(0)
         self.horizontalLayout_39.setObjectName(_fromUtf8("horizontalLayout_39"))
-        spacerItem1 = QtGui.QSpacerItem(70, 20, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
+        spacerItem1 = QtGui.QSpacerItem(71, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_39.addItem(spacerItem1)
         self.tmHideDoneCheckBox = QtGui.QCheckBox(self.tmDoneFilterFrame)
+        self.tmHideDoneCheckBox.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.tmHideDoneCheckBox.setObjectName(_fromUtf8("tmHideDoneCheckBox"))
         self.horizontalLayout_39.addWidget(self.tmHideDoneCheckBox)
+        self.tmHideConfirmedCheckBox = QtGui.QCheckBox(self.tmDoneFilterFrame)
+        self.tmHideConfirmedCheckBox.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.tmHideConfirmedCheckBox.setObjectName(_fromUtf8("tmHideConfirmedCheckBox"))
+        self.horizontalLayout_39.addWidget(self.tmHideConfirmedCheckBox)
+        spacerItem2 = QtGui.QSpacerItem(750, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_39.addItem(spacerItem2)
         self.verticalLayout_26.addWidget(self.tmDoneFilterFrame)
         self.verticalLayout_27.addWidget(self.tmFilterByGroupBox)
         self.tmTaskManagementFrame = QtGui.QGroupBox(self.tmMainFrame)
@@ -677,8 +684,8 @@ class Ui_Form(object):
         self.tmCompleteTaskBtn = QtGui.QPushButton(self.tmTaskManagementFrame)
         self.tmCompleteTaskBtn.setObjectName(_fromUtf8("tmCompleteTaskBtn"))
         self.horizontalLayout_32.addWidget(self.tmCompleteTaskBtn)
-        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_32.addItem(spacerItem2)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_32.addItem(spacerItem3)
         self.verticalLayout_27.addWidget(self.tmTaskManagementFrame)
         self.tmTableWidget = QtGui.QTableWidget(self.tmMainFrame)
         self.tmTableWidget.setShowGrid(False)
@@ -855,8 +862,8 @@ class Ui_Form(object):
         self.mtFilterByBidComboBox.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.mtFilterByBidComboBox.setObjectName(_fromUtf8("mtFilterByBidComboBox"))
         self.horizontalLayout_48.addWidget(self.mtFilterByBidComboBox)
-        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_48.addItem(spacerItem3)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_48.addItem(spacerItem4)
         self.verticalLayout_28.addWidget(self.mtBidFilterFrame)
         self.mtDoneFilterFrame = QtGui.QFrame(self.mtFilterByGroupBox)
         self.mtDoneFilterFrame.setFrameShape(QtGui.QFrame.NoFrame)
@@ -865,8 +872,8 @@ class Ui_Form(object):
         self.horizontalLayout_50 = QtGui.QHBoxLayout(self.mtDoneFilterFrame)
         self.horizontalLayout_50.setMargin(0)
         self.horizontalLayout_50.setObjectName(_fromUtf8("horizontalLayout_50"))
-        spacerItem4 = QtGui.QSpacerItem(70, 20, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_50.addItem(spacerItem4)
+        spacerItem5 = QtGui.QSpacerItem(70, 20, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_50.addItem(spacerItem5)
         self.mtHideDoneCheckBox = QtGui.QCheckBox(self.mtDoneFilterFrame)
         self.mtHideDoneCheckBox.setObjectName(_fromUtf8("mtHideDoneCheckBox"))
         self.horizontalLayout_50.addWidget(self.mtHideDoneCheckBox)
@@ -1220,8 +1227,8 @@ class Ui_Form(object):
         self.refShowSequencesCheckBox.setChecked(False)
         self.refShowSequencesCheckBox.setObjectName(_fromUtf8("refShowSequencesCheckBox"))
         self.horizontalLayout_38.addWidget(self.refShowSequencesCheckBox)
-        spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_38.addItem(spacerItem5)
+        spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_38.addItem(spacerItem6)
         self.biggerRefPushButton_01 = QtGui.QPushButton(self.changeThumbnailSizeFrame)
         self.biggerRefPushButton_01.setMinimumSize(QtCore.QSize(32, 32))
         self.biggerRefPushButton_01.setMaximumSize(QtCore.QSize(32, 32))
@@ -1589,7 +1596,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(2)
+        self.Tabs.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1675,6 +1682,7 @@ class Ui_Form(object):
         self.tmBidOperationComboBox.setItemText(0, _translate("Form", ">=", None))
         self.tmBidOperationComboBox.setItemText(1, _translate("Form", "<=", None))
         self.tmHideDoneCheckBox.setText(_translate("Form", "Hide Done", None))
+        self.tmHideConfirmedCheckBox.setText(_translate("Form", "Hide Confirmed", None))
         self.tmTaskManagementFrame.setTitle(_translate("Form", "Tasks Management", None))
         self.tmAddTaskBtn.setText(_translate("Form", "Add Task(s)", None))
         self.tmRemoveTaskBtn.setText(_translate("Form", "Remove Task(s)", None))

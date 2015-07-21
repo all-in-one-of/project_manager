@@ -56,7 +56,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -1469,16 +1469,16 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <spacer name="tmhorizontalSpacer_4">
+                    <spacer name="tmhorizontalSpacer_5">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
                      </property>
                      <property name="sizeType">
-                      <enum>QSizePolicy::Maximum</enum>
+                      <enum>QSizePolicy::Minimum</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
-                       <width>70</width>
+                       <width>71</width>
                        <height>20</height>
                       </size>
                      </property>
@@ -1486,10 +1486,45 @@
                    </item>
                    <item>
                     <widget class="QCheckBox" name="tmHideDoneCheckBox">
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
                      <property name="text">
                       <string>Hide Done</string>
                      </property>
                     </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="tmHideConfirmedCheckBox">
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Hide Confirmed</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="tmhorizontalSpacer_6">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>750</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
                    </item>
                   </layout>
                  </widget>

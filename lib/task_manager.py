@@ -40,6 +40,7 @@ class TaskManager(object):
 
         self.item_added = False
         self.tmTableWidget.setStyleSheet("color: white;")
+        self.tmTableWidget.itemDoubleClicked.connect(self.tmTableWidget_DoubleClicked)
         self.tmAddTaskBtn.clicked.connect(self.add_task)
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
         self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
@@ -47,6 +48,7 @@ class TaskManager(object):
 
         self.tmHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
         self.tmHideDoneCheckBox.clicked.connect(self.filter)
+        self.tmHideConfirmedCheckBox.clicked.connect(self.filter)
 
         self.tmRemoveTaskBtn.setStyleSheet("QPushButton {background-color: #872d2c;} QPushButton:hover {background-color: #1b81ca;}")
         self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
@@ -493,11 +495,27 @@ class TaskManager(object):
             elif str(bid_operation) == "<=": bid_result = operator.ge(int(bid_filter), int(task.bid))
 
             if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == self.members[task.assignation] and bid_result:
-                if self.tmHideDoneCheckBox.isChecked():
+                # Check each row for "Done" and "Confirmed"
+                if self.tmHideDoneCheckBox.isChecked() and self.tmHideConfirmedCheckBox.isChecked():
                     if task.status == "Done":
                         self.tmTableWidget.hideRow(row_index)
-                    else:
-                        self.tmTableWidget.showRow(row_index)
+                        continue
+                    if task.confirmation == "1":
+                        self.tmTableWidget.hideRow(row_index)
+                        continue
+                    self.tmTableWidget.showRow(row_index)
+                # Check each row for "Done" only
+                elif self.tmHideDoneCheckBox.isChecked() and not self.tmHideConfirmedCheckBox.isChecked():
+                    if task.status == "Done":
+                        self.tmTableWidget.hideRow(row_index)
+                        continue
+                    self.tmTableWidget.showRow(row_index)
+                # Check each row for "Confirmed" only
+                elif not self.tmHideDoneCheckBox.isChecked() and self.tmHideConfirmedCheckBox.isChecked():
+                    if task.confirmation == "1":
+                        self.tmTableWidget.hideRow(row_index)
+                        continue
+                    self.tmTableWidget.showRow(row_index)
                 else:
                     self.tmTableWidget.showRow(row_index)
             else:
@@ -505,6 +523,9 @@ class TaskManager(object):
 
         self.tmTableWidget.resizeColumnsToContents()
         self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+
+    def tmTableWidget_DoubleClicked(self):
+        print("yeah")
 
     def calculate_days_left(self, task_start_widget, task_end_widget, task_time_left_widget):
 
