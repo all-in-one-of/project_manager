@@ -4,14 +4,12 @@
 from PyQt4 import QtGui, QtCore, Qt
 import subprocess
 import os
-import shutil
 from PIL import Image
 import urllib
 from functools import partial
-import time
 import re
 import pafy
-from threading import Thread
+from collections import Counter
 
 class ReferenceTab(object):
     def __init__(self):
@@ -20,11 +18,17 @@ class ReferenceTab(object):
         self.keep_size = False
         self.last_asset_name = ""
 
+        eye_icon = QtGui.QPixmap(self.cur_path + "\\media\\eye_icon.png")
+        eye_icon = QtGui.QIcon(eye_icon)
+        self.showUrlImageBtn.setIcon(eye_icon)
+
         self.ref_selected_sequence_name = "xxx"
         self.ref_selected_shot_number = "xxxx"
         self.ref_selected_filter_tags = [""]
         self.all_references_ListWidgetItems = []
         self.images_with_no_tags_state = 0
+        self.nbrOfRefLoadedLbl.setText("Showing 0 out of 0")
+        self.nbr_of_visible_images = 0
 
         self.ref_assets_instances = []
 
@@ -60,8 +64,8 @@ class ReferenceTab(object):
         self.filterByNoTagsCheckBox.stateChanged.connect(self.ref_filter_images_with_no_tags_clicked)
         self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
-        resize_icon = QtGui.QIcon(self.cur_path + "\\media\\thumbnail.png")
 
+        resize_icon = QtGui.QIcon(self.cur_path + "\\media\\thumbnail.png")
         self.biggerRefPushButton_01.setIcon(resize_icon)
         self.biggerRefPushButton_02.setIcon(resize_icon)
         self.biggerRefPushButton_03.setIcon(resize_icon)
@@ -70,6 +74,14 @@ class ReferenceTab(object):
         self.biggerRefPushButton_02.setIconSize(QtCore.QSize(16, 16))
         self.biggerRefPushButton_03.setIconSize(QtCore.QSize(24, 24))
         self.biggerRefPushButton_04.setIconSize(QtCore.QSize(30, 30))
+
+        # Tags Manager Buttons
+        self.addTagBtn.clicked.connect(self.add_tag_to_tags_manager)
+        self.addTagLineEdit.returnPressed.connect(self.add_tag_to_tags_manager)
+        self.removeSelectedTagsBtn.clicked.connect(self.remove_selected_tags_from_tags_manager)
+
+        # Tags setup
+        self.setup_tags()
 
     def ref_load_all_references(self):
         '''Load all references when clicking sequence for the first time'''
@@ -140,8 +152,10 @@ class ReferenceTab(object):
 
             progressBar.setValue(i)
             mainLbl.setText("Adding image #" + str(i))
+            self.nbr_of_visible_images += 1
             dialog.repaint()
 
+        self.nbrOfRefLoadedLbl.setText("Showing {0} out of {1}".format(self.nbr_of_visible_images, len(self.all_references_ListWidgetItems)))
         mainLbl.setText("Refreshing view, please wait...")
         dialog.repaint()
         dialog.close()
@@ -156,6 +170,8 @@ class ReferenceTab(object):
         all_references = self.get_all_visible_references()
         all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
 
+        self.nbr_of_visible_images = len(self.all_references_ListWidgetItems)
+
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             if self.seqReferenceList.selectedItems()[0].text() == "All":
@@ -163,9 +179,11 @@ class ReferenceTab(object):
             elif self.seqReferenceList.selectedItems()[0].text() == "None":
                 if asset.sequence != "xxx":
                     ref.setHidden(True)
+                    self.nbr_of_visible_images -= 1
             elif self.seqReferenceList.selectedItems()[0].text() != "None":
                 if asset.sequence != self.ref_selected_sequence_name:
                     ref.setHidden(True)
+                    self.nbr_of_visible_images -= 1
 
         # Filter by shot
         all_references = self.get_all_visible_references()
@@ -176,6 +194,7 @@ class ReferenceTab(object):
             if self.shotReferenceList.selectedItems()[0].text() != "None":
                 if asset.shot != self.ref_selected_shot_number:
                     ref.setHidden(True)
+                    self.nbr_of_visible_images -= 1
 
         # Filter by tags
         all_references = self.get_all_visible_references()
@@ -186,6 +205,7 @@ class ReferenceTab(object):
             if len(self.filterByTagsListWidget.selectedItems()) > 0:
                 if not set(self.ref_selected_filter_tags).issubset(set(asset.tags)):
                     ref.setHidden(True)
+                    self.nbr_of_visible_images -= 1
 
         # Show only assets with no tags if checkbox is checked
         if self.images_with_no_tags_state == 2:
@@ -195,11 +215,14 @@ class ReferenceTab(object):
                 asset = ref.data(QtCore.Qt.UserRole).toPyObject()
                 if len(asset.tags) != 0:
                     ref.setHidden(True)
+                    self.nbr_of_visible_images -= 1
 
 
         # If no tags is selected in filter tags list, refresh filter tags list
         if len(self.filterByTagsListWidget.selectedItems()) == 0:
             self.load_filter_by_tags_list()
+
+        self.nbrOfRefLoadedLbl.setText("Showing {0} out of {1}".format(self.nbr_of_visible_images, len(self.all_references_ListWidgetItems)))
 
     def ref_filter_by_name(self):
         '''Filter references by name'''
@@ -215,11 +238,19 @@ class ReferenceTab(object):
                     r = re.compile(filter_str)
                     if not r.match(asset.name):
                         ref.setHidden(True)
+                        self.nbr_of_visible_images -= 1
+                    else:
+                        ref.setHidden(False)
                 else:
                     if not filter_str in asset.name:
                         ref.setHidden(True)
+                        self.nbr_of_visible_images -= 1
+                    else:
+                        ref.setHidden(False)
             else:
                 self.ref_filter_references()
+
+        self.nbrOfRefLoadedLbl.setText("Showing {0} out of {1}".format(self.nbr_of_visible_images, len(self.all_references_ListWidgetItems)))
 
     def ref_sequence_list_clicked(self):
         '''Set variables, load shots from selected reference and filter references'''
@@ -280,10 +311,12 @@ class ReferenceTab(object):
         :return: list of all visible references
         '''
         all_visible_references = []
+        self.nbr_of_visible_images = 0
 
         for ref in self.all_references_ListWidgetItems:
             if not ref.isHidden():
                 all_visible_references.append(ref)
+                self.nbr_of_visible_images += 1
 
         return all_visible_references
 
@@ -808,14 +841,16 @@ class ReferenceTab(object):
         all_references = self.all_references_ListWidgetItems
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+
             if (self.refShowNamesCheckBox.checkState() and self.refShowSequencesCheckBox.checkState()) == 2:
                 thumb_text = "{0} ({1})".format(asset.name, asset.sequence)
             elif self.refShowNamesCheckBox.checkState() == 2 and self.refShowSequencesCheckBox.checkState() == 0:
-                thumb_text = asset.name
+                thumb_text = "{0}".format(asset.name)
             elif self.refShowNamesCheckBox.checkState() == 0 and self.refShowSequencesCheckBox.checkState() == 2:
-                thumb_text = asset.sequence
+                thumb_text = "{0}".format(asset.sequence)
             elif self.refShowNamesCheckBox.checkState() == 0 and self.refShowSequencesCheckBox.checkState() == 0:
                 thumb_text = ""
+
             ref.setText(thumb_text)
 
     def refresh_reference_list(self):
@@ -914,3 +949,111 @@ class ReferenceTab(object):
     def clear_filter_by_tags_selection(self):
         self.filterByTagsListWidget.clearSelection()
 
+
+    def setup_tags(self):
+        self.allTagsTreeWidget.clear()
+        self.tagsTreeWidget.clear()
+
+        self.tagsTreeWidget.itemSelectionChanged.connect(self.save_tags_list)
+
+        # Select all tags
+        tags = self.cursor.execute('''SELECT * FROM tags WHERE project_name=?''', (self.selected_project_name,)).fetchall()
+
+        # Select all tags associated to assets
+        tags_frequency = self.cursor.execute('''SELECT asset_tags FROM assets''').fetchall()
+        tags_frequency_tmp = []
+
+        # Create a list with all asset tags (ex: ["feu", "lighting", "feu", "feu", "lighting", "architecture"])
+        for tag in tags_frequency:
+            tag = list(tag)[0]
+            try:
+                tag = tag.split(",")
+                tags_frequency_tmp.append(tag)
+            except:
+                tags_frequency_tmp.append(tag)
+
+        tags_frequency_tmp = filter(None, tags_frequency_tmp)
+        tags_frequency_tmp = sum(tags_frequency_tmp, [])  # Join all lists into one list
+        tags_frequency_tmp = [str(i) for i in tags_frequency_tmp]  # Convert all items from unicode to string
+        self.tags_frequency = Counter(tags_frequency_tmp)  # Create a dictionary from list with number of occurences
+
+        if len(self.tags_frequency.values()) > 0:
+            self.maximum_tag_occurence = max(self.tags_frequency.values())
+        else:
+            self.maximum_tag_occurence = 1
+
+        parent_tags = []
+        child_tags = []
+
+        # Separate parent tags to children tags
+        for tag in tags:
+            tag_name = tag[2]
+            tag_parent = tag[3]
+            if tag_parent:
+                child_tags.append(tag)
+            else:
+                parent_tags.append(tag)
+
+        # Add all parents tags to the tags manager list
+        for tag in parent_tags:
+            tag_name = tag[2]
+            tag_frequency = self.tags_frequency[tag_name]  # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = self.Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30)  # Fit frequency in the 10-30 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+            top_item = QtGui.QTreeWidgetItem(self.tagsTreeWidget)
+            top_item.setText(0, tag_name)
+            top_item.setFont(0, font)
+            top_item.setExpanded(True)
+            self.tagsTreeWidget.addTopLevelItem(top_item)
+
+        # Add all children to parents (tags manager list)
+        root = self.tagsTreeWidget.invisibleRootItem()
+        child_count = root.childCount()
+        for item in xrange(child_count):
+            top_item = root.child(item)
+            top_item_name = str(root.child(item).text(0))
+            for tag in child_tags:
+                tag_name = tag[2]
+                tag_parent = tag[3]
+                if tag_parent == top_item_name:  # Check if the tag_parent of current child is equal to the current top item
+                    tag_frequency = self.tags_frequency[tag_name]  # Get the frequency of current tag (ex: 1, 5, 15)
+                    tag_frequency = self.Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 10, 30)  # Fit frequency in the 10-30 range
+                    font = QtGui.QFont()
+                    font.setPointSize(tag_frequency)
+                    child_item = QtGui.QTreeWidgetItem(top_item)
+                    child_item.setText(0, tag_name)
+                    child_item.setFont(0, font)
+                    top_item.addChild(child_item)
+
+        # Add all parents tags to the add tags list
+        for tag in parent_tags:
+            tag_name = tag[2]
+            tag_frequency = self.tags_frequency[tag_name]  # Get the frequency of current tag (ex: 1, 5, 15)
+            tag_frequency = self.Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 9, 20)  # Fit frequency in the 9-20 range
+            font = QtGui.QFont()
+            font.setPointSize(tag_frequency)
+            top_item = QtGui.QTreeWidgetItem(self.allTagsTreeWidget)
+            top_item.setText(0, tag_name)
+            top_item.setFont(0, font)
+            top_item.setExpanded(True)
+            self.allTagsTreeWidget.addTopLevelItem(top_item)
+
+        # Add all children to parents (add tags list)
+        root = self.allTagsTreeWidget.invisibleRootItem()
+        child_count = root.childCount()
+        for item in xrange(child_count):
+            top_item = root.child(item)
+            top_item_name = str(root.child(item).text(0))
+            for tag in child_tags:
+                tag_name = tag[2]
+                tag_parent = tag[3]
+                if tag_parent == top_item_name:  # Check if the tag_parent of current child is equal to the current top item
+                    tag_frequency = self.tags_frequency[tag_name]  # Get the frequency of current tag (ex: 1, 5, 15)
+                    tag_frequency = self.Lib.fit_range(self, tag_frequency, 0, self.maximum_tag_occurence, 9, 20)  # Fit frequency in the 9-20 range
+                    font = QtGui.QFont()
+                    font.setPointSize(tag_frequency)
+                    child_item = QtGui.QTreeWidgetItem(top_item)
+                    child_item.setText(0, tag_name)
+                    child_item.setFont(0, font)
+                    top_item.addChild(child_item)

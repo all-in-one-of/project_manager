@@ -24,8 +24,10 @@ class Asset(object):
         self.version = asset_version
         if not asset_comments == None and len(asset_comments) > 0:
             self.comments = asset_comments.split(";")
+            self.nbr_of_comments = len(self.comments)
         else:
             self.comments = []
+            self.nbr_of_comments = 0
         if not asset_tags == None and len(asset_tags) > 0:
             self.tags = asset_tags.split(",")
         else:
@@ -115,11 +117,21 @@ class Asset(object):
         self.comments.extend(comment)
         self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
         self.main.db.commit()
+        try:
+            nbr_of_comments = self.comments.split(";")
+            self.nbr_of_comments = len(nbr_of_comments)
+        except:
+            pass
 
     def remove_comment(self, comment):
         self.comments = list(set(self.comments) - set(comment))
         self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
         self.main.db.commit()
+        try:
+            nbr_of_comments = self.comments.split(";")
+            self.nbr_of_comments = len(nbr_of_comments)
+        except:
+            pass
 
     def add_tags(self, tags):
         self.tags.extend(tags)
@@ -157,6 +169,7 @@ class Asset(object):
         self.version = asset_version
         if not asset_comments == None and len(asset_comments) > 0:
             self.comments = asset_comments.split(";")
+            self.nbr_of_comments = len(self.comments)
         else:
             self.comments = []
         if asset_tags != None:

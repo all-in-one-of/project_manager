@@ -124,20 +124,28 @@ class Lib(object):
 
     def apply_style(self, form):
 
-        if self.themePrefComboBox.currentIndex() != 0:
-            return
-
-        # Apply custom CSS to msgBox
-        css = QtCore.QFile(self.cur_path + "\\media\\style.css")
-        css.open(QtCore.QIODevice.ReadOnly)
-        if css.isOpen():
-            form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
-        css.close()
-
         # Create Favicon
         app_icon = QtGui.QIcon()
         app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
         form.setWindowIcon(app_icon)
+
+        if int(self.theme) == 1:
+            form.setStyle(QtGui.QStyleFactory.create("cleanlooks"))
+            return
+        elif int(self.theme) == 2:
+            form.setStyle(QtGui.QStyleFactory.create("plastique"))
+            return
+        elif int(self.theme) == 0:
+            # Apply custom CSS to msgBox
+            css = QtCore.QFile(self.cur_path + "\\media\\style.css")
+            css.open(QtCore.QIODevice.ReadOnly)
+            if css.isOpen():
+                form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+            css.close()
+
+
+
+
 
     def normalize_str(self, data):
         try:

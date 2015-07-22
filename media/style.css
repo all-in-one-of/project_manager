@@ -96,7 +96,7 @@ QPushButton
 }
 
 QPushButton:hover {
-    
+
     background-color: #1b81ca;
 
 }
@@ -137,7 +137,7 @@ QComboBox::drop-down
 
 QComboBox::down-arrow
 {
-     image: url(:/down_arrow.png);
+     image: url(Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_asset_manager/media/down_arrow.png);
 }
 
 QGroupBox:focus
@@ -145,8 +145,6 @@ QGroupBox:focus
 border: 1px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
 
 }
-
-
 
 
 QTextEdit:focus
@@ -314,7 +312,7 @@ QMainWindow::separator:hover
 QToolBar::handle
 {
      spacing: 3px; /* spacing between items in the tool bar */
-     background: url(:/images/handle.png);
+     background: url(Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_asset_manager/media/handle.png);
 }
 
 QMenu::separator
