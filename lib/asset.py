@@ -37,7 +37,7 @@ class Asset(object):
                                                                     self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
 
-    def __str__(self):
+    def print_asset(self):
         return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, self.tags, self.dependency, self.last_access, self.creator)
 
     def update_asset_path(self):

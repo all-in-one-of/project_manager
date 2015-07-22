@@ -26,7 +26,7 @@ class Task(object):
             self.comments = []
         self.confirmation = task_confirmation
 
-    def __str__(self):
+    def print_task(self):
         return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.comments, self.confirmation)
 
     def add_task_to_db(self):

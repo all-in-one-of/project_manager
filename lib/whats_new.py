@@ -77,9 +77,10 @@ class WhatsNew(object):
 
         self.log_entries["References"] = reference_entries
         self.log_entries["Comments"] = comment_entries
+        self.log_entries["Tasks"] = task_entries
 
         for top_items, child_items in self.log_entries.items():
-            if len(child_items) == 0:
+            if len(child_items) == 0: # There's nothing new in current category
                 continue
             top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
             top_item.setText(0, top_items + " (" + str(len(child_items)) + ")")

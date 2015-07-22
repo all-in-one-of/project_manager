@@ -1117,34 +1117,30 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def tray_icon_message_clicked(self):
 
-        if self.tray_message == "Manager is in background mode.": return
+        if self.tray_message == "Manager is in background mode.":
+            return
 
         clicked_log_entry = self.cursor.execute('''SELECT log_value FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
         clicked_log_description = self.cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (self.tray_icon_log_id,)).fetchone()[0]
 
-        if len(clicked_log_entry) == 0: return
+        if len(clicked_log_entry) == 0:
+            return
 
-        asset = Asset(self, id=clicked_log_entry)
+        asset = self.Asset(main=self, id=clicked_log_entry)
         asset.get_infos_from_id()
 
-        if "reference" in clicked_log_description:
-            if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
-                comment_dialog = CommentWidget(self, asset)
-            else:
-                if "video" in clicked_log_description:
-                    subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
-                else:
-                    if os.path.isfile(asset.full_path):
-                        os.system(asset.full_path)
-                    else:
-                        Lib.message_box(self, text="Can't find reference: it must have been deleted.")
 
-        #elif "comment" in clicked_log_description:
-            #self.setWindowFlags(QtCore.Qt.Widget)
-            #self.show()
-            #self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-            #self.tray_icon.hide()
-            #comment_dialog = CommentWidget(self, asset)
+        if "reference" in clicked_log_description:
+            if "video" in clicked_log_description:
+                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
+            else:
+                if os.path.isfile(asset.full_path):
+                    os.system(asset.full_path)
+                else:
+                    self.Lib.message_box(self, text="Can't find reference: it must have been deleted.")
+
+        elif "comment" in clicked_log_description:
+            self.CommentWidget(main=self, asset=asset)
 
     def tray_icon_clicked(self, reason):
         if reason == QtGui.QSystemTrayIcon.DoubleClick:
@@ -1200,7 +1196,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-
+    app.setQuitOnLastWindowClosed(False)
 
     cur_path = os.path.dirname(os.path.realpath(__file__))
 

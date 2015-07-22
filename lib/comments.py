@@ -111,7 +111,7 @@ class CommentWidget(QtGui.QDialog):
             self.main.Lib.message_box(self.main, text="You can only delete your own comments")
 
     def keyPressEvent(self, event):
-        key = event.key()
-        if key == QtCore.Qt.Key_Delete:
-            self.delete_comment()
+       key = event.key()
+       if key == QtCore.Qt.Key_Delete:
+           self.delete_comment()
 

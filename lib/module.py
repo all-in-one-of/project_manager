@@ -301,6 +301,7 @@ class Lib(object):
         d = set(list1).intersection(set(list2))
         return list(c - d)
 
+
 class DesktopWidget(QtGui.QWidget):
 
     def __init__(self, task_name, task_department, task_status, task_start, task_end, task_bid):
@@ -441,7 +442,6 @@ class CheckNews(Thread):
         last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()
         last_news_id = last_news_id[0]
 
-
         if last_news_id > self.last_news_id: # There are new entries on the log
             log_entry = self.check_news_cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]
             username = log_entry.split(" ")[0]
@@ -451,6 +451,9 @@ class CheckNews(Thread):
                 self.main.tray_message = "Click here to see it"
             elif "comment" in log_entry:
                 title = "{0} added a new comment!".format(username)
+                self.main.tray_message = "Click here to see it"
+            elif "task" in log_entry:
+                title = "{0} added a new task!".format(username)
                 self.main.tray_message = "Click here to see it"
             else:
                 title = "New event"
