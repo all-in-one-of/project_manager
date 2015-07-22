@@ -39,7 +39,7 @@ class TaskManager(object):
         # Therefore, the update_task function is disabled when the item_added variable is set to true.
 
         self.item_added = False
-        self.tmTableWidget.setStyleSheet("color: white;")
+        #self.tmTableWidget.setStyleSheet("color: white;")
         self.tmTableWidget.itemDoubleClicked.connect(self.tmTableWidget_DoubleClicked)
         self.tmAddTaskBtn.clicked.connect(self.add_task)
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
@@ -250,7 +250,7 @@ class TaskManager(object):
             all_assets.insert(0, "xxxxx")
             combo_box = QtGui.QComboBox()
             combo_box.addItems(all_assets)
-            if not task.asset_id == 0:
+            if task.asset_id != "0":
                asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
                index = combo_box.findText(asset_name_from_id, QtCore.Qt.MatchFixedString)
                combo_box.setCurrentIndex(index)
@@ -548,7 +548,7 @@ class TaskManager(object):
     def set_calendar(self, QDateEdit):
         calendar_widget = QtGui.QCalendarWidget()
         calendar_widget.showToday()
-        calendar_widget.setStyleSheet("background-color: white;")
+        #calendar_widget.setStyleSheet("background-color: white;")
         QDateEdit.setCalendarPopup(True)
         QDateEdit.setCalendarWidget(calendar_widget)
         QDateEdit.dateChanged.connect(self.update_tasks)

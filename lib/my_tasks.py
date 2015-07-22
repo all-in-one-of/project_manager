@@ -216,7 +216,7 @@ class MyTasks(object):
             asset_item = QtGui.QTableWidgetItem()
             asset_item.setTextAlignment(QtCore.Qt.AlignCenter)
             asset_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            if not task.asset_id == 0:
+            if task.asset_id != "0":
                 asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
                 asset_item.setText(asset_name_from_id)
             else:

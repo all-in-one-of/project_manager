@@ -38,14 +38,11 @@ import subprocess
 from functools import partial
 import sqlite3
 import time
-import urllib
 import shutil
 
-from PIL import Image
 from datetime import date
 from datetime import datetime
 from collections import Counter
-from random import randint
 
 from PyQt4 import QtGui, QtCore, Qt
 
@@ -60,7 +57,9 @@ from lib.comments import CommentWidget
 from lib.whats_new import WhatsNew
 from lib.asset import Asset
 
-from threading import Thread
+import logging
+from logging.handlers import RotatingFileHandler
+
 
 class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task):
     def __init__(self):
@@ -78,8 +77,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Asset = Asset
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -108,16 +107,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
-        #self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
-        #         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
-        #         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
-        #         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
-        #         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi", "Thibault":"Thibault"}
         refresh_icon = QtGui.QIcon(self.cur_path + "\\media\\refresh.png")
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
         self.refreshAllBtn.clicked.connect(self.refresh_all)
-
 
         # Select default project
         self.projectList.setCurrentRow(0)
@@ -136,10 +129,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Form.setWindowIcon(self.app_icon)
 
         # Set the StyleSheet
-        css = QtCore.QFile(self.cur_path + "\\media\\style.css")
-        css.open(QtCore.QIODevice.ReadOnly)
-        if css.isOpen():
-            self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+        self.themePrefComboBox.currentIndexChanged.connect(self.change_theme)
+        theme = self.cursor.execute('''SELECT theme FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
+        self.themePrefComboBox.setCurrentIndex(int(theme))
+        self.change_theme()
+
 
         # Overrides
         self.publishBtn.setStyleSheet("background-color: #77D482;")
@@ -147,7 +141,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             "QPushButton {background-color: #77B0D4;} QPushButton:hover {background-color: #1BCAA7;}")
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.logTextEdit.setFont(font)
 
         eye_icon = QtGui.QPixmap(self.cur_path + "\\media\\eye_icon.png")
         eye_icon = QtGui.QIcon(eye_icon)
@@ -199,27 +192,15 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
 
         # Get software paths from database and put them in preference
-        self.photoshop_path = str(self.cursor.execute(
-            '''SELECT software_path FROM software_paths WHERE software_name="Photoshop"''').fetchone()[0])
-        self.maya_path = str(
-            self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[0])
-        self.softimage_path = str(self.cursor.execute(
-            '''SELECT software_path FROM software_paths WHERE software_name="Softimage"''').fetchone()[0])
-        self.houdini_path = str(self.cursor.execute(
-            '''SELECT software_path FROM software_paths WHERE software_name="Houdini"''').fetchone()[0])
-        self.cinema4d_path = str(self.cursor.execute(
-            '''SELECT software_path FROM software_paths WHERE software_name="Cinema 4D"''').fetchone()[0])
-        self.nuke_path = str(
-            self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Nuke"''').fetchone()[
-                0])
-        self.zbrush_path = str(
-            self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="ZBrush"''').fetchone()[
-                0])
-        self.mari_path = str(
-            self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Mari"''').fetchone()[
-                0])
-        self.blender_path = str(self.cursor.execute(
-            '''SELECT software_path FROM software_paths WHERE software_name="Blender"''').fetchone()[0])
+        self.photoshop_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Photoshop"''').fetchone()[0])
+        self.maya_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[0])
+        self.softimage_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Softimage"''').fetchone()[0])
+        self.houdini_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Houdini"''').fetchone()[0])
+        self.cinema4d_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Cinema 4D"''').fetchone()[0])
+        self.nuke_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Nuke"''').fetchone()[0])
+        self.zbrush_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="ZBrush"''').fetchone()[0])
+        self.mari_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Mari"''').fetchone()[0])
+        self.blender_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Blender"''').fetchone()[0])
 
         self.photoshopPathLineEdit.setText(self.photoshop_path)
         self.mayaPathLineEdit.setText(self.maya_path)
@@ -249,7 +230,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
-
         # Connect the buttons
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
@@ -262,17 +242,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.addCommentBtn.clicked.connect(self.add_comment)
         self.updateThumbBtn.clicked.connect(self.update_thumb)
 
-        self.savePrefBtn.clicked.connect(partial(Lib.save_prefs, self))
-
-        self.updateLogBtn.clicked.connect(self.update_log)
-
         # Tags Manager Buttons
         self.addTagBtn.clicked.connect(self.add_tag_to_tags_manager)
         self.addTagLineEdit.returnPressed.connect(self.add_tag_to_tags_manager)
         self.removeSelectedTagsBtn.clicked.connect(self.remove_selected_tags_from_tags_manager)
-
-        # Other connects
-        self.update_log()
 
         # Systray icon
         self.tray_icon_log_id = ""
@@ -286,6 +259,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         TaskManager.__init__(self)
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
+
+        self.Lib.log_error_setup(self)
 
 
         self.check_news_thread = CheckNews(self)
@@ -889,97 +864,81 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             self.addProjectFrame.hide()
             self.addSequenceFrame.hide()
             self.addShotFrame.hide()
+            self.adminPrefFrame.hide()
 
-        tabs_list = {"Asset Loader":0, "Task Manager":1, "My Tasks":2, "References Tool":3,
-                     "Tags Manager":4, "Log":5, "Preferences":6}
+        tabs_list = {}
 
-        #for i in xrange(self.main.Tabs.count()):
-        #    print(self.main.Tabs.tabText(i))
+        for i in xrange(self.Tabs.count()):
+            tabs_list[str(self.Tabs.tabText(i))] = i
 
         if self.members[self.username] == "Amelie":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Chloe":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Christopher":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "David":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Edwin":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Etienne":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Jeremy":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Laurence":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Louis-Philippe":
             pass
 
         elif self.members[self.username] == "Marc-Antoine":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Mathieu":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Maxime":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Olivier":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Simon":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Thibault":
             pass
 
         elif self.members[self.username] == "Yann":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(5)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
 
         elif self.members[self.username] == "Yi":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Valentin":
-            self.Tabs.removeTab(1)
-            self.Tabs.removeTab(3)
-            self.Tabs.removeTab(4)
+            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(tabs_list["Tags Manager"])
 
     def change_username(self):
         username = str(self.usernameAdminComboBox.currentText())
@@ -1000,21 +959,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.db.commit()
 
         self.update_log()
-
-    def update_log(self):
-        # Select all log entries from database
-        log_db_entries = self.cursor.execute('''SELECT * FROM log''').fetchall()
-
-        self.logTextEdit.clear()
-
-        # Formatting the entries
-        log_entries = ""
-        for entry in reversed(log_db_entries):
-            log_entries += str(entry[1] + ": " + entry[2] + "<br>")
-
-        # Add log entries to GUI
-        self.logTextEdit.setText(log_entries)
-        self.logLbl.setText("Total log entries: " + str(len(log_db_entries)))
 
     def setup_tags(self):
 
@@ -1153,6 +1097,15 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         WhatsNew.load_whats_new(self)
         ReferenceTab.refresh_reference_list(self)
 
+    def change_theme(self):
+        if self.themePrefComboBox.currentIndex() == 0:
+            self.setStyleSheet("")
+            app.setStyle(QtGui.QStyleFactory.create("plastique"))
+            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (0, self.username,))
+        else:
+            self.Lib.apply_style(self, self)
+            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (1, self.username,))
+
     def tray_icon_message_clicked(self):
 
         if self.tray_message == "Manager is in background mode.": return
@@ -1213,6 +1166,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def closeEvent(self, event):
         self.save_tags_list()
+        self.Lib.save_prefs
         self.close()
         app.exit()
 
@@ -1237,6 +1191,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
+
 
     cur_path = os.path.dirname(os.path.realpath(__file__))
 
