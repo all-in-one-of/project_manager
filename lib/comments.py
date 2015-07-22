@@ -22,13 +22,20 @@ class CommentWidget(QtGui.QDialog):
 
         self.main_layout = QtGui.QVBoxLayout(self)
 
-        self.commentListWidget = QtGui.QListWidget(self)
-
         self.commentLineEdit = QtGui.QLineEdit(self)
         self.commentLineEdit.setPlaceholderText("Enter comment here...")
 
-        self.main_layout.addWidget(self.commentListWidget)
+        self.scrollarea = QtGui.QScrollArea(self)
+        self.scrollarea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QtGui.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 380, 280))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.scrollAreaWidgetContents)
+        self.gridLayout = QtGui.QGridLayout()
+        self.horizontalLayout_2.addLayout(self.gridLayout)
+        self.scrollarea.setWidget(self.scrollAreaWidgetContents)
+
         self.main_layout.addWidget(self.commentLineEdit)
+        self.main_layout.addWidget(self.scrollarea)
 
         self.commentLineEdit.returnPressed.connect(self.add_comment)
 
@@ -39,8 +46,46 @@ class CommentWidget(QtGui.QDialog):
 
     def load_comments(self):
         self.comment_authors = []
-        self.commentListWidget.clear()
         cur_alignment = "left"
+
+        for i in xrange(25):
+            frame = QtGui.QFrame(self.scrollarea)
+            frame_layout = QtGui.QHBoxLayout(frame)
+            frame_layout.setMargin(0)
+            frame_layout.setSpacing(1)
+
+
+            author_picture_lbl = QtGui.QLabel(frame)
+            author_picture_pixmap = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\members_photos\\thoudon.jpg")
+            author_picture_pixmap = author_picture_pixmap.scaled(40, 40, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+            author_picture_lbl.setPixmap(author_picture_pixmap)
+
+
+            comment_text_edit = QtGui.QTextEdit(frame)
+            comment_text_edit.setReadOnly(True)
+            comment_text_edit.setMaximumHeight(40)
+
+            spacer = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+            if cur_alignment == "left":
+                frame_layout.addWidget(author_picture_lbl)
+                frame_layout.addWidget(comment_text_edit)
+                frame_layout.addSpacerItem(spacer)
+                cur_alignment = "right"
+            elif cur_alignment == "right":
+                frame_layout.addSpacerItem(spacer)
+                frame_layout.addWidget(comment_text_edit)
+                frame_layout.addWidget(author_picture_lbl)
+                cur_alignment = "left"
+
+            self.gridLayout.addWidget(frame)
+
+        self.scrollarea.setMinimumWidth(frame.sizeHint().width())
+        self.scrollarea.setMinimumHeight(frame.sizeHint().width())
+
+
+        return
+
 
         for i, each_comment in enumerate(self.asset.comments):
             comment_text = each_comment.split("(")[0]
