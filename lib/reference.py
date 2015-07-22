@@ -383,7 +383,7 @@ class ReferenceTab(object):
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            comment_dialog = self.CommentWidget(self, asset)
+            self.CommentWidget(self, asset)
 
         else:  # Opening video / image in chrome / windows image view
 
@@ -948,7 +948,6 @@ class ReferenceTab(object):
 
     def clear_filter_by_tags_selection(self):
         self.filterByTagsListWidget.clearSelection()
-
 
     def setup_tags(self):
         self.allTagsTreeWidget.clear()

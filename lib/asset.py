@@ -19,8 +19,11 @@ class Asset(object):
         self.sequence = sequence_name
         self.shot = shot_number
         self.name = asset_name
-        self.extension = asset_extension
         self.type = asset_type
+        if len(asset_extension) < 1:
+            self.extension = self.get_extension_from_type()
+        else:
+            self.extension = asset_extension
         self.version = asset_version
         if not asset_comments == None and len(asset_comments) > 0:
             self.comments = asset_comments.split(";")
@@ -40,7 +43,7 @@ class Asset(object):
         self.full_path = self.project_path + self.path
 
     def print_asset(self):
-        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, self.tags, self.dependency, self.last_access, self.creator)
+        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, self.tags, self.dependency, self.last_access, self.creator)
 
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
