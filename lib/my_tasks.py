@@ -25,7 +25,7 @@ class MyTasks(object):
                            "vdelbroucq": 15, "yjobin": 16, "yshan": 17}
 
         self.mt_item_added = False
-        self.mtTableWidget.setStyleSheet("color: white;")
+        self.mtTableWidget.setStyleSheet("color: black;")
 
         self.mtFilterByProjectComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_filter)
@@ -111,7 +111,6 @@ class MyTasks(object):
 
             task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department,
                              status, assignation, start, end, bid, comments, confirmation)
-
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
@@ -216,7 +215,7 @@ class MyTasks(object):
             asset_item = QtGui.QTableWidgetItem()
             asset_item.setTextAlignment(QtCore.Qt.AlignCenter)
             asset_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            if task.asset_id != "0":
+            if task.asset_id != 0:
                 asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
                 asset_item.setText(asset_name_from_id)
             else:

@@ -39,12 +39,13 @@ class TaskManager(object):
         # Therefore, the update_task function is disabled when the item_added variable is set to true.
 
         self.item_added = False
-        #self.tmTableWidget.setStyleSheet("color: white;")
+        self.tmTableWidget.setStyleSheet("color: black;")
         self.tmTableWidget.itemDoubleClicked.connect(self.tmTableWidget_DoubleClicked)
         self.tmAddTaskBtn.clicked.connect(self.add_task)
         self.tmRemoveTaskBtn.clicked.connect(self.remove_task)
         self.tmCompleteTaskBtn.clicked.connect(self.complete_task)
         self.tmShowBidCurveBtn.clicked.connect(self.show_bid_curve)
+
 
         self.tmHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
         self.tmHideDoneCheckBox.clicked.connect(self.filter)
@@ -250,16 +251,22 @@ class TaskManager(object):
             all_assets.insert(0, "xxxxx")
             combo_box = QtGui.QComboBox()
             combo_box.addItems(all_assets)
-            if task.asset_id != "0":
-               asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
-               index = combo_box.findText(asset_name_from_id, QtCore.Qt.MatchFixedString)
-               combo_box.setCurrentIndex(index)
+            if task.asset_id != 0:
+                try:
+                   asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
+                   index = combo_box.findText(asset_name_from_id, QtCore.Qt.MatchFixedString)
+                   combo_box.setCurrentIndex(index)
+                except:
+                    pass
             combo_box.currentIndexChanged.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 11, combo_box)
             self.widgets[str(inversed_index) + ":11"] = combo_box
 
             # Add confirm task button
-            confirm_button = QtGui.QPushButton("Confirm")
+            if task.confirmation == "0":
+                confirm_button = QtGui.QPushButton("Confirm")
+            else:
+                confirm_button = QtGui.QPushButton("UnConfirm")
             confirm_button.clicked.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 12, confirm_button)
             self.widgets[str(inversed_index) + ":12"] = confirm_button
@@ -275,7 +282,6 @@ class TaskManager(object):
         self.tmTableWidget.cellChanged.connect(self.update_tasks)
         self.tmTableWidget.resizeColumnsToContents()
         self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
-
 
         self.item_added = False
 
@@ -342,9 +348,17 @@ class TaskManager(object):
 
         # If clicked widget is a pushbutton, then confirm task
         if type(clicked_widget) == QtGui.QPushButton:
-            task.change_confirmation(1)
-            task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
-            self.add_log_entry(text="Louis-Philippe assigned a new {0} task to {1}".format(task.department, self.members[task.assignation]))
+            if task.confirmation == "0":
+                clicked_widget.setText("UnConfirm")
+                task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
+                task.change_confirmation(1)
+                self.add_log_entry(text="{0} assigned a new {1} task to {2}".format(self.members[self.username], task.department, self.members[task.assignation]), people=[self.members[task.assignation]])
+            else:
+                clicked_widget.setText("Confirm")
+                task_id_widget.setBackground(QtGui.QColor(135, 45, 44))
+                task.change_confirmation(0)
+            self.tmTableWidget.resizeColumnsToContents()
+            self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
             return
 
         if task_description != task.description: task.change_description(task_description)
@@ -524,6 +538,7 @@ class TaskManager(object):
 
         self.tmTableWidget.resizeColumnsToContents()
         self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+
 
     def tmTableWidget_DoubleClicked(self, value):
         row = value.row()

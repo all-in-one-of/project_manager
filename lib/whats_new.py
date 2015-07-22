@@ -24,14 +24,13 @@ class WhatsNew(object):
         small_font = QtGui.QFont()
         small_font.setPointSize(12)
 
+        # Get last log entries from database
         last_log_id_read = self.cursor.execute('''SELECT last_log_id_read FROM whats_new WHERE member=?''', (self.username,)).fetchone()[0]
         log_entries_length = str(self.cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0])
-
-
         self.log_entries = {}
         log_entries = self.cursor.execute('''SELECT * FROM log WHERE log_id > ? AND log_id <= ?''', (last_log_id_read, log_entries_length)).fetchall()
 
-
+        # Create top items for tree widget
         if len(log_entries) == 0:
             top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
             top_item.setText(0, "There's nothing new :(")
@@ -40,13 +39,13 @@ class WhatsNew(object):
             self.Tabs.setTabText(self.Tabs.count() - 1, "What's New")
             return
 
-
+        # Set tab text
         self.Tabs.setTabText(self.Tabs.count() - 1, "What's New (" + str(len(log_entries)) + ")")
+
+        # Store reference and comment entries
         reference_entries = []
         comment_entries = []
-
-
-
+        task_entries = []
         for log_entry in reversed(log_entries):
             log_time = log_entry[1]
             log_text = log_entry[2]
@@ -66,6 +65,13 @@ class WhatsNew(object):
                         comment_entries.append(log_time + " - " + log_text)
                 elif self.showOnlyMeWhatsNew.checkState() == 0:
                     comment_entries.append(log_time + " - " + log_text)
+
+            elif "assigned" in log_text:
+                if self.showOnlyMeWhatsNew.checkState() == 2:
+                    if self.members[self.username] in log_people:
+                        task_entries.append(log_time + " - " + log_text)
+                elif self.showOnlyMeWhatsNew.checkState() == 0:
+                    task_entries.append(log_time + " - " + log_text)
 
 
 

@@ -77,8 +77,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Asset = Asset
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -111,6 +111,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
         self.refreshAllBtn.clicked.connect(self.refresh_all)
+
+        # Setup logging error
+        self.Lib.log_error_setup(self)
 
         # Select default project
         self.projectList.setCurrentRow(0)
@@ -259,9 +262,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         TaskManager.__init__(self)
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
-
-        self.Lib.log_error_setup(self)
-
 
         self.check_news_thread = CheckNews(self)
         self.check_news_thread.daemon = True
@@ -958,8 +958,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         self.db.commit()
 
-        self.update_log()
-
     def setup_tags(self):
 
         self.allTagsTreeWidget.clear()
@@ -1099,12 +1097,23 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:
+            self.Lib.apply_style(self, self)
+            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (0, self.username,))
+
+        elif self.themePrefComboBox.currentIndex() == 1:
+            self.setStyleSheet("")
+            app.setStyle(QtGui.QStyleFactory.create("cleanlooks"))
+            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (1, self.username,))
+            css = QtCore.QFile(self.cur_path + "\\media\\cleanlooks.css")
+            css.open(QtCore.QIODevice.ReadOnly)
+            if css.isOpen():
+                self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+        elif self.themePrefComboBox.currentIndex() == 2:
             self.setStyleSheet("")
             app.setStyle(QtGui.QStyleFactory.create("plastique"))
-            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (0, self.username,))
-        else:
-            self.Lib.apply_style(self, self)
-            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (1, self.username,))
+            self.cursor.execute('''UPDATE preferences SET theme=? WHERE username=?''', (2, self.username,))
+
+        self.db.commit()
 
     def tray_icon_message_clicked(self):
 

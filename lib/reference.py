@@ -38,6 +38,8 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.itemDoubleClicked.connect(self.reference_doubleClicked)
         self.filterByNameLineEdit.textChanged.connect(self.ref_filter_by_name)
         self.filterByTagsListWidget.itemClicked.connect(self.ref_filter_by_tags_clicked)
+        self.clearFilterByTagsSelectionBtn.clicked.connect(self.clear_filter_by_tags_selection)
+        self.reloadFilterByTagsBtn.clicked.connect(self.load_filter_by_tags_list)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
         self.createReferencesFromScreenshotBtn.clicked.connect(self.create_reference_from_screenshot)
@@ -191,8 +193,9 @@ class ReferenceTab(object):
             all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
             for ref in all_references:
                 asset = ref.data(QtCore.Qt.UserRole).toPyObject()
-                if len(asset.tags[0]) != 0:
+                if len(asset.tags) != 0:
                     ref.setHidden(True)
+
 
         # If no tags is selected in filter tags list, refresh filter tags list
         if len(self.filterByTagsListWidget.selectedItems()) == 0:
@@ -908,4 +911,6 @@ class ReferenceTab(object):
 
         print("-----------------")
 
+    def clear_filter_by_tags_selection(self):
+        self.filterByTagsListWidget.clearSelection()
 

@@ -91,12 +91,7 @@ class Lib(object):
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
 
-        # Apply custom CSS to msgBox
-        css = QtCore.QFile(self.cur_path + "\\media\\style.css")
-        css.open(QtCore.QIODevice.ReadOnly)
-        if css.isOpen():
-            self.msgBox.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
-        css.close()
+        self.Lib.apply_style(self, self.msgBox)
 
         self.msgBox.setWindowTitle("Warning!")
         self.msgBox.setText(text)
@@ -129,6 +124,8 @@ class Lib(object):
 
     def apply_style(self, form):
 
+        if self.themePrefComboBox.currentIndex() != 0:
+            return
 
         # Apply custom CSS to msgBox
         css = QtCore.QFile(self.cur_path + "\\media\\style.css")
