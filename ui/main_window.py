@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 22 22:28:15 2015
+# Created: Wed Jul 22 22:33:23 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1239,7 +1239,7 @@ class Ui_Form(object):
         self.refShowLbl.setObjectName(_fromUtf8("refShowLbl"))
         self.horizontalLayout_38.addWidget(self.refShowLbl)
         self.refShowNamesCheckBox = QtGui.QCheckBox(self.changeThumbnailSizeFrame)
-        self.refShowNamesCheckBox.setChecked(True)
+        self.refShowNamesCheckBox.setChecked(False)
         self.refShowNamesCheckBox.setObjectName(_fromUtf8("refShowNamesCheckBox"))
         self.horizontalLayout_38.addWidget(self.refShowNamesCheckBox)
         self.refShowSequencesCheckBox = QtGui.QCheckBox(self.changeThumbnailSizeFrame)

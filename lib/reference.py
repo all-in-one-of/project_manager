@@ -119,7 +119,7 @@ class ReferenceTab(object):
         self.addTagBtn.clicked.connect(self.add_tag_to_tags_manager)
         self.addTagLineEdit.returnPressed.connect(self.add_tag_to_tags_manager)
         self.removeSelectedTagsBtn.clicked.connect(self.remove_selected_tags_from_tags_manager)
-        self.x = 0
+
         # Tags setup
         self.setup_tags()
 
@@ -189,7 +189,7 @@ class ReferenceTab(object):
             asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
                           comments, tags, dependency, last_access, creator)
             self.ref_assets_instances.append(asset)
-            ref_item = QtGui.QListWidgetItem(asset.name)
+            ref_item = QtGui.QListWidgetItem()
             ref_item.setIcon(QtGui.QIcon(asset.full_path))
             ref_item.setData(QtCore.Qt.UserRole, asset)
 
