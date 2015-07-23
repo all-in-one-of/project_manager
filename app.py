@@ -592,7 +592,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
             ReferenceTab.rename_reference(self, asset)
 
-
     def closeEvent(self, event):
         self.save_tags_list()
         self.Lib.save_prefs
@@ -619,6 +618,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                 self.tray_icon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
 
 if __name__ == "__main__":
+
+    dont_log_to_file = True
+
     cur_path = os.path.dirname(os.path.realpath(__file__))
 
     # création de l'objet logger qui va nous servir à écrire dans les logs
@@ -649,38 +651,20 @@ if __name__ == "__main__":
     logger.addHandler(steam_handler)
 
 
-
-    try:
+    if dont_log_to_file == True:
         app = QtGui.QApplication(sys.argv)
         app.setQuitOnLastWindowClosed(False)
-
-
-
-        # Show Splashscreen
-        splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
-        splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-        splash.setMask(splash_pix.mask())
-
-        splash.show()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
-        splash.repaint()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
-        splash.repaint()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
-        splash.repaint()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
-        splash.repaint()
-
         window = Main()
         window.show()
-
-        splash.finish(window)
         sys.exit(app.exec_())
-    except Exception as e:
-        logger.debug(e)
+    else:
+        try:
+            app = QtGui.QApplication(sys.argv)
+            app.setQuitOnLastWindowClosed(False)
+            window = Main()
+            window.show()
+            sys.exit(app.exec_())
+        except Exception as e:
+            logger.debug(e)
 
 

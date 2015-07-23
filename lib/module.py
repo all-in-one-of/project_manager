@@ -450,24 +450,3 @@ class CheckNews(Thread):
             self.add_to_check_news = 0
 
 
-if __name__ == "__main__":
-    path = "H:\\01-NAD\\ref_backup"
-    files_name = os.listdir(path)
-    thumb_files_path = ["H:\\01-NAD\\ref_backup\\" + file_name for file_name in files_name if "_thumb" in file_name]
-
-
-    for file_path in thumb_files_path:
-        basewidth = 512
-        img = Image.open(file_path)
-        wpercent = (basewidth / float(img.size[0]))
-        hsize = int((float(img.size[1]) * float(wpercent)))
-        img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
-        img.save(file_path, 'JPEG', quality=30)
-
-    #thumb_files_path = [file_path.replace(".jpg", "_thumb.jpg") for file_path in original_files_path]
-
-    #for i, file in enumerate(original_files_path):
-    #    shutil.copy(file, thumb_files_path[i])
-
-
-

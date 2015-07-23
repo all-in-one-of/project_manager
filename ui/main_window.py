@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Thu Jul 23 16:57:53 2015
+# Created: Thu Jul 23 18:14:50 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -488,6 +488,9 @@ class Ui_Form(object):
         self.actionFrame.setObjectName(_fromUtf8("actionFrame"))
         self.actionFrameLayout = QtGui.QVBoxLayout(self.actionFrame)
         self.actionFrameLayout.setObjectName(_fromUtf8("actionFrameLayout"))
+        self.pushButton = QtGui.QPushButton(self.actionFrame)
+        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.actionFrameLayout.addWidget(self.pushButton)
         self.verticalLayout_8.addWidget(self.actionFrame)
         self.verticalLayout_3.addWidget(self.actionGrpBox)
         self.verticalLayout_2.addWidget(self.infoFrame)
@@ -1220,15 +1223,13 @@ class Ui_Form(object):
         self.hideReferenceOptionsFrameBtn.setIconSize(QtCore.QSize(16, 16))
         self.hideReferenceOptionsFrameBtn.setObjectName(_fromUtf8("hideReferenceOptionsFrameBtn"))
         self.horizontalLayout_23.addWidget(self.hideReferenceOptionsFrameBtn)
-        self.frame_3 = QtGui.QFrame(self.referenceToolMainFrame)
-        self.frame_3.setFrameShape(QtGui.QFrame.NoFrame)
-        self.frame_3.setFrameShadow(QtGui.QFrame.Raised)
-        self.frame_3.setObjectName(_fromUtf8("frame_3"))
-        self.verticalLayout_33 = QtGui.QVBoxLayout(self.frame_3)
-        self.verticalLayout_33.setSpacing(3)
-        self.verticalLayout_33.setMargin(0)
+        self.referenceListWidget = QtGui.QFrame(self.referenceToolMainFrame)
+        self.referenceListWidget.setFrameShape(QtGui.QFrame.NoFrame)
+        self.referenceListWidget.setFrameShadow(QtGui.QFrame.Raised)
+        self.referenceListWidget.setObjectName(_fromUtf8("referenceListWidget"))
+        self.verticalLayout_33 = QtGui.QVBoxLayout(self.referenceListWidget)
         self.verticalLayout_33.setObjectName(_fromUtf8("verticalLayout_33"))
-        self.changeThumbnailSizeFrame = QtGui.QFrame(self.frame_3)
+        self.changeThumbnailSizeFrame = QtGui.QFrame(self.referenceListWidget)
         self.changeThumbnailSizeFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.changeThumbnailSizeFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.changeThumbnailSizeFrame.setObjectName(_fromUtf8("changeThumbnailSizeFrame"))
@@ -1278,7 +1279,19 @@ class Ui_Form(object):
         self.biggerRefPushButton_04.setObjectName(_fromUtf8("biggerRefPushButton_04"))
         self.horizontalLayout_38.addWidget(self.biggerRefPushButton_04)
         self.verticalLayout_33.addWidget(self.changeThumbnailSizeFrame)
-        self.horizontalLayout_23.addWidget(self.frame_3)
+        self.referenceThumbListWidget = ThibListWidget(self.referenceListWidget)
+        self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.referenceThumbListWidget.setIconSize(QtCore.QSize(256, 256))
+        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.referenceThumbListWidget.setResizeMode(QtGui.QListView.Adjust)
+        self.referenceThumbListWidget.setViewMode(QtGui.QListView.IconMode)
+        self.referenceThumbListWidget.setObjectName(_fromUtf8("referenceThumbListWidget"))
+        self.verticalLayout_33.addWidget(self.referenceThumbListWidget)
+        self.changeRefSeqShotBtn = QtGui.QPushButton(self.referenceListWidget)
+        self.changeRefSeqShotBtn.setObjectName(_fromUtf8("changeRefSeqShotBtn"))
+        self.verticalLayout_33.addWidget(self.changeRefSeqShotBtn)
+        self.horizontalLayout_23.addWidget(self.referenceListWidget)
         self.referenceThumbFrame = QtGui.QFrame(self.referenceToolMainFrame)
         self.referenceThumbFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.referenceThumbFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -1689,6 +1702,7 @@ class Ui_Form(object):
         self.commentsLbl.setText(_translate("Form", "Comments:", None))
         self.addCommentBtn.setText(_translate("Form", "Add comment", None))
         self.actionGrpBox.setTitle(_translate("Form", "Action", None))
+        self.pushButton.setText(_translate("Form", "PushButton", None))
         self.createVersionBtn.setText(_translate("Form", "Create version", None))
         self.publishBtn.setText(_translate("Form", "Publish", None))
         self.loadBtn.setText(_translate("Form", "Load Asset", None))
@@ -1816,6 +1830,7 @@ class Ui_Form(object):
         self.refShowNamesCheckBox.setText(_translate("Form", "Names", None))
         self.refShowSequencesCheckBox.setText(_translate("Form", "Sequences", None))
         self.nbrOfRefLoadedLbl.setText(_translate("Form", "Showing:", None))
+        self.changeRefSeqShotBtn.setText(_translate("Form", "Change sequence / shot", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.imagesManagerTab), _translate("Form", "Images Manager", None))
         self.addTagLineEdit.setPlaceholderText(_translate("Form", "lighting, statue, architecture, tree, character...", None))
         self.addTagBtn.setText(_translate("Form", "Add tag", None))
@@ -1873,6 +1888,7 @@ class Ui_Form(object):
         self.deadlineLbl.setText(_translate("Form", "Time left:", None))
         self.deadlineProgressBar.setToolTip(_translate("Form", "Time left for the whole project. Calculated between june 28 2015 and may 1st 2016.", None))
 
+from custom_widgets import ThibListWidget
 
 if __name__ == "__main__":
     import sys

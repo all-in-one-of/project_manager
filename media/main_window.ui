@@ -1108,7 +1108,15 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QVBoxLayout" name="actionFrameLayout"/>
+                  <layout class="QVBoxLayout" name="actionFrameLayout">
+                   <item>
+                    <widget class="QPushButton" name="pushButton">
+                     <property name="text">
+                      <string>PushButton</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                </layout>
@@ -2938,7 +2946,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QFrame" name="frame_3">
+              <widget class="QFrame" name="referenceListWidget">
                <property name="frameShape">
                 <enum>QFrame::NoFrame</enum>
                </property>
@@ -2946,12 +2954,6 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_33">
-                <property name="spacing">
-                 <number>3</number>
-                </property>
-                <property name="margin">
-                 <number>0</number>
-                </property>
                 <item>
                  <widget class="QFrame" name="changeThumbnailSizeFrame">
                   <property name="frameShape">
@@ -3101,6 +3103,38 @@
                     </widget>
                    </item>
                   </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="ThibListWidget" name="referenceThumbListWidget">
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::ExtendedSelection</enum>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>256</width>
+                    <height>256</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollMode">
+                   <enum>QAbstractItemView::ScrollPerPixel</enum>
+                  </property>
+                  <property name="horizontalScrollMode">
+                   <enum>QAbstractItemView::ScrollPerPixel</enum>
+                  </property>
+                  <property name="resizeMode">
+                   <enum>QListView::Adjust</enum>
+                  </property>
+                  <property name="viewMode">
+                   <enum>QListView::IconMode</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="changeRefSeqShotBtn">
+                  <property name="text">
+                   <string>Change sequence / shot</string>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -3928,6 +3962,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ThibListWidget</class>
+   <extends>QListWidget</extends>
+   <header>custom_widgets</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

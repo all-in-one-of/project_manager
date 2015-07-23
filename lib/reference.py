@@ -13,52 +13,8 @@ from collections import Counter
 import shutil
 
 
-class MyList(QtGui.QListWidget):
-    def __init__(self):
-        super(MyList, self).__init__()
-
-    def wheelEvent(self, event):
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta()*3)))
-        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta()/3)))
-        elif QtGui.QApplication.keyboardModifiers() == (QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier):
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() * 10)))
-        else:
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta())))
-
-
-
 class ReferenceTab(object):
     def __init__(self):
-
-        self.referenceThumbListWidget = MyList()
-        self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
-        self.referenceThumbListWidget.setAutoScroll(False)
-        self.referenceThumbListWidget.setAutoScrollMargin(2)
-        self.referenceThumbListWidget.setAlternatingRowColors(False)
-        self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.referenceThumbListWidget.setIconSize(QtCore.QSize(256, 256))
-        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.referenceThumbListWidget.setMovement(QtGui.QListView.Static)
-        self.referenceThumbListWidget.setFlow(QtGui.QListView.LeftToRight)
-        self.referenceThumbListWidget.setProperty("isWrapping", True)
-        self.referenceThumbListWidget.setResizeMode(QtGui.QListView.Adjust)
-        self.referenceThumbListWidget.setLayoutMode(QtGui.QListView.SinglePass)
-        self.referenceThumbListWidget.setViewMode(QtGui.QListView.IconMode)
-        self.referenceThumbListWidget.setUniformItemSizes(False)
-        self.referenceThumbListWidget.setBatchSize(500)
-        self.referenceThumbListWidget.setWordWrap(True)
-        self.referenceThumbListWidget.setObjectName("referenceThumbListWidget")
-        self.verticalLayout_33.addWidget(self.referenceThumbListWidget)
-        self.referenceThumbListWidget.setToolTip("Double click on a thumbnail to open it with windows picture viewer.\n"
-                                                                    "Alt + double click on a thumbnail to open the comments dialog.\n"
-                                                                    "Select a thumbnail and hit F2 to rename a reference.")
-        self.changeRefSeqShotBtn = QtGui.QPushButton(self.frame_3)
-        self.changeRefSeqShotBtn.setObjectName("changeRefSeqShotBtn")
-        self.verticalLayout_33.addWidget(self.changeRefSeqShotBtn)
-        self.changeRefSeqShotBtn.setText("Change sequence / shot for selected")
 
 
         self.compression_level = 60
