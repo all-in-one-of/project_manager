@@ -111,9 +111,8 @@ class CommentWidget(QtGui.QDialog):
         author_picture_lbl.setPixmap(author_picture_pixmap)
 
         comment_text_edit = QtGui.QTextEdit(self.comment_frame)
-        if comment_author_shortname != self.main.username:
-            comment_text_edit.setReadOnly(True)
-        else:
+        comment_text_edit.setReadOnly(True)
+        if comment_author_shortname == self.main.username:
             edit_frame = QtGui.QFrame(self.comment_frame)
             edit_frame_layout = QtGui.QVBoxLayout(edit_frame)
             update_button = QtGui.QPushButton("edit", edit_frame)
@@ -173,7 +172,25 @@ class CommentWidget(QtGui.QDialog):
 
     def edit_comment(self, comment_text_edit, comment_author, comment_text, comment_time):
         old_comment = comment_author + ": " + comment_text + "(" + comment_time
-        new_comment = comment_author + ": " + comment_text_edit.toPlainText() + " (" + comment_time
-        self.asset.edit_comment(old_comment, new_comment)
 
-        self.main.Lib.message_box(self.main, text="Comment has been edited =)")
+
+        edit_comment_dialog = QtGui.QDialog()
+        edit_comment_dialog.setWindowTitle("Edit comment")
+        self.main.Lib.apply_style(self.main, edit_comment_dialog)
+        edit_comment_layout = QtGui.QVBoxLayout(edit_comment_dialog)
+        edit_comment_textbox = QtGui.QTextEdit(comment_text)
+        edit_comment_textbox.selectAll()
+
+        edit_comment_acceptBtn = QtGui.QPushButton("Edit")
+        edit_comment_acceptBtn.clicked.connect(edit_comment_dialog.accept)
+
+        edit_comment_layout.addWidget(edit_comment_textbox)
+        edit_comment_layout.addWidget(edit_comment_acceptBtn)
+        edit_comment_dialog.exec_()
+
+        if edit_comment_dialog.result == 0:
+            return
+
+        new_comment = comment_author + ": " + edit_comment_textbox.toPlainText() + " (" + comment_time
+        self.asset.edit_comment(old_comment, new_comment)
+        self.load_comments()
