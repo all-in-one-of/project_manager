@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 22 22:33:23 2015
+# Created: Thu Jul 23 16:57:53 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1085,8 +1085,8 @@ class Ui_Form(object):
         self.qualityOptionsGroupBox.setFlat(True)
         self.qualityOptionsGroupBox.setObjectName(_fromUtf8("qualityOptionsGroupBox"))
         self.horizontalLayout_51 = QtGui.QHBoxLayout(self.qualityOptionsGroupBox)
-        self.horizontalLayout_51.setSpacing(2)
-        self.horizontalLayout_51.setContentsMargins(3, 3, 0, 0)
+        self.horizontalLayout_51.setSpacing(3)
+        self.horizontalLayout_51.setContentsMargins(4, 4, 0, 0)
         self.horizontalLayout_51.setObjectName(_fromUtf8("horizontalLayout_51"))
         self.keepSizeCheckBox = QtGui.QCheckBox(self.qualityOptionsGroupBox)
         self.keepSizeCheckBox.setIconSize(QtCore.QSize(16, 16))
@@ -1618,7 +1618,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(6)
+        self.Tabs.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

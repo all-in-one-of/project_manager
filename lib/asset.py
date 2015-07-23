@@ -207,4 +207,3 @@ class Asset(object):
         elif self.type == "lay":
             return "hip"
 
-
