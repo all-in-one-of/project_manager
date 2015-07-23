@@ -136,6 +136,19 @@ class Asset(object):
         except:
             pass
 
+    def edit_comment(self, old_comment, new_comment):
+        comments_string = ";".join(self.comments)
+        comments_string = comments_string.replace(old_comment, new_comment)
+        comments_string = comments_string.split(";")
+        self.comments = comments_string
+        self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
+        self.main.db.commit()
+        try:
+            nbr_of_comments = self.comments.split(";")
+            self.nbr_of_comments = len(nbr_of_comments)
+        except:
+            pass
+
     def add_tags(self, tags):
         self.tags.extend(tags)
         self.tags = list(set(self.tags))

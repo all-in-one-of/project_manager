@@ -13,38 +13,11 @@ import sys
 from threading import Thread
 import time
 
-import logging
-from logging.handlers import RotatingFileHandler
+
 
 
 
 class Lib(object):
-
-    def log_error_setup(self):
-
-        # création de l'objet logger qui va nous servir à écrire dans les logs
-        self.logger = logging.getLogger()
-        # on met le niveau du logger à DEBUG, comme ça il écrit tout
-        self.logger.setLevel(logging.DEBUG)
-
-        # création d'un formateur qui va ajouter le temps, le niveau
-        # de chaque message quand on écrira un message dans le log
-        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-        # création d'un handler qui va rediriger une écriture du log vers
-        # un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
-
-        file_handler = RotatingFileHandler(self.cur_path + '\\bin\\activity.log', 'a', 1000000, 1)
-        # on lui met le niveau sur DEBUG, on lui dit qu'il doit utiliser le formateur
-        # créé précédement et on ajoute ce handler au logger
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-
-        # création d'un second handler qui va rediriger chaque écriture de log
-        # sur la console
-        steam_handler = logging.StreamHandler()
-        steam_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(steam_handler)
 
     def save_prefs(self):
         """
@@ -124,24 +97,27 @@ class Lib(object):
 
     def apply_style(self, form):
 
+        form.setWindowFlags(form.windowFlags() | QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
+
         # Create Favicon
         app_icon = QtGui.QIcon()
         app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
         form.setWindowIcon(app_icon)
 
-        if int(self.theme) == 1:
-            form.setStyle(QtGui.QStyleFactory.create("cleanlooks"))
-            return
-        elif int(self.theme) == 2:
-            form.setStyle(QtGui.QStyleFactory.create("plastique"))
-            return
-        elif int(self.theme) == 0:
+        if int(self.theme) == 0:
             # Apply custom CSS to msgBox
             css = QtCore.QFile(self.cur_path + "\\media\\style.css")
             css.open(QtCore.QIODevice.ReadOnly)
             if css.isOpen():
                 form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
             css.close()
+
+        elif int(self.theme) == 2:
+            form.setStyle(QtGui.QStyleFactory.create("plastique"))
+
+        elif int(self.theme) == 0:
+            form.setStyle(QtGui.QStyleFactory.create("cleanlooks"))
+
 
 
 

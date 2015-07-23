@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 22 14:55:54 2015
+# Created: Wed Jul 22 22:28:15 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1278,29 +1278,6 @@ class Ui_Form(object):
         self.biggerRefPushButton_04.setObjectName(_fromUtf8("biggerRefPushButton_04"))
         self.horizontalLayout_38.addWidget(self.biggerRefPushButton_04)
         self.verticalLayout_33.addWidget(self.changeThumbnailSizeFrame)
-        self.referenceThumbListWidget = QtGui.QListWidget(self.frame_3)
-        self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
-        self.referenceThumbListWidget.setAutoScroll(False)
-        self.referenceThumbListWidget.setAutoScrollMargin(2)
-        self.referenceThumbListWidget.setAlternatingRowColors(False)
-        self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.referenceThumbListWidget.setIconSize(QtCore.QSize(256, 256))
-        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.referenceThumbListWidget.setMovement(QtGui.QListView.Static)
-        self.referenceThumbListWidget.setFlow(QtGui.QListView.LeftToRight)
-        self.referenceThumbListWidget.setProperty("isWrapping", True)
-        self.referenceThumbListWidget.setResizeMode(QtGui.QListView.Adjust)
-        self.referenceThumbListWidget.setLayoutMode(QtGui.QListView.SinglePass)
-        self.referenceThumbListWidget.setViewMode(QtGui.QListView.IconMode)
-        self.referenceThumbListWidget.setUniformItemSizes(False)
-        self.referenceThumbListWidget.setBatchSize(500)
-        self.referenceThumbListWidget.setWordWrap(True)
-        self.referenceThumbListWidget.setObjectName(_fromUtf8("referenceThumbListWidget"))
-        self.verticalLayout_33.addWidget(self.referenceThumbListWidget)
-        self.changeRefSeqShotBtn = QtGui.QPushButton(self.frame_3)
-        self.changeRefSeqShotBtn.setObjectName(_fromUtf8("changeRefSeqShotBtn"))
-        self.verticalLayout_33.addWidget(self.changeRefSeqShotBtn)
         self.horizontalLayout_23.addWidget(self.frame_3)
         self.referenceThumbFrame = QtGui.QFrame(self.referenceToolMainFrame)
         self.referenceThumbFrame.setFrameShape(QtGui.QFrame.NoFrame)
@@ -1641,7 +1618,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.assetManagerFrame)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(0)
+        self.Tabs.setCurrentIndex(6)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1839,10 +1816,6 @@ class Ui_Form(object):
         self.refShowNamesCheckBox.setText(_translate("Form", "Names", None))
         self.refShowSequencesCheckBox.setText(_translate("Form", "Sequences", None))
         self.nbrOfRefLoadedLbl.setText(_translate("Form", "Showing:", None))
-        self.referenceThumbListWidget.setToolTip(_translate("Form", "Double click on a thumbnail to open it with windows picture viewer.\n"
-"Alt + double click on a thumbnail to open the comments dialog.\n"
-"Select a thumbnail and hit F2 to rename a reference.", None))
-        self.changeRefSeqShotBtn.setText(_translate("Form", "Change sequence / shot for selected ", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.imagesManagerTab), _translate("Form", "Images Manager", None))
         self.addTagLineEdit.setPlaceholderText(_translate("Form", "lighting, statue, architecture, tree, character...", None))
         self.addTagBtn.setText(_translate("Form", "Add tag", None))

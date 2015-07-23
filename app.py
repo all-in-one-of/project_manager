@@ -43,6 +43,8 @@ import shutil
 from datetime import date
 from datetime import datetime
 
+import logging
+from logging.handlers import RotatingFileHandler
 
 from PyQt4 import QtGui, QtCore
 
@@ -77,8 +79,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Asset = Asset
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -97,6 +99,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.username = os.getenv('USERNAME')
+
         self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
                         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
@@ -107,8 +110,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
         self.refreshAllBtn.clicked.connect(self.refresh_all)
 
-        # Setup logging error
-        self.Lib.log_error_setup(self)
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
@@ -369,79 +370,97 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             self.addShotFrame.hide()
             self.adminPrefFrame.hide()
 
-        tabs_list = {}
-
-        for i in xrange(self.Tabs.count()):
-            tabs_list[str(self.Tabs.tabText(i))] = i
+        self.get_tabs_id_from_name()
 
         if self.members[self.username] == "Amelie":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Chloe":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Christopher":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "David":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Edwin":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Etienne":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Jeremy":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Laurence":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Louis-Philippe":
             pass
 
         elif self.members[self.username] == "Marc-Antoine":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Mathieu":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Maxime":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Olivier":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Simon":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Thibault":
             pass
 
         elif self.members[self.username] == "Yann":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
 
         elif self.members[self.username] == "Yi":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
 
         elif self.members[self.username] == "Valentin":
-            self.Tabs.removeTab(tabs_list["Task Manager"])
-            self.Tabs.removeTab(tabs_list["Tags Manager"])
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+
+    def get_tabs_id_from_name(self):
+        self.tabs_list = {}
+        for i in xrange(self.Tabs.count()):
+            self.tabs_list[str(self.Tabs.tabText(i))] = i
 
     def change_username(self):
         username = str(self.usernameAdminComboBox.currentText())
@@ -573,6 +592,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
             ReferenceTab.rename_reference(self, asset)
 
+
     def closeEvent(self, event):
         self.save_tags_list()
         self.Lib.save_prefs
@@ -599,34 +619,68 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                 self.tray_icon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
-
     cur_path = os.path.dirname(os.path.realpath(__file__))
 
-    # Show Splashscreen
-    splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
-    splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-    splash.setMask(splash_pix.mask())
+    # création de l'objet logger qui va nous servir à écrire dans les logs
+    logger = logging.getLogger()
+    # on met le niveau du logger à DEBUG, comme ça il écrit tout
 
-    splash.show()
+    # création d'un formateur qui va ajouter le temps, le niveau
+    # de chaque message quand on écrira un message dans le log
+    logging.basicConfig(level=logging.DEBUG,
+                        format=('%(filename)s: '
+                                '%(funcName)s(): '
+                                '%(lineno)d:\t'
+                                '%(message)s')
+                        )
+    # création d'un handler qui va rediriger une écriture du log vers
+    # un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
 
-    splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
-    splash.repaint()
+    file_handler = RotatingFileHandler(cur_path + '\\bin\\activity.log', 'a', 1000000, 1)
+    # on lui met le niveau sur DEBUG, on lui dit qu'il doit utiliser le formateur
+    # créé précédement et on ajoute ce handler au logger
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
 
-    splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
-    splash.repaint()
-
-    splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
-    splash.repaint()
-
-    splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
-    splash.repaint()
-
-    window = Main()
-    window.show()
-
-    splash.finish(window)
+    # création d'un second handler qui va rediriger chaque écriture de log
+    # sur la console
+    steam_handler = logging.StreamHandler()
+    steam_handler.setLevel(logging.DEBUG)
+    logger.addHandler(steam_handler)
 
 
-    sys.exit(app.exec_())
+
+    try:
+        app = QtGui.QApplication(sys.argv)
+        app.setQuitOnLastWindowClosed(False)
+
+
+
+        # Show Splashscreen
+        splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
+        splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+        splash.setMask(splash_pix.mask())
+
+        splash.show()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
+        splash.repaint()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
+        splash.repaint()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
+        splash.repaint()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
+        splash.repaint()
+
+        window = Main()
+        window.show()
+
+        splash.finish(window)
+        sys.exit(app.exec_())
+    except Exception as e:
+        logger.debug(e)
+
+

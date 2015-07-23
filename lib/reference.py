@@ -11,8 +11,48 @@ import re
 import pafy
 from collections import Counter
 
+
+
+class MyList(QtGui.QListWidget):
+    def __init__(self):
+        super(MyList, self).__init__()
+
+    def wheelEvent(self, event):
+        self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta())))
+
+
+
 class ReferenceTab(object):
     def __init__(self):
+
+        self.referenceThumbListWidget = MyList()
+        self.referenceThumbListWidget.setMinimumSize(QtCore.QSize(0, 0))
+        self.referenceThumbListWidget.setAutoScroll(False)
+        self.referenceThumbListWidget.setAutoScrollMargin(2)
+        self.referenceThumbListWidget.setAlternatingRowColors(False)
+        self.referenceThumbListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.referenceThumbListWidget.setIconSize(QtCore.QSize(256, 256))
+        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.referenceThumbListWidget.setMovement(QtGui.QListView.Static)
+        self.referenceThumbListWidget.setFlow(QtGui.QListView.LeftToRight)
+        self.referenceThumbListWidget.setProperty("isWrapping", True)
+        self.referenceThumbListWidget.setResizeMode(QtGui.QListView.Adjust)
+        self.referenceThumbListWidget.setLayoutMode(QtGui.QListView.SinglePass)
+        self.referenceThumbListWidget.setViewMode(QtGui.QListView.IconMode)
+        self.referenceThumbListWidget.setUniformItemSizes(False)
+        self.referenceThumbListWidget.setBatchSize(500)
+        self.referenceThumbListWidget.setWordWrap(True)
+        self.referenceThumbListWidget.setObjectName("referenceThumbListWidget")
+        self.verticalLayout_33.addWidget(self.referenceThumbListWidget)
+        self.referenceThumbListWidget.setToolTip("Double click on a thumbnail to open it with windows picture viewer.\n"
+                                                                    "Alt + double click on a thumbnail to open the comments dialog.\n"
+                                                                    "Select a thumbnail and hit F2 to rename a reference.")
+        self.changeRefSeqShotBtn = QtGui.QPushButton(self.frame_3)
+        self.changeRefSeqShotBtn.setObjectName("changeRefSeqShotBtn")
+        self.verticalLayout_33.addWidget(self.changeRefSeqShotBtn)
+        self.changeRefSeqShotBtn.setText("Change sequence / shot for selected")
+
 
         self.compression_level = 60
         self.keep_size = False
@@ -32,8 +72,8 @@ class ReferenceTab(object):
 
         self.ref_assets_instances = []
 
-        self.referenceThumbListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.referenceThumbListWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+
+
 
         self.allTagsTreeWidget.sortItems(0, QtCore.Qt.AscendingOrder)
         self.seqReferenceList.itemClicked.connect(self.ref_sequence_list_clicked)
@@ -79,9 +119,16 @@ class ReferenceTab(object):
         self.addTagBtn.clicked.connect(self.add_tag_to_tags_manager)
         self.addTagLineEdit.returnPressed.connect(self.add_tag_to_tags_manager)
         self.removeSelectedTagsBtn.clicked.connect(self.remove_selected_tags_from_tags_manager)
-
+        self.x = 0
         # Tags setup
         self.setup_tags()
+
+
+
+
+
+
+
 
     def ref_load_all_references(self):
         '''Load all references when clicking sequence for the first time'''
@@ -1056,3 +1103,4 @@ class ReferenceTab(object):
                     child_item.setText(0, tag_name)
                     child_item.setFont(0, font)
                     top_item.addChild(child_item)
+
