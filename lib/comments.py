@@ -109,6 +109,7 @@ class CommentWidget(QtGui.QDialog):
         author_picture_pixmap = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\members_photos\\" + comment_author_shortname + ".jpg")
         author_picture_pixmap = author_picture_pixmap.scaled(80, 80, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         author_picture_lbl.setPixmap(author_picture_pixmap)
+        author_picture_lbl.setToolTip(self.main.members[comment_author_shortname])
 
         comment_text_edit = QtGui.QTextEdit(self.comment_frame)
         comment_text_edit.setReadOnly(True)

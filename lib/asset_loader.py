@@ -5,9 +5,14 @@ from PyQt4 import QtGui, QtCore
 import subprocess
 from functools import partial
 import os
+import shutil
+
 
 class AssetLoader(object):
     def __init__(self):
+
+        self.assets = {}
+
         # Get projects from database and add them to the projects list
         self.projects = self.cursor.execute('''SELECT project_name FROM projects''').fetchall()
         self.projects = [str(i[0]) for i in self.projects]
@@ -16,9 +21,11 @@ class AssetLoader(object):
 
         # Select default project
         self.projectList.setCurrentRow(0)
+        self.departmentList.setCurrentRow(0)
         self.projectList_Clicked()
 
         self.selected_project_name = str(self.projectList.selectedItems()[0].text())
+        self.selected_department_name = "All"
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
 
@@ -32,10 +39,11 @@ class AssetLoader(object):
         # Connect the lists
         self.projectList.itemClicked.connect(self.projectList_Clicked)
         self.projectList.itemDoubleClicked.connect(self.projectList_DoubleClicked)
-        self.departmentList.itemClicked.connect(self.load_assets_from_selected_proj_seq_shot_dept)
+        self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)  # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
-        self.shotList.itemClicked.connect(self.load_assets_from_selected_proj_seq_shot_dept)
-        self.assetList.itemClicked.connect(self.assetList_Clicked)
+        self.shotList.itemClicked.connect(self.shotList_Clicked)
+        self.assetList.itemSelectionChanged.connect(self.assetList_Clicked)
+        self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
@@ -47,10 +55,10 @@ class AssetLoader(object):
 
         self.seqFilterClearBtn.clicked.connect(partial(self.clear_filter, "seq"))
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
-        self.loadBtn.clicked.connect(self.load_asset)
-        self.openInExplorerBtn.clicked.connect(partial(self.Lib.open_in_explorer, self))
         self.addCommentBtn.clicked.connect(self.add_comment)
         self.updateThumbBtn.clicked.connect(self.update_thumb)
+        self.loadAssetBtn.clicked.connect(self.load_asset)
+        self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -186,6 +194,7 @@ class AssetLoader(object):
             asset_item = QtGui.QListWidgetItem(asset_name)
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, "", asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator)
             asset_item.setData(QtCore.Qt.UserRole, asset)
+            self.assets[asset] = asset_item
             self.assetList.addItem(asset_item)
 
             version_item = QtGui.QListWidgetItem(asset_version)
@@ -200,19 +209,6 @@ class AssetLoader(object):
         self.selected_project_path = str(self.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.selected_project_name,)).fetchone()[0])
         self.selected_project_shortname = str(self.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.selected_project_name,)).fetchone()[0])
 
-
-        # Query the departments associated with the project
-        self.departments = (self.cursor.execute('''SELECT DISTINCT asset_type FROM assets WHERE project_name=?''', (self.selected_project_name,))).fetchall()
-
-        # Populate the departments list
-        self.departmentList.clear()
-        [self.departmentList.addItem(department[0]) for department in self.departments]
-        try:
-            self.departmentList.setCurrentRow(0)
-        except:
-            pass
-
-
         # Query the sequences associated with the project
         self.sequences = (self.cursor.execute('''SELECT DISTINCT sequence_name FROM sequences WHERE project_name=?''', (self.selected_project_name,))).fetchall()
         self.sequences = sorted(self.sequences)
@@ -226,12 +222,12 @@ class AssetLoader(object):
 
         # Populate the sequences and shots lists
         self.seqList.clear()
+        self.seqList.addItem("All")
         self.seqList.addItem("None")
         self.seqReferenceList.clear()
         self.seqReferenceList.addItem("All")
         self.seqReferenceList.addItem("None")
         self.shotList.clear()
-        self.shotList.addItem("None")
         self.shotReferenceList.clear()
         self.shotReferenceList.addItem("None")
         [(self.seqList.addItem(sequence[0]), self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
@@ -240,23 +236,29 @@ class AssetLoader(object):
         self.seqList.setCurrentRow(0)
         self.shotList.setCurrentRow(0)
 
+
         # Load all assets
-        self.load_all_assets_for_first_time()
+        if self.assetList.count() == 0:
+            self.load_all_assets_for_first_time()
+
+    def projectList_DoubleClicked(self):
+        subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
 
     def seqList_Clicked(self):
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
+        if self.selected_sequence_name == "None" or self.selected_sequence_name == "All":
+            self.selected_sequence_name = "xxx"
+
 
         # Add shots to shot list and reference tool shot list
-        if self.selected_sequence_name == "None":
-            self.selected_sequence_name = "xxx"
+        if self.selected_sequence_name == "xxx":
             self.shotList.clear()
-            self.shotList.addItem("None")
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
         else:
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''',
-                                        (self.selected_project_name, self.selected_sequence_name,)).fetchall()
+            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, self.selected_sequence_name,)).fetchall()
             self.shotList.clear()
+            self.shotList.addItem("All")
             self.shotList.addItem("None")
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
@@ -265,7 +267,19 @@ class AssetLoader(object):
             [(self.shotList.addItem(shot), self.shotReferenceList.addItem(shot)) for shot in shots]
 
         self.shotList.setCurrentRow(0)
-        self.load_assets_from_selected_proj_seq_shot_dept()
+        self.load_assets_from_selected_seq_shot_dept()
+
+    def shotList_Clicked(self):
+        self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
+        if self.selected_shot_number == "None" or self.selected_shot_number == "All":
+            self.selected_shot_number = "xxxx"
+        self.load_assets_from_selected_seq_shot_dept()
+
+    def departmentList_Clicked(self):
+        self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
+        if self.selected_department_name != "All":
+            self.selected_department_name = self.departments_shortname[self.selected_department_name]
+        self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
 
@@ -275,124 +289,51 @@ class AssetLoader(object):
             asset = version.data(QtCore.Qt.UserRole).toPyObject()
             if current_asset.name == asset.name:
                 version.setHidden(False)
+                version.setSelected(True)
             else:
                 version.setHidden(True)
-        return
 
-        all_versions = self.cursor.execute('''SELECT asset_version FROM assets WHERE project_name=? AND asset_name=?''', (self.selected_project_name, self.selected_asset_name,)).fetchall()
-
-        all_versions = [str(i[0]) for i in all_versions]
-
-        self.versionList.clear()
-        for version in all_versions:
-            asset = self.cursor.execute(
-                '''SELECT * FROM assets WHERE project_name=? AND asset_name=? AND asset_version=? AND asset_type=?''',
-                (self.selected_project_name, self.selected_asset_name, version, self.selected_department_name)).fetchone()
-            self.versionList.addItem(asset[7])
-
-        return
-
-        self.versionList.addItems()
-        # print(selected_asset.data(QtCore.Qt.UserRole).toPyObject())
-        return
-
-        self.selected_asset_type = str(self.assetList.selectedItems()[0].text()).split("_")[0]
-        self.selected_asset_name = str(self.assetList.selectedItems()[0].text()).split("_")[1]
-        self.selected_asset_version = str(self.assetList.selectedItems()[0].text()).split("_")[2]
-        self.selected_asset_path = self.cursor.execute(
-            '''SELECT asset_path FROM assets WHERE project_name=? AND asset_type=? AND asset_name=? AND asset_version=?''',
-            (self.selected_project_name, self.selected_asset_type, self.selected_asset_name,
-             self.selected_asset_version)).fetchone()[0]
-
-        cur_asset = Asset(self.selected_asset_name, self.selected_asset_path)
-        cur_asset.create_version(self.selected_project_name)
-
-        asset_extension = os.path.splitext(self.selected_asset_path)[-1]
-        if self.selected_asset_path.endswith(".jpg") or self.selected_asset_path.endswith(".png"):
-
-            self.fileTypeLbl.setText("Image (" + asset_extension + ")")
-
-            for i in reversed(range(self.actionFrameLayout.count())):  # Delete all items from layout
-                self.actionFrameLayout.itemAt(i).widget().close()
-
-            # Create action interface
-            self.loadInKuadroBtn = QtGui.QPushButton(self.actionFrame)
-            self.actionFrameLayout.addWidget(self.loadInKuadroBtn)
-            self.loadInKuadroBtn.setText("Load in Kuadro")
-            self.loadInKuadroBtn.clicked.connect(partial(self.load_asset, "Kuadro"))
-
-        elif self.selected_asset_path.endswith(".mb") or self.selected_asset_path.endswith(".ma"):
-            self.fileTypeLbl.setText("Maya (" + asset_extension + ")")
-
-        elif self.selected_asset_path.endswith(".obj"):
-            self.fileTypeLbl.setText("Geometry (" + asset_extension + ")")
-
-
-        # Load thumbnail image
-        if self.selected_asset_path.endswith(".jpg") or self.selected_asset_path.endswith(".png"):
-            pixmap = QtGui.QPixmap(self.selected_asset_path).scaled(1000, 200, QtCore.Qt.KeepAspectRatio,
-                                                                    QtCore.Qt.SmoothTransformation)
-            self.assetImg.setPixmap(pixmap)
-        else:
-            asset_name = "_".join([self.selected_asset_type, self.selected_asset_name, self.selected_asset_version])
-            thumb_path = self.screenshot_dir + asset_name + ".jpg"
-            if os.path.isfile(thumb_path):
-                pixmap = QtGui.QPixmap(thumb_path).scaled(1000, 200, QtCore.Qt.KeepAspectRatio,
-                                                          QtCore.Qt.SmoothTransformation)
-                self.assetImg.setPixmap(pixmap)
-            else:
-                pixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img_found.png").scaled(1000, 200,
-                                                                                                 QtCore.Qt.KeepAspectRatio,
-                                                                                                 QtCore.Qt.SmoothTransformation)
-                self.assetImg.setPixmap(pixmap)
-
-        # Change path label
-        self.assetPathLbl.setText(self.selected_asset_path)
-
-        # Load comments
-        self.commentTxt.setText("")  # Clear comment section
-        asset_comment = self.cursor.execute(
-            '''SELECT asset_comment FROM assets WHERE project_name=? AND asset_type=? AND asset_name=? AND asset_version=?''',
-            (self.selected_project_name, self.selected_asset_type, self.selected_asset_name,
-             self.selected_asset_version)).fetchone()[0]
-        if asset_comment:
-            self.commentTxt.setText(asset_comment)
+        self.versionList_Clicked()
 
     def versionList_Clicked(self):
         selected_version = self.versionList.selectedItems()[0]
-        asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
-        asset.print_asset()
+        self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
-    def load_assets_from_selected_proj_seq_shot_dept(self):
-        return
+        # Load thumbnail
+        qpixmap = QtGui.QPixmap(self.selected_asset.full_path)
+        qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+        self.assetImg.setPixmap(qpixmap)
 
-    def load_asset(self, action):
-        if action == "Kuadro":
+        # If asset is of type reference, hide "Update thumbnail" button
+        if self.selected_asset.type == "ref":
+            self.updateThumbBtn.setVisible(False)
+            self.createVersionBtn.setVisible(False)
+            self.publishBtn.setVisible(False)
 
-            if not QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-                os.system("taskkill /im kuadro.exe /f")
-            subprocess.Popen(
-                ["H:\\01-NAD\\_pipeline\\_utilities\\_soft\\kuadro.exe", self.selected_asset_path])
-            return
+        self.createdByValueLbl.setText(self.members[self.selected_asset.creator])
 
+    def versionList_DoubleClicked(self):
+        selected_version = self.versionList.selectedItems()[0]
+        self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
+        subprocess.Popen(r'explorer /select,' + str(self.selected_asset.full_path))
 
+    def load_assets_from_selected_seq_shot_dept(self):
+        # Unhide all assets
+        [asset.setHidden(False) for asset in self.assets.values()]
 
+        for asset, asset_item in self.assets.items():
+            if asset.sequence != self.selected_sequence_name and str(self.seqList.selectedItems()[0].text()) != "All":
+                asset_item.setHidden(True)
 
-        # Add last_access entry to database
-        last_access = time.strftime("%B %d %Y at %H:%M:%S") + " by " + self.username
-        self.cursor.execute('''UPDATE assets SET last_access = ? WHERE asset_path = ?''',
-                            (last_access, self.selected_asset_path))
+            try: # If this block succeed, it means that item selected on sequence list is something else than "All" or "None".
+                if asset.shot != self.selected_shot_number and str(self.shotList.selectedItems()[0].text()) != "All":
+                    asset_item.setHidden(True)
+            except:
+                if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxx":
+                    asset_item.setHidden(True)
 
-        self.db.commit()
-
-        if self.selected_asset_path.endswith(".jpg") or self.selected_asset_path.endswith(
-                ".png") or self.selected_asset_path.endswith(".obj"):
-            SoftwareDialog(self.selected_asset_path, self).exec_()
-        elif self.selected_asset_path.endswith(".ma") or self.selected_asset_path.endswith(".mb"):
-            subprocess.Popen(["C:\\Program Files\\Autodesk\\Maya2015\\bin\\maya.exe", self.selected_asset_path])
-
-    def projectList_DoubleClicked(self):
-        subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
+            if asset.type != self.selected_department_name and self.selected_department_name != "All":
+                asset_item.setHidden(True)
 
     def filterList_textChanged(self, list_type):
         if list_type == "sequence":
@@ -413,3 +354,50 @@ class AssetLoader(object):
                         self.assetList.setItemHidden(self.assetList.item(i), False)
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), True)
+
+    def load_asset(self):
+        if self.selected_asset.type == "ref":
+            os.system(self.selected_asset.full_path)
+
+    def create_asset_from_scratch(self):
+        if self.selected_department_name == "mod":
+            self.create_modeling_asset_from_scratch()
+
+    def create_modeling_asset_from_scratch(self):
+        dialog = QtGui.QDialog(self)
+        self.Lib.apply_style(self, dialog)
+
+        dialog.setWindowTitle("Enter a name")
+        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+
+        software_combobox = QtGui.QComboBox(dialog)
+        software_combobox.addItems(["Blender", "Maya", "Softimage", "Cinema 4D", "Houdini"])
+
+        name_line_edit = QtGui.QLineEdit()
+        name_line_edit.setPlaceholderText("Please enter a name...")
+        name_line_edit.returnPressed.connect(dialog.accept)
+
+        dialog_main_layout.addWidget(software_combobox)
+        dialog_main_layout.addWidget(name_line_edit)
+
+
+        dialog.exec_()
+        if dialog.result() == 0:
+            return
+
+        if software_combobox.currentText() == "Blender":
+            extension = "blend"
+        elif software_combobox.currentText() == "Maya":
+            extension = "ma"
+        elif software_combobox.currentText() == "Softimage":
+            extension = "scn"
+        elif software_combobox.currentText() == "Cinema 4D":
+            extension = "c4d"
+        elif software_combobox.currentText() == "Houdini":
+            extension = "hip"
+
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, str(name_line_edit.text()), "", extension, "mod", "01", [], [], "", "", self.username)
+        asset.add_asset_to_db()
+
+        shutil.copy("H:\\01-NAD\\_pipeline\\_utilities\\NEF\\blender.blend", asset.full_path)
+

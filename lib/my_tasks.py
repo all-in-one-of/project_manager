@@ -11,10 +11,6 @@ class MyTasks(object):
                             "Rigging": 6, "Animation": 7, "Simulation": 8, "Shading": 9, "Layout": 10,
                             "DMP": 11, "Compositing": 12, "Editing": 13, "RnD": 14}
 
-        self.mt_departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
-                                         "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
-                                         "Simulation": "sim", "Shading": "shd", "Layout": "lay", "DMP": "dmp",
-                                         "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
 
         self.mt_status = {"Ready to Start": 0, "In Progress": 1, "On Hold": 2, "Waiting for Approval": 3, "Retake": 4}
 

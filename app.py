@@ -105,6 +105,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
+        self.departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
+                                         "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
+                                         "Simulation": "sim", "Shading": "shd", "Layout": "lay", "DMP": "dmp",
+                                         "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
         refresh_icon = QtGui.QIcon(self.cur_path + "\\media\\refresh.png")
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
@@ -369,6 +373,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
             self.addSequenceFrame.hide()
             self.addShotFrame.hide()
             self.adminPrefFrame.hide()
+            self.createAssetFromScratchBtn.hide()
 
         self.get_tabs_id_from_name()
 

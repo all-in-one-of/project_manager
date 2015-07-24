@@ -11,12 +11,11 @@ import re
 import pafy
 from collections import Counter
 import shutil
+import timeit
 
 
 class ReferenceTab(object):
     def __init__(self):
-
-
         self.compression_level = 60
         self.keep_size = False
         self.last_asset_name = ""
@@ -34,9 +33,6 @@ class ReferenceTab(object):
         self.nbr_of_visible_images = 0
 
         self.ref_assets_instances = []
-
-
-
 
         self.allTagsTreeWidget.sortItems(0, QtCore.Qt.AscendingOrder)
         self.seqReferenceList.itemClicked.connect(self.ref_sequence_list_clicked)
@@ -374,6 +370,8 @@ class ReferenceTab(object):
                 del asset
                 self.all_references_ListWidgetItems.remove(ref)
                 self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
+                os.remove(asset.full_path)
+                os.remove(asset.full_path.replace(".jpg", "_thumb.jpg"))
             except:
                 pass
 
@@ -637,9 +635,27 @@ class ReferenceTab(object):
         if len(selected_files) < 1:
             return
 
+        # Show progress bar dialog
+        dialog = QtGui.QDialog()
+        dialog.setWindowTitle("Please wait...")
+        main_layout = QtGui.QVBoxLayout(dialog)
+
+        mainLbl = QtGui.QLabel("Adding images:", self)
+        progressBar = QtGui.QProgressBar(self)
+        progressBar.setMaximum(len(selected_files))
+
+        main_layout.addWidget(mainLbl)
+        main_layout.addWidget(progressBar)
+
+        self.Lib.apply_style(self, dialog)
+
+        dialog.show()
+        dialog.repaint()
+
+
         # Add each file
         assets = []
-        for file_path in selected_files:
+        for i, file_path in enumerate(selected_files):
             file_path = unicode(file_path)
             file_path = os.path.abspath(file_path)
 
@@ -679,6 +695,10 @@ class ReferenceTab(object):
             self.all_references_ListWidgetItems.append(new_item)
             self.add_log_entry("{0} added a reference from files ({1})".format(self.members[self.username], asset.name), value=asset.id)
             self.referenceThumbListWidget.setItemSelected(new_item, True)
+            progressBar.setValue(i)
+
+        dialog.repaint()
+        dialog.close()
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)

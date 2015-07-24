@@ -60,6 +60,8 @@ class Asset(object):
                 new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
 
         os.rename(self.full_path, self.project_path + new_path)
+        if self.type == "ref":
+            os.rename(self.full_path.replace(".jpg", "_thumb.jpg"), self.project_path + new_path.replace(".jpg", "_thumb.jpg"))
         self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
         self.main.db.commit()
         self.full_path = self.project_path + new_path
