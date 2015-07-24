@@ -399,5 +399,5 @@ class AssetLoader(object):
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, str(name_line_edit.text()), "", extension, "mod", "01", [], [], "", "", self.username)
         asset.add_asset_to_db()
 
-        shutil.copy("H:\\01-NAD\\_pipeline\\_utilities\\NEF\\blender.blend", asset.full_path)
+        shutil.copy(self.NEF_folder + "\\blender.blend", asset.full_path)
 

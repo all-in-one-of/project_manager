@@ -601,10 +601,13 @@ class ReferenceTab(object):
                 if image_width > 1920:
                     image_width = 1920
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
+            asset.change_dependency(URL)
 
         # Create low res thumbnail for preview on list widget
         shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
         self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
+
+        # Add item to lists
         new_item = QtGui.QListWidgetItem()
         new_item.setData(QtCore.Qt.UserRole, asset)
         new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
@@ -948,7 +951,7 @@ class ReferenceTab(object):
                                   comments, tags, dependency, last_access, creator)
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)
-                    ref_item.setIcon(QtGui.QIcon(asset.full_path))
+                    ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
                     ref_item.setData(QtCore.Qt.UserRole, asset)
 
                     if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors

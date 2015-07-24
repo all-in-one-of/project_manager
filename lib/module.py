@@ -20,6 +20,10 @@ import shutil
 
 class Lib(object):
 
+
+    def setup_user_session(self):
+        shutil.copytree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
+
     def save_prefs(self):
         """
         Save preferences

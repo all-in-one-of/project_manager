@@ -66,8 +66,6 @@ from lib.asset_loader import AssetLoader
 class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task, AssetLoader):
     def __init__(self):
         super(Main, self).__init__()
-        #QtGui.QMainWindow.__init__(self)
-        #Ui_Form.__init__(self)
 
         self.ReferenceTab = ReferenceTab
         self.Lib = Lib
@@ -79,8 +77,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Asset = Asset
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
         #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
 
         # Backup database
@@ -97,6 +95,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
+        self.NEF_folder = self.cur_path_one_folder_up + "\\NEF"  # H:\01-NAD\_pipeline\_utilities\NEF
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.username = os.getenv('USERNAME')
 
@@ -113,6 +112,17 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
         self.refreshAllBtn.clicked.connect(self.refresh_all)
+
+
+        # Setup user session if it is not already setup
+        is_setup = self.cursor.execute('''SELECT is_setup FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
+        print(is_setup)
+        if is_setup == 0:
+            self.Lib.setup_user_session(self)
+            self.cursor.execute('''UPDATE preferences SET is_setup=1 WHERE username=?''', (self.username,))
+            self.db.commit()
+
+
 
 
         # Create Favicon
