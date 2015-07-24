@@ -1,1 +1,1 @@
-# project_manager
+Git repository for Project Manager.
