@@ -77,9 +77,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Asset = Asset
 
         # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite" # Database officielle
-        #self.db_path = "C:\\Users\\Thibault\\Desktop\\db.sqlite" # Database maison
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+
 
         # Backup database
         self.backup_database()
@@ -97,6 +97,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
         self.NEF_folder = self.cur_path_one_folder_up + "\\NEF"  # H:\01-NAD\_pipeline\_utilities\NEF
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
+        self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.username = os.getenv('USERNAME')
 
         self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
@@ -116,14 +117,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         # Setup user session if it is not already setup
         is_setup = self.cursor.execute('''SELECT is_setup FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
-        print(is_setup)
         if is_setup == 0:
             self.Lib.setup_user_session(self)
             self.cursor.execute('''UPDATE preferences SET is_setup=1 WHERE username=?''', (self.username,))
             self.db.commit()
-
-
-
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
@@ -634,7 +631,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
 if __name__ == "__main__":
 
-    dont_log_to_file = True
+    log_to_file = False
 
     cur_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -644,12 +641,7 @@ if __name__ == "__main__":
 
     # création d'un formateur qui va ajouter le temps, le niveau
     # de chaque message quand on écrira un message dans le log
-    logging.basicConfig(level=logging.DEBUG,
-                        format=('%(filename)s: '
-                                '%(funcName)s(): '
-                                '%(lineno)d:\t'
-                                '%(message)s')
-                        )
+    logging.basicConfig(level=logging.DEBUG, format=('%(asctime)s %(filename)s: ''%(funcName)s(): ''%(lineno)d:\t''%(message)s'))
     # création d'un handler qui va rediriger une écriture du log vers
     # un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
 
@@ -666,7 +658,7 @@ if __name__ == "__main__":
     logger.addHandler(steam_handler)
 
 
-    if dont_log_to_file == True:
+    if log_to_file == False:
         app = QtGui.QApplication(sys.argv)
         app.setQuitOnLastWindowClosed(False)
         window = Main()

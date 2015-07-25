@@ -20,10 +20,7 @@ class Asset(object):
         self.shot = shot_number
         self.name = asset_name
         self.type = asset_type
-        if len(asset_extension) < 1:
-            self.extension = self.get_extension_from_type()
-        else:
-            self.extension = asset_extension
+        self.extension = asset_extension
         self.version = asset_version
         if not asset_comments == None and len(asset_comments) > 0:
             self.comments = asset_comments.split(";")
@@ -69,10 +66,11 @@ class Asset(object):
 
     def add_asset_to_db(self):
         while os.path.isfile(self.project_path + self.path):
-            self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-            self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+            if self.version != "out":
+                self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
+                self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, ";".join(self.comments), ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ";".join(self.comments), ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -168,13 +166,14 @@ class Asset(object):
         sequence_name = asset[2]
         shot_number = asset[3]
         asset_name = asset[4]
-        asset_type = asset[6]
-        asset_version = asset[7]
-        asset_comments = asset[8]
-        asset_tags = asset[9]
-        asset_dependency = asset[10]
-        last_access = asset[11]
-        creator = asset[12]
+        asset_extension = asset[6]
+        asset_type = asset[7]
+        asset_version = asset[8]
+        asset_comments = asset[9]
+        asset_tags = asset[10]
+        asset_dependency = asset[11]
+        last_access = asset[12]
+        creator = asset[13]
 
         self.project = project_name
         self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
@@ -183,7 +182,7 @@ class Asset(object):
         self.shot = shot_number
         self.name = asset_name
         self.type = asset_type
-        self.extension = self.get_extension_from_type()
+        self.extension = asset_extension
         self.version = asset_version
         if not asset_comments == None and len(asset_comments) > 0:
             self.comments = asset_comments.split(";")
@@ -203,9 +202,4 @@ class Asset(object):
                                                                         self.extension)
         self.full_path = self.project_path + self.path
 
-    def get_extension_from_type(self):
-        if self.type == "ref":
-            return "jpg"
-        elif self.type == "lay":
-            return "hip"
 

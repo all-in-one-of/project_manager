@@ -16,10 +16,93 @@ import shutil
 
 
 
-
-
 class Lib(object):
 
+    def create_thumbnails(self, obj_path="", type="", sampling="300", resolution="100"):
+
+        dialog = QtGui.QDialog()
+        dialog.setWindowTitle("Creating thumbnails")
+        self.apply_style(dialog)
+
+
+        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+
+        label = QtGui.QLabel("Please wait...", dialog)
+        progress_bar = QtGui.QProgressBar(dialog)
+        progress_bar.setValue(0)
+        if type == "full":
+            progress_bar.setMaximum(66 + int(sampling))
+        elif type == "quad":
+            progress_bar.setMaximum(211 + (int(sampling) * 4))
+        elif type == "turn":
+            progress_bar.setMaximum(1171 + (int(sampling) * 20))
+
+
+
+
+        dialog_main_layout.addWidget(label)
+        dialog_main_layout.addWidget(progress_bar)
+
+        dialog.show()
+        dialog.repaint()
+
+
+        if type == "quad":
+            resolution = str(int(resolution) / 2)
+
+
+        proc = subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", "-b",
+                             "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+                             "ThumbScript", obj_path, type, sampling, resolution], shell=True, stdout=subprocess.PIPE)
+
+        output = ""
+        while not "RENDER IS FINISHED" in output:
+            dialog.repaint()
+            progress_bar.setValue(progress_bar.value() + 1)
+            output = proc.stdout.readline()
+
+        proc.kill()
+
+        if type == "full":
+            filename = obj_path.replace(".obj", "_full.jpg")
+            self.compress_image(filename, 1920 * float(resolution) / 100, 90)
+
+
+        elif type == "quad":
+            full_scale_width = int(1920 * float(resolution) * 2 / 100)
+            full_scale_height = int(1152 * float(resolution) * 2 / 100)
+
+            quad_scale_width = int(1920 * float(resolution) / 100)
+            quad_scale_height = int(1152 * float(resolution) / 100)
+
+            im = Image.new("RGB", (full_scale_width, full_scale_height), "black")
+
+            view01 = Image.open(obj_path.replace(".obj", "_000.png"))
+            view02 = Image.open(obj_path.replace(".obj", "_090.png"))
+            view03 = Image.open(obj_path.replace(".obj", "_180.png"))
+            view04 = Image.open(obj_path.replace(".obj", "_270.png"))
+
+            # get the correct size
+
+            im.paste(view01, (0, 0))
+            im.paste(view02, (quad_scale_width, 0))
+            im.paste(view03, (0, quad_scale_height))
+            im.paste(view04, (quad_scale_width, quad_scale_height))
+
+            im.save(obj_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
+
+            for i in range(0, 360, 90):
+                os.remove(obj_path.replace(".obj", "_" + str(i).zfill(3) + ".png"))
+
+
+        elif type == "turn":
+            file_sequence = obj_path.replace(".obj", "_%02d.png")
+            movie_path = obj_path.replace(".obj", "_turn.wmv")
+            subprocess.call(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-f", "image2", "-i", file_sequence, "-vcodec", "mpeg4", "-y", movie_path])
+            for i in range(8):
+                os.remove(obj_path.replace(".obj", "_" + str(i).zfill(2) + ".png"))
+
+        dialog.close()
 
     def setup_user_session(self):
         shutil.copytree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
@@ -454,3 +537,8 @@ class CheckNews(Thread):
             self.add_to_check_news = 0
 
 
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    test = Lib()
+    test.create_thumbnails(obj_path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\lib\\thumbnailer\\statue.obj", type="quad", sampling="100", resolution="10")
+    app.exit()

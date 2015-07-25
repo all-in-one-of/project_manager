@@ -6,12 +6,14 @@ import subprocess
 from functools import partial
 import os
 import shutil
+from PyQt4.phonon import Phonon
 
 
 class AssetLoader(object):
     def __init__(self):
 
         self.assets = {}
+        self.selected_asset = None
 
         # Get projects from database and add them to the projects list
         self.projects = self.cursor.execute('''SELECT project_name FROM projects''').fetchall()
@@ -53,12 +55,18 @@ class AssetLoader(object):
         self.addSequenceBtn.clicked.connect(self.add_sequence)
         self.addShotBtn.clicked.connect(self.add_shot)
 
+        self.thumbFullBtn.clicked.connect(partial(self.switch_thumbnail_display, "full"))
+        self.thumbQuadBtn.clicked.connect(partial(self.switch_thumbnail_display, "quad"))
+        self.thumbTurnBtn.clicked.connect(partial(self.switch_thumbnail_display, "turn"))
+
         self.seqFilterClearBtn.clicked.connect(partial(self.clear_filter, "seq"))
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.addCommentBtn.clicked.connect(self.add_comment)
-        self.updateThumbBtn.clicked.connect(self.update_thumb)
+        self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
+
+        self.createVersionBtn.clicked.connect(self.create_new_version)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -174,7 +182,12 @@ class AssetLoader(object):
         '''
         Add all assets from selected project. Only run once to rebuild assets objects from Asset class.
         '''
+        self.assets = {}
         self.versions = []
+        assets_list = []
+        self.assetList.clear()
+        self.versionList.clear()
+
         all_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,)).fetchall()
         for asset in all_assets:
             asset_id = asset[0]
@@ -183,19 +196,22 @@ class AssetLoader(object):
             shot_number = asset[3]
             asset_name = asset[4]
             asset_path = asset[5]
-            asset_type = asset[6]
-            asset_version = asset[7]
-            asset_comment = asset[8]
-            asset_tags = asset[9]
-            asset_dependency = asset[10]
-            last_access = asset[11]
-            creator = asset[12]
+            asset_extension = asset[6]
+            asset_type = asset[7]
+            asset_version = asset[8]
+            asset_comment = asset[9]
+            asset_tags = asset[10]
+            asset_dependency = asset[11]
+            last_access = asset[12]
+            creator = asset[13]
 
             asset_item = QtGui.QListWidgetItem(asset_name)
-            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, "", asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator)
+            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator)
             asset_item.setData(QtCore.Qt.UserRole, asset)
+            assets_list.append((asset.sequence, asset.shot, asset.name, asset.type))
             self.assets[asset] = asset_item
-            self.assetList.addItem(asset_item)
+            if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
+                self.assetList.addItem(asset_item)
 
             version_item = QtGui.QListWidgetItem(asset_version)
             version_item.setData(QtCore.Qt.UserRole, asset)
@@ -299,16 +315,30 @@ class AssetLoader(object):
         selected_version = self.versionList.selectedItems()[0]
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
-        # Load thumbnail
-        qpixmap = QtGui.QPixmap(self.selected_asset.full_path)
-        qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-        self.assetImg.setPixmap(qpixmap)
-
-        # If asset is of type reference, hide "Update thumbnail" button
         if self.selected_asset.type == "ref":
+            qpixmap = QtGui.QPixmap(self.selected_asset.full_path)
+            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setPixmap(qpixmap)
             self.updateThumbBtn.setVisible(False)
             self.createVersionBtn.setVisible(False)
             self.publishBtn.setVisible(False)
+
+        elif self.selected_asset.type == "mod":
+            if self.selected_asset.extension == "obj":
+                qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_full.jpg"))
+                qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+                self.assetImg.setData(self.selected_asset)
+                self.assetImg.setPixmap(qpixmap)
+
+            else:
+                qpixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img_found.png")
+                qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
+                self.assetImg.setData(self.selected_asset)
+                self.assetImg.setPixmap(qpixmap)
+
+
+
 
         self.createdByValueLbl.setText(self.members[self.selected_asset.creator])
 
@@ -355,6 +385,102 @@ class AssetLoader(object):
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), True)
 
+    def create_new_version(self):
+        if self.selected_asset.version == "out":
+            self.Lib.message_box(self, text="You can't create a new version from a published asset")
+            return
+
+
+        old_version_path = self.selected_asset.full_path
+
+        new_version = str(int(self.selected_asset.version) + 1).zfill(2)
+        print(self.selected_asset.extension)
+        return
+        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.comments,
+                           self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator)
+        asset.add_asset_to_db()
+
+        shutil.copy(old_version_path, asset.full_path)
+
+    def update_thumbnail(self):
+        if self.selected_asset.type == "mod":
+            if self.selected_asset.version != "out":
+                self.Lib.message_box(self, text="You can only create a thumbnail from published asset")
+            else:
+                dialog = QtGui.QDialog(self)
+                dialog.setWindowTitle("Select options")
+                dialog_main_layout = QtGui.QVBoxLayout(dialog)
+
+                checkbox_full = QtGui.QCheckBox("Single image (Full Resolution Render)", dialog)
+                checkbox_quad = QtGui.QCheckBox("Four images (Quad View)", dialog)
+                checkbox_turn = QtGui.QCheckBox("Turntable (video)", dialog)
+
+                create_btn = QtGui.QPushButton("Start!", dialog)
+                create_btn.clicked.connect(dialog.accept)
+
+                dialog_main_layout.addWidget(checkbox_full)
+                dialog_main_layout.addWidget(checkbox_quad)
+                dialog_main_layout.addWidget(checkbox_turn)
+                dialog_main_layout.addWidget(create_btn)
+
+                dialog.exec_()
+
+                if dialog.result() == 0:
+                    return
+
+                if checkbox_full.isChecked():
+                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "full", "300", "50")
+                if checkbox_quad.isChecked():
+                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "quad", "150", "50")
+                if checkbox_turn.isChecked():
+                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "turn", "75", "50")
+
+    def switch_thumbnail_display(self, type=""):
+        if not self.selected_asset:
+            return
+
+        if not self.selected_asset.extension == "obj":
+            return
+
+        if type == "full":
+            self.assetImg.setVisible(True)
+            self.thumbVideoPlayer.setVisible(False)
+            qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_full.jpg"))
+            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setPixmap(qpixmap)
+
+        elif type == "quad":
+            self.assetImg.setVisible(True)
+            self.thumbVideoPlayer.setVisible(False)
+            if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_quad.jpg")):
+                self.update_thumbnail()
+                return
+            qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_quad.jpg"))
+            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setPixmap(qpixmap)
+
+        elif type == "turn":
+            if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_turn.wmv")):
+                self.update_thumbnail()
+                return
+
+            self.assetImg.setVisible(False)
+            self.thumbVideoPlayer.resize(500, 300)
+            self.thumbVideoPlayer.setMinimumWidth(500)
+            self.thumbVideoPlayer.setMaximumWidth(500)
+            self.thumbVideoPlayer.setMinimumHeight(300)
+            self.thumbVideoPlayer.setMaximumHeight(300)
+            media_source = Phonon.MediaSource("H:\\01-NAD\\_pipeline\\test_project_files\\assets\\mod\\nat_xxx_xxxx_mod_colonneRomaine_out_turn.wmv")
+            self.thumbVideoPlayer.load(media_source)
+            self.thumbVideoPlayer.play()
+            self.thumbVideoPlayer.show()
+
+
+
+
+
     def load_asset(self):
         if self.selected_asset.type == "ref":
             os.system(self.selected_asset.full_path)
@@ -364,6 +490,7 @@ class AssetLoader(object):
             self.create_modeling_asset_from_scratch()
 
     def create_modeling_asset_from_scratch(self):
+
         dialog = QtGui.QDialog(self)
         self.Lib.apply_style(self, dialog)
 
@@ -396,8 +523,22 @@ class AssetLoader(object):
         elif software_combobox.currentText() == "Houdini":
             extension = "hip"
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, str(name_line_edit.text()), "", extension, "mod", "01", [], [], "", "", self.username)
-        asset.add_asset_to_db()
+        asset_name = str(name_line_edit.text())
+        asset_name = self.Lib.normalize_str(self, asset_name)
+        asset_name = self.Lib.convert_to_camel_case(self, asset_name)
 
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], [], "", "", self.username)
+        asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\blender.blend", asset.full_path)
+
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], [], "", "", self.username)
+        asset.add_asset_to_db()
+        shutil.copy(self.NEF_folder + "\\default_cube.obj", asset.full_path)
+
+        shutil.copy(self.screenshot_dir + "default\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
+
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+
+
 

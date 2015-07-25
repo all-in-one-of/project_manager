@@ -117,19 +117,21 @@ class ReferenceTab(object):
             shot_number = ref[3]
             name = ref[4]
             path = ref[5]
-            type = ref[6]
-            version = ref[7]
-            comments = ref[8]
-            tags = ref[9]
-            dependency = ref[10]
-            last_access = ref[11]
-            creator = ref[12]
+            extension = ref[6]
+            type = ref[7]
+            version = ref[8]
+            comments = ref[9]
+            tags = ref[10]
+            dependency = ref[11]
+            last_access = ref[12]
+            creator = ref[13]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
             if shot_number == None: shot_number = ""
             if name == None: name = ""
             if path == None: path = ""
+            if extension == None: extension = ""
             if type == None: type = ""
             if version == None: version = ""
             if comments == None: comments = ""
@@ -138,7 +140,7 @@ class ReferenceTab(object):
             if last_access == None: last_access = ""
             if creator == None: creator = ""
 
-            asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
+            asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, extension, type, version,
                           comments, tags, dependency, last_access, creator)
             self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem()
@@ -926,19 +928,21 @@ class ReferenceTab(object):
                     shot_number = ref[3]
                     name = ref[4]
                     path = ref[5]
-                    type = ref[6]
-                    version = ref[7]
-                    comments = ref[8]
-                    tags = ref[9]
-                    dependency = ref[10]
-                    last_access = ref[11]
-                    creator = ref[12]
+                    extension = ref[6]
+                    type = ref[7]
+                    version = ref[8]
+                    comments = ref[9]
+                    tags = ref[10]
+                    dependency = ref[11]
+                    last_access = ref[12]
+                    creator = ref[13]
                     if id == None: id = ""
                     if project_name == None: project_name = ""
                     if sequence_name == None: sequence_name = ""
                     if shot_number == None: shot_number = ""
                     if name == None: name = ""
                     if path == None: path = ""
+                    if extension == None: extension = ""
                     if type == None: type = ""
                     if version == None: version = ""
                     if comments == None: comments = ""
@@ -947,8 +951,9 @@ class ReferenceTab(object):
                     if last_access == None: last_access = ""
                     if creator == None: creator = ""
 
-                    asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, "jpg", type, version,
+                    asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, extension, type, version,
                                   comments, tags, dependency, last_access, creator)
+                    asset.print_asset()
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)
                     ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
