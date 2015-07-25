@@ -6,7 +6,7 @@ import subprocess
 from functools import partial
 import os
 import shutil
-from PyQt4.phonon import Phonon
+from threading import Thread
 
 
 class AssetLoader(object):
@@ -67,6 +67,7 @@ class AssetLoader(object):
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
 
         self.createVersionBtn.clicked.connect(self.create_new_version)
+        self.publishBtn.clicked.connect(self.publish_asset)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -213,7 +214,7 @@ class AssetLoader(object):
             if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
                 self.assetList.addItem(asset_item)
 
-            version_item = QtGui.QListWidgetItem(asset_version)
+            version_item = QtGui.QListWidgetItem(asset_version + "-" + asset_extension)
             version_item.setData(QtCore.Qt.UserRole, asset)
             self.versions.append(version_item)
             self.versionList.addItem(version_item)
@@ -402,6 +403,9 @@ class AssetLoader(object):
 
         shutil.copy(old_version_path, asset.full_path)
 
+    def publish_asset(self):
+        subprocess.Popen([self.blender_path, "-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.full_path.replace("01.blend", "out.obj")], shell=True)
+
     def update_thumbnail(self):
         if self.selected_asset.type == "mod":
             if self.selected_asset.version != "out":
@@ -433,7 +437,7 @@ class AssetLoader(object):
                 if checkbox_quad.isChecked():
                     self.Lib.create_thumbnails(self, self.selected_asset.full_path, "quad", "150", "50")
                 if checkbox_turn.isChecked():
-                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "turn", "75", "50")
+                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "turn", "50", "100")
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -443,16 +447,12 @@ class AssetLoader(object):
             return
 
         if type == "full":
-            self.assetImg.setVisible(True)
-            self.thumbVideoPlayer.setVisible(False)
             qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_full.jpg"))
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(self.selected_asset)
             self.assetImg.setPixmap(qpixmap)
 
         elif type == "quad":
-            self.assetImg.setVisible(True)
-            self.thumbVideoPlayer.setVisible(False)
             if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_quad.jpg")):
                 self.update_thumbnail()
                 return
@@ -462,28 +462,19 @@ class AssetLoader(object):
             self.assetImg.setPixmap(qpixmap)
 
         elif type == "turn":
-            if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_turn.wmv")):
+            if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_turn.mp4")):
                 self.update_thumbnail()
                 return
-
-            self.assetImg.setVisible(False)
-            self.thumbVideoPlayer.resize(500, 300)
-            self.thumbVideoPlayer.setMinimumWidth(500)
-            self.thumbVideoPlayer.setMaximumWidth(500)
-            self.thumbVideoPlayer.setMinimumHeight(300)
-            self.thumbVideoPlayer.setMaximumHeight(300)
-            media_source = Phonon.MediaSource("H:\\01-NAD\\_pipeline\\test_project_files\\assets\\mod\\nat_xxx_xxxx_mod_colonneRomaine_out_turn.wmv")
-            self.thumbVideoPlayer.load(media_source)
-            self.thumbVideoPlayer.play()
-            self.thumbVideoPlayer.show()
-
-
-
-
+            subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", "H:\\01-NAD\\_pipeline\\test_project_files\\assets\\mod\\nat_xxx_xxxx_mod_colonneRomaine_out_turn.mp4", "/fullscreen", ])
 
     def load_asset(self):
         if self.selected_asset.type == "ref":
             os.system(self.selected_asset.full_path)
+
+        elif self.selected_asset.type == "mod":
+            if self.selected_asset.extension != "obj":
+                t = Thread(target=lambda: os.system(self.selected_asset.full_path))
+                t.start()
 
     def create_asset_from_scratch(self):
         if self.selected_department_name == "mod":
@@ -512,15 +503,16 @@ class AssetLoader(object):
         if dialog.result() == 0:
             return
 
-        if software_combobox.currentText() == "Blender":
+        selected_software = str(software_combobox.currentText()).lower().replace(" ", "")
+        if selected_software == "blender":
             extension = "blend"
-        elif software_combobox.currentText() == "Maya":
+        elif selected_software == "maya":
             extension = "ma"
-        elif software_combobox.currentText() == "Softimage":
+        elif selected_software == "softimage":
             extension = "scn"
-        elif software_combobox.currentText() == "Cinema 4D":
+        elif selected_software == "cinema4d":
             extension = "c4d"
-        elif software_combobox.currentText() == "Houdini":
+        elif selected_software == "houdini":
             extension = "hip"
 
         asset_name = str(name_line_edit.text())
@@ -529,13 +521,20 @@ class AssetLoader(object):
 
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], [], "", "", self.username)
         asset.add_asset_to_db()
-        shutil.copy(self.NEF_folder + "\\blender.blend", asset.full_path)
+        shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], [], "", "", self.username)
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", asset.full_path)
 
         shutil.copy(self.screenshot_dir + "default\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
+
+        #os.system("setx HOUDINI_USER_PREF_DIR ''")
+        subprocess.Popen([self.houdini_batch_path, self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py",
+                          asset.full_path + "*" + asset_name], shell=True)
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], [], "", "", self.username)
+        asset.add_asset_to_db()
+        #os.system("setx HOUDINI_USER_PREF_DIR H:\\01-NAD\\Divers\\Houdini\\houdini__HVER__")
 
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()

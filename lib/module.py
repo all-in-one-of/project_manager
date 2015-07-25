@@ -64,8 +64,8 @@ class Lib(object):
         proc.kill()
 
         if type == "full":
-            filename = obj_path.replace(".obj", "_full.jpg")
-            self.compress_image(filename, 1920 * float(resolution) / 100, 90)
+            filename = obj_path.replace(".obj", "_full.png")
+            self.compress_image(filename, int(1920 * float(resolution) / 100), 90)
 
 
         elif type == "quad":
@@ -97,9 +97,9 @@ class Lib(object):
 
         elif type == "turn":
             file_sequence = obj_path.replace(".obj", "_%02d.png")
-            movie_path = obj_path.replace(".obj", "_turn.wmv")
-            subprocess.call(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-f", "image2", "-i", file_sequence, "-vcodec", "mpeg4", "-y", movie_path])
-            for i in range(8):
+            movie_path = obj_path.replace(".obj", "_turn.mp4")
+            subprocess.call(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "12", movie_path])
+            for i in range(24):
                 os.remove(obj_path.replace(".obj", "_" + str(i).zfill(2) + ".png"))
 
         dialog.close()
@@ -126,6 +126,10 @@ class Lib(object):
         houdini_path = str(self.houdiniPathLineEdit.text())
         self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Houdini"''',
                             (houdini_path,))
+
+        houdini_batch_path = str(self.houdiniPathLineEdit.text())
+        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Houdini Batch"''',
+                            (houdini_batch_path,))
 
         cinema4d_path = str(self.cinema4dPathLineEdit.text())
         self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Cinema 4D"''',
@@ -189,7 +193,7 @@ class Lib(object):
 
         # Create Favicon
         app_icon = QtGui.QIcon()
-        app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
+        app_icon.addFile(self.cur_path + "\\media\\favicon_cube.png", QtCore.QSize(16, 16))
         form.setWindowIcon(app_icon)
 
         if int(self.theme) == 0:

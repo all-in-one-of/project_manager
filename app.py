@@ -124,7 +124,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
-        self.app_icon.addFile(self.cur_path + "\\media\\favicon.png", QtCore.QSize(16, 16))
+        self.app_icon.addFile(self.cur_path + "\\media\\favicon_cube.png", QtCore.QSize(64, 64))
         self.Form.setWindowIcon(self.app_icon)
 
         # Set the StyleSheet
@@ -180,6 +180,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.maya_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[0])
         self.softimage_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Softimage"''').fetchone()[0])
         self.houdini_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Houdini"''').fetchone()[0])
+        self.houdini_batch_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Houdini Batch"''').fetchone()[0])
         self.cinema4d_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Cinema 4D"''').fetchone()[0])
         self.nuke_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Nuke"''').fetchone()[0])
         self.zbrush_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="ZBrush"''').fetchone()[0])
@@ -190,6 +191,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.mayaPathLineEdit.setText(self.maya_path)
         self.softimagePathLineEdit.setText(self.softimage_path)
         self.houdiniPathLineEdit.setText(self.houdini_path)
+        self.houdiniBatchPathLineEdit.setText(self.houdini_batch_path)
         self.cinema4dPathLineEdit.setText(self.cinema4d_path)
         self.nukePathLineEdit.setText(self.nuke_path)
         self.zbrushPathLineEdit.setText(self.zbrush_path)
@@ -203,7 +205,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
 
         # Systray icon
         self.tray_icon_log_id = ""
-        self.tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(self.cur_path + "\\media\\favicon.png"), app)
+        self.tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(self.cur_path + "\\media\\favicon_cube.png"), app)
         self.tray_icon.messageClicked.connect(self.tray_icon_message_clicked)
         self.tray_icon.activated.connect(self.tray_icon_clicked)
         self.tray_message = ""
@@ -549,7 +551,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         slider_value = self.prefBckGroundColorSlider.value()
         self.referenceThumbListWidget.setStyleSheet("background-color: rgb({0},{0},{0});".format(slider_value))
 
-
     def tray_icon_message_clicked(self):
 
         if self.tray_message == "Manager is in background mode.":
@@ -658,19 +659,66 @@ if __name__ == "__main__":
     logger.addHandler(steam_handler)
 
 
+
     if log_to_file == False:
         app = QtGui.QApplication(sys.argv)
         app.setQuitOnLastWindowClosed(False)
+
+        # Show Splashscreen
+        splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
+        splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+        splash.setMask(splash_pix.mask())
+
+        splash.show()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
+        splash.repaint()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
+        splash.repaint()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
+        splash.repaint()
+
+        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
+        splash.repaint()
+
         window = Main()
         window.show()
+
+        splash.finish(window)
+
         sys.exit(app.exec_())
     else:
         try:
             app = QtGui.QApplication(sys.argv)
             app.setQuitOnLastWindowClosed(False)
+
+            # Show Splashscreen
+            splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
+            splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+            splash.setMask(splash_pix.mask())
+
+            splash.show()
+
+            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
+            splash.repaint()
+
+            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
+            splash.repaint()
+
+            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
+            splash.repaint()
+
+            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
+            splash.repaint()
+
             window = Main()
             window.show()
+
+            splash.finish(window)
             sys.exit(app.exec_())
+
         except Exception as e:
             logger.debug(e)
 
