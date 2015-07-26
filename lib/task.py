@@ -2,7 +2,7 @@
 # coding=utf-8
 
 class Task(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_id="", task_description="", task_department="", task_status="", task_assignation="", task_start="", task_end="", task_bid="", task_comments=[], task_confirmation=0):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_id="", task_description="", task_department="", task_status="", task_assignation="", task_start="", task_end="", task_bid="", task_confirmation=0):
         self.id = id
         self.main = main
         self.project = project_name
@@ -20,19 +20,15 @@ class Task(object):
         self.start = task_start
         self.end = task_end
         self.bid = task_bid
-        if not task_comments == None and len(task_comments) > 0:
-            self.comments = task_comments.split(";")
-        else:
-            self.comments = []
         self.confirmation = task_confirmation
 
     def print_task(self):
-        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.comments, self.confirmation)
+        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.confirmation)
 
     def add_task_to_db(self):
         self.main.cursor.execute(
-            '''INSERT INTO tasks(project_name, sequence_name, shot_number, asset_id, task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid, task_comment, task_confirmation) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-            (self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, ";".join(self.comments), self.confirmation))
+            '''INSERT INTO tasks(project_name, sequence_name, shot_number, asset_id, task_description, task_department, task_status, task_assignation, task_start, task_end, task_bid, task_confirmation) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''',
+            (self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.start, self.end, self.bid, self.confirmation))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -106,14 +102,16 @@ class Task(object):
         self.main.db.commit()
         self.confirmation = new_confirmation
 
-    def add_comment(self, comment):
-        self.comments.extend(comment)
-        self.main.cursor.execute('''UPDATE tasks SET task_comment=? WHERE task_id=?''', (";".join(self.comments), self.id,))
+    def add_comment(self, author, comment, time, type):
+        self.main.cursor.execute('''INSERT INTO comments(comment_id, comment_author, comment_text, comment_time, comment_type) VALUES(?,?,?,?,?)''', (self.id, author, comment, time, type))
         self.main.db.commit()
 
-    def remove_comment(self, comment):
-        self.comments = list(set(self.comments) - set(comment))
-        self.main.cursor.execute('''UPDATE tasks SET task_comment=? WHERE task_id=?''', (";".join(self.comments), self.id,))
+    def remove_comment(self, author, comment, time):
+        self.main.cursor.execute('''DELETE FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time))
+        self.main.db.commit()
+
+    def edit_comment(self, new_comment, comment_author, old_comment, comment_time):
+        self.main.cursor.execute('''UPDATE comments SET comment_text=? WHERE comment_author=? AND comment_text=? AND comment_time=?''', (new_comment, comment_author, old_comment, comment_time,))
         self.main.db.commit()
 
     def get_infos_from_id(self):
@@ -129,8 +127,7 @@ class Task(object):
         start = task[9]
         end = task[10]
         bid = task[11]
-        comments = task[12]
-        confirmation = task[13]
+        confirmation = task[12]
 
         self.project = project_name
         try:
@@ -147,8 +144,4 @@ class Task(object):
         self.start = start
         self.end = end
         self.bid = bid
-        if not comments == None and len(comments) > 0:
-            self.comments = comments.split(";")
-        else:
-            self.comments = []
         self.confirmation = confirmation

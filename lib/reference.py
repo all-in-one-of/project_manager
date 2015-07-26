@@ -11,7 +11,7 @@ import re
 import pafy
 from collections import Counter
 import shutil
-import timeit
+import webbrowser
 
 
 class ReferenceTab(object):
@@ -120,11 +120,10 @@ class ReferenceTab(object):
             extension = ref[6]
             type = ref[7]
             version = ref[8]
-            comments = ref[9]
-            tags = ref[10]
-            dependency = ref[11]
-            last_access = ref[12]
-            creator = ref[13]
+            tags = ref[9]
+            dependency = ref[10]
+            last_access = ref[11]
+            creator = ref[12]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -134,14 +133,13 @@ class ReferenceTab(object):
             if extension == None: extension = ""
             if type == None: type = ""
             if version == None: version = ""
-            if comments == None: comments = ""
             if tags == None: tags = ""
             if dependency == None: dependency = ""
             if last_access == None: last_access = ""
             if creator == None: creator = ""
 
             asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, extension, type, version,
-                          comments, tags, dependency, last_access, creator)
+                          tags, dependency, last_access, creator)
             self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem()
             ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
@@ -382,19 +380,21 @@ class ReferenceTab(object):
         Trigger action based when user double click an item
         '''
         selected_reference = self.referenceThumbListWidget.selectedItems()[0]
-        asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
+        self.selected_asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            self.CommentWidget(self, asset)
+            self.CommentsFrame.show()
+            self.commentLineEdit.setFocus()
+            self.CommentWidget.load_comments(self)
 
         else:  # Opening video / image in chrome / windows image view
 
-            if "vimeo" in asset.dependency or "youtube" in asset.dependency:
-                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", asset.dependency])
+            if "vimeo" in self.selected_asset.dependency or "youtube" in self.selected_asset.dependency:
+                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", self.selected_asset.dependency])
             else:
                 # Open image in windows viewer
-                os.system(asset.full_path)
+                webbrowser.open(self.selected_asset.full_path)
 
     def rename_reference(self, asset):
         '''
@@ -931,11 +931,10 @@ class ReferenceTab(object):
                     extension = ref[6]
                     type = ref[7]
                     version = ref[8]
-                    comments = ref[9]
-                    tags = ref[10]
-                    dependency = ref[11]
-                    last_access = ref[12]
-                    creator = ref[13]
+                    tags = ref[9]
+                    dependency = ref[10]
+                    last_access = ref[11]
+                    creator = ref[12]
                     if id == None: id = ""
                     if project_name == None: project_name = ""
                     if sequence_name == None: sequence_name = ""
@@ -945,14 +944,13 @@ class ReferenceTab(object):
                     if extension == None: extension = ""
                     if type == None: type = ""
                     if version == None: version = ""
-                    if comments == None: comments = ""
                     if tags == None: tags = ""
                     if dependency == None: dependency = ""
                     if last_access == None: last_access = ""
                     if creator == None: creator = ""
 
                     asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, extension, type, version,
-                                  comments, tags, dependency, last_access, creator)
+                                  tags, dependency, last_access, creator)
                     asset.print_asset()
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)

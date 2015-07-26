@@ -31,6 +31,10 @@ class AssetLoader(object):
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
 
+        qpixmap = QtGui.QPixmap(self.no_img_found)
+        qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
+        self.assetImg.setPixmap(qpixmap)
+
         # Filtering options
         self.meOnlyCheckBox.stateChanged.connect(self.filter_assets_for_me)
 
@@ -207,14 +211,17 @@ class AssetLoader(object):
             creator = asset[13]
 
             asset_item = QtGui.QListWidgetItem(asset_name)
-            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator)
+            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator)
             asset_item.setData(QtCore.Qt.UserRole, asset)
             assets_list.append((asset.sequence, asset.shot, asset.name, asset.type))
             self.assets[asset] = asset_item
             if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
                 self.assetList.addItem(asset_item)
 
-            version_item = QtGui.QListWidgetItem(asset_version + "-" + asset_extension)
+            if asset.extension == "obj" or asset.extension == "hda":
+                version_item = QtGui.QListWidgetItem(asset.version + "-" + asset.extension)
+            else:
+                version_item = QtGui.QListWidgetItem(asset.version)
             version_item.setData(QtCore.Qt.UserRole, asset)
             self.versions.append(version_item)
             self.versionList.addItem(version_item)
@@ -299,7 +306,6 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
-
         selected_asset = self.assetList.selectedItems()[0]
         current_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         for version in self.versions:
@@ -333,7 +339,7 @@ class AssetLoader(object):
                 self.assetImg.setPixmap(qpixmap)
 
             else:
-                qpixmap = QtGui.QPixmap(self.screenshot_dir + "default\\no_img_found.png")
+                qpixmap = QtGui.QPixmap(self.no_img_found)
                 qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
                 self.assetImg.setData(self.selected_asset)
                 self.assetImg.setPixmap(qpixmap)
@@ -527,7 +533,7 @@ class AssetLoader(object):
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", asset.full_path)
 
-        shutil.copy(self.screenshot_dir + "default\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
+        shutil.copy(self.cur_dir + "media\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
 
         #os.system("setx HOUDINI_USER_PREF_DIR ''")
         subprocess.Popen([self.houdini_batch_path, self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py",

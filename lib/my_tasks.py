@@ -88,8 +88,7 @@ class MyTasks(object):
             start = task[9]
             end = task[10]
             bid = task[11]
-            comments = task[12]
-            confirmation = task[13]
+            confirmation = task[12]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -102,11 +101,10 @@ class MyTasks(object):
             if start == None: start = ""
             if end == None: end = ""
             if bid == None: bid = ""
-            if comments == None: comments = ""
             if confirmation == None: confirmation = ""
 
             task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department,
-                             status, assignation, start, end, bid, comments, confirmation)
+                             status, assignation, start, end, bid, confirmation)
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()

@@ -5,51 +5,34 @@ from PyQt4 import QtGui, QtCore
 import time
 from functools import partial
 
-class CommentWidget(QtGui.QDialog):
+class CommentWidget(object):
 
-    def __init__(self, main, asset):
-        super(CommentWidget, self).__init__()
+    def __init__(self):
 
-        self.main = main
-        self.asset = asset
-        self.type = self.asset.__class__.__name__
 
-        if self.type == "Asset":
-            self.setWindowTitle("Comments for {0} '{1}'".format(self.type, self.asset.name))
-        elif self.type == "Task":
-            self.setWindowTitle("Comments for {0} #{1}".format(self.type, self.asset.id))
-
-        self.setWindowFlags(QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
-
-        self.main.Lib.apply_style(self.main, self)
-
-        self.main_layout = QtGui.QVBoxLayout(self)
+        self.CommentsFrame.hide()
 
         self.comment_text_edit_dic = {}
-
-        self.commentLineEdit = QtGui.QLineEdit(self)
-        self.commentLineEdit.setPlaceholderText("Enter comment here...")
-
-        self.scrollarea = QtGui.QScrollArea(self)
-        self.scrollarea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 380, 280))
-        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.scrollAreaWidgetContents)
-        self.gridLayout = QtGui.QGridLayout()
-        self.horizontalLayout_2.addLayout(self.gridLayout)
-        self.scrollarea.setWidget(self.scrollAreaWidgetContents)
-
-        self.main_layout.addWidget(self.commentLineEdit)
-        self.main_layout.addWidget(self.scrollarea)
+        self.hideCommentsFrameBtn.clicked.connect(self.hide_comments_frame)
+        self.gridLayout = QtGui.QGridLayout(self.scrollAreaWidgetContents)
 
         self.commentLineEdit.returnPressed.connect(self.add_comment)
 
-        self.commentLineEdit.setFocus()
+    def hide_comments_frame(self):
+        self.CommentsFrame.hide()
+        size = QtCore.QSize(0, self.size().height())
+        self.setFixedSize(size)
 
-        self.load_comments()
-        self.exec_()
 
     def load_comments(self):
+        self.CommentsFrame.show()
+
+        current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
+        if current_tab_text == "Images Manager":
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="ref"''', (self.selected_asset.id,)).fetchall()
+        elif current_tab_text == "Task Manager":
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="task"''', (self.selected_asset.id,)).fetchall()
+
         self.comment_authors = []
         self.cur_alignment = "left"
 
@@ -57,17 +40,17 @@ class CommentWidget(QtGui.QDialog):
             item = self.gridLayout.takeAt(0)
             item.widget().deleteLater()
 
-        for i, each_comment in enumerate(reversed(self.asset.comments)):
-            comment_text_and_author = each_comment.split(":")[0]
-            comment_text = each_comment.split("(")[0].split(":")[1]
-            comment_text = comment_text.lstrip()
-            comment_time = each_comment.split("(")[1]
+        if len(comments) == 0:
+            self.create_comment_frame("default", "There's no comments", "")
+
+        for i, comment in enumerate(reversed(comments)):
+            comment_author = comment[1]
+            comment_text = comment[2]
+            comment_time = comment[3]
 
             if i == 0:  # If first comment, align it to left
-                comment_author = comment_text_and_author.split(":")[0]
                 self.create_comment_frame(comment_author, comment_text, comment_time)
             else:
-                comment_author = comment_text_and_author.split(":")[0]
                 if comment_author == self.comment_authors[-1]:  # Current author is the same as last author
                     if self.cur_alignment == "left":
                         self.create_comment_frame(comment_author, comment_text, comment_time)
@@ -84,36 +67,34 @@ class CommentWidget(QtGui.QDialog):
             self.comment_authors.append(comment_author)
 
         try:
-            self.scrollarea.setMinimumHeight(self.comment_frame.sizeHint().width())
-            self.scrollarea.setMinimumWidth(self.comment_frame.sizeHint().width())
+            self.commentsScrollArea.setMinimumHeight(self.comment_frame.sizeHint().width())
+            self.commentsScrollArea.setMinimumWidth(self.comment_frame.sizeHint().width())
         except:
-            self.scrollarea.setMinimumHeight(300)
-            self.scrollarea.setMinimumWidth(300)
+            self.commentsScrollArea.setMinimumHeight(300)
+            self.commentsScrollArea.setMinimumWidth(300)
 
         # Get all comment authors except me
         self.comment_authors = list(set(self.comment_authors))
-        #self.comment_authors = [str(i) for i in self.comment_authors if not self.main.members[self.main.username] in i]
+
 
     def create_comment_frame(self, comment_author, comment_text, comment_time):
 
-        comment_author_shortname = [shortname for shortname, longname in self.main.members.items() if comment_author == longname]
-        comment_author_shortname = comment_author_shortname[0]
-
-        self.comment_frame = QtGui.QFrame(self.scrollarea)
+        self.comment_frame = QtGui.QFrame(self.commentsScrollArea)
         self.comment_frame.setMaximumHeight(80)
         comment_frame_layout = QtGui.QHBoxLayout(self.comment_frame)
         comment_frame_layout.setMargin(0)
         comment_frame_layout.setSpacing(1)
 
         author_picture_lbl = QtGui.QLabel(self.comment_frame)
-        author_picture_pixmap = QtGui.QPixmap("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\media\\members_photos\\" + comment_author_shortname + ".jpg")
+        author_picture_pixmap = QtGui.QPixmap(self.cur_path + "\\media\\members_photos\\" + comment_author + ".jpg")
         author_picture_pixmap = author_picture_pixmap.scaled(80, 80, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         author_picture_lbl.setPixmap(author_picture_pixmap)
-        author_picture_lbl.setToolTip(self.main.members[comment_author_shortname])
+        if comment_author != "default":
+            author_picture_lbl.setToolTip(self.members[comment_author])
 
         comment_text_edit = QtGui.QTextEdit(self.comment_frame)
         comment_text_edit.setReadOnly(True)
-        if comment_author_shortname == self.main.username:
+        if comment_author == self.username:
             edit_frame = QtGui.QFrame(self.comment_frame)
             edit_frame_layout = QtGui.QVBoxLayout(edit_frame)
             update_button = QtGui.QPushButton("edit", edit_frame)
@@ -139,45 +120,42 @@ class CommentWidget(QtGui.QDialog):
         if self.cur_alignment == "left":
             comment_frame_layout.addWidget(author_picture_lbl)
             comment_frame_layout.addWidget(comment_text_edit)
-            if comment_author_shortname == self.main.username: comment_frame_layout.addWidget(edit_frame)
+            if comment_author == self.username: comment_frame_layout.addWidget(edit_frame)
         elif self.cur_alignment == "right":
-            if comment_author_shortname == self.main.username: comment_frame_layout.addWidget(edit_frame)
+            if comment_author == self.username: comment_frame_layout.addWidget(edit_frame)
             comment_frame_layout.addWidget(comment_text_edit)
             comment_frame_layout.addWidget(author_picture_lbl)
 
         self.gridLayout.addWidget(self.comment_frame)
 
     def add_comment(self):
+        current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
+
         comment = unicode(self.commentLineEdit.text())
-        comment = self.main.Lib.normalize_str(self.main, comment)
-        comment = comment.replace(":", "")
+        comment = self.Lib.normalize_str(self, comment)
         current_time = time.strftime("%d/%m/%Y at %H:%M")
-        comment_with_time = "{0}: {1} ({2})".format(self.main.Lib.normalize_str(self.main, self.main.members[self.main.username]), comment, current_time)
-        comment_with_time.replace(";", "")
 
-        if self.type == "Asset":
-            self.asset.add_comment([comment_with_time])
-            self.main.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.main.members[self.main.username], self.asset.name, self.asset.sequence), people=self.comment_authors, value=self.asset.id)
+        if current_tab_text == "Images Manager":
+            self.selected_asset.add_comment(self.username, comment, current_time, "ref")
+            #self.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.members[self.username], self.selected_assetname, self.selected_assetsequence), people=self.comment_authors, value=self.selected_assetid)
 
 
-        elif self.type == "Task":
-            self.asset.add_comment([comment_with_time])
-            self.main.add_log_entry(text="{0} added a comment on task #{1}".format(self.main.members[self.main.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+        elif current_tab_text == "Task Manager" or current_tab_text == "Tasks":
+            self.selected_asset.add_comment(self.username, comment, current_time, "task")
+            #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
 
         self.load_comments()
         self.commentLineEdit.clear()
 
     def delete_comment(self, comment_author, comment_text, comment_time):
-        self.asset.remove_comment([comment_author + ": " + comment_text + "(" + comment_time])
+        self.selected_asset.remove_comment(comment_author, comment_text, comment_time)
         self.load_comments()
 
     def edit_comment(self, comment_text_edit, comment_author, comment_text, comment_time):
-        old_comment = comment_author + ": " + comment_text + "(" + comment_time
-
 
         edit_comment_dialog = QtGui.QDialog()
         edit_comment_dialog.setWindowTitle("Edit comment")
-        self.main.Lib.apply_style(self.main, edit_comment_dialog)
+        self.Lib.apply_style(self, edit_comment_dialog)
         edit_comment_layout = QtGui.QVBoxLayout(edit_comment_dialog)
         edit_comment_textbox = QtGui.QTextEdit(comment_text)
         edit_comment_textbox.selectAll()
@@ -192,6 +170,6 @@ class CommentWidget(QtGui.QDialog):
         if edit_comment_dialog.result == 0:
             return
 
-        new_comment = comment_author + ": " + edit_comment_textbox.toPlainText() + " (" + comment_time
-        self.asset.edit_comment(old_comment, new_comment)
+        new_comment = str(edit_comment_textbox.toPlainText())
+        self.selected_asset.edit_comment(new_comment, comment_author, comment_text, comment_time)
         self.load_comments()

@@ -63,7 +63,7 @@ from lib.asset_loader import AssetLoader
 
 
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task, AssetLoader):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task, AssetLoader):
     def __init__(self):
         super(Main, self).__init__()
 
@@ -91,6 +91,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
+
         # Global Variables
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
@@ -113,7 +114,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
         self.refreshAllBtn.clicked.connect(self.refresh_all)
-
 
         # Setup user session if it is not already setup
         is_setup = self.cursor.execute('''SELECT is_setup FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
@@ -174,7 +174,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         elif disk_usage >= 0:
             self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;} QProgressBar {color: #323232;}")
 
-
         # Get software paths from database and put them in preference
         self.photoshop_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Photoshop"''').fetchone()[0])
         self.maya_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[0])
@@ -202,7 +201,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.prefBckGroundColorSlider.sliderMoved.connect(self.change_pref_background_color_pixmap)
         self.prefBckGroundColorSlider.setStyleSheet("background-color; red;")
 
-
         # Systray icon
         self.tray_icon_log_id = ""
         self.tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(self.cur_path + "\\media\\favicon_cube.png"), app)
@@ -214,13 +212,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         AssetLoader.__init__(self)
         ReferenceTab.__init__(self)
         TaskManager.__init__(self)
+        CommentWidget.__init__(self)
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
 
         self.check_news_thread = CheckNews(self)
         self.check_news_thread.daemon = True
         self.check_news_thread.start()
-
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -286,28 +284,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, Lib, TaskManager, MyTasks, What
         self.assetList.clear()
         for asset in assets_list:
             self.assetList.addItem(asset[4])
-
-    def add_comment(self):
-        if self.username == "Thibault":
-            username = "<font color=red>Thibault</font>"
-
-        # Check if there is already a comment or not to avoid empty first line due to HTML
-        if self.commentTxt.toPlainText():
-            comments = str(self.commentTxt.toHtml())
-        else:
-            comments = str(self.commentTxt.toPlainText())
-
-        new_comment = "<b>{1}</b>: {0} ({2})\n".format(str(self.commentTxtLine.text()), username,
-                                                       time.strftime("%d/%m/%Y"))
-        new_comment = comments + new_comment
-        self.cursor.execute('''UPDATE assets SET asset_comment = ? WHERE asset_path = ?''',
-                            (new_comment, self.selected_asset_path,))
-        self.db.commit()
-
-        # Update comment field
-        asset_comment = self.cursor.execute('''SELECT asset_comment FROM assets WHERE asset_path=?''',
-                                            (self.selected_asset_path,)).fetchone()[0]
-        self.commentTxt.setText(asset_comment)
 
     def clear_filter(self, filter_type):
         """

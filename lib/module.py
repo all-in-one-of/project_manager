@@ -13,6 +13,7 @@ import sys
 from threading import Thread
 import time
 import shutil
+import distutils.core
 
 
 
@@ -52,7 +53,7 @@ class Lib(object):
 
 
         proc = subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", "-b",
-                             "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+                             self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
                              "ThumbScript", obj_path, type, sampling, resolution], shell=True, stdout=subprocess.PIPE)
 
         output = ""
@@ -64,7 +65,7 @@ class Lib(object):
         proc.kill()
 
         if type == "full":
-            filename = obj_path.replace(".obj", "_full.png")
+            filename = obj_path.replace(".obj", "_full.jpg")
             self.compress_image(filename, int(1920 * float(resolution) / 100), 90)
 
 
@@ -105,7 +106,7 @@ class Lib(object):
         dialog.close()
 
     def setup_user_session(self):
-        shutil.copytree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
+        distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
 
     def save_prefs(self):
         """
@@ -507,7 +508,7 @@ class CheckNews(Thread):
     def run(self):
         while True:
             self.check_news()
-            time.sleep(10)
+            time.sleep(30)
 
     def check_news(self):
         last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()

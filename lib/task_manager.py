@@ -112,8 +112,7 @@ class TaskManager(object):
             start = task[9]
             end = task[10]
             bid = task[11]
-            comments = task[12]
-            confirmation = task[13]
+            confirmation = task[12]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -126,10 +125,9 @@ class TaskManager(object):
             if start == None: start = ""
             if end == None: end = ""
             if bid == None: bid = ""
-            if comments == None: comments = ""
             if confirmation == None: confirmation = ""
 
-            task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, start, end, bid, comments, confirmation)
+            task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, start, end, bid, confirmation)
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
@@ -539,19 +537,17 @@ class TaskManager(object):
         self.tmTableWidget.resizeColumnsToContents()
         self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
 
-
     def tmTableWidget_DoubleClicked(self, value):
         row = value.row()
         column = value.column()
 
         task_item = self.tmTableWidget.item(row, column)
-        task = task_item.data(QtCore.Qt.UserRole).toPyObject()
-        if task == None: return # User clicked on the days left cell
+        self.selected_asset = task_item.data(QtCore.Qt.UserRole).toPyObject()
+        if self.selected_asset == None: return # User clicked on the days left cell
 
-        self.CommentWidget(self, task)
-
-
-
+        self.CommentsFrame.show()
+        self.commentLineEdit.setFocus()
+        self.CommentWidget.load_comments(self)
 
     def calculate_days_left(self, task_start_widget, task_end_widget, task_time_left_widget):
 

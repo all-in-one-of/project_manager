@@ -4,7 +4,7 @@
 import os
 
 class Asset(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_comments=[], asset_tags=[], asset_dependency="", last_access="", creator=""):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", creator=""):
         self.main = main
         self.id = id
         self.project = project_name
@@ -22,12 +22,6 @@ class Asset(object):
         self.type = asset_type
         self.extension = asset_extension
         self.version = asset_version
-        if not asset_comments == None and len(asset_comments) > 0:
-            self.comments = asset_comments.split(";")
-            self.nbr_of_comments = len(self.comments)
-        else:
-            self.comments = []
-            self.nbr_of_comments = 0
         if not asset_tags == None and len(asset_tags) > 0:
             self.tags = asset_tags.split(",")
         else:
@@ -40,7 +34,7 @@ class Asset(object):
         self.full_path = self.project_path + self.path
 
     def print_asset(self):
-        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.comments, self.tags, self.dependency, self.last_access, self.creator)
+        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.creator)
 
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
@@ -70,7 +64,7 @@ class Asset(object):
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
                 self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_comment, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ";".join(self.comments), ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -116,38 +110,17 @@ class Asset(object):
         self.main.db.commit()
         self.dependency = new_dependency
 
-    def add_comment(self, comment):
-        self.comments.extend(comment)
-        self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
+    def add_comment(self, author, comment, time, type):
+        self.main.cursor.execute('''INSERT INTO comments(comment_id, comment_author, comment_text, comment_time, comment_type) VALUES(?,?,?,?,?)''', (self.id, author, comment, time, type))
         self.main.db.commit()
-        try:
-            nbr_of_comments = self.comments.split(";")
-            self.nbr_of_comments = len(nbr_of_comments)
-        except:
-            pass
 
-    def remove_comment(self, comment):
-        self.comments = list(set(self.comments) - set(comment))
-        self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
+    def remove_comment(self, author, comment, time):
+        self.main.cursor.execute('''DELETE FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time))
         self.main.db.commit()
-        try:
-            nbr_of_comments = self.comments.split(";")
-            self.nbr_of_comments = len(nbr_of_comments)
-        except:
-            pass
 
-    def edit_comment(self, old_comment, new_comment):
-        comments_string = ";".join(self.comments)
-        comments_string = comments_string.replace(old_comment, new_comment)
-        comments_string = comments_string.split(";")
-        self.comments = comments_string
-        self.main.cursor.execute('''UPDATE assets SET asset_comment=? WHERE asset_id=?''', (";".join(self.comments), self.id,))
+    def edit_comment(self, new_comment, comment_author, old_comment, comment_time):
+        self.main.cursor.execute('''UPDATE comments SET comment_text=? WHERE comment_author=? AND comment_text=? AND comment_time=?''', (new_comment, comment_author, old_comment, comment_time,))
         self.main.db.commit()
-        try:
-            nbr_of_comments = self.comments.split(";")
-            self.nbr_of_comments = len(nbr_of_comments)
-        except:
-            pass
 
     def add_tags(self, tags):
         self.tags.extend(tags)
@@ -169,11 +142,10 @@ class Asset(object):
         asset_extension = asset[6]
         asset_type = asset[7]
         asset_version = asset[8]
-        asset_comments = asset[9]
-        asset_tags = asset[10]
-        asset_dependency = asset[11]
-        last_access = asset[12]
-        creator = asset[13]
+        asset_tags = asset[9]
+        asset_dependency = asset[10]
+        last_access = asset[11]
+        creator = asset[12]
 
         self.project = project_name
         self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
@@ -184,11 +156,6 @@ class Asset(object):
         self.type = asset_type
         self.extension = asset_extension
         self.version = asset_version
-        if not asset_comments == None and len(asset_comments) > 0:
-            self.comments = asset_comments.split(";")
-            self.nbr_of_comments = len(self.comments)
-        else:
-            self.comments = []
         if asset_tags != None:
             self.tags = asset_tags.split(",")
         else:
