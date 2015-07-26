@@ -12,76 +12,99 @@ import ctypes
 import sys
 from threading import Thread
 import time
-import shutil
 import distutils.core
 
 
 
 class Lib(object):
 
+
     def create_thumbnails(self, obj_path="", type="", sampling="300", resolution="100"):
+        self.obj_path = obj_path
+        self.type = type
+        self.sampling = sampling
+        self.resolution = resolution
 
-        dialog = QtGui.QDialog()
-        dialog.setWindowTitle("Creating thumbnails")
-        self.apply_style(dialog)
+        self.create_thumbnail_dialog = QtGui.QDialog()
+        self.create_thumbnail_dialog.setWindowTitle("Creating thumbnails")
+        self.apply_style(self.create_thumbnail_dialog)
 
+        self.create_thumbnail_dialog_main_layout = QtGui.QVBoxLayout(self.create_thumbnail_dialog)
 
-        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+        label = QtGui.QLabel("Please wait...", self.create_thumbnail_dialog)
+        self.create_thumbnail_progressBar = QtGui.QProgressBar(self.create_thumbnail_dialog)
+        self.create_thumbnail_progressBar.setValue(0)
+        if self.type == "full":
+            self.create_thumbnail_progressBar.setMaximum(3 + int(self.sampling))
+        elif self.type == "quad":
+            self.create_thumbnail_progressBar.setMaximum((int(self.sampling) / 20))
+        elif self.type == "turn":
+            self.create_thumbnail_progressBar.setMaximum(1171 + (int(self.sampling) * 20))
 
-        label = QtGui.QLabel("Please wait...", dialog)
-        progress_bar = QtGui.QProgressBar(dialog)
-        progress_bar.setValue(0)
-        if type == "full":
-            progress_bar.setMaximum(66 + int(sampling))
-        elif type == "quad":
-            progress_bar.setMaximum(211 + (int(sampling) * 4))
-        elif type == "turn":
-            progress_bar.setMaximum(1171 + (int(sampling) * 20))
+        self.create_thumbnail_dialog_main_layout.addWidget(label)
+        self.create_thumbnail_dialog_main_layout.addWidget(self.create_thumbnail_progressBar)
 
+        self.create_thumbnail_dialog.show()
+        self.create_thumbnail_dialog.repaint()
+        self.i = 0
+        if self.type == "quad":
+            self.resolution = str(int(self.resolution) / 2)
 
-
-
-        dialog_main_layout.addWidget(label)
-        dialog_main_layout.addWidget(progress_bar)
-
-        dialog.show()
-        dialog.repaint()
-
-
-        if type == "quad":
-            resolution = str(int(resolution) / 2)
-
-
-        proc = subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", "-b",
-                             self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
-                             "ThumbScript", obj_path, type, sampling, resolution], shell=True, stdout=subprocess.PIPE)
-
-        output = ""
-        while not "RENDER IS FINISHED" in output:
-            dialog.repaint()
-            progress_bar.setValue(progress_bar.value() + 1)
-            output = proc.stdout.readline()
-
-        proc.kill()
-
-        if type == "full":
-            filename = obj_path.replace(".obj", "_full.jpg")
-            self.compress_image(filename, int(1920 * float(resolution) / 100), 90)
+        self.create_thumbnail_process = QtCore.QProcess(self)
+        self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
+        self.create_thumbnail_process.finished.connect(self.create_thumbnail_finished)
+        self.create_thumbnail_process.start("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", ["-b",
+                                                                                                                                        self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend",
+                                                                                                                                        "--python-text",
+                                                                                                                                        "ThumbScript", self.obj_path, self.type, self.sampling,
+                                                                                                                                        self.resolution
+                                                                                                                                        ])
 
 
-        elif type == "quad":
-            full_scale_width = int(1920 * float(resolution) * 2 / 100)
-            full_scale_height = int(1152 * float(resolution) * 2 / 100)
 
-            quad_scale_width = int(1920 * float(resolution) / 100)
-            quad_scale_height = int(1152 * float(resolution) / 100)
+
+        #proc = subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", "-b",
+        #                         self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+        #                         "ThumbScript", self.obj_path, self.type, self.sampling, self.resolution], shell=True, stdout=subprocess.PIPE)
+
+        # output = ""
+        # while not "RENDER IS FINISHED" in output:
+        #     self.create_thumbnail_dialog.repaint()
+        #     self.create_thumbnail_progressBar.setValue(self.create_thumbnail_progressBar.value() + 1)
+        #     output = proc.stdout.readline()
+
+        #proc.kill()
+
+
+
+    def create_thumbnail_new_data(self):
+        out = self.create_thumbnail_process.readLine()
+        print(out)
+        self.i += 1
+        print(self.i)
+        #output = self.create_thumbnail_process.readAllStandardOutput()
+        #(output)
+        self.create_thumbnail_progressBar.setValue(self.create_thumbnail_progressBar.value() + 1)
+
+    def create_thumbnail_finished(self):
+        if self.type == "full":
+            filename = self.obj_path.replace(".obj", "_full.jpg")
+            self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
+
+
+        elif self.type == "quad":
+            full_scale_width = int(1920 * float(self.resolution) * 2 / 100)
+            full_scale_height = int(1152 * float(self.resolution) * 2 / 100)
+
+            quad_scale_width = int(1920 * float(self.resolution) / 100)
+            quad_scale_height = int(1152 * float(self.resolution) / 100)
 
             im = Image.new("RGB", (full_scale_width, full_scale_height), "black")
 
-            view01 = Image.open(obj_path.replace(".obj", "_000.png"))
-            view02 = Image.open(obj_path.replace(".obj", "_090.png"))
-            view03 = Image.open(obj_path.replace(".obj", "_180.png"))
-            view04 = Image.open(obj_path.replace(".obj", "_270.png"))
+            view01 = Image.open(self.obj_path.replace(".obj", "_000.jpg"))
+            view02 = Image.open(self.obj_path.replace(".obj", "_090.jpg"))
+            view03 = Image.open(self.obj_path.replace(".obj", "_180.jpg"))
+            view04 = Image.open(self.obj_path.replace(".obj", "_270.jpg"))
 
             # get the correct size
 
@@ -90,20 +113,22 @@ class Lib(object):
             im.paste(view03, (0, quad_scale_height))
             im.paste(view04, (quad_scale_width, quad_scale_height))
 
-            im.save(obj_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
+            im.save(self.obj_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
 
             for i in range(0, 360, 90):
-                os.remove(obj_path.replace(".obj", "_" + str(i).zfill(3) + ".png"))
+                os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(3) + ".jpg"))
 
 
-        elif type == "turn":
-            file_sequence = obj_path.replace(".obj", "_%02d.png")
-            movie_path = obj_path.replace(".obj", "_turn.mp4")
-            subprocess.call(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "12", movie_path])
+        elif self.type == "turn":
+            file_sequence = self.obj_path.replace(".obj", "_%02d.jpg")
+            movie_path = self.obj_path.replace(".obj", "_turn.mp4")
+            subprocess.call(
+                ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "12",
+                 movie_path])
             for i in range(24):
-                os.remove(obj_path.replace(".obj", "_" + str(i).zfill(2) + ".png"))
+                os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(2) + ".png"))
 
-        dialog.close()
+        self.create_thumbnail_dialog.close()
 
     def setup_user_session(self):
         distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
@@ -179,8 +204,8 @@ class Lib(object):
 
         """
         resolution = QtGui.QDesktopWidget().screenGeometry()
-        self.move((resolution.width() / 2) - (self.frameSize().width() / 2),
-                  (resolution.height() / 2) - (self.frameSize().height() / 2))
+        self.move((resolution.width() / 2) - (self.frameSize().width() / 2) + 200, (resolution.height() / 2) - (self.frameSize().height() / 2) + 50)
+        self.setFixedSize(0, 0)
 
     def open_in_explorer(self):
         """
@@ -284,7 +309,7 @@ class Lib(object):
     def disk_usage(self, path):
         _ntuple_diskusage = collections.namedtuple('usage', 'total used free')
         _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), \
-                           ctypes.c_ulonglong()
+                         ctypes.c_ulonglong()
         if sys.version_info >= (3,) or isinstance(path, unicode):
             fun = ctypes.windll.kernel32.GetDiskFreeSpaceExW
         else:
@@ -335,7 +360,7 @@ class Lib(object):
             n_width, n_height = n_font.getsize(text)
         draw = ImageDraw.Draw(watermark, 'RGBA')
         draw.text(((watermark.size[0] - n_width) / 2,
-                  (watermark.size[1] - n_height) / 2),
+                   (watermark.size[1] - n_height) / 2),
                   text, font=n_font)
         watermark = watermark.rotate(angle,Image.BICUBIC)
         alpha = watermark.split()[3]
@@ -540,6 +565,7 @@ class CheckNews(Thread):
         if not self.main.Tabs.currentIndex() == self.main.Tabs.count() - 1:
             self.main.WhatsNew.load_whats_new(self.main)
             self.add_to_check_news = 0
+
 
 
 if __name__ == "__main__":

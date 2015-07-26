@@ -29,6 +29,7 @@ class Asset(object):
         self.dependency = asset_dependency
         self.last_access = last_access
         self.creator = creator
+        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence,
                                                                     self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
@@ -113,10 +114,12 @@ class Asset(object):
     def add_comment(self, author, comment, time, type):
         self.main.cursor.execute('''INSERT INTO comments(comment_id, comment_author, comment_text, comment_time, comment_type) VALUES(?,?,?,?,?)''', (self.id, author, comment, time, type))
         self.main.db.commit()
+        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
 
     def remove_comment(self, author, comment, time):
         self.main.cursor.execute('''DELETE FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time))
         self.main.db.commit()
+        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
 
     def edit_comment(self, new_comment, comment_author, old_comment, comment_time):
         self.main.cursor.execute('''UPDATE comments SET comment_text=? WHERE comment_author=? AND comment_text=? AND comment_time=?''', (new_comment, comment_author, old_comment, comment_time,))

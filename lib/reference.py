@@ -29,6 +29,7 @@ class ReferenceTab(object):
         self.ref_selected_filter_tags = [""]
         self.all_references_ListWidgetItems = []
         self.images_with_no_tags_state = 0
+        self.images_with_comments_state = 0
         self.nbrOfRefLoadedLbl.setText("Showing 0 out of 0")
         self.nbr_of_visible_images = 0
 
@@ -61,6 +62,7 @@ class ReferenceTab(object):
         self.showUrlImageBtn.clicked.connect(self.show_url_image)
         self.hideReferenceOptionsFrameBtn.clicked.connect(self.hide_reference_options_frame)
         self.filterByNoTagsCheckBox.stateChanged.connect(self.ref_filter_images_with_no_tags_clicked)
+        self.filterByCommentsCheckBox.stateChanged.connect(self.ref_filter_images_with_comments_clicked)
         self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
 
@@ -167,7 +169,6 @@ class ReferenceTab(object):
 
         # Filter by sequence
         all_references = self.get_all_visible_references()
-        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
 
         self.nbr_of_visible_images = len(self.all_references_ListWidgetItems)
 
@@ -186,7 +187,6 @@ class ReferenceTab(object):
 
         # Filter by shot
         all_references = self.get_all_visible_references()
-        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
 
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
@@ -197,7 +197,6 @@ class ReferenceTab(object):
 
         # Filter by tags
         all_references = self.get_all_visible_references()
-        all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
 
         for ref in all_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
@@ -209,12 +208,23 @@ class ReferenceTab(object):
         # Show only assets with no tags if checkbox is checked
         if self.images_with_no_tags_state == 2:
             all_references = self.get_all_visible_references()
-            all_tags_from_visible_references = self.get_all_tags_from_references(all_references)
             for ref in all_references:
                 asset = ref.data(QtCore.Qt.UserRole).toPyObject()
                 if len(asset.tags) != 0:
                     ref.setHidden(True)
                     self.nbr_of_visible_images -= 1
+
+        # Show only assets with comments if checkbox is checked
+        if self.images_with_comments_state == 2:
+            all_references = self.get_all_visible_references()
+            for ref in all_references:
+                asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+
+                if asset.nbr_of_comments == 0:
+                    ref.setHidden(True)
+                    self.nbr_of_visible_images -= 1
+
+
 
 
         # If no tags is selected in filter tags list, refresh filter tags list
@@ -287,6 +297,11 @@ class ReferenceTab(object):
     def ref_filter_images_with_no_tags_clicked(self):
         '''Set variable and filter references'''
         self.images_with_no_tags_state = self.filterByNoTagsCheckBox.checkState()
+        self.ref_filter_references()
+
+    def ref_filter_images_with_comments_clicked(self):
+        '''Set variable and filter references'''
+        self.images_with_comments_state = self.filterByCommentsCheckBox.checkState()
         self.ref_filter_references()
 
     def load_filter_by_tags_list(self):

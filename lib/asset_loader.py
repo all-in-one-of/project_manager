@@ -204,11 +204,10 @@ class AssetLoader(object):
             asset_extension = asset[6]
             asset_type = asset[7]
             asset_version = asset[8]
-            asset_comment = asset[9]
-            asset_tags = asset[10]
-            asset_dependency = asset[11]
-            last_access = asset[12]
-            creator = asset[13]
+            asset_tags = asset[9]
+            asset_dependency = asset[10]
+            last_access = asset[11]
+            creator = asset[12]
 
             asset_item = QtGui.QListWidgetItem(asset_name)
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator)
@@ -403,8 +402,7 @@ class AssetLoader(object):
         new_version = str(int(self.selected_asset.version) + 1).zfill(2)
         print(self.selected_asset.extension)
         return
-        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.comments,
-                           self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator)
+        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator)
         asset.add_asset_to_db()
 
         shutil.copy(old_version_path, asset.full_path)
@@ -441,7 +439,7 @@ class AssetLoader(object):
                 if checkbox_full.isChecked():
                     self.Lib.create_thumbnails(self, self.selected_asset.full_path, "full", "300", "50")
                 if checkbox_quad.isChecked():
-                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "quad", "150", "50")
+                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "quad", "500", "10")
                 if checkbox_turn.isChecked():
                     self.Lib.create_thumbnails(self, self.selected_asset.full_path, "turn", "50", "100")
 
