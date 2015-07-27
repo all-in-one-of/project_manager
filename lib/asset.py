@@ -33,6 +33,10 @@ class Asset(object):
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence,
                                                                     self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
+        self.full_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_full", "jpg")
+        self.quad_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_quad", "jpg")
+        self.turn_vid_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_turn", "mp4")
+        self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out", "obj")
 
     def print_asset(self):
         print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.creator)
@@ -65,7 +69,7 @@ class Asset(object):
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
                 self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 

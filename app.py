@@ -42,6 +42,7 @@ import shutil
 
 from datetime import date
 from datetime import datetime
+from dateutil import relativedelta
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -91,6 +92,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
+        self.main_window_size = self.size()
 
         # Global Variables
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
@@ -141,22 +143,19 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         day_end = date(2016,5,1)
         day_today = date.today()
 
+        day_start_02 = datetime.strptime(str('2016-05-01'), '%Y-%m-%d')
+        day_end_02 = datetime.strptime(str('2015-06-28'), '%Y-%m-%d')
+        months_and_days_left = relativedelta.relativedelta(day_start_02, day_end_02)
+
         total_days = abs(day_end - day_start).days
         remaining_days = abs(day_end - day_today).days
         remaining_days_percent = (remaining_days * 100) / total_days # Converts number of remaining day to a percentage
 
-        self.deadlineProgressBar.setFormat("{0} days left ({1}%)".format(remaining_days, remaining_days_percent))
+        self.deadlineProgressBar.setFormat("{0} months and {1} days left ({2}%)".format(months_and_days_left.months, months_and_days_left.days, remaining_days_percent))
         self.deadlineProgressBar.setMaximum(total_days)
         self.deadlineProgressBar.setValue(remaining_days)
-        self.deadlineProgressBar.setStyleSheet("")
-        if remaining_days >= 231:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #98cd00;} QProgressBar {color: #323232;}")
-        elif remaining_days >= 154:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #d7b600;} QProgressBar {color: #fff;}")
-        elif remaining_days >= 77:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #f35905;} QProgressBar {color: #fff;}")
-        elif remaining_days >= 0:
-            self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;} QProgressBar {color: #fff;}")
+        hue = self.fit_range(remaining_days, 0, total_days, 0, 76)
+        self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
         # Setup disk usage progress bar
         disk_usage = Lib.get_folder_space(self)
@@ -165,14 +164,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.diskUsageProgressBar.setFormat('{0}/2000 GB'.format(str(disk_usage)))
         self.diskUsageProgressBar.setRange(0, 2000)
         self.diskUsageProgressBar.setValue(int(disk_usage))
-        if disk_usage >= 1500:
-            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #98cd00;} QProgressBar {color: #323232;}")
-        elif disk_usage >= 1000:
-            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #d7b600;} QProgressBar {color: #323232;}")
-        elif disk_usage >= 500:
-            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #f35905;} QProgressBar {color: #323232;}")
-        elif disk_usage >= 0:
-            self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: #fe2200;} QProgressBar {color: #323232;}")
+        hue = self.fit_range(int(disk_usage), 0, 2000, 0, 76)
+        self.diskUsageProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
+
+        # Thumbnail creation progress bar setup
+        self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(0, 100, 175);}")
+        self.thumbnailProgressBar.setValue(0)
+        self.thumbnailProgressBar.hide()
 
         # Get software paths from database and put them in preference
         self.photoshop_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Photoshop"''').fetchone()[0])

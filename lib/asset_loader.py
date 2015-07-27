@@ -14,6 +14,9 @@ class AssetLoader(object):
 
         self.assets = {}
         self.selected_asset = None
+        self.thumbDisplayTypeFrame.hide()
+        self.loadObjInGplayBtn.hide()
+        self.updateThumbBtn.hide()
 
         # Get projects from database and add them to the projects list
         self.projects = self.cursor.execute('''SELECT project_name FROM projects''').fetchall()
@@ -62,6 +65,7 @@ class AssetLoader(object):
         self.thumbFullBtn.clicked.connect(partial(self.switch_thumbnail_display, "full"))
         self.thumbQuadBtn.clicked.connect(partial(self.switch_thumbnail_display, "quad"))
         self.thumbTurnBtn.clicked.connect(partial(self.switch_thumbnail_display, "turn"))
+        self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
         self.seqFilterClearBtn.clicked.connect(partial(self.clear_filter, "seq"))
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
@@ -302,6 +306,55 @@ class AssetLoader(object):
         self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
         if self.selected_department_name != "All":
             self.selected_department_name = self.departments_shortname[self.selected_department_name]
+
+        qpixmap = QtGui.QPixmap(self.no_img_found)
+        qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
+        self.assetImg.setData(self.no_img_found)
+        self.assetImg.setPixmap(qpixmap)
+
+        self.updateThumbBtn.hide()
+
+        if self.selected_department_name == "ref":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "mod":
+            self.loadObjInGplayBtn.show()
+            self.thumbDisplayTypeFrame.show()
+
+        elif self.selected_department_name == "tex":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "rig":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "anm":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "sim":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "shd":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "lay":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "dmp":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "cmp":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
+
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
@@ -315,6 +368,7 @@ class AssetLoader(object):
             else:
                 version.setHidden(True)
 
+        self.updateThumbBtn.show()
         self.versionList_Clicked()
 
     def versionList_Clicked(self):
@@ -324,24 +378,23 @@ class AssetLoader(object):
         if self.selected_asset.type == "ref":
             qpixmap = QtGui.QPixmap(self.selected_asset.full_path)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setData(self.selected_asset.full_path)
             self.assetImg.setPixmap(qpixmap)
             self.updateThumbBtn.setVisible(False)
             self.createVersionBtn.setVisible(False)
             self.publishBtn.setVisible(False)
 
         elif self.selected_asset.type == "mod":
-            if self.selected_asset.extension == "obj":
-                qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_full.jpg"))
-                qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-                self.assetImg.setData(self.selected_asset)
-                self.assetImg.setPixmap(qpixmap)
+            qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
+            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(self.selected_asset.full_img_path)
+            self.assetImg.setPixmap(qpixmap)
 
-            else:
-                qpixmap = QtGui.QPixmap(self.no_img_found)
-                qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
-                self.assetImg.setData(self.selected_asset)
-                self.assetImg.setPixmap(qpixmap)
+        else:
+            qpixmap = QtGui.QPixmap(self.no_img_found)
+            qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(self.no_img_found)
+            self.assetImg.setPixmap(qpixmap)
 
 
 
@@ -420,8 +473,14 @@ class AssetLoader(object):
                 dialog_main_layout = QtGui.QVBoxLayout(dialog)
 
                 checkbox_full = QtGui.QCheckBox("Single image (Full Resolution Render)", dialog)
+                if not os.path.isfile(self.selected_asset.full_img_path): # If full don't exist, set checkbox to true
+                    checkbox_full.setCheckState(2)
                 checkbox_quad = QtGui.QCheckBox("Four images (Quad View)", dialog)
+                if not os.path.isfile(self.selected_asset.quad_img_path): # If quad don't exist, set checkbox to true
+                    checkbox_quad.setCheckState(2)
                 checkbox_turn = QtGui.QCheckBox("Turntable (video)", dialog)
+                if not os.path.isfile(self.selected_asset.turn_vid_path): # If turn don't exist, set checkbox to true
+                    checkbox_turn.setCheckState(2)
 
                 create_btn = QtGui.QPushButton("Start!", dialog)
                 create_btn.clicked.connect(dialog.accept)
@@ -436,40 +495,43 @@ class AssetLoader(object):
                 if dialog.result() == 0:
                     return
 
+                thumbs_to_create = ""
                 if checkbox_full.isChecked():
-                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "full", "300", "50")
+                    thumbs_to_create += "full"
                 if checkbox_quad.isChecked():
-                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "quad", "500", "10")
+                    thumbs_to_create += "quad"
                 if checkbox_turn.isChecked():
-                    self.Lib.create_thumbnails(self, self.selected_asset.full_path, "turn", "50", "100")
+                    thumbs_to_create += "turn"
+
+                self.Lib.create_thumbnails(self, self.selected_asset.full_path, thumbs_to_create)
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
             return
 
-        if not self.selected_asset.extension == "obj":
-            return
-
         if type == "full":
-            qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_full.jpg"))
+            qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setData(self.selected_asset.full_img_path)
             self.assetImg.setPixmap(qpixmap)
 
         elif type == "quad":
-            if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_quad.jpg")):
+            if not os.path.isfile(self.selected_asset.quad_img_path):
                 self.update_thumbnail()
                 return
-            qpixmap = QtGui.QPixmap(self.selected_asset.full_path.replace(".obj", "_quad.jpg"))
+            qpixmap = QtGui.QPixmap(self.selected_asset.quad_img_path)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setData(self.selected_asset.quad_img_path)
             self.assetImg.setPixmap(qpixmap)
 
         elif type == "turn":
-            if not os.path.isfile(self.selected_asset.full_path.replace(".obj", "_turn.mp4")):
+            if not os.path.isfile(self.selected_asset.turn_vid_path):
                 self.update_thumbnail()
                 return
-            subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", "H:\\01-NAD\\_pipeline\\test_project_files\\assets\\mod\\nat_xxx_xxxx_mod_colonneRomaine_out_turn.mp4", "/fullscreen", ])
+            subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", self.selected_asset.turn_vid_path, "/fullscreen"])
+
+    def load_obj_in_gplay(self):
+        subprocess.Popen(["Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\gplay.exe", self.selected_asset.obj_path], shell=True)
 
     def load_asset(self):
         if self.selected_asset.type == "ref":
@@ -479,6 +541,8 @@ class AssetLoader(object):
             if self.selected_asset.extension != "obj":
                 t = Thread(target=lambda: os.system(self.selected_asset.full_path))
                 t.start()
+            else:
+                self.Lib.message_box(self, text="You can't open a published asset. Please select a version instead and retry.")
 
     def create_asset_from_scratch(self):
         if self.selected_department_name == "mod":
@@ -486,6 +550,7 @@ class AssetLoader(object):
 
     def create_modeling_asset_from_scratch(self):
 
+        # Create soft selection and asset name dialog
         dialog = QtGui.QDialog(self)
         self.Lib.apply_style(self, dialog)
 
@@ -502,11 +567,11 @@ class AssetLoader(object):
         dialog_main_layout.addWidget(software_combobox)
         dialog_main_layout.addWidget(name_line_edit)
 
-
         dialog.exec_()
         if dialog.result() == 0:
             return
 
+        # Get selected software and associated extension
         selected_software = str(software_combobox.currentText()).lower().replace(" ", "")
         if selected_software == "blender":
             extension = "blend"
@@ -519,29 +584,32 @@ class AssetLoader(object):
         elif selected_software == "houdini":
             extension = "hip"
 
+        # Get asset name
         asset_name = str(name_line_edit.text())
         asset_name = self.Lib.normalize_str(self, asset_name)
         asset_name = self.Lib.convert_to_camel_case(self, asset_name)
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], [], "", "", self.username)
+        # Create modeling scene asset
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", self.username)
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], [], "", "", self.username)
+        # Create default publish cube
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], "", "", self.username)
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", asset.full_path)
 
-        shutil.copy(self.cur_dir + "media\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
+        # Create default cube image
+        shutil.copy(self.cur_path + "\\media\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
 
-        #os.system("setx HOUDINI_USER_PREF_DIR ''")
-        subprocess.Popen([self.houdini_batch_path, self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py",
-                          asset.full_path + "*" + asset_name], shell=True)
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], [], "", "", self.username)
+        # Create HDA associated to modeling scene
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", asset.full_path + "*" + asset_name])
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], "", "", self.username)
         asset.add_asset_to_db()
-        #os.system("setx HOUDINI_USER_PREF_DIR H:\\01-NAD\\Divers\\Houdini\\houdini__HVER__")
 
+        # Reload assets
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
-
 
 

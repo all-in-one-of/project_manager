@@ -19,76 +19,70 @@ import distutils.core
 class Lib(object):
 
 
-    def create_thumbnails(self, obj_path="", type="", sampling="300", resolution="100"):
+    def create_thumbnails(self, obj_path="", thumbs_to_create=""):
+
+        self.updateThumbBtn.setEnabled(False)
+
         self.obj_path = obj_path
         self.type = type
-        self.sampling = sampling
-        self.resolution = resolution
-
-        self.create_thumbnail_dialog = QtGui.QDialog()
-        self.create_thumbnail_dialog.setWindowTitle("Creating thumbnails")
-        self.apply_style(self.create_thumbnail_dialog)
-
-        self.create_thumbnail_dialog_main_layout = QtGui.QVBoxLayout(self.create_thumbnail_dialog)
-
-        label = QtGui.QLabel("Please wait...", self.create_thumbnail_dialog)
-        self.create_thumbnail_progressBar = QtGui.QProgressBar(self.create_thumbnail_dialog)
-        self.create_thumbnail_progressBar.setValue(0)
-        if self.type == "full":
-            self.create_thumbnail_progressBar.setMaximum(3 + int(self.sampling))
-        elif self.type == "quad":
-            self.create_thumbnail_progressBar.setMaximum((int(self.sampling) / 20))
-        elif self.type == "turn":
-            self.create_thumbnail_progressBar.setMaximum(1171 + (int(self.sampling) * 20))
-
-        self.create_thumbnail_dialog_main_layout.addWidget(label)
-        self.create_thumbnail_dialog_main_layout.addWidget(self.create_thumbnail_progressBar)
-
-        self.create_thumbnail_dialog.show()
-        self.create_thumbnail_dialog.repaint()
         self.i = 0
+
+        self.thumbnailProgressBar.show()
+        self.thumbnailProgressBar.setValue(0)
+
+        self.thumbs_to_create = thumbs_to_create
+
+        if "full" in self.thumbs_to_create:
+            self.type = "full"
+            self.sampling = 300
+            self.resolution = 100
+            self.thumbs_to_create = thumbs_to_create.replace("full", "")
+        elif "quad" in self.thumbs_to_create:
+            self.type = "quad"
+            self.sampling = 150
+            self.resolution = 100
+            self.thumbs_to_create = thumbs_to_create.replace("quad", "")
+        elif "turn" in self.thumbs_to_create:
+            self.type = "turn"
+            self.sampling = 50
+            self.resolution = 100
+            self.thumbs_to_create = thumbs_to_create.replace("turn", "")
+
+        if self.type == "full":
+            self.thumbnailProgressBar.setMaximum(67 + int(self.sampling))
+        elif self.type == "quad":
+            self.thumbnailProgressBar.setMaximum(211 + (int(self.sampling) * 4))
+        elif self.type == "turn":
+            self.thumbnailProgressBar.setMaximum(1171 + (int(self.sampling) * 20))
+
         if self.type == "quad":
             self.resolution = str(int(self.resolution) / 2)
 
+
+
         self.create_thumbnail_process = QtCore.QProcess(self)
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
+        self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
         self.create_thumbnail_process.finished.connect(self.create_thumbnail_finished)
         self.create_thumbnail_process.start("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", ["-b",
                                                                                                                                         self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend",
                                                                                                                                         "--python-text",
-                                                                                                                                        "ThumbScript", self.obj_path, self.type, self.sampling,
-                                                                                                                                        self.resolution
+                                                                                                                                        "ThumbScript", self.obj_path, self.type, str(self.sampling),
+                                                                                                                                        str(self.resolution)
                                                                                                                                         ])
 
-
-
-
-        #proc = subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", "-b",
-        #                         self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
-        #                         "ThumbScript", self.obj_path, self.type, self.sampling, self.resolution], shell=True, stdout=subprocess.PIPE)
-
-        # output = ""
-        # while not "RENDER IS FINISHED" in output:
-        #     self.create_thumbnail_dialog.repaint()
-        #     self.create_thumbnail_progressBar.setValue(self.create_thumbnail_progressBar.value() + 1)
-        #     output = proc.stdout.readline()
-
-        #proc.kill()
-
-
-
     def create_thumbnail_new_data(self):
-        out = self.create_thumbnail_process.readLine()
-        print(out)
-        self.i += 1
-        print(self.i)
-        #output = self.create_thumbnail_process.readAllStandardOutput()
-        #(output)
-        self.create_thumbnail_progressBar.setValue(self.create_thumbnail_progressBar.value() + 1)
+        while self.create_thumbnail_process.canReadLine():
+            self.i += 1
+            out = self.create_thumbnail_process.readLine()
+            self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
+            hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
+            self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
     def create_thumbnail_finished(self):
+
         if self.type == "full":
-            filename = self.obj_path.replace(".obj", "_full.jpg")
+            filename = self.selected_asset.full_img_path
             self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
 
 
@@ -113,7 +107,7 @@ class Lib(object):
             im.paste(view03, (0, quad_scale_height))
             im.paste(view04, (quad_scale_width, quad_scale_height))
 
-            im.save(self.obj_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
+            im.save(self.selected_asset.quad_img_path, "JPEG", quality=100, optimize=True, progressive=True)
 
             for i in range(0, 360, 90):
                 os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(3) + ".jpg"))
@@ -121,14 +115,26 @@ class Lib(object):
 
         elif self.type == "turn":
             file_sequence = self.obj_path.replace(".obj", "_%02d.jpg")
-            movie_path = self.obj_path.replace(".obj", "_turn.mp4")
+            movie_path = self.selected_asset.turn_vid_path
             subprocess.call(
-                ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "12",
+                ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
                  movie_path])
             for i in range(24):
-                os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(2) + ".png"))
+                os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(2) + ".jpg"))
 
-        self.create_thumbnail_dialog.close()
+        self.create_thumbnail_process.kill()
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+
+        if len(self.thumbs_to_create) > 0:
+            self.create_thumbnails(self.obj_path, self.thumbs_to_create)
+        else:
+            qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
+            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setPixmap(qpixmap)
+            self.thumbnailProgressBar.hide()
+            self.updateThumbBtn.setEnabled(True)
+
 
     def setup_user_session(self):
         distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")

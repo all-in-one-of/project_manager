@@ -570,7 +570,7 @@ class ReferenceTab(object):
         if asset_name == None: return
 
         # Instanciate asset
-        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", self.username)
         asset.add_asset_to_db()
         self.ref_assets_instances.append(asset)
 
@@ -685,7 +685,7 @@ class ReferenceTab(object):
             asset_name = self.Lib.convert_to_camel_case(self, asset_name)
 
             # Create asset
-            asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
+            asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", self.username)
             asset.add_asset_to_db()
             self.ref_assets_instances.append(asset)
             assets.append(asset)
@@ -742,7 +742,7 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a name with more than 3 characters for the asset")
 
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", [], "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", self.username)
         asset.add_asset_to_db()
         self.ref_assets_instances.append(asset)
 

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Sun Jul 26 18:10:39 2015
+# Created: Mon Jul 27 16:32:07 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,12 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(1453, 916)
+        Form.resize(1150, 901)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
+        Form.setSizePolicy(sizePolicy)
         Form.setMinimumSize(QtCore.QSize(0, 0))
         Form.setMaximumSize(QtCore.QSize(16777215, 16777215))
         Form.setMouseTracking(False)
@@ -194,6 +199,7 @@ class Ui_Form(object):
         self.horizontalLayout_5.addWidget(self.assetFilterClearBtn)
         self.gridLayout.addWidget(self.assetFilterFrame, 2, 6, 1, 1)
         self.departmentList = QtGui.QListWidget(self.listsFrame)
+        self.departmentList.setMinimumSize(QtCore.QSize(0, 150))
         self.departmentList.setFrameShape(QtGui.QFrame.Box)
         self.departmentList.setObjectName(_fromUtf8("departmentList"))
         item = QtGui.QListWidgetItem()
@@ -391,6 +397,12 @@ class Ui_Form(object):
         self.thumbTurnBtn.setObjectName(_fromUtf8("thumbTurnBtn"))
         self.horizontalLayout_4.addWidget(self.thumbTurnBtn)
         self.verticalLayout_4.addWidget(self.thumbDisplayTypeFrame)
+        self.thumbnailProgressBar = QtGui.QProgressBar(self.thumbnailFrame)
+        self.thumbnailProgressBar.setMaximumSize(QtCore.QSize(16777215, 14))
+        self.thumbnailProgressBar.setProperty("value", 0)
+        self.thumbnailProgressBar.setOrientation(QtCore.Qt.Horizontal)
+        self.thumbnailProgressBar.setObjectName(_fromUtf8("thumbnailProgressBar"))
+        self.verticalLayout_4.addWidget(self.thumbnailProgressBar)
         self.assetImg = ThibQLabel(self.thumbnailFrame)
         self.assetImg.setMinimumSize(QtCore.QSize(500, 300))
         self.assetImg.setMaximumSize(QtCore.QSize(500, 300))
@@ -524,6 +536,11 @@ class Ui_Form(object):
         self.loadAssetBtn = QtGui.QPushButton(self.assetLoaderTab)
         self.loadAssetBtn.setObjectName(_fromUtf8("loadAssetBtn"))
         self.verticalLayout_2.addWidget(self.loadAssetBtn)
+        self.frame_3 = QtGui.QFrame(self.assetLoaderTab)
+        self.frame_3.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.frame_3.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_3.setObjectName(_fromUtf8("frame_3"))
+        self.verticalLayout_2.addWidget(self.frame_3)
         self.Tabs.addTab(self.assetLoaderTab, _fromUtf8(""))
         self.tmTab = QtGui.QWidget()
         self.tmTab.setObjectName(_fromUtf8("tmTab"))
@@ -1627,7 +1644,7 @@ class Ui_Form(object):
         self.whatsNewMessagesScrollArea.setWidgetResizable(True)
         self.whatsNewMessagesScrollArea.setObjectName(_fromUtf8("whatsNewMessagesScrollArea"))
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 1031, 365))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 728, 358))
         self.scrollAreaWidgetContents_2.setObjectName(_fromUtf8("scrollAreaWidgetContents_2"))
         self.whatsNewMessagesScrollArea.setWidget(self.scrollAreaWidgetContents_2)
         self.verticalLayout_31.addWidget(self.whatsNewMessagesScrollArea)
@@ -1721,7 +1738,7 @@ class Ui_Form(object):
         self.commentsScrollArea.setWidgetResizable(True)
         self.commentsScrollArea.setObjectName(_fromUtf8("commentsScrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 362, 839))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 362, 824))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.commentsScrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_5.addWidget(self.commentsScrollArea)

@@ -3,7 +3,7 @@
 
 from PyQt4 import QtGui, QtCore
 import subprocess
-
+import webbrowser
 
 class ThibListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
@@ -29,12 +29,14 @@ class ThibQLabel(QtGui.QLabel):
 
     def mouseDoubleClickEvent(self, ev):
         try:
-            asset = self._data
+            image_path = self._data
         except:
-            pass
+            return
 
-        if asset.type == "mod":
-            subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\gplay.lnk", asset.full_path], shell=True)
+
+        webbrowser.open(image_path)
+
+
 
 
 

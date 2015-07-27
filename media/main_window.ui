@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1453</width>
-    <height>916</height>
+    <width>1150</width>
+    <height>901</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
@@ -469,6 +475,12 @@
                 </item>
                 <item row="3" column="3">
                  <widget class="QListWidget" name="departmentList">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>150</height>
+                   </size>
+                  </property>
                   <property name="frameShape">
                    <enum>QFrame::Box</enum>
                   </property>
@@ -913,6 +925,22 @@
                        </widget>
                       </item>
                       <item>
+                       <widget class="QProgressBar" name="thumbnailProgressBar">
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>14</height>
+                         </size>
+                        </property>
+                        <property name="value">
+                         <number>0</number>
+                        </property>
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="ThibQLabel" name="assetImg">
                         <property name="minimumSize">
                          <size>
@@ -1226,6 +1254,16 @@
               <widget class="QPushButton" name="loadAssetBtn">
                <property name="text">
                 <string>Load Asset</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="frame_3">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
               </widget>
              </item>
@@ -4047,8 +4085,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>1031</width>
-                  <height>365</height>
+                  <width>728</width>
+                  <height>358</height>
                  </rect>
                 </property>
                </widget>
@@ -4282,7 +4320,7 @@
               <x>0</x>
               <y>0</y>
               <width>362</width>
-              <height>839</height>
+              <height>824</height>
              </rect>
             </property>
            </widget>
