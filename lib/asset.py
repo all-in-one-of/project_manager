@@ -30,8 +30,7 @@ class Asset(object):
         self.last_access = last_access
         self.creator = creator
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
-        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence,
-                                                                    self.shot, self.type, self.name, self.version, self.extension)
+        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
         self.full_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_full", "jpg")
         self.quad_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_quad", "jpg")

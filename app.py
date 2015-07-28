@@ -95,6 +95,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.main_window_size = self.size()
 
         # Global Variables
+        self.i = 0
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities

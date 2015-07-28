@@ -23,7 +23,9 @@ class Lib(object):
 
         self.updateThumbBtn.setEnabled(False)
 
-        self.obj_path = obj_path
+
+        self.full_obj_path = obj_path
+        self.obj_tmp_path = "C:\\Temp\\" + obj_path.split("\\")[-1]
         self.type = type
         self.i = 0
 
@@ -34,17 +36,17 @@ class Lib(object):
 
         if "full" in self.thumbs_to_create:
             self.type = "full"
-            self.sampling = 300
+            self.sampling = 100
             self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
         elif "quad" in self.thumbs_to_create:
             self.type = "quad"
-            self.sampling = 150
+            self.sampling = 25
             self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("quad", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
-            self.sampling = 50
+            self.sampling = 10
             self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
@@ -67,7 +69,7 @@ class Lib(object):
         self.create_thumbnail_process.start("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", ["-b",
                                                                                                                                         self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend",
                                                                                                                                         "--python-text",
-                                                                                                                                        "ThumbScript", self.obj_path, self.type, str(self.sampling),
+                                                                                                                                        "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
                                                                                                                                         str(self.resolution)
                                                                                                                                         ])
 
@@ -75,6 +77,7 @@ class Lib(object):
         while self.create_thumbnail_process.canReadLine():
             self.i += 1
             out = self.create_thumbnail_process.readLine()
+
             self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
@@ -82,8 +85,9 @@ class Lib(object):
     def create_thumbnail_finished(self):
 
         if self.type == "full":
-            filename = self.selected_asset.full_img_path
+            filename = self.obj_tmp_path.replace(".obj", "_full.jpg")
             self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
+            distutils.file_util.move_file(self.obj_tmp_path.replace(".obj", "_full.jpg"), self.full_obj_path.replace(".obj", "_full.jpg"))
 
 
         elif self.type == "quad":
@@ -95,10 +99,10 @@ class Lib(object):
 
             im = Image.new("RGB", (full_scale_width, full_scale_height), "black")
 
-            view01 = Image.open(self.obj_path.replace(".obj", "_000.jpg"))
-            view02 = Image.open(self.obj_path.replace(".obj", "_090.jpg"))
-            view03 = Image.open(self.obj_path.replace(".obj", "_180.jpg"))
-            view04 = Image.open(self.obj_path.replace(".obj", "_270.jpg"))
+            view01 = Image.open(self.obj_tmp_path.replace(".obj", "_000.jpg"))
+            view02 = Image.open(self.obj_tmp_path.replace(".obj", "_090.jpg"))
+            view03 = Image.open(self.obj_tmp_path.replace(".obj", "_180.jpg"))
+            view04 = Image.open(self.obj_tmp_path.replace(".obj", "_270.jpg"))
 
             # get the correct size
 
@@ -107,30 +111,33 @@ class Lib(object):
             im.paste(view03, (0, quad_scale_height))
             im.paste(view04, (quad_scale_width, quad_scale_height))
 
-            im.save(self.selected_asset.quad_img_path, "JPEG", quality=100, optimize=True, progressive=True)
+            im.save(self.obj_tmp_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
+            distutils.file_util.move_file(self.obj_tmp_path.replace(".obj", "_quad.jpg"), self.full_obj_path.replace(".obj", "_quad.jpg"))
 
             for i in range(0, 360, 90):
-                os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(3) + ".jpg"))
+                os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(3) + ".jpg"))
 
 
         elif self.type == "turn":
-            file_sequence = self.obj_path.replace(".obj", "_%02d.jpg")
-            movie_path = self.selected_asset.turn_vid_path
+            file_sequence = self.obj_tmp_path.replace(".obj", "_%02d.jpg")
+            movie_path = self.obj_tmp_path.replace(".obj", "_turn.mp4")
             subprocess.call(
                 ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
                  movie_path])
+
+            distutils.file_util.move_file(self.obj_tmp_path.replace(".obj", "_turn.mp4"), self.full_obj_path.replace(".obj", "_turn.mp4"))
             for i in range(24):
-                os.remove(self.obj_path.replace(".obj", "_" + str(i).zfill(2) + ".jpg"))
+                os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(2) + ".jpg"))
 
         self.create_thumbnail_process.kill()
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
 
         if len(self.thumbs_to_create) > 0:
-            self.create_thumbnails(self.obj_path, self.thumbs_to_create)
+            self.create_thumbnails(self.full_obj_path, self.thumbs_to_create)
         else:
-            qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
+            qpixmap = QtGui.QPixmap(self.full_obj_path.replace(".obj", "_full.jpg"))
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset)
+            self.assetImg.setData(self.full_obj_path.replace(".obj", "_full.jpg"))
             self.assetImg.setPixmap(qpixmap)
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
@@ -183,24 +190,26 @@ class Lib(object):
 
         self.db.commit()
 
-    def message_box(self, type="Warning", text="Warning"):
+    def message_box(self, type="Warning", text="warning"):
 
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
 
         self.Lib.apply_style(self, self.msgBox)
 
-        self.msgBox.setWindowTitle("Warning!")
+        self.msgBox.setWindowTitle("Manager")
         self.msgBox.setText(text)
 
         self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
         self.msgBox_okBtn.setStyleSheet("width: 64px;")
         self.msgBox.setDefaultButton(self.msgBox_okBtn)
 
-        if type == "Warning":
+        if type == "warning":
             self.msgBox.setIcon(QtGui.QMessageBox.Warning)
-        elif type == "Error":
+        elif type == "error":
             self.msgBox.setIcon(QtGui.QMessageBox.Critical)
+        elif type == "info":
+            self.msgBox.setIcon(QtGui.QMessageBox.Information)
 
         return self.msgBox.exec_()
 
@@ -210,7 +219,7 @@ class Lib(object):
 
         """
         resolution = QtGui.QDesktopWidget().screenGeometry()
-        self.move((resolution.width() / 2) - (self.frameSize().width() / 2) + 200, (resolution.height() / 2) - (self.frameSize().height() / 2) + 50)
+        self.move((resolution.width() / 2) - (self.frameSize().width() / 2) + 50, (resolution.height() / 2) - (self.frameSize().height() / 2))
         self.setFixedSize(0, 0)
 
     def open_in_explorer(self):

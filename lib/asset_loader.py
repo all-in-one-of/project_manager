@@ -221,14 +221,13 @@ class AssetLoader(object):
             if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
                 self.assetList.addItem(asset_item)
 
-            if asset.extension == "obj" or asset.extension == "hda":
-                version_item = QtGui.QListWidgetItem(asset.version + "-" + asset.extension)
-            else:
+
+            if asset.extension != "obj" and asset.extension != "hda":
                 version_item = QtGui.QListWidgetItem(asset.version)
-            version_item.setData(QtCore.Qt.UserRole, asset)
-            self.versions.append(version_item)
-            self.versionList.addItem(version_item)
-            version_item.setHidden(True)
+                version_item.setData(QtCore.Qt.UserRole, asset)
+                self.versions.append(version_item)
+                self.versionList.addItem(version_item)
+                version_item.setHidden(True)
 
     def projectList_Clicked(self):
         # Query the project id based on the name of the selected project
@@ -385,9 +384,16 @@ class AssetLoader(object):
             self.publishBtn.setVisible(False)
 
         elif self.selected_asset.type == "mod":
-            qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
-            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset.full_img_path)
+            if not os.path.isfile(self.selected_asset.full_img_path):
+                img_path = self.no_img_found
+                width = 300
+            else:
+                img_path = self.selected_asset.full_img_path
+                width = 500
+
+            qpixmap = QtGui.QPixmap(img_path)
+            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
 
         else:
@@ -461,49 +467,63 @@ class AssetLoader(object):
         shutil.copy(old_version_path, asset.full_path)
 
     def publish_asset(self):
-        subprocess.Popen([self.blender_path, "-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.full_path.replace("01.blend", "out.obj")], shell=True)
+
+        if self.selected_asset.type == "mod":
+            if self.selected_asset.extension == "obj" or self.selected_asset.extension == "hda":
+                asset = self.Asset(self, id=self.selected_asset.dependency)
+                asset.get_infos_from_id()
+
+        self.publish_process = QtCore.QProcess(self)
+        self.publish_process.finished.connect(self.publish_process_finished)
+        self.publish_process.start(self.blender_path, ["-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", asset.full_path, asset.full_path.replace("01.blend", "out.obj")])
+
+    def publish_process_finished(self):
+        self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
     def update_thumbnail(self):
         if self.selected_asset.type == "mod":
-            if self.selected_asset.version != "out":
-                self.Lib.message_box(self, text="You can only create a thumbnail from published asset")
+            if self.selected_asset.extension != "obj":
+                obj_path = self.selected_asset.obj_path
             else:
-                dialog = QtGui.QDialog(self)
-                dialog.setWindowTitle("Select options")
-                dialog_main_layout = QtGui.QVBoxLayout(dialog)
+                obj_path = self.selected_asset.full_path
 
-                checkbox_full = QtGui.QCheckBox("Single image (Full Resolution Render)", dialog)
-                if not os.path.isfile(self.selected_asset.full_img_path): # If full don't exist, set checkbox to true
-                    checkbox_full.setCheckState(2)
-                checkbox_quad = QtGui.QCheckBox("Four images (Quad View)", dialog)
-                if not os.path.isfile(self.selected_asset.quad_img_path): # If quad don't exist, set checkbox to true
-                    checkbox_quad.setCheckState(2)
-                checkbox_turn = QtGui.QCheckBox("Turntable (video)", dialog)
-                if not os.path.isfile(self.selected_asset.turn_vid_path): # If turn don't exist, set checkbox to true
-                    checkbox_turn.setCheckState(2)
 
-                create_btn = QtGui.QPushButton("Start!", dialog)
-                create_btn.clicked.connect(dialog.accept)
+            dialog = QtGui.QDialog(self)
+            dialog.setWindowTitle("Select options")
+            dialog_main_layout = QtGui.QVBoxLayout(dialog)
 
-                dialog_main_layout.addWidget(checkbox_full)
-                dialog_main_layout.addWidget(checkbox_quad)
-                dialog_main_layout.addWidget(checkbox_turn)
-                dialog_main_layout.addWidget(create_btn)
+            checkbox_full = QtGui.QCheckBox("Single image (Full Resolution Render)", dialog)
+            if not os.path.isfile(self.selected_asset.full_img_path): # If full don't exist, set checkbox to true
+                checkbox_full.setCheckState(2)
+            checkbox_quad = QtGui.QCheckBox("Four images (Quad View)", dialog)
+            if not os.path.isfile(self.selected_asset.quad_img_path): # If quad don't exist, set checkbox to true
+                checkbox_quad.setCheckState(2)
+            checkbox_turn = QtGui.QCheckBox("Turntable (video)", dialog)
+            if not os.path.isfile(self.selected_asset.turn_vid_path): # If turn don't exist, set checkbox to true
+                checkbox_turn.setCheckState(2)
 
-                dialog.exec_()
+            create_btn = QtGui.QPushButton("Start!", dialog)
+            create_btn.clicked.connect(dialog.accept)
 
-                if dialog.result() == 0:
-                    return
+            dialog_main_layout.addWidget(checkbox_full)
+            dialog_main_layout.addWidget(checkbox_quad)
+            dialog_main_layout.addWidget(checkbox_turn)
+            dialog_main_layout.addWidget(create_btn)
 
-                thumbs_to_create = ""
-                if checkbox_full.isChecked():
-                    thumbs_to_create += "full"
-                if checkbox_quad.isChecked():
-                    thumbs_to_create += "quad"
-                if checkbox_turn.isChecked():
-                    thumbs_to_create += "turn"
+            dialog.exec_()
 
-                self.Lib.create_thumbnails(self, self.selected_asset.full_path, thumbs_to_create)
+            if dialog.result() == 0:
+                return
+
+            thumbs_to_create = ""
+            if checkbox_full.isChecked():
+                thumbs_to_create += "full"
+            if checkbox_quad.isChecked():
+                thumbs_to_create += "quad"
+            if checkbox_turn.isChecked():
+                thumbs_to_create += "turn"
+
+            self.Lib.create_thumbnails(self, obj_path, thumbs_to_create)
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -538,11 +558,14 @@ class AssetLoader(object):
             os.system(self.selected_asset.full_path)
 
         elif self.selected_asset.type == "mod":
-            if self.selected_asset.extension != "obj":
-                t = Thread(target=lambda: os.system(self.selected_asset.full_path))
+            if self.selected_asset.extension == "obj" or self.selected_asset.extension == "hda":
+                asset = self.Asset(self, id=self.selected_asset.dependency)
+                asset.get_infos_from_id()
+                t = Thread(target=lambda: os.system(asset.full_path))
                 t.start()
             else:
-                self.Lib.message_box(self, text="You can't open a published asset. Please select a version instead and retry.")
+                t = Thread(target=lambda: os.system(self.selected_asset.full_path))
+                t.start()
 
     def create_asset_from_scratch(self):
         if self.selected_department_name == "mod":
@@ -592,20 +615,23 @@ class AssetLoader(object):
         # Create modeling scene asset
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", self.username)
         asset.add_asset_to_db()
+        main_id = asset.id
         shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
-        # Create default publish cube
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], "", "", self.username)
+        # Create default publish cube (obj)
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", self.username)
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", asset.full_path)
-
-        # Create default cube image
-        shutil.copy(self.cur_path + "\\media\\default_cube.jpg", asset.full_path.replace(".obj", "_full.jpg"))
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", asset.full_path + "*" + asset_name])
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], "", "", self.username)
+        # Create main HDA database entry
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], main_id, "", self.username)
+        asset.add_asset_to_db()
+
+        # Create shading HDA database entry
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-shd", "", "hda", "shd", "out", [], main_id, "", self.username)
         asset.add_asset_to_db()
 
         # Reload assets
