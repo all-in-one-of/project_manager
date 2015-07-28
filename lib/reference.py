@@ -144,7 +144,7 @@ class ReferenceTab(object):
                           tags, dependency, last_access, creator)
             self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem()
-            ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
+            ref_item.setIcon(QtGui.QIcon(asset.full_path))
             ref_item.setData(QtCore.Qt.UserRole, asset)
 
             if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors
@@ -386,7 +386,6 @@ class ReferenceTab(object):
                 self.all_references_ListWidgetItems.remove(ref)
                 self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
                 os.remove(asset.full_path)
-                os.remove(asset.full_path.replace(".jpg", "_thumb.jpg"))
             except:
                 pass
 
@@ -620,14 +619,10 @@ class ReferenceTab(object):
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
             asset.change_dependency(URL)
 
-        # Create low res thumbnail for preview on list widget
-        shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
-        self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
-
         # Add item to lists
         new_item = QtGui.QListWidgetItem()
         new_item.setData(QtCore.Qt.UserRole, asset)
-        new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
+        new_item.setIcon(QtGui.QIcon(asset.full_path))
         self.all_references_ListWidgetItems.append(new_item)
         self.referenceThumbListWidget.addItem(new_item)
         self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset.name), value=asset.id)
@@ -702,13 +697,11 @@ class ReferenceTab(object):
                     image_width = 1920
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
-            # Create low res thumbnail for preview on list widget
-            shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
-            self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
+
 
             # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
-            new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
+            new_item.setIcon(QtGui.QIcon(asset.full_path))
             new_item.setData(QtCore.Qt.UserRole, asset)
 
             self.referenceThumbListWidget.addItem(new_item)
@@ -752,13 +745,10 @@ class ReferenceTab(object):
         image_width = downloaded_img.size[0]
         self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
-        # Create low res thumbnail for preview on list widget
-        shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
-        self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
 
         # Add reference to reference list
         new_item = QtGui.QListWidgetItem()
-        new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
+        new_item.setIcon(QtGui.QIcon(asset.full_path))
         new_item.setData(QtCore.Qt.UserRole, asset)
 
         self.referenceThumbListWidget.addItem(new_item)
@@ -969,7 +959,7 @@ class ReferenceTab(object):
                     asset.print_asset()
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)
-                    ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
+                    ref_item.setIcon(QtGui.QIcon(asset.full_path))
                     ref_item.setData(QtCore.Qt.UserRole, asset)
 
                     if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors
