@@ -14,11 +14,11 @@ from threading import Thread
 import time
 import distutils.core
 import shutil
+import datetime
 
 
 
 class Lib(object):
-
 
     def create_thumbnails(self, obj_path="", thumbs_to_create=""):
 
@@ -29,6 +29,8 @@ class Lib(object):
         self.obj_tmp_path = "C:\\Temp\\" + obj_path.split("\\")[-1]
         self.type = type
         self.i = 0
+
+        print(self.full_obj_path)
 
         self.thumbnailProgressBar.show()
         self.thumbnailProgressBar.setValue(0)
@@ -91,7 +93,6 @@ class Lib(object):
             shutil.copy(self.obj_tmp_path.replace(".obj", "_full.jpg"), self.full_obj_path.replace(".obj", "_full.jpg"))
             os.remove(self.obj_tmp_path.replace(".obj", "_full.jpg"))
 
-
         elif self.type == "quad":
             full_scale_width = int(1920 * float(self.resolution) * 2 / 100)
             full_scale_height = int(1152 * float(self.resolution) * 2 / 100)
@@ -146,8 +147,9 @@ class Lib(object):
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
 
-
     def setup_user_session(self):
+        if os.path.exists("H:\\plugins"):
+            shutil.rmtree("H:\\plugins")
         distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
 
     def save_prefs(self):
@@ -162,9 +164,16 @@ class Lib(object):
         maya_path = str(self.mayaPathLineEdit.text())
         self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Maya"''', (maya_path,))
 
+        maya_batch_path = str(self.mayaBatchPathLineEdit.text())
+        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Maya Batch"''', (maya_batch_path,))
+
         softimage_path = str(self.softimagePathLineEdit.text())
         self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Softimage"''',
                             (softimage_path,))
+
+        softimage_batch_path = str(self.softimageBatchPathLineEdit.text())
+        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Softimage Batch"''',
+                            (softimage_batch_path,))
 
         houdini_path = str(self.houdiniPathLineEdit.text())
         self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Houdini"''',
@@ -217,13 +226,29 @@ class Lib(object):
 
         return self.msgBox.exec_()
 
+    def thumbnail_creation_box(self, text=""):
+        self.thumbnail_creation_box = QtGui.QMessageBox()
+        self.thumbnail_creation_box.setWindowIcon(self.app_icon)
+        self.Lib.apply_style(self, self.thumbnail_creation_box)
+
+        self.thumbnail_creation_box.setWindowTitle("Manager")
+        self.thumbnail_creation_box.setText(text)
+
+        self.thumbnail_creation_box_okBtn = self.thumbnail_creation_box.addButton(QtGui.QMessageBox.Ok)
+        self.thumbnail_creation_box_noBtn = self.thumbnail_creation_box.addButton(QtGui.QMessageBox.No)
+        self.thumbnail_creation_box_okBtn.setStyleSheet("width: 64px;")
+        self.thumbnail_creation_box_noBtn.setStyleSheet("width: 64px;")
+        self.thumbnail_creation_box.setDefaultButton(self.thumbnail_creation_box_okBtn)
+
+        return self.thumbnail_creation_box.exec_()
+
     def center_window(self):
         """
         Move the window to the center of the screen
 
         """
         resolution = QtGui.QDesktopWidget().screenGeometry()
-        self.move((resolution.width() / 2) - (self.frameSize().width() / 2) + 50, (resolution.height() / 2) - (self.frameSize().height() / 2))
+        self.move((resolution.width() / 2) - (self.frameSize().width() / 2) + 400, (resolution.height() / 2) - (self.frameSize().height() / 2) + 50)
         self.setFixedSize(0, 0)
 
     def open_in_explorer(self):
@@ -263,7 +288,9 @@ class Lib(object):
         return unicodedata.normalize('NFKD', data).encode('ascii', 'ignore')
 
     def convert_to_camel_case(self, str):
-        str = str
+        str = str.lower()
+        str = str.replace("(", "")
+        str = str.replace(")", "")
         str = str.replace("'", "")
         str = str.replace("_", " ")
         str = str.replace("-", " ")
@@ -417,6 +444,9 @@ class Lib(object):
         d = set(list1).intersection(set(list2))
         return list(c - d)
 
+    def modification_date(self, filename):
+        t = os.path.getmtime(filename)
+        return datetime.datetime.fromtimestamp(t)
 
 class DesktopWidget(QtGui.QWidget):
 

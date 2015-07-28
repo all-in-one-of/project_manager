@@ -68,6 +68,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def __init__(self):
         super(Main, self).__init__()
 
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMaximizeButtonHint)
+
         self.ReferenceTab = ReferenceTab
         self.Lib = Lib
         self.TaskManager = TaskManager
@@ -176,7 +179,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         # Get software paths from database and put them in preference
         self.photoshop_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Photoshop"''').fetchone()[0])
         self.maya_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya"''').fetchone()[0])
+        self.maya_batch_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Maya Batch"''').fetchone()[0])
         self.softimage_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Softimage"''').fetchone()[0])
+        self.softimage_batch_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Softimage Batch"''').fetchone()[0])
         self.houdini_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Houdini"''').fetchone()[0])
         self.houdini_batch_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Houdini Batch"''').fetchone()[0])
         self.cinema4d_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Cinema 4D"''').fetchone()[0])
@@ -187,7 +192,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         self.photoshopPathLineEdit.setText(self.photoshop_path)
         self.mayaPathLineEdit.setText(self.maya_path)
+        self.mayaBatchPathLineEdit.setText(self.maya_batch_path)
         self.softimagePathLineEdit.setText(self.softimage_path)
+        self.softimageBatchPathLineEdit.setText(self.softimage_batch_path)
         self.houdiniPathLineEdit.setText(self.houdini_path)
         self.houdiniBatchPathLineEdit.setText(self.houdini_batch_path)
         self.cinema4dPathLineEdit.setText(self.cinema4d_path)
@@ -215,9 +222,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         MyTasks.__init__(self)
         WhatsNew.__init__(self)
 
-        self.check_news_thread = CheckNews(self)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
+        #self.check_news_thread = CheckNews(self)
+        #self.check_news_thread.daemon = True
+        #self.check_news_thread.start()
 
 
     def add_tag_to_tags_manager(self):
@@ -615,10 +622,10 @@ if __name__ == "__main__":
     # création de l'objet logger qui va nous servir à écrire dans les logs
     logger = logging.getLogger()
     # on met le niveau du logger à DEBUG, comme ça il écrit tout
-
+    logger.setLevel(logging.DEBUG)
     # création d'un formateur qui va ajouter le temps, le niveau
     # de chaque message quand on écrira un message dans le log
-    logging.basicConfig(level=logging.DEBUG, format=('%(asctime)s %(filename)s: ''%(funcName)s(): ''%(lineno)d:\t''%(message)s'))
+    formatter = logging.Formatter('%(asctime)s ::: %(filename)s ::: ''%(funcName)s() ::: line ''%(lineno)d ::: ''%(message)s')
     # création d'un handler qui va rediriger une écriture du log vers
     # un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
 
@@ -626,6 +633,7 @@ if __name__ == "__main__":
     # on lui met le niveau sur DEBUG, on lui dit qu'il doit utiliser le formateur
     # créé précédement et on ajoute ce handler au logger
     file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
     # création d'un second handler qui va rediriger chaque écriture de log

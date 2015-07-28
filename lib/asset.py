@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import os
+import time
 
 class Asset(object):
     def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", creator=""):
@@ -30,43 +31,44 @@ class Asset(object):
         self.last_access = last_access
         self.creator = creator
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
-        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.full_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_full", "jpg")
-        self.quad_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_quad", "jpg")
-        self.turn_vid_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out_turn", "mp4")
-        self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, "out", "obj")
+        self.full_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
+        self.quad_img_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_quad", "jpg")
+        self.turn_vid_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_turn", "mp4")
+        self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
+
+        if self.type == "shd":
+            self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
     def print_asset(self):
         print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.creator)
 
     def update_asset_path(self):
-        new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+        new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         if int(self.version) > 1:  # If version is higher than 1, go back to level 1 and increment until there is no existing file with version
             self.change_version_if_asset_already_exists(str(1).zfill(2))
-            new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+            new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
             while os.path.isfile(self.project_path + new_path): # Increment version until there is no file already existing with same version
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
 
         elif int(self.version) == 1: # If asset is at version 1, increment its version until there is no file already existing with same version
             while os.path.isfile(self.project_path + new_path):
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
 
         os.rename(self.full_path, self.project_path + new_path)
-        if self.type == "ref":
-            os.rename(self.full_path.replace(".jpg", "_thumb.jpg"), self.project_path + new_path.replace(".jpg", "_thumb.jpg"))
-        self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
-        self.main.db.commit()
         self.full_path = self.project_path + new_path
         self.path = new_path
+        self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
+        self.main.db.commit()
 
     def add_asset_to_db(self):
         while os.path.isfile(self.project_path + self.path):
             if self.version != "out":
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-                self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname, self.sequence, self.shot, self.type, self.name, self.version, self.extension)
+                self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
         self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
         self.id = self.main.cursor.lastrowid
@@ -139,6 +141,12 @@ class Asset(object):
         self.main.cursor.execute('''UPDATE assets SET asset_tags=? WHERE asset_id=?''', (",".join(self.tags), self.id,))
         self.main.db.commit()
 
+    def change_last_access(self):
+        last_access = time.strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+        self.last_access = last_access
+        self.main.cursor.execute('''UPDATE assets SET last_access=? WHERE asset_id=?''', (last_access, self.id,))
+        self.main.db.commit()
+
     def get_infos_from_id(self):
         asset = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_id=?''', (self.id,)).fetchone()
         project_name = asset[1]
@@ -169,9 +177,9 @@ class Asset(object):
         self.dependency = asset_dependency
         self.last_access = last_access
         self.creator = creator
-        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{4}_{5}_{6}.{7}".format(self.type, self.project_shortname,
+        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname,
                                                                         self.sequence,
-                                                                        self.shot, self.type, self.name, self.version,
+                                                                        self.shot, self.name, self.version,
                                                                         self.extension)
         self.full_path = self.project_path + self.path
 

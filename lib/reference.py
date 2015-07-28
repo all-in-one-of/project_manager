@@ -152,6 +152,8 @@ class ReferenceTab(object):
                 self.referenceThumbListWidget.addItem(ref_item)
 
             progressBar.setValue(i)
+            hue = self.fit_range(i, 0, progressBar.maximum(), 0, 76)
+            progressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);} QProgressBar{ text-align: center;}")
             mainLbl.setText("Adding image #" + str(i))
             self.nbr_of_visible_images += 1
             dialog.repaint()
@@ -671,6 +673,9 @@ class ReferenceTab(object):
         # Add each file
         assets = []
         for i, file_path in enumerate(selected_files):
+            progressBar.setValue(i)
+            dialog.repaint()
+
             file_path = unicode(file_path)
             file_path = os.path.abspath(file_path)
 
@@ -708,7 +713,7 @@ class ReferenceTab(object):
             self.all_references_ListWidgetItems.append(new_item)
             self.add_log_entry("{0} added a reference from files ({1})".format(self.members[self.username], asset.name), value=asset.id)
             self.referenceThumbListWidget.setItemSelected(new_item, True)
-            progressBar.setValue(i)
+
 
         dialog.repaint()
         dialog.close()

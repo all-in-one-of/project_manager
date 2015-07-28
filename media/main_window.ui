@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1150</width>
-    <height>901</height>
+    <width>1982</width>
+    <height>987</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -866,8 +866,8 @@
                   <property name="checkable">
                    <bool>false</bool>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout">
-                   <item>
+                  <layout class="QGridLayout" name="gridLayout_3">
+                   <item row="0" column="0">
                     <widget class="QFrame" name="thumbnailFrame">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
@@ -1000,7 +1000,7 @@
                      </layout>
                     </widget>
                    </item>
-                   <item>
+                   <item row="0" column="1">
                     <widget class="Line" name="line">
                      <property name="frameShadow">
                       <enum>QFrame::Sunken</enum>
@@ -1013,7 +1013,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item>
+                   <item row="0" column="2">
                     <widget class="QFrame" name="assetInfoFrame">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
@@ -1026,92 +1026,39 @@
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="QFrame" name="createdByFrame">
+                       <widget class="QFrame" name="stateFrame_2">
                         <property name="frameShape">
                          <enum>QFrame::NoFrame</enum>
                         </property>
                         <property name="frameShadow">
                          <enum>QFrame::Raised</enum>
                         </property>
-                        <layout class="QHBoxLayout" name="horizontalLayout_17">
+                        <layout class="QHBoxLayout" name="horizontalLayout_20">
                          <item>
-                          <widget class="QLabel" name="createdByLbl">
+                          <widget class="QLabel" name="lastAccessLbl">
                            <property name="maximumSize">
                             <size>
-                             <width>64</width>
+                             <width>16777215</width>
                              <height>16777215</height>
                             </size>
                            </property>
                            <property name="text">
-                            <string>Created by:</string>
+                            <string>Last accessed by:</string>
                            </property>
                           </widget>
                          </item>
                          <item>
-                          <widget class="QLabel" name="createdByValueLbl">
-                           <property name="text">
-                            <string>...</string>
+                          <spacer name="horizontalSpacer_3">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
                            </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="assignedToLbl">
-                           <property name="maximumSize">
+                           <property name="sizeHint" stdset="0">
                             <size>
-                             <width>64</width>
-                             <height>16777215</height>
+                             <width>40</width>
+                             <height>20</height>
                             </size>
                            </property>
-                           <property name="text">
-                            <string>Assigned to:</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="assignedToValueLbl">
-                           <property name="text">
-                            <string>...</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QFrame" name="assignedToFrame_2">
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                         <enum>QFrame::Raised</enum>
-                        </property>
-                        <layout class="QHBoxLayout" name="horizontalLayout_18">
-                         <item>
-                          <widget class="QLabel" name="dueDateLbl">
-                           <property name="maximumSize">
-                            <size>
-                             <width>44</width>
-                             <height>16777215</height>
-                            </size>
-                           </property>
-                           <property name="text">
-                            <string>Due on:</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="dueDateValueLbl">
-                           <property name="text">
-                            <string>Lundi 01 Janvier 2015 - 12h00</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="timeLeftLbl">
-                           <property name="text">
-                            <string>1 day 10 hours left</string>
-                           </property>
-                          </widget>
+                          </spacer>
                          </item>
                         </layout>
                        </widget>
@@ -1126,54 +1073,9 @@
                         </property>
                         <layout class="QHBoxLayout" name="horizontalLayout_2">
                          <item>
-                          <widget class="QLabel" name="statusLbl">
-                           <property name="maximumSize">
-                            <size>
-                             <width>40</width>
-                             <height>16777215</height>
-                            </size>
-                           </property>
+                          <widget class="QLabel" name="lastPublishedLbl">
                            <property name="text">
-                            <string>Status:</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label">
-                           <property name="text">
-                            <string>Approved</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QFrame" name="stateFrame_2">
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                         <enum>QFrame::Raised</enum>
-                        </property>
-                        <layout class="QHBoxLayout" name="horizontalLayout_20">
-                         <item>
-                          <widget class="QLabel" name="statusLbl_2">
-                           <property name="maximumSize">
-                            <size>
-                             <width>90</width>
-                             <height>16777215</height>
-                            </size>
-                           </property>
-                           <property name="text">
-                            <string>Last accessed by:</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_2">
-                           <property name="text">
-                            <string>Thibault on monday June 15 2015</string>
+                            <string>Last published: </string>
                            </property>
                           </widget>
                          </item>
@@ -1224,10 +1126,8 @@
                      <zorder>addCommentBtn</zorder>
                      <zorder>commentTxtLine</zorder>
                      <zorder>commentTxt</zorder>
-                     <zorder>createdByFrame</zorder>
-                     <zorder>assignedToFrame_2</zorder>
-                     <zorder>stateFrame</zorder>
                      <zorder>stateFrame_2</zorder>
+                     <zorder>stateFrame</zorder>
                     </widget>
                    </item>
                   </layout>
@@ -3225,6 +3125,9 @@
                      <property name="toolTip">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Double click&lt;/span&gt; on a thumbnail to &lt;span style=&quot; font-weight:600;&quot;&gt;open&lt;/span&gt; it with windows picture viewer.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ALT + double click&lt;/span&gt; on a thumbnail to open the &lt;span style=&quot; font-weight:600;&quot;&gt;comments&lt;/span&gt; dialog.&lt;/p&gt;&lt;p&gt;Select a thumbnail and hit &lt;span style=&quot; font-weight:600;&quot;&gt;F2&lt;/span&gt; to &lt;span style=&quot; font-weight:600;&quot;&gt;rename&lt;/span&gt; a reference.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Use &lt;span style=&quot; font-weight:600;&quot;&gt;CTRL&lt;/span&gt; to scroll &lt;span style=&quot; font-weight:600;&quot;&gt;slowly&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use &lt;span style=&quot; font-weight:600;&quot;&gt;SHIFT&lt;/span&gt; to scroll &lt;span style=&quot; font-weight:600;&quot;&gt;fast&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use &lt;span style=&quot; font-weight:600;&quot;&gt;CTRL + SHIF&lt;/span&gt;T to scroll &lt;span style=&quot; font-weight:600;&quot;&gt;very fast&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
+                     <property name="dragDropMode">
+                      <enum>QAbstractItemView::NoDragDrop</enum>
+                     </property>
                      <property name="selectionMode">
                       <enum>QAbstractItemView::ExtendedSelection</enum>
                      </property>
@@ -3641,6 +3544,56 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QFrame" name="mayaPathFrame_2">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>1</number>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_17">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="mayaPrefLbl_2">
+                        <property name="minimumSize">
+                         <size>
+                          <width>65</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>65</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="text">
+                         <string>Maya Batch</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="mayaBatchPathLineEdit">
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="placeholderText">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QFrame" name="softimagePathFrame">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
@@ -3679,6 +3632,56 @@
                       </item>
                       <item>
                        <widget class="QLineEdit" name="softimagePathLineEdit">
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="placeholderText">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QFrame" name="softimagePathFrame_2">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>1</number>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_18">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="softimagePrefLbl_2">
+                        <property name="minimumSize">
+                         <size>
+                          <width>65</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>65</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="text">
+                         <string>Softimage Batch</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="softimageBatchPathLineEdit">
                         <property name="text">
                          <string/>
                         </property>
@@ -4085,8 +4088,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>728</width>
-                  <height>358</height>
+                  <width>1560</width>
+                  <height>401</height>
                  </rect>
                 </property>
                </widget>
@@ -4320,7 +4323,7 @@
               <x>0</x>
               <y>0</y>
               <width>362</width>
-              <height>824</height>
+              <height>910</height>
              </rect>
             </property>
            </widget>

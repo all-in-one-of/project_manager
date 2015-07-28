@@ -7,6 +7,7 @@ from functools import partial
 import os
 import shutil
 from threading import Thread
+import datetime
 
 
 class AssetLoader(object):
@@ -222,8 +223,8 @@ class AssetLoader(object):
                 self.assetList.addItem(asset_item)
 
 
-            if asset.extension != "obj" and asset.extension != "hda":
-                version_item = QtGui.QListWidgetItem(asset.version)
+            if asset.version != "out":
+                version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
                 version_item.setData(QtCore.Qt.UserRole, asset)
                 self.versions.append(version_item)
                 self.versionList.addItem(version_item)
@@ -364,7 +365,7 @@ class AssetLoader(object):
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         for version in self.versions:
             asset = version.data(QtCore.Qt.UserRole).toPyObject()
-            if selected_asset.name == asset.name:
+            if selected_asset.name == asset.name and asset.type == self.selected_department_name:
                 version.setHidden(False)
                 version.setSelected(True)
             else:
@@ -377,6 +378,7 @@ class AssetLoader(object):
         selected_version = self.versionList.selectedItems()[0]
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
+        # Set pixmap
         if self.selected_asset.type == "ref":
             qpixmap = QtGui.QPixmap(self.selected_asset.full_path)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
@@ -399,6 +401,23 @@ class AssetLoader(object):
             self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
 
+            # Set last published date label
+            last_modified_time = self.Lib.modification_date(self, self.selected_asset.obj_path)
+            last_modified_time_str = last_modified_time.strftime("%d/%m/%Y at %H:%M")
+
+            day_today = datetime.datetime.now()
+            number_of_days_since_last_publish = day_today - last_modified_time
+            number_of_days_since_last_publish = number_of_days_since_last_publish.days
+            if number_of_days_since_last_publish == 0 :
+                number_of_days_since_last_publish = "today"
+            elif number_of_days_since_last_publish > 7:
+                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago. You should publish a new version!"
+                self.lastPublishedLbl.setStyleSheet("color: red;")
+            else:
+                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
+
+            self.lastPublishedLbl.setText("Last published: {0} ({1})".format(last_modified_time_str, number_of_days_since_last_publish))
+
         else:
             qpixmap = QtGui.QPixmap(self.no_img_found)
             qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -406,9 +425,8 @@ class AssetLoader(object):
             self.assetImg.setPixmap(qpixmap)
 
 
-
-
-        self.createdByValueLbl.setText(self.members[self.selected_asset.creator])
+        # Set labels
+        self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
     def versionList_DoubleClicked(self):
         selected_version = self.versionList.selectedItems()[0]
@@ -458,22 +476,42 @@ class AssetLoader(object):
             self.Lib.message_box(self, text="You can't create a new version from a published asset")
             return
 
-
         old_version_path = self.selected_asset.full_path
-
         new_version = str(int(self.selected_asset.version) + 1).zfill(2)
-        print(self.selected_asset.extension)
-        return
         asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator)
         asset.add_asset_to_db()
 
         shutil.copy(old_version_path, asset.full_path)
+        version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
+        version_item.setData(QtCore.Qt.UserRole, asset)
+        self.versions.append(version_item)
+        self.versionList.addItem(version_item)
+
+
 
     def publish_asset(self):
 
-        self.publish_process = QtCore.QProcess(self)
-        self.publish_process.finished.connect(self.publish_process_finished)
-        self.publish_process.start(self.blender_path, ["-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
+        if self.selected_asset.type == "mod":
+            if self.selected_asset.extension == "blend":
+                self.publish_process = QtCore.QProcess(self)
+                self.publish_process.finished.connect(self.publish_process_finished)
+                self.publish_process.start(self.blender_path, ["-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
+            elif self.selected_asset.extension == "ma":
+                self.publish_process = QtCore.QProcess(self)
+                self.publish_process.finished.connect(self.publish_process_finished)
+                self.publish_process.readyReadStandardOutput.connect(self.read_data)
+                self.publish_process.start(self.maya_batch_path, ["H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path])
+            elif self.selected_asset.extension == "scn":
+                self.publish_process = QtCore.QProcess(self)
+                self.publish_process.finished.connect(self.publish_process_finished)
+                self.publish_process.readyReadStandardOutput.connect(self.read_data)
+                self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
+
+    def read_data(self):
+        while self.publish_process.canReadLine():
+
+            out = self.publish_process.readLine()
+            print(out)
 
     def publish_process_finished(self):
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
@@ -523,6 +561,19 @@ class AssetLoader(object):
             return
 
         if type == "full":
+            if not os.path.isfile(self.selected_asset.full_img_path):
+                self.update_thumbnail()
+                return
+            last_modified_time_img = self.Lib.modification_date(self, self.selected_asset.full_img_path)
+            last_modified_time_publish = self.Lib.modification_date(self, self.selected_asset.obj_path)
+
+            if last_modified_time_img < last_modified_time_publish:
+                result = self.Lib.thumbnail_creation_box(self, text="A new version has been published. Do you want to create a thumbnail for it?")
+                if result == QtGui.QMessageBox.Ok:
+                    os.remove(self.selected_asset.full_img_path)
+                    self.update_thumbnail()
+                    return
+
             qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(self.selected_asset.full_img_path)
@@ -532,6 +583,14 @@ class AssetLoader(object):
             if not os.path.isfile(self.selected_asset.quad_img_path):
                 self.update_thumbnail()
                 return
+            last_modified_time_img = self.Lib.modification_date(self, self.selected_asset.quad_img_path)
+            last_modified_time_publish = self.Lib.modification_date(self, self.selected_asset.obj_path)
+            if last_modified_time_img < last_modified_time_publish:
+                result = self.Lib.thumbnail_creation_box(self, text="A new version has been published. Do you want to create a thumbnail for it?")
+                if result == QtGui.QMessageBox.Ok:
+                    os.remove(self.selected_asset.quad_img_path)
+                    self.update_thumbnail()
+                    return
             qpixmap = QtGui.QPixmap(self.selected_asset.quad_img_path)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(self.selected_asset.quad_img_path)
@@ -541,6 +600,16 @@ class AssetLoader(object):
             if not os.path.isfile(self.selected_asset.turn_vid_path):
                 self.update_thumbnail()
                 return
+
+            last_modified_time_img = self.Lib.modification_date(self, self.selected_asset.turn_vid_path)
+            last_modified_time_publish = self.Lib.modification_date(self, self.selected_asset.obj_path)
+            if last_modified_time_img < last_modified_time_publish:
+                result = self.Lib.thumbnail_creation_box(self, text="A new version has been published. Do you want to create a thumbnail for it?")
+                if result == QtGui.QMessageBox.Ok:
+                    os.remove(self.selected_asset.turn_vid_path)
+                    self.update_thumbnail()
+                    return
+
             subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", self.selected_asset.turn_vid_path, "/fullscreen"])
 
     def load_obj_in_gplay(self):
@@ -551,12 +620,32 @@ class AssetLoader(object):
             os.system(self.selected_asset.full_path)
 
         elif self.selected_asset.type == "mod":
-            t = Thread(target=lambda: os.system(self.selected_asset.full_path))
-            t.start()
+            self.selected_asset.change_last_access()
+            if self.selected_asset.extension == "blend":
+                t = Thread(target=lambda: subprocess.Popen([self.blender_path, self.selected_asset.full_path]))
+                t.start()
+            elif self.selected_asset.extension == "ma":
+                t = Thread(target=lambda: subprocess.Popen([self.maya_path, self.selected_asset.full_path]))
+                t.start()
+            elif self.selected_asset.extension == "scn":
+                t = Thread(target=lambda: subprocess.Popen([self.softimage_path, self.selected_asset.full_path]))
+                t.start()
+
+        elif self.selected_asset.type == "shd":
+            process = QtCore.QProcess(self)
+            process.start("Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\houdinifx.exe",
+                          [self.selected_asset.main_hda_path])
+
+        elif self.selected_asset.type == "lay":
+            process = QtCore.QProcess(self)
+            process.start("Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\houdinifx.exe",
+                          [self.selected_asset.full_path])
 
     def create_asset_from_scratch(self):
         if self.selected_department_name == "mod":
             self.create_modeling_asset_from_scratch()
+        elif self.selected_department_name == "lay":
+            self.create_layout_asset_from_scratch()
 
     def create_modeling_asset_from_scratch(self):
 
@@ -606,23 +695,64 @@ class AssetLoader(object):
         shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
         # Create default publish cube (obj)
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", self.username)
-        asset.add_asset_to_db()
-        shutil.copy(self.NEF_folder + "\\default_cube.obj", asset.full_path)
+        obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", self.username)
+        obj_asset.add_asset_to_db()
+        shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
+
+
+        # Create main HDA database entry
+        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], main_id, "", self.username)
+        main_hda_asset.add_asset_to_db()
+
+        # Create shading HDA database entry
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_id, "", self.username)
+        shading_hda_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", asset.full_path + "*" + asset_name])
-        # Create main HDA database entry
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], main_id, "", self.username)
-        asset.add_asset_to_db()
-
-        # Create shading HDA database entry
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-shd", "", "hda", "shd", "out", [], main_id, "", self.username)
-        asset.add_asset_to_db()
+        self.houdini_hda_process.finished.connect(self.create_modeling_asset_finished)
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, asset_name])
 
         # Reload assets
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
+
+    def create_modeling_asset_finished(self):
+        self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
+
+    def create_layout_asset_from_scratch(self):
+
+        # Create asset name dialog
+        dialog = QtGui.QDialog(self)
+        self.Lib.apply_style(self, dialog)
+
+        dialog.setWindowTitle("Enter a name")
+        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+
+        name_line_edit = QtGui.QLineEdit()
+        name_line_edit.setPlaceholderText("Please enter a name...")
+        name_line_edit.returnPressed.connect(dialog.accept)
+
+        dialog_main_layout.addWidget(name_line_edit)
+
+        dialog.exec_()
+        if dialog.result() == 0:
+            return
+
+        # Get asset name
+        asset_name = str(name_line_edit.text())
+        asset_name = self.Lib.normalize_str(self, asset_name)
+        asset_name = self.Lib.convert_to_camel_case(self, asset_name)
+
+        # Create modeling scene asset
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hipnc", "lay", "01", [], "", "", self.username)
+        asset.add_asset_to_db()
+        shutil.copy(self.NEF_folder + "\\houdini.hipnc", asset.full_path)
+
+        self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
+
+
+
 
 

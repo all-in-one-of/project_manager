@@ -23,7 +23,6 @@ class CommentWidget(object):
         size = QtCore.QSize(0, self.size().height())
         self.setFixedSize(size)
 
-
     def load_comments(self):
         self.CommentsFrame.show()
 
@@ -75,7 +74,6 @@ class CommentWidget(object):
 
         # Get all comment authors except me
         self.comment_authors = list(set(self.comment_authors))
-
 
     def create_comment_frame(self, comment_author, comment_text, comment_time):
 
