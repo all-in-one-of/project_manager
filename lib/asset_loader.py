@@ -51,7 +51,7 @@ class AssetLoader(object):
         self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)  # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
         self.shotList.itemClicked.connect(self.shotList_Clicked)
-        self.assetList.itemSelectionChanged.connect(self.assetList_Clicked)
+        self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
 
@@ -271,6 +271,7 @@ class AssetLoader(object):
         subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
 
     def seqList_Clicked(self):
+
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
         if self.selected_sequence_name == "None" or self.selected_sequence_name == "All":
             self.selected_sequence_name = "xxx"
@@ -302,6 +303,7 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def departmentList_Clicked(self):
+
         self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
         if self.selected_department_name != "All":
             self.selected_department_name = self.departments_shortname[self.selected_department_name]
@@ -357,11 +359,12 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
+
         selected_asset = self.assetList.selectedItems()[0]
-        current_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         for version in self.versions:
             asset = version.data(QtCore.Qt.UserRole).toPyObject()
-            if current_asset.name == asset.name:
+            if selected_asset.name == asset.name:
                 version.setHidden(False)
                 version.setSelected(True)
             else:
@@ -468,25 +471,15 @@ class AssetLoader(object):
 
     def publish_asset(self):
 
-        if self.selected_asset.type == "mod":
-            if self.selected_asset.extension == "obj" or self.selected_asset.extension == "hda":
-                asset = self.Asset(self, id=self.selected_asset.dependency)
-                asset.get_infos_from_id()
-
         self.publish_process = QtCore.QProcess(self)
         self.publish_process.finished.connect(self.publish_process_finished)
-        self.publish_process.start(self.blender_path, ["-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", asset.full_path, asset.full_path.replace("01.blend", "out.obj")])
+        self.publish_process.start(self.blender_path, ["-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
 
     def publish_process_finished(self):
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
     def update_thumbnail(self):
         if self.selected_asset.type == "mod":
-            if self.selected_asset.extension != "obj":
-                obj_path = self.selected_asset.obj_path
-            else:
-                obj_path = self.selected_asset.full_path
-
 
             dialog = QtGui.QDialog(self)
             dialog.setWindowTitle("Select options")
@@ -523,7 +516,7 @@ class AssetLoader(object):
             if checkbox_turn.isChecked():
                 thumbs_to_create += "turn"
 
-            self.Lib.create_thumbnails(self, obj_path, thumbs_to_create)
+            self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create)
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -558,14 +551,8 @@ class AssetLoader(object):
             os.system(self.selected_asset.full_path)
 
         elif self.selected_asset.type == "mod":
-            if self.selected_asset.extension == "obj" or self.selected_asset.extension == "hda":
-                asset = self.Asset(self, id=self.selected_asset.dependency)
-                asset.get_infos_from_id()
-                t = Thread(target=lambda: os.system(asset.full_path))
-                t.start()
-            else:
-                t = Thread(target=lambda: os.system(self.selected_asset.full_path))
-                t.start()
+            t = Thread(target=lambda: os.system(self.selected_asset.full_path))
+            t.start()
 
     def create_asset_from_scratch(self):
         if self.selected_department_name == "mod":

@@ -13,6 +13,7 @@ import sys
 from threading import Thread
 import time
 import distutils.core
+import shutil
 
 
 
@@ -87,7 +88,8 @@ class Lib(object):
         if self.type == "full":
             filename = self.obj_tmp_path.replace(".obj", "_full.jpg")
             self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
-            distutils.file_util.move_file(self.obj_tmp_path.replace(".obj", "_full.jpg"), self.full_obj_path.replace(".obj", "_full.jpg"))
+            shutil.copy(self.obj_tmp_path.replace(".obj", "_full.jpg"), self.full_obj_path.replace(".obj", "_full.jpg"))
+            os.remove(self.obj_tmp_path.replace(".obj", "_full.jpg"))
 
 
         elif self.type == "quad":
@@ -112,7 +114,8 @@ class Lib(object):
             im.paste(view04, (quad_scale_width, quad_scale_height))
 
             im.save(self.obj_tmp_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
-            distutils.file_util.move_file(self.obj_tmp_path.replace(".obj", "_quad.jpg"), self.full_obj_path.replace(".obj", "_quad.jpg"))
+            shutil.copy(self.obj_tmp_path.replace(".obj", "_quad.jpg"), self.full_obj_path.replace(".obj", "_quad.jpg"))
+            os.remove(self.obj_tmp_path.replace(".obj", "_quad.jpg"))
 
             for i in range(0, 360, 90):
                 os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(3) + ".jpg"))
@@ -125,7 +128,8 @@ class Lib(object):
                 ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
                  movie_path])
 
-            distutils.file_util.move_file(self.obj_tmp_path.replace(".obj", "_turn.mp4"), self.full_obj_path.replace(".obj", "_turn.mp4"))
+            shutil.copy(self.obj_tmp_path.replace(".obj", "_turn.mp4"), self.full_obj_path.replace(".obj", "_turn.mp4"))
+            os.remove(self.obj_tmp_path.replace(".obj", "_turn.mp4"))
             for i in range(24):
                 os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(2) + ".jpg"))
 
