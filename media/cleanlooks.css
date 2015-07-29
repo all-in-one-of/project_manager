@@ -1,0 +1,47 @@
+
+
+QWidget
+{
+    color: #3c3c3c;
+    background-color: #e0e0e0;
+}
+
+QProgressBar
+{
+
+    text-align: center;
+
+}
+
+
+QAbstractItemView
+{
+    background-color: #f1f1f1;
+}
+
+
+QLineEdit
+{
+    background-color: #f1f1f1;
+    padding: 1px;
+    border-radius: 2;
+}
+
+QCheckBox::indicator{
+    color: #b1b1b1;
+    background-color: #f1f1f1;
+    border: 1px solid #b1b1b1;
+    width: 12px;
+    height: 12px;
+}
+
+QCheckBox::indicator:checked
+{
+    image:url(Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_asset_manager/media/checkbox.png);
+}
+
+
+QCheckBox::indicator:hover
+{
+    border: 1px solid #ffaa00;
+}

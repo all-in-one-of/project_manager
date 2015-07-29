@@ -95,10 +95,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
-        self.main_window_size = self.size()
-
         # Global Variables
         self.i = 0
+        self.selected_asset = None
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
@@ -499,6 +498,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
 
     def refresh_all(self):
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
         self.setup_tags()
         self.mt_item_added = True
         MyTasks.mt_add_tasks_from_database(self)

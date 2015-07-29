@@ -1,0 +1,1 @@
+"Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe" -b "%~dp0/Thumbnailer.blend" --python-text ThumbScript --objFiles

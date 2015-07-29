@@ -20,8 +20,13 @@ class CommentWidget(object):
 
     def hide_comments_frame(self):
         self.CommentsFrame.hide()
-        size = QtCore.QSize(0, self.size().height())
-        self.setFixedSize(size)
+        #size = QtCore.QSize(0, self.size().height())
+        #self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+        #self.gridLayout_6.update()
+
+
+
+
 
     def load_comments(self):
         self.CommentsFrame.show()
@@ -31,6 +36,9 @@ class CommentWidget(object):
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="ref"''', (self.selected_asset.id,)).fetchall()
         elif current_tab_text == "Task Manager":
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="task"''', (self.selected_asset.id,)).fetchall()
+        elif current_tab_text == "Asset Loader":
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="asset"''', (self.selected_asset.id,)).fetchall()
+
 
         self.comment_authors = []
         self.cur_alignment = "left"
@@ -141,6 +149,11 @@ class CommentWidget(object):
         elif current_tab_text == "Task Manager" or current_tab_text == "Tasks":
             self.selected_asset.add_comment(self.username, comment, current_time, "task")
             #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+
+        elif current_tab_text == "Asset Loader":
+            self.selected_asset.add_comment(self.username, comment, current_time, "asset")
+            #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+
 
         self.load_comments()
         self.commentLineEdit.clear()

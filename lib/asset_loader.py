@@ -59,6 +59,8 @@ class AssetLoader(object):
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
         # Connect the buttons
+        self.showAssetCommentBtn.clicked.connect(self.show_comments)
+
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
         self.addShotBtn.clicked.connect(self.add_shot)
@@ -70,13 +72,20 @@ class AssetLoader(object):
 
         self.seqFilterClearBtn.clicked.connect(partial(self.clear_filter, "seq"))
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
-        self.addCommentBtn.clicked.connect(self.add_comment)
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
+        self.deleteAssetBtn.clicked.connect(self.delete_asset)
 
         self.createVersionBtn.clicked.connect(self.create_new_version)
         self.publishBtn.clicked.connect(self.publish_asset)
+
+    def show_comments(self):
+        if self.selected_asset == None:
+            return
+        self.CommentsFrame.show()
+        self.commentLineEdit.setFocus()
+        self.CommentWidget.load_comments(self)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -194,7 +203,6 @@ class AssetLoader(object):
         '''
         self.assets = {}
         self.versions = []
-        assets_list = []
         self.assetList.clear()
         self.versionList.clear()
 
@@ -214,16 +222,13 @@ class AssetLoader(object):
             last_access = asset[11]
             creator = asset[12]
 
+
             asset_item = QtGui.QListWidgetItem(asset_name)
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator)
             asset_item.setData(QtCore.Qt.UserRole, asset)
-            assets_list.append((asset.sequence, asset.shot, asset.name, asset.type))
             self.assets[asset] = asset_item
-            if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
+            if asset.version != "out" and asset.type != "ref":
                 self.assetList.addItem(asset_item)
-
-
-            if asset.version != "out":
                 version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
                 version_item.setData(QtCore.Qt.UserRole, asset)
                 self.versions.append(version_item)
@@ -304,7 +309,6 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def departmentList_Clicked(self):
-
         self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
         if self.selected_department_name != "All":
             self.selected_department_name = self.departments_shortname[self.selected_department_name]
@@ -356,7 +360,8 @@ class AssetLoader(object):
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
-
+        self.verticalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
+        self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
@@ -365,11 +370,18 @@ class AssetLoader(object):
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         for version in self.versions:
             asset = version.data(QtCore.Qt.UserRole).toPyObject()
-            if selected_asset.name == asset.name and asset.type == self.selected_department_name:
-                version.setHidden(False)
-                version.setSelected(True)
+            if self.selected_department_name == "All":
+                if selected_asset.name == asset.name:
+                    version.setHidden(False)
+                    version.setSelected(True)
+                else:
+                    version.setHidden(True)
             else:
-                version.setHidden(True)
+                if selected_asset.name == asset.name and asset.type == self.selected_department_name:
+                    version.setHidden(False)
+                    version.setSelected(True)
+                else:
+                    version.setHidden(True)
 
         self.updateThumbBtn.show()
         self.versionList_Clicked()
@@ -390,34 +402,15 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "mod":
             if not os.path.isfile(self.selected_asset.full_img_path):
-                img_path = self.no_img_found
-                width = 300
+                img_path, width = self.no_img_found, 300
             else:
-                img_path = self.selected_asset.full_img_path
-                width = 500
+                img_path, width = self.selected_asset.full_img_path, 500
 
             qpixmap = QtGui.QPixmap(img_path)
             qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
-
-            # Set last published date label
-            last_modified_time = self.Lib.modification_date(self, self.selected_asset.obj_path)
-            last_modified_time_str = last_modified_time.strftime("%d/%m/%Y at %H:%M")
-
-            day_today = datetime.datetime.now()
-            number_of_days_since_last_publish = day_today - last_modified_time
-            number_of_days_since_last_publish = number_of_days_since_last_publish.days
-            if number_of_days_since_last_publish == 0 :
-                number_of_days_since_last_publish = "today"
-            elif number_of_days_since_last_publish > 7:
-                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago. You should publish a new version!"
-                self.lastPublishedLbl.setStyleSheet("color: red;")
-            else:
-                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
-
-            self.lastPublishedLbl.setText("Last published: {0} ({1})".format(last_modified_time_str, number_of_days_since_last_publish))
-
+            self.update_last_published_time_lbl()
         else:
             qpixmap = QtGui.QPixmap(self.no_img_found)
             qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -428,12 +421,37 @@ class AssetLoader(object):
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
+    def update_last_published_time_lbl(self, asset=None):
+        if asset == None:
+            asset = self.selected_asset
+
+        if asset.type == "mod":
+            # Set last published date label
+            last_modified_time = self.Lib.modification_date(self, asset.obj_path)
+            last_modified_time_str = last_modified_time.strftime("%d/%m/%Y at %H:%M")
+
+            day_today = datetime.datetime.now()
+            number_of_days_since_last_publish = day_today - last_modified_time
+            number_of_days_since_last_publish = number_of_days_since_last_publish.days
+            if number_of_days_since_last_publish == 0:
+                number_of_days_since_last_publish = "today"
+            elif number_of_days_since_last_publish > 7:
+                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago. You should publish a new version!"
+                self.lastPublishedLbl.setStyleSheet("color: red;")
+            else:
+                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
+
+            self.lastPublishedLbl.setText("Last published: {0} ({1})".format(last_modified_time_str, number_of_days_since_last_publish))
+
     def versionList_DoubleClicked(self):
         selected_version = self.versionList.selectedItems()[0]
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
         subprocess.Popen(r'explorer /select,' + str(self.selected_asset.full_path))
 
     def load_assets_from_selected_seq_shot_dept(self):
+        # Hide all versions
+        [version.setHidden(True) for version in self.versions]
+
         # Unhide all assets
         [asset.setHidden(False) for asset in self.assets.values()]
 
@@ -487,8 +505,6 @@ class AssetLoader(object):
         self.versions.append(version_item)
         self.versionList.addItem(version_item)
 
-
-
     def publish_asset(self):
 
         if self.selected_asset.type == "mod":
@@ -514,6 +530,7 @@ class AssetLoader(object):
             print(out)
 
     def publish_process_finished(self):
+        self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
     def update_thumbnail(self):
@@ -616,11 +633,13 @@ class AssetLoader(object):
         subprocess.Popen(["Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\gplay.exe", self.selected_asset.obj_path], shell=True)
 
     def load_asset(self):
+        self.selected_asset.change_last_access()
+        self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
+
         if self.selected_asset.type == "ref":
             os.system(self.selected_asset.full_path)
 
         elif self.selected_asset.type == "mod":
-            self.selected_asset.change_last_access()
             if self.selected_asset.extension == "blend":
                 t = Thread(target=lambda: subprocess.Popen([self.blender_path, self.selected_asset.full_path]))
                 t.start()
@@ -641,14 +660,23 @@ class AssetLoader(object):
             process.start("Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\houdinifx.exe",
                           [self.selected_asset.full_path])
 
+    def delete_asset(self):
+        dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
+        for asset_id in dependencies:
+            asset = self.Asset(self, int(asset_id[0]))
+            asset.get_infos_from_id()
+            asset.remove_asset_from_db()
+
+        self.selected_asset.remove_asset_from_db()
+
+        # Remove item from asset widget list
+        for item in self.assetList.selectedItems():
+            self.assetList.takeItem(self.assetList.row(item))
+
+        # Hide all versions
+        [version.setHidden(True) for version in self.versions]
+
     def create_asset_from_scratch(self):
-        if self.selected_department_name == "mod":
-            self.create_modeling_asset_from_scratch()
-        elif self.selected_department_name == "lay":
-            self.create_layout_asset_from_scratch()
-
-    def create_modeling_asset_from_scratch(self):
-
         # Create soft selection and asset name dialog
         dialog = QtGui.QDialog(self)
         self.Lib.apply_style(self, dialog)
@@ -656,37 +684,60 @@ class AssetLoader(object):
         dialog.setWindowTitle("Enter a name")
         dialog_main_layout = QtGui.QVBoxLayout(dialog)
 
-        software_combobox = QtGui.QComboBox(dialog)
-        software_combobox.addItems(["Blender", "Maya", "Softimage", "Cinema 4D", "Houdini"])
+
+        if self.selected_department_name == "mod":
+            software_combobox = QtGui.QComboBox(dialog)
+            software_combobox.addItems(["Blender", "Maya", "Softimage", "Cinema 4D", "Houdini"])
+            dialog_main_layout.addWidget(software_combobox)
 
         name_line_edit = QtGui.QLineEdit()
         name_line_edit.setPlaceholderText("Please enter a name...")
         name_line_edit.returnPressed.connect(dialog.accept)
 
-        dialog_main_layout.addWidget(software_combobox)
+
         dialog_main_layout.addWidget(name_line_edit)
 
         dialog.exec_()
         if dialog.result() == 0:
             return
 
-        # Get selected software and associated extension
-        selected_software = str(software_combobox.currentText()).lower().replace(" ", "")
-        if selected_software == "blender":
-            extension = "blend"
-        elif selected_software == "maya":
-            extension = "ma"
-        elif selected_software == "softimage":
-            extension = "scn"
-        elif selected_software == "cinema4d":
-            extension = "c4d"
-        elif selected_software == "houdini":
-            extension = "hip"
+        if self.selected_department_name == "mod":
+            # Get selected software and associated extension
+            selected_software = str(software_combobox.currentText()).lower().replace(" ", "")
+            if selected_software == "blender":
+                extension = "blend"
+            elif selected_software == "maya":
+                extension = "ma"
+            elif selected_software == "softimage":
+                extension = "scn"
+            elif selected_software == "cinema4d":
+                extension = "c4d"
+            elif selected_software == "houdini":
+                extension = "hip"
 
         # Get asset name
         asset_name = str(name_line_edit.text())
         asset_name = self.Lib.normalize_str(self, asset_name)
-        asset_name = self.Lib.convert_to_camel_case(self, asset_name)
+        asset_name = asset_name_tmp = self.Lib.convert_to_camel_case(self, asset_name)
+
+        # If an asset with given name already exists, change asset name to "assetname-version" (ex: colonne-01) until no asset with given name exists
+        version = 1
+        all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets''').fetchall()
+        all_assets_name = [str(i[0]) for i in all_assets_name]
+        while asset_name_tmp in all_assets_name:
+            all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets''').fetchall()
+            all_assets_name = [str(i[0]) for i in all_assets_name]
+            asset_name_tmp = asset_name + "-" + str(version).zfill(2)
+            version += 1
+
+        asset_name = asset_name_tmp
+
+        if self.selected_department_name == "mod":
+            self.create_modeling_asset_from_scratch(asset_name, extension, selected_software)
+        elif self.selected_department_name == "lay":
+            self.create_layout_asset_from_scratch(asset_name)
+
+    def create_modeling_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
         # Create modeling scene asset
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", self.username)
@@ -699,9 +750,8 @@ class AssetLoader(object):
         obj_asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
-
         # Create main HDA database entry
-        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "out", [], main_id, "", self.username)
+        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], main_id, "", self.username)
         main_hda_asset.add_asset_to_db()
 
         # Create shading HDA database entry
@@ -710,48 +760,33 @@ class AssetLoader(object):
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.finished.connect(self.create_modeling_asset_finished)
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, asset_name])
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
-        # Reload assets
-        self.load_all_assets_for_first_time()
-        self.load_assets_from_selected_seq_shot_dept()
-
-    def create_modeling_asset_finished(self):
-        self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
-
-    def create_layout_asset_from_scratch(self):
-
-        # Create asset name dialog
-        dialog = QtGui.QDialog(self)
-        self.Lib.apply_style(self, dialog)
-
-        dialog.setWindowTitle("Enter a name")
-        dialog_main_layout = QtGui.QVBoxLayout(dialog)
-
-        name_line_edit = QtGui.QLineEdit()
-        name_line_edit.setPlaceholderText("Please enter a name...")
-        name_line_edit.returnPressed.connect(dialog.accept)
-
-        dialog_main_layout.addWidget(name_line_edit)
-
-        dialog.exec_()
-        if dialog.result() == 0:
-            return
-
-        # Get asset name
-        asset_name = str(name_line_edit.text())
-        asset_name = self.Lib.normalize_str(self, asset_name)
-        asset_name = self.Lib.convert_to_camel_case(self, asset_name)
+    def create_layout_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hipnc", "lay", "01", [], "", "", self.username)
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\houdini.hipnc", asset.full_path)
 
-        self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
+        self.asset_creation_finished(asset)
 
+    def asset_creation_finished(self, asset):
+        # Reload assets
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+
+        # Update last access
+        asset.change_last_access()
+        self.lastAccessLbl.setText("Last accessed by: " + asset.last_access)
+
+        # Update last publish
+        self.update_last_published_time_lbl(asset)
+
+        # Show info message
+        self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
 
 
 

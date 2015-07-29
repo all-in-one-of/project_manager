@@ -30,8 +30,6 @@ class Lib(object):
         self.type = type
         self.i = 0
 
-        print(self.full_obj_path)
-
         self.thumbnailProgressBar.show()
         self.thumbnailProgressBar.setValue(0)
 
@@ -90,7 +88,8 @@ class Lib(object):
         if self.type == "full":
             filename = self.obj_tmp_path.replace(".obj", "_full.jpg")
             self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
-            shutil.copy(self.obj_tmp_path.replace(".obj", "_full.jpg"), self.full_obj_path.replace(".obj", "_full.jpg"))
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_full.jpg")
+            shutil.copy(self.obj_tmp_path.replace(".obj", "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace(".obj", "_full.jpg"))
 
         elif self.type == "quad":
@@ -115,7 +114,8 @@ class Lib(object):
             im.paste(view04, (quad_scale_width, quad_scale_height))
 
             im.save(self.obj_tmp_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
-            shutil.copy(self.obj_tmp_path.replace(".obj", "_quad.jpg"), self.full_obj_path.replace(".obj", "_quad.jpg"))
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_quad.jpg")
+            shutil.copy(self.obj_tmp_path.replace(".obj", "_quad.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace(".obj", "_quad.jpg"))
 
             for i in range(0, 360, 90):
@@ -129,7 +129,8 @@ class Lib(object):
                 ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
                  movie_path])
 
-            shutil.copy(self.obj_tmp_path.replace(".obj", "_turn.mp4"), self.full_obj_path.replace(".obj", "_turn.mp4"))
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_turn.mp4")
+            shutil.copy(self.obj_tmp_path.replace(".obj", "_turn.mp4"), thumb_filename)
             os.remove(self.obj_tmp_path.replace(".obj", "_turn.mp4"))
             for i in range(24):
                 os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(2) + ".jpg"))
@@ -140,9 +141,10 @@ class Lib(object):
         if len(self.thumbs_to_create) > 0:
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create)
         else:
-            qpixmap = QtGui.QPixmap(self.full_obj_path.replace(".obj", "_full.jpg"))
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_full.jpg")
+            qpixmap = QtGui.QPixmap(thumb_filename)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.full_obj_path.replace(".obj", "_full.jpg"))
+            self.assetImg.setData(thumb_filename)
             self.assetImg.setPixmap(qpixmap)
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
