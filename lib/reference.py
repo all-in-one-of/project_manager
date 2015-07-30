@@ -45,6 +45,7 @@ class ReferenceTab(object):
         self.clearFilterByTagsSelectionBtn.clicked.connect(self.clear_filter_by_tags_selection)
         self.reloadFilterByTagsBtn.clicked.connect(self.load_filter_by_tags_list)
         self.createReferenceFromWebBtn.clicked.connect(self.create_reference_from_web)
+        self.referenceWebLineEdit.returnPressed.connect(self.create_reference_from_web)
         self.createReferencesFromFilesBtn.clicked.connect(self.create_reference_from_files)
         self.createReferencesFromScreenshotBtn.clicked.connect(self.create_reference_from_screenshot)
         self.keepQualityCheckBox.stateChanged.connect(self.change_quality)
@@ -65,6 +66,7 @@ class ReferenceTab(object):
         self.filterByCommentsCheckBox.stateChanged.connect(self.ref_filter_images_with_comments_clicked)
         self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
+        self.createMoodboardFromImagesBtn.clicked.connect(self.create_moodboard_from_images)
 
         resize_icon = QtGui.QIcon(self.cur_path + "\\media\\thumbnail.png")
         self.biggerRefPushButton_01.setIcon(resize_icon)
@@ -551,7 +553,6 @@ class ReferenceTab(object):
         self.referenceThumbListWidget_itemSelectionChanged()  # Reload tags from selected references
 
     def create_reference_from_web(self):
-
         # If reference thumb list widget is empty, load all references for the first time
         if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
         self.referenceThumbListWidget.clearSelection()
@@ -764,6 +765,16 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.scrollToItem(new_item)
         self.referenceThumbListWidget.clearSelection()
         self.referenceThumbListWidget.setItemSelected(new_item, True)
+
+    def create_moodboard_from_images(self):
+        image_list = []
+        selected_items = self.referenceThumbListWidget.selectedItems()
+
+        for selected_item in selected_items:
+            asset = selected_item.data(QtCore.Qt.UserRole).toPyObject()
+            image_list.append(asset.full_path)
+
+        self.Moodboard_Creator(self, image_list)
 
     def asset_name_dialog(self):
 

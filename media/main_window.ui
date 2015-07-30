@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>3</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -3133,6 +3133,13 @@
                     <widget class="QPushButton" name="changeRefSeqShotBtn">
                      <property name="text">
                       <string>Change sequence / shot</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="createMoodboardFromImagesBtn">
+                     <property name="text">
+                      <string>Create Moodboard Sheet from selected images</string>
                      </property>
                     </widget>
                    </item>

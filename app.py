@@ -60,11 +60,12 @@ from lib.comments import CommentWidget
 from lib.whats_new import WhatsNew
 from lib.asset import Asset
 from lib.asset_loader import AssetLoader
+from lib.reference_moodboard import Moodboard_Creator
 
 
 
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task, AssetLoader):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task, AssetLoader, Moodboard_Creator):
     def __init__(self):
         super(Main, self).__init__()
 
@@ -79,10 +80,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.CommentWidget = CommentWidget
         self.Task = Task
         self.Asset = Asset
+        self.Moodboard_Creator = Moodboard_Creator
 
         # Database Setup
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
 
 
         # Backup database

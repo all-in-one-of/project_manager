@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 29 17:16:40 2015
+# Created: Wed Jul 29 21:18:15 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1272,6 +1272,9 @@ class Ui_Form(object):
         self.changeRefSeqShotBtn = QtGui.QPushButton(self.referenceListWidget)
         self.changeRefSeqShotBtn.setObjectName(_fromUtf8("changeRefSeqShotBtn"))
         self.verticalLayout_33.addWidget(self.changeRefSeqShotBtn)
+        self.createMoodboardFromImagesBtn = QtGui.QPushButton(self.referenceListWidget)
+        self.createMoodboardFromImagesBtn.setObjectName(_fromUtf8("createMoodboardFromImagesBtn"))
+        self.verticalLayout_33.addWidget(self.createMoodboardFromImagesBtn)
         self.horizontalLayout_23.addWidget(self.referenceListWidget)
         self.referenceThumbFrame = QtGui.QFrame(self.referenceToolMainFrame)
         self.referenceThumbFrame.setFrameShape(QtGui.QFrame.NoFrame)
@@ -1726,7 +1729,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(0)
+        self.Tabs.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1942,6 +1945,7 @@ class Ui_Form(object):
         self.nbrOfRefLoadedLbl.setText(_translate("Form", "Showing:", None))
         self.referenceThumbListWidget.setToolTip(_translate("Form", "<html><head/><body><p><span style=\" font-weight:600;\">Double click</span> on a thumbnail to <span style=\" font-weight:600;\">open</span> it with windows picture viewer.</p><p><span style=\" font-weight:600;\">ALT + double click</span> on a thumbnail to open the <span style=\" font-weight:600;\">comments</span> dialog.</p><p>Select a thumbnail and hit <span style=\" font-weight:600;\">F2</span> to <span style=\" font-weight:600;\">rename</span> a reference.</p><p><br/></p><p>Use <span style=\" font-weight:600;\">CTRL</span> to scroll <span style=\" font-weight:600;\">slowly</span></p><p>Use <span style=\" font-weight:600;\">SHIFT</span> to scroll <span style=\" font-weight:600;\">fast</span></p><p>Use <span style=\" font-weight:600;\">CTRL + SHIF</span>T to scroll <span style=\" font-weight:600;\">very fast</span></p></body></html>", None))
         self.changeRefSeqShotBtn.setText(_translate("Form", "Change sequence / shot", None))
+        self.createMoodboardFromImagesBtn.setText(_translate("Form", "Create Moodboard Sheet from selected images", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.imagesManagerTab), _translate("Form", "Images Manager", None))
         self.addTagLineEdit.setPlaceholderText(_translate("Form", "lighting, statue, architecture, tree, character...", None))
         self.addTagBtn.setText(_translate("Form", "Add tag", None))
