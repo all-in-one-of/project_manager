@@ -13,6 +13,11 @@ import datetime
 class AssetLoader(object):
     def __init__(self):
 
+        self.favorite_icon = QtGui.QIcon(self.cur_path + "\\media\\favorite.png")
+        self.unfavorite_icon = QtGui.QIcon(self.cur_path + "\\media\\unfavorite.png")
+
+
+
         self.assets = {}
         self.selected_asset = None
         self.thumbDisplayTypeFrame.hide()
@@ -60,6 +65,14 @@ class AssetLoader(object):
 
         # Connect the buttons
         self.showAssetCommentBtn.clicked.connect(self.show_comments)
+        self.addAssetAsFavoriteBtn.clicked.connect(self.add_to_favorite)
+        self.removeAssetAsFavoriteBtn.clicked.connect(self.remove_from_favorite)
+        self.addAssetAsFavoriteBtn.setIcon(self.favorite_icon)
+        self.removeAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
+        self.addAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+        self.removeAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+
+
 
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
@@ -87,6 +100,28 @@ class AssetLoader(object):
         self.CommentsFrame.show()
         self.commentLineEdit.setFocus()
         self.CommentWidget.load_comments(self)
+
+    def add_to_favorite(self):
+        if self.selected_asset == None:
+            return
+
+        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
+        if is_asset_favorited == None: # Asset is not already favorited by member
+            self.cursor.execute('''INSERT INTO favorited_assets(asset_id, member) VALUES(?,?)''', (self.selected_asset.id, self.username,))
+            self.db.commit()
+            self.addAssetAsFavoriteBtn.setEnabled(False)
+            self.removeAssetAsFavoriteBtn.setEnabled(True)
+
+    def remove_from_favorite(self):
+        if self.selected_asset == None:
+            return
+
+        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
+        if is_asset_favorited != None:  # Asset is not already favorited by member
+            self.cursor.execute('''DELETE FROM favorited_assets WHERE asset_id=? AND member=?''', (is_asset_favorited[0], is_asset_favorited[1],))
+            self.db.commit()
+            self.addAssetAsFavoriteBtn.setEnabled(True)
+            self.removeAssetAsFavoriteBtn.setEnabled(False)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -422,6 +457,15 @@ class AssetLoader(object):
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
+        # Set favorite button state
+        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
+        if is_asset_favorited == None:
+            self.addAssetAsFavoriteBtn.setEnabled(True)
+            self.removeAssetAsFavoriteBtn.setEnabled(False)
+        else:
+            self.addAssetAsFavoriteBtn.setEnabled(False)
+            self.removeAssetAsFavoriteBtn.setEnabled(True)
+
     def update_last_published_time_lbl(self, asset=None):
         if asset == None:
             asset = self.selected_asset
@@ -532,7 +576,13 @@ class AssetLoader(object):
             print(out)
 
     def publish_process_finished(self):
-        self.Lib.add_entry_to_log(self, "All", self.selected_asset.id, "publish", "Asset {0} of type {1} has been published by {2}".format(self.selected_asset.name, self.selected_asset.type, self.selected_asset.last_publish))
+        favorited_by = self.cursor.execute('''SELECT member FROM favorited_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
+        if favorited_by != None:
+            favorited_by = [i[0] for i in favorited_by]
+        else:
+            favorited_by = []
+
+        self.Lib.add_entry_to_log(self, "All", favorited_by, self.selected_asset.id, "publish", "Asset {0} of type {1} has been published by {2}".format(self.selected_asset.name, self.selected_asset.type, self.selected_asset.last_publish))
         self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Thu Jul 30 16:32:25 2015
+# Created: Thu Jul 30 17:14:40 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -470,9 +470,28 @@ class Ui_Form(object):
         self.showAssetCommentBtn = QtGui.QPushButton(self.stateFrame)
         self.showAssetCommentBtn.setObjectName(_fromUtf8("showAssetCommentBtn"))
         self.gridLayout_5.addWidget(self.showAssetCommentBtn, 2, 0, 1, 1)
-        self.addAssetAsFavoriteBtn = QtGui.QPushButton(self.stateFrame)
+        self.frame_3 = QtGui.QFrame(self.stateFrame)
+        self.frame_3.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame_3.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_3.setObjectName(_fromUtf8("frame_3"))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.frame_3)
+        self.horizontalLayout_2.setMargin(0)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.addAssetAsFavoriteBtn = QtGui.QPushButton(self.frame_3)
+        self.addAssetAsFavoriteBtn.setMinimumSize(QtCore.QSize(32, 32))
+        self.addAssetAsFavoriteBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.addAssetAsFavoriteBtn.setText(_fromUtf8(""))
+        self.addAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
         self.addAssetAsFavoriteBtn.setObjectName(_fromUtf8("addAssetAsFavoriteBtn"))
-        self.gridLayout_5.addWidget(self.addAssetAsFavoriteBtn, 3, 0, 1, 1)
+        self.horizontalLayout_2.addWidget(self.addAssetAsFavoriteBtn)
+        self.removeAssetAsFavoriteBtn = QtGui.QPushButton(self.frame_3)
+        self.removeAssetAsFavoriteBtn.setMinimumSize(QtCore.QSize(32, 32))
+        self.removeAssetAsFavoriteBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.removeAssetAsFavoriteBtn.setText(_fromUtf8(""))
+        self.removeAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
+        self.removeAssetAsFavoriteBtn.setObjectName(_fromUtf8("removeAssetAsFavoriteBtn"))
+        self.horizontalLayout_2.addWidget(self.removeAssetAsFavoriteBtn)
+        self.gridLayout_5.addWidget(self.frame_3, 3, 0, 1, 1)
         self.verticalLayout.addWidget(self.stateFrame)
         self.gridLayout_3.addWidget(self.assetInfoFrame, 0, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.assetInfoGrp)
@@ -1816,7 +1835,6 @@ class Ui_Form(object):
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
         self.lastPublishedLbl.setText(_translate("Form", "Last published: ", None))
         self.showAssetCommentBtn.setText(_translate("Form", "Show comments", None))
-        self.addAssetAsFavoriteBtn.setText(_translate("Form", "Add to my favorite list", None))
         self.createVersionBtn.setText(_translate("Form", "Create version", None))
         self.publishBtn.setText(_translate("Form", "Publish", None))
         self.loadAssetBtn.setText(_translate("Form", "Load Asset", None))

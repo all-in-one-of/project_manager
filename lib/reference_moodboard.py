@@ -63,7 +63,7 @@ class Moodboard_Creator():
             self.rows_height.append(max(height_list))
 
         # Create final moodboard image with correct dimension
-        self.final_image = Image.new("RGB", (width + (self.spacing * (self.max_images_per_row + 2)), sum(self.rows_height) + (self.spacing * (len(self.resized_images_list) + 2))), (12, 12, 12))
+        self.final_image = Image.new("RGB", (width + (self.spacing * (self.max_images_per_row + 1)), sum(self.rows_height) + (self.spacing * (len(self.resized_images_list) + 2))), (12, 12, 12))
 
     def create_moodboard(self):
         pos_y = self.spacing
