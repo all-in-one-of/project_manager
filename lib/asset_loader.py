@@ -75,6 +75,7 @@ class AssetLoader(object):
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
+        self.createAssetFromScratchAssetBtn.clicked.connect(self.create_asset_from_asset)
         self.deleteAssetBtn.clicked.connect(self.delete_asset)
 
         self.createVersionBtn.clicked.connect(self.create_new_version)
@@ -737,6 +738,45 @@ class AssetLoader(object):
         elif self.selected_department_name == "lay":
             self.create_layout_asset_from_scratch(asset_name)
 
+    def create_asset_from_asset(self):
+        if self.selected_department_name == "mod":
+            self.create_from_asset_dialog = QtGui.QDialog(self)
+            self.Lib.apply_style(self, self.create_from_asset_dialog)
+
+            self.create_from_asset_dialog.setWindowTitle("Enter a name")
+            self.create_from_asset_dialog_main_layout = QtGui.QHBoxLayout(self.create_from_asset_dialog)
+
+            rigBtn = QtGui.QPushButton("Rig", self.create_from_asset_dialog)
+            texBtn = QtGui.QPushButton("Tex", self.create_from_asset_dialog)
+
+            rigBtn.clicked.connect(self.create_rig_asset_from_mod)
+            texBtn.clicked.connect(self.create_tex_asset_from_mod)
+
+            self.create_from_asset_dialog_main_layout.addWidget(rigBtn)
+            self.create_from_asset_dialog_main_layout.addWidget(texBtn)
+
+            self.create_from_asset_dialog.exec_()
+
+    def create_rig_asset_from_mod(self):
+
+        self.create_from_asset_dialog.close()
+
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], "", "", self.username)
+        asset.add_asset_to_db()
+
+        obj_path = str(self.selected_asset.obj_path)
+        file_export = str(self.selected_asset.full_path)
+        file_export = os.path.splitext(file_export)[0].replace("mod", "rig").replace("out", "01") + ".ma"
+        self.process = QtCore.QProcess(self)
+        self.process.finished.connect(partial(self.asset_creation_finished, asset))
+        self.process.waitForFinished()
+        self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
+
+
+    def create_tex_asset_from_mod(self):
+        self.create_from_asset_dialog.close()
+        print("Tex")
+
     def create_modeling_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
         # Create modeling scene asset
@@ -787,7 +827,6 @@ class AssetLoader(object):
 
         # Show info message
         self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
-
 
 
 
