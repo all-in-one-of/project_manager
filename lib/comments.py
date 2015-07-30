@@ -8,10 +8,7 @@ from functools import partial
 class CommentWidget(object):
 
     def __init__(self):
-
-
         self.CommentsFrame.hide()
-
         self.comment_text_edit_dic = {}
         self.hideCommentsFrameBtn.clicked.connect(self.hide_comments_frame)
         self.gridLayout = QtGui.QGridLayout(self.scrollAreaWidgetContents)
@@ -24,21 +21,19 @@ class CommentWidget(object):
         #self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetFixedSize)
         #self.gridLayout_6.update()
 
-
-
-
-
     def load_comments(self):
         self.CommentsFrame.show()
 
         current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
+
         if current_tab_text == "Images Manager":
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="ref"''', (self.selected_asset.id,)).fetchall()
         elif current_tab_text == "Task Manager":
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="task"''', (self.selected_asset.id,)).fetchall()
         elif current_tab_text == "Asset Loader":
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="asset"''', (self.selected_asset.id,)).fetchall()
-
+        elif "What's New" in current_tab_text:
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=?''', (self.selected_asset.id,)).fetchall()
 
         self.comment_authors = []
         self.cur_alignment = "left"
@@ -145,12 +140,15 @@ class CommentWidget(object):
             self.selected_asset.add_comment(self.username, comment, current_time, "ref")
             #self.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.members[self.username], self.selected_assetname, self.selected_assetsequence), people=self.comment_authors, value=self.selected_assetid)
 
-
         elif current_tab_text == "Task Manager" or current_tab_text == "Tasks":
             self.selected_asset.add_comment(self.username, comment, current_time, "task")
             #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
 
         elif current_tab_text == "Asset Loader":
+            self.selected_asset.add_comment(self.username, comment, current_time, "asset")
+            #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+
+        elif "What's New" in current_tab_text:
             self.selected_asset.add_comment(self.username, comment, current_time, "asset")
             #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
 

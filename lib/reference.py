@@ -622,6 +622,9 @@ class ReferenceTab(object):
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
             asset.change_dependency(URL)
 
+        # Add entry to log
+        self.Lib.add_entry_to_log(self, asset.id, "image")
+
         # Add item to lists
         new_item = QtGui.QListWidgetItem()
         new_item.setData(QtCore.Qt.UserRole, asset)
@@ -703,7 +706,8 @@ class ReferenceTab(object):
                     image_width = 1920
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
-
+            # Add entry to log
+            self.Lib.add_entry_to_log(self, asset.id, "image")
 
             # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
@@ -726,6 +730,10 @@ class ReferenceTab(object):
         '''
         Create reference from screenshot
         '''
+
+        # If reference thumb list widget is empty, load all references for the first time
+        if self.referenceThumbListWidget.count() == 0: self.ref_load_all_references()
+        self.referenceThumbListWidget.clearSelection()
 
         selected_sequence, selected_shot = self.Lib.reference_check_if_projSeqShot_is_selected(self)
         if selected_sequence == None: return
@@ -751,6 +759,8 @@ class ReferenceTab(object):
         image_width = downloaded_img.size[0]
         self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
+        # Add entry to log
+        self.Lib.add_entry_to_log(self, asset.id, "image", "image")
 
         # Add reference to reference list
         new_item = QtGui.QListWidgetItem()
@@ -759,7 +769,6 @@ class ReferenceTab(object):
 
         self.referenceThumbListWidget.addItem(new_item)
         self.all_references_ListWidgetItems.append(new_item)
-        self.add_log_entry("{0} added a reference from screenshot ({1})".format(self.members[self.username], asset.name), value=asset.id)
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
