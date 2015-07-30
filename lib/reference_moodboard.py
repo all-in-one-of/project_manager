@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+
 from PIL import Image
 import os
 from PyQt4 import QtCore, QtGui
@@ -7,98 +11,87 @@ class Moodboard_Creator():
     def __init__(self, main, image_list):
 
         self.main = main
-
-        # --------------------------------------------------------------------------
-        self.max_image_per_row = 4
-        self.vertical_spacing = 18
-        self.horizontal_spacing = 18
-        self.width_resize = 1500  # Resize horizontal voulu
+        self.max_images_per_row = 5 # Maximum number of images per row
+        self.spacing = 12 # Space between each image
+        self.maximum_width = 1500  # Maximum image width
+        self.original_image_list = image_list
         self.image_list = []
-        self.original_image_list = image_list        #Liste pour l'entierete des images
-        for image in self.original_image_list:
+        for image in self.original_image_list: # Create PIL images list from images
             self.image_list.append(Image.open(image))
-        self.biggest_image_list = []        #Liste pour les images les plus grandes
-        self.max_row = len(self.image_list)     # Le maximum de row est egal a la totalite des item dans la liste
-        self.image_canevas = Image.new("RGB", ( 15000, 15000), (12,12,12))  # Creation du canevas (Mode de couleur et grandeur)
-        # --------------------------------------------------------------------------
 
-        self.resize_and_drop()
+        # Resize all images to maximum width
+        self.resize_images()
 
-    def resize_and_drop(self):
-        self.list_image_numero = 0
-        for row in range(self.max_row):     #Pour chaque row dans le maximum donne
-            self.first_row_list = []
+        # Get height and width of moodboard image based on new images sizes
+        self.get_canvas_size()
+
+        # Create moodboard image from resized images
+        self.create_moodboard()
 
 
-            if len(self.image_list) < self.max_image_per_row:
-                self.max_image_per_row = len(self.image_list)
-            else:
-                pass
+    def resize_images(self):
 
-            for first_row_image in range(self.max_image_per_row):            #Trouver les grandeurs de la premiere row
-                self.first_row_image_temp = self.image_list[first_row_image]
-                wpercent = (self.width_resize / float(self.first_row_image_temp.size[0]))
-                hsize = int((float(self.first_row_image_temp.size[1]) * float(wpercent)))
-                self.first_row_list.append(hsize)
-            if self.list_image_numero < len(self.image_list):
+        # Resize all images to maximum width
+        self.resized_images_list = []
+        for i, each_image in enumerate(self.image_list):
+            if each_image.size[0] > 1500: # Resize image if it is larger than 1500 pixels
+                wpercent = (self.maximum_width / float(each_image.size[0]))
+                height = int((float(each_image.size[1]) * float(wpercent)))
+                each_image = each_image.resize((self.maximum_width, height), Image.ANTIALIAS)
 
+            self.resized_images_list.append(each_image)
 
-                if row == 0:
-                    y_top = self.vertical_spacing
-                    y_bottom = max(self.first_row_list) + self.vertical_spacing
-                else:
-                    y_top = y_bottom + self.vertical_spacing
-                    y_bottom = y_top + max(self.max_height_list)
+        # Split resized list into sublists of x images (x being equal to the maximum number of images per row)
+        self.resized_images_list = [self.resized_images_list[i:i+self.max_images_per_row] for i in range(0, len(self.resized_images_list), self.max_images_per_row)]
 
-            else:
-                pass
+    def get_canvas_size(self):
 
-            self.max_height_list = []       #Liste des images les plus grandes sur la ligne
+        # Set default width and height values
+        width = 0
+        self.rows_height = []
+        for images in self.resized_images_list:
+            width_list = []
+            height_list = []
 
-            for image in range(self.max_image_per_row):     #Pour chaque image par row dans le maximum donne
+            # Get the sum of all width of current row images and if it is higher than previous row, set new width
+            for image in images:
+                width_list.append(image.size[0])
+                height_list.append(image.size[1])
 
-                if self.list_image_numero < len(self.image_list):
+            if sum(width_list) > width:
+                width = sum(width_list)
+            self.rows_height.append(max(height_list))
 
-                    if image == 0:      #si c'est l'image 0 sur la ligne, on retourne a la marge gauche
-                        x_left = self.horizontal_spacing
-                    else:
-                        x_left = x_right + self.horizontal_spacing
+        # Create final moodboard image with correct dimension
+        self.final_image = Image.new("RGB", (width + (self.spacing * (self.max_images_per_row + 2)), sum(self.rows_height) + (self.spacing * (len(self.resized_images_list) + 2))), (12, 12, 12))
 
-                    x_right = x_left + self.width_resize
+    def create_moodboard(self):
+        pos_y = self.spacing
+        # Go through each row
+        for i, each_row in enumerate(self.resized_images_list):
+            pos_x = self.spacing
 
-                    self.image = self.image_list[self.list_image_numero]       #Prendre image selon list_image si existe dans
-                    self.list_image_numero = self.list_image_numero + 1         #+1 Pour pouvoir passer a travers les images
+            # Go through each image in current row
+            for i2, image in enumerate(each_row):
 
+                if i2 != 0: # Loop is at image 2 or higher in current row
+                    pos_x += each_row[i2-1].size[0] + self.spacing
 
-                    wpercent = (self.width_resize / float(self.image.size[0]))
-                    hsize = int((float(self.image.size[1]) * float(wpercent)))
-                    self.resized_image = self.image.resize((self.width_resize, hsize),Image.ANTIALIAS)  # Resize image a resized_image
+                if i == 0: # Loop is in first row
+                    self.final_image.paste(image, (pos_x, self.spacing))
+                else: # Loop is in row 2 or higher
+                    self.final_image.paste(image, (pos_x, pos_y + self.spacing))
 
-                    self.max_height_list.append(self.resized_image.size[1])     #Append la hauteur de chaque image a la liste
+            # Set new pos_y
+            pos_y += self.rows_height[i] + self.spacing
 
-                    self.image_canevas.paste(self.resized_image, (x_left, y_top))       #Paste image a canevas
-
-                else:          #Si liste_image_numero depasse items dans liste_image
-                    pass
-
-
-            try:
-                self.biggest_image_list.append(max(self.max_height_list))
-            except ValueError:
-                pass
-
-        self.canevas_resize_horizontal = ( ( (self.horizontal_spacing * self.max_image_per_row) + self.horizontal_spacing ) + self.max_image_per_row * self.width_resize )
-        self.canevas_resize_vertical = ( (self.vertical_spacing * 4) + sum(self.biggest_image_list) )
-        self.cropped_canvas = self.image_canevas.crop((0, 0, self.canevas_resize_horizontal, self.canevas_resize_vertical))     #Canevas Cropped
         fileName = QtGui.QFileDialog.getSaveFileName(self.main, 'Save Moodboard Image', 'H:/', selectedFilter='*.jpg')
         try:
             fileName = os.path.abspath(fileName)
-            self.cropped_canvas.save(fileName)
+            self.final_image.save(fileName)
             webbrowser.open(fileName)
         except:
             return
-
-
 
 
 

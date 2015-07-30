@@ -83,8 +83,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Moodboard_Creator = Moodboard_Creator
 
         # Database Setup
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
 
 
         # Backup database
@@ -146,14 +146,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
         day_end = date(2016,5,1)
-        day_today = date.today()
+        day_today = datetime.now()
 
-        day_start_02 = datetime.strptime(str('2016-05-01'), '%Y-%m-%d')
-        day_end_02 = datetime.strptime(str('2015-06-28'), '%Y-%m-%d')
-        months_and_days_left = relativedelta.relativedelta(day_start_02, day_end_02)
+        day_end_02 = datetime.strptime(str('2016-05-01'), '%Y-%m-%d')
+        months_and_days_left = relativedelta.relativedelta(day_end_02, day_today)
 
         total_days = abs(day_end - day_start).days
-        remaining_days = abs(day_end - day_today).days
+        remaining_days = abs(day_end - date.today()).days
         remaining_days_percent = (remaining_days * 100) / total_days # Converts number of remaining day to a percentage
 
         self.deadlineProgressBar.setFormat("{0} months and {1} days left ({2}%)".format(months_and_days_left.months, months_and_days_left.days, remaining_days_percent))
