@@ -450,13 +450,20 @@ class Lib(object):
         t = os.path.getmtime(filename)
         return datetime.datetime.fromtimestamp(t)
 
-    def add_entry_to_log(self, members_list="", asset_id=0, type="", description=""):
+    def add_entry_to_log(self, members_list="", members_concerned="", asset_id=0, type="", description=""):
         if members_list == "All":
             members_list = self.members.keys()
 
         members_list = ["|{0}|".format(member) for member in members_list]
         members_list = "".join(members_list)
-        self.cursor.execute('''INSERT INTO log(log_dependancy, viewed_by, log_type, log_description) VALUES(?,?,?,?)''', (asset_id, members_list, type, description))
+
+        if members_concerned == "All":
+            members_concerned = self.members.keys()
+
+        members_concerned = ["|{0}|".format(member) for member in members_concerned]
+        members_concerned = "".join(members_concerned)
+
+        self.cursor.execute('''INSERT INTO log(log_dependancy, viewed_by, members_concerned, log_type, log_description) VALUES(?,?,?,?,?)''', (asset_id, members_list, members_concerned, type, description))
         self.db.commit()
 
     def remove_log_entry_from_asset_id(self, asset_id):

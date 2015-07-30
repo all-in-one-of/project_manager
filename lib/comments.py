@@ -140,24 +140,24 @@ class CommentWidget(object):
 
         if current_tab_text == "Images Manager":
             self.selected_asset.add_comment(self.username, comment, current_time, "ref")
-            self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
+            self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
 
         elif current_tab_text == "Task Manager" or current_tab_text == "Tasks":
             self.selected_asset.add_comment(self.username, comment, current_time, "task")
-            self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on task {1}".format(self.members[self.username], self.selected_asset.id))
+            self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on task {1}".format(self.members[self.username], self.selected_asset.id))
 
         elif current_tab_text == "Asset Loader":
             self.selected_asset.add_comment(self.username, comment, current_time, "asset")
-            self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
+            self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
 
         elif "What's New" in current_tab_text:
             if self.selected_asset.type == "ref":
                 self.selected_asset.add_comment(self.username, comment, current_time, "ref")
-                self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
+                self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
 
             else:
                 self.selected_asset.add_comment(self.username, comment, current_time, "asset")
-                self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
+                self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
 
 
         self.load_comments()

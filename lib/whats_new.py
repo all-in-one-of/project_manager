@@ -13,7 +13,6 @@ class WhatsNew(object):
         self.log_entries = {}
         self.showOnlyMeWhatsNew.stateChanged.connect(self.load_whats_new)
         self.markAllAsReadBtn.clicked.connect(self.mark_all_as_read)
-        self.refreshWhatsNewBtn.clicked.connect(self.load_whats_new)
         self.whatsNewTreeWidget.itemDoubleClicked.connect(self.tree_double_clicked)
         self.load_whats_new()
 
@@ -35,11 +34,17 @@ class WhatsNew(object):
         # Get entries that user did not read
         publishes_log_entries = [entry for entry in publishes_log_entries if self.username in entry[2]]
         assets_log_entries = [entry for entry in assets_log_entries if self.username in entry[2]]
-        # If show only news concerning me checkbox is checked, only get comments where I am included
-        if self.showOnlyMeWhatsNew.checkState() == 2:
-            comments_log_entries = [entry for entry in comments_log_entries if self.username in entry[2]]
+        comments_log_entries = [entry for entry in comments_log_entries if self.username in entry[2]]
         tasks_log_entries = [entry for entry in tasks_log_entries if self.username in entry[2]]
         images_log_entries = [entry for entry in images_log_entries if self.username in entry[2]]
+
+        # If show only news concerning me checkbox is checked, only get comments where I am included
+        if self.showOnlyMeWhatsNew.checkState() == 2:
+            publishes_log_entries = [entry for entry in publishes_log_entries if self.username in entry[3]]
+            assets_log_entries = [entry for entry in assets_log_entries if self.username in entry[3]]
+            comments_log_entries = [entry for entry in comments_log_entries if self.username in entry[3]]
+            tasks_log_entries = [entry for entry in tasks_log_entries if self.username in entry[3]]
+            images_log_entries = [entry for entry in images_log_entries if self.username in entry[3]]
 
         # Set number of new log entries
         number_of_log_entries = len(publishes_log_entries) + len(assets_log_entries) + len(comments_log_entries) + len(tasks_log_entries) + len(images_log_entries)
@@ -57,21 +62,21 @@ class WhatsNew(object):
 
         for entry in reversed(publishes_log_entries):
             asset_id = entry[1]
-            log_description = entry[4]
+            log_description = entry[5]
             asset = self.Asset(self, asset_id)
             asset.get_infos_from_id()
             publishes_entries.append((log_description, asset))
 
         for entry in reversed(images_log_entries):
             asset_id = entry[1]
-            log_description = entry[4]
+            log_description = entry[5]
             asset = self.Asset(self, asset_id)
             asset.get_infos_from_id()
             images_entries.append((log_description, asset))
 
         for entry in reversed(comments_log_entries):
             asset_id = entry[1]
-            log_description = entry[4]
+            log_description = entry[5]
             asset = self.Asset(self, asset_id)
             asset.get_infos_from_id()
             comments_entries.append((log_description, asset))
