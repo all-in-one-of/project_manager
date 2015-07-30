@@ -5,7 +5,7 @@ import os
 import time
 
 class Asset(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", creator=""):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator=""):
         self.main = main
         self.id = id
         self.project = project_name
@@ -29,6 +29,7 @@ class Asset(object):
             self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
+        self.last_publish = last_publish
         self.creator = creator
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
@@ -44,7 +45,7 @@ class Asset(object):
 
 
     def print_asset(self):
-        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.creator)
+        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.last_publish, self.creator)
 
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
@@ -72,7 +73,7 @@ class Asset(object):
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
                 self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.last_publish, self.creator,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -162,6 +163,12 @@ class Asset(object):
         self.main.cursor.execute('''UPDATE assets SET last_access=? WHERE asset_id=?''', (last_access, self.id,))
         self.main.db.commit()
 
+    def change_last_publish(self):
+        last_publish = time.strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+        self.last_publish = last_publish
+        self.main.cursor.execute('''UPDATE assets SET last_publish=? WHERE asset_id=?''', (last_publish, self.id,))
+        self.main.db.commit()
+
     def get_infos_from_id(self):
         asset = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_id=?''', (self.id,)).fetchone()
         project_name = asset[1]
@@ -174,7 +181,8 @@ class Asset(object):
         asset_tags = asset[9]
         asset_dependency = asset[10]
         last_access = asset[11]
-        creator = asset[12]
+        last_publish = asset[12]
+        creator = asset[13]
 
         self.project = project_name
         self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
@@ -191,6 +199,7 @@ class Asset(object):
             self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
+        self.last_publish = last_publish
         self.creator = creator
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname,
                                                                         self.sequence,

@@ -127,7 +127,8 @@ class ReferenceTab(object):
             tags = ref[9]
             dependency = ref[10]
             last_access = ref[11]
-            creator = ref[12]
+            last_publish = ref[12]
+            creator = ref[13]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -140,10 +141,11 @@ class ReferenceTab(object):
             if tags == None: tags = ""
             if dependency == None: dependency = ""
             if last_access == None: last_access = ""
+            if last_publish == None: last_publish = ""
             if creator == None: creator = ""
 
             asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, extension, type, version,
-                          tags, dependency, last_access, creator)
+                          tags, dependency, last_access, last_publish, creator)
             self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem()
             ref_item.setIcon(QtGui.QIcon(asset.full_path))
@@ -383,15 +385,14 @@ class ReferenceTab(object):
 
         # Delete references on database and on disk
         for ref in selected_references:
-            try:
-                asset = ref.data(QtCore.Qt.UserRole).toPyObject()
-                asset.remove_asset_from_db()
-                del asset
-                self.all_references_ListWidgetItems.remove(ref)
-                self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
-                os.remove(asset.full_path)
-            except:
-                pass
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.remove_asset_from_db()
+            self.Lib.remove_log_entry_from_asset_id(self, asset.id)
+            del asset
+            self.all_references_ListWidgetItems.remove(ref)
+            self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
+
+
 
     def reference_doubleClicked(self):
         '''
@@ -572,7 +573,7 @@ class ReferenceTab(object):
         if asset_name == None: return
 
         # Instanciate asset
-        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
         asset.add_asset_to_db()
         self.ref_assets_instances.append(asset)
 
@@ -623,7 +624,7 @@ class ReferenceTab(object):
             asset.change_dependency(URL)
 
         # Add entry to log
-        self.Lib.add_entry_to_log(self, asset.id, "image")
+        self.Lib.add_entry_to_log(self, "All", asset.id, "image", "{0} has added a new image named {1}".format(self.members[asset.creator], asset.name))
 
         # Add item to lists
         new_item = QtGui.QListWidgetItem()
@@ -631,7 +632,6 @@ class ReferenceTab(object):
         new_item.setIcon(QtGui.QIcon(asset.full_path))
         self.all_references_ListWidgetItems.append(new_item)
         self.referenceThumbListWidget.addItem(new_item)
-        self.add_log_entry("{0} added a reference from web ({1})".format(self.members[self.username], asset.name), value=asset.id)
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
@@ -689,7 +689,7 @@ class ReferenceTab(object):
             asset_name = self.Lib.convert_to_camel_case(self, asset_name)
 
             # Create asset
-            asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", self.username)
+            asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
             asset.add_asset_to_db()
             self.ref_assets_instances.append(asset)
             assets.append(asset)
@@ -707,7 +707,7 @@ class ReferenceTab(object):
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
             # Add entry to log
-            self.Lib.add_entry_to_log(self, asset.id, "image")
+            self.Lib.add_entry_to_log(self, "All", asset.id, "image", "{0} has added a new image named {1}".format(self.members[asset.creator], asset.name))
 
             # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
@@ -716,7 +716,6 @@ class ReferenceTab(object):
 
             self.referenceThumbListWidget.addItem(new_item)
             self.all_references_ListWidgetItems.append(new_item)
-            self.add_log_entry("{0} added a reference from files ({1})".format(self.members[self.username], asset.name), value=asset.id)
             self.referenceThumbListWidget.setItemSelected(new_item, True)
 
 
@@ -749,7 +748,7 @@ class ReferenceTab(object):
             self.message_box(text="Please enter a name with more than 3 characters for the asset")
 
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.ref_selected_sequence_name, self.ref_selected_shot_number, asset_name, "", "jpg", "ref", "01", "", "", "", "", self.username)
         asset.add_asset_to_db()
         self.ref_assets_instances.append(asset)
 
@@ -760,7 +759,7 @@ class ReferenceTab(object):
         self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
         # Add entry to log
-        self.Lib.add_entry_to_log(self, asset.id, "image", "image")
+        self.Lib.add_entry_to_log(self, "All", asset.id, "image", "{0} has added a new image named {1}".format(self.members[asset.creator], asset.name))
 
         # Add reference to reference list
         new_item = QtGui.QListWidgetItem()
@@ -964,7 +963,8 @@ class ReferenceTab(object):
                     tags = ref[9]
                     dependency = ref[10]
                     last_access = ref[11]
-                    creator = ref[12]
+                    last_publish = ref[12]
+                    creator = ref[13]
                     if id == None: id = ""
                     if project_name == None: project_name = ""
                     if sequence_name == None: sequence_name = ""
@@ -977,11 +977,12 @@ class ReferenceTab(object):
                     if tags == None: tags = ""
                     if dependency == None: dependency = ""
                     if last_access == None: last_access = ""
+                    if last_publish == None: last_publish = ""
                     if creator == None: creator = ""
 
                     asset = self.Asset(self, id, project_name, sequence_name, shot_number, name, path, extension, type, version,
-                                  tags, dependency, last_access, creator)
-                    asset.print_asset()
+                                  tags, dependency, last_access, last_publish, creator)
+
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)
                     ref_item.setIcon(QtGui.QIcon(asset.full_path))

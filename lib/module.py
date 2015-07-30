@@ -450,19 +450,17 @@ class Lib(object):
         t = os.path.getmtime(filename)
         return datetime.datetime.fromtimestamp(t)
 
-    def add_entry_to_log(self, members_list, asset_id, type):
+    def add_entry_to_log(self, members_list="", asset_id=0, type="", description=""):
         if members_list == "All":
             members_list = self.members.keys()
 
         members_list = ["|{0}|".format(member) for member in members_list]
         members_list = "".join(members_list)
-        self.cursor.execute('''INSERT INTO log(log_dependancy, viewed_by, type) VALUES(?,?,?)''', (asset_id, members_list, type))
+        self.cursor.execute('''INSERT INTO log(log_dependancy, viewed_by, log_type, log_description) VALUES(?,?,?,?)''', (asset_id, members_list, type, description))
         self.db.commit()
 
-    def remove_log_entry_for_user(self, log_id):
-        members_list = self.cursor.execute('''SELECT viewed_by FROM log WHERE log_id=?''', (log_id,)).fetchone()
-        members_list = members_list.replace(self.username, "")
-        self.cursor.execute('''UPDATE log SET viewed_by=? WHERE log_id=?''', (members_list, log_id,))
+    def remove_log_entry_from_asset_id(self, asset_id):
+        self.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (asset_id,))
         self.db.commit()
 
 class DesktopWidget(QtGui.QWidget):

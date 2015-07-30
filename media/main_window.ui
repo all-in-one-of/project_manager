@@ -901,6 +901,12 @@
                   <layout class="QGridLayout" name="gridLayout_3">
                    <item row="0" column="0">
                     <widget class="QFrame" name="thumbnailFrame">
+                     <property name="minimumSize">
+                      <size>
+                       <width>500</width>
+                       <height>0</height>
+                      </size>
+                     </property>
                      <property name="maximumSize">
                       <size>
                        <width>500</width>
@@ -1092,7 +1098,7 @@
                            </property>
                           </widget>
                          </item>
-                         <item row="3" column="0">
+                         <item row="4" column="0">
                           <spacer name="verticalSpacer_2">
                            <property name="orientation">
                             <enum>Qt::Vertical</enum>
@@ -1109,6 +1115,13 @@
                           <widget class="QPushButton" name="showAssetCommentBtn">
                            <property name="text">
                             <string>Show comments</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="3" column="0">
+                          <widget class="QPushButton" name="addAssetAsFavoriteBtn">
+                           <property name="text">
+                            <string>Add to my favorite list</string>
                            </property>
                           </widget>
                          </item>
@@ -4074,17 +4087,10 @@
                   <x>0</x>
                   <y>0</y>
                   <width>1031</width>
-                  <height>369</height>
+                  <height>383</height>
                  </rect>
                 </property>
                </widget>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="refreshWhatsNewBtn">
-               <property name="text">
-                <string>Refresh</string>
-               </property>
               </widget>
              </item>
              <item>

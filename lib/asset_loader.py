@@ -508,6 +508,7 @@ class AssetLoader(object):
 
     def publish_asset(self):
 
+        self.selected_asset.change_last_publish()
         if self.selected_asset.type == "mod":
             if self.selected_asset.extension == "blend":
                 self.publish_process = QtCore.QProcess(self)
@@ -531,6 +532,7 @@ class AssetLoader(object):
             print(out)
 
     def publish_process_finished(self):
+        self.Lib.add_entry_to_log(self, "All", self.selected_asset.id, "publish", "Asset {0} of type {1} has been published by {2}".format(self.selected_asset.name, self.selected_asset.type, self.selected_asset.last_publish))
         self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
@@ -771,7 +773,6 @@ class AssetLoader(object):
         self.process.finished.connect(partial(self.asset_creation_finished, asset))
         self.process.waitForFinished()
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
-
 
     def create_tex_asset_from_mod(self):
         self.create_from_asset_dialog.close()

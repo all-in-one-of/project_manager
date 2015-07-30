@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
 #
-# Created: Wed Jul 29 21:18:15 2015
+# Created: Thu Jul 30 16:30:55 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -383,6 +383,7 @@ class Ui_Form(object):
         self.gridLayout_3 = QtGui.QGridLayout(self.assetInfoGrp)
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.thumbnailFrame = QtGui.QFrame(self.assetInfoGrp)
+        self.thumbnailFrame.setMinimumSize(QtCore.QSize(500, 0))
         self.thumbnailFrame.setMaximumSize(QtCore.QSize(500, 16777215))
         self.thumbnailFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.thumbnailFrame.setFrameShadow(QtGui.QFrame.Sunken)
@@ -465,10 +466,13 @@ class Ui_Form(object):
         self.lastPublishedLbl.setObjectName(_fromUtf8("lastPublishedLbl"))
         self.gridLayout_5.addWidget(self.lastPublishedLbl, 1, 0, 1, 1)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_5.addItem(spacerItem, 3, 0, 1, 1)
+        self.gridLayout_5.addItem(spacerItem, 4, 0, 1, 1)
         self.showAssetCommentBtn = QtGui.QPushButton(self.stateFrame)
         self.showAssetCommentBtn.setObjectName(_fromUtf8("showAssetCommentBtn"))
         self.gridLayout_5.addWidget(self.showAssetCommentBtn, 2, 0, 1, 1)
+        self.addAssetAsFavoriteBtn = QtGui.QPushButton(self.stateFrame)
+        self.addAssetAsFavoriteBtn.setObjectName(_fromUtf8("addAssetAsFavoriteBtn"))
+        self.gridLayout_5.addWidget(self.addAssetAsFavoriteBtn, 3, 0, 1, 1)
         self.verticalLayout.addWidget(self.stateFrame)
         self.gridLayout_3.addWidget(self.assetInfoFrame, 0, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.assetInfoGrp)
@@ -1627,13 +1631,10 @@ class Ui_Form(object):
         self.whatsNewMessagesScrollArea.setWidgetResizable(True)
         self.whatsNewMessagesScrollArea.setObjectName(_fromUtf8("whatsNewMessagesScrollArea"))
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 1031, 369))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 1031, 383))
         self.scrollAreaWidgetContents_2.setObjectName(_fromUtf8("scrollAreaWidgetContents_2"))
         self.whatsNewMessagesScrollArea.setWidget(self.scrollAreaWidgetContents_2)
         self.verticalLayout_31.addWidget(self.whatsNewMessagesScrollArea)
-        self.refreshWhatsNewBtn = QtGui.QPushButton(self.whatsNewTab)
-        self.refreshWhatsNewBtn.setObjectName(_fromUtf8("refreshWhatsNewBtn"))
-        self.verticalLayout_31.addWidget(self.refreshWhatsNewBtn)
         self.markAllAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
         self.markAllAsReadBtn.setObjectName(_fromUtf8("markAllAsReadBtn"))
         self.verticalLayout_31.addWidget(self.markAllAsReadBtn)
@@ -1729,7 +1730,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(3)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1815,6 +1816,7 @@ class Ui_Form(object):
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
         self.lastPublishedLbl.setText(_translate("Form", "Last published: ", None))
         self.showAssetCommentBtn.setText(_translate("Form", "Show comments", None))
+        self.addAssetAsFavoriteBtn.setText(_translate("Form", "Add to my favorite list", None))
         self.createVersionBtn.setText(_translate("Form", "Create version", None))
         self.publishBtn.setText(_translate("Form", "Publish", None))
         self.loadAssetBtn.setText(_translate("Form", "Load Asset", None))
@@ -2002,7 +2004,6 @@ class Ui_Form(object):
         self.blenderPathLineEdit.setPlaceholderText(_translate("Form", "...", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.preferencesTab), _translate("Form", "Preferences", None))
         self.showOnlyMeWhatsNew.setText(_translate("Form", "Show only news concerning me", None))
-        self.refreshWhatsNewBtn.setText(_translate("Form", "Refresh", None))
         self.markAllAsReadBtn.setText(_translate("Form", "Mark all as read", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.whatsNewTab), _translate("Form", "What\'s New", None))
         self.diskUsageLbl.setText(_translate("Form", "Disk usage:", None))

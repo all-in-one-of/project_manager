@@ -17,7 +17,9 @@ class CommentWidget(object):
 
     def hide_comments_frame(self):
         self.CommentsFrame.hide()
-        #size = QtCore.QSize(0, self.size().height())
+        size = QtCore.QSize(0, self.size().height())
+        #self.setFixedSize(0, 0)
+        #QWIDGETSIZE_MAX = ((1 << 24) - 1)
         #self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetFixedSize)
         #self.gridLayout_6.update()
 
@@ -138,19 +140,24 @@ class CommentWidget(object):
 
         if current_tab_text == "Images Manager":
             self.selected_asset.add_comment(self.username, comment, current_time, "ref")
-            #self.add_log_entry(text="{0} added a comment on image {1} (seq: {2})".format(self.members[self.username], self.selected_assetname, self.selected_assetsequence), people=self.comment_authors, value=self.selected_assetid)
+            self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
 
         elif current_tab_text == "Task Manager" or current_tab_text == "Tasks":
             self.selected_asset.add_comment(self.username, comment, current_time, "task")
-            #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+            self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on task {1}".format(self.members[self.username], self.selected_asset.id))
 
         elif current_tab_text == "Asset Loader":
             self.selected_asset.add_comment(self.username, comment, current_time, "asset")
-            #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+            self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
 
         elif "What's New" in current_tab_text:
-            self.selected_asset.add_comment(self.username, comment, current_time, "asset")
-            #self.add_log_entry(text="{0} added a comment on task #{1}".format(self.members[self.username], self.asset.id), people=self.comment_authors, value=self.asset.id)
+            if self.selected_asset.type == "ref":
+                self.selected_asset.add_comment(self.username, comment, current_time, "ref")
+                self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
+
+            else:
+                self.selected_asset.add_comment(self.username, comment, current_time, "asset")
+                self.Lib.add_entry_to_log(self, self.comment_authors, self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
 
 
         self.load_comments()

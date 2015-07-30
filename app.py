@@ -226,7 +226,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.check_news_thread.daemon = True
         #self.check_news_thread.start()
 
-
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
