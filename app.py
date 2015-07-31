@@ -83,8 +83,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Moodboard_Creator = Moodboard_Creator
 
         # Database Setup
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
 
 
         # Backup database
@@ -100,6 +100,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         # Global Variables
         self.i = 0
         self.selected_asset = None
+        self.utf8_codec = QtCore.QTextCodec.codecForName("utf-8")
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
@@ -146,10 +147,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
         day_end = date(2016,5,1)
-        day_today = datetime.now()
+        day_today = datetime.now().date()
 
-        day_end_02 = datetime.strptime(str('2016-05-01'), '%Y-%m-%d')
-        months_and_days_left = relativedelta.relativedelta(day_end_02, day_today)
+        months_and_days_left = relativedelta.relativedelta(day_end, day_today)
 
         total_days = abs(day_end - day_start).days
         remaining_days = abs(day_end - date.today()).days
@@ -500,6 +500,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def refresh_all(self):
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
+        self.WhatsNew.load_blog_posts(self)
         self.setup_tags()
         self.mt_item_added = True
         MyTasks.mt_add_tasks_from_database(self)
@@ -616,8 +617,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 if __name__ == "__main__":
 
-    log_to_file = True
-
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
 
     # création de l'objet logger qui va nous servir à écrire dans les logs

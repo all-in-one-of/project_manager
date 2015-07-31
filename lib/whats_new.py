@@ -4,17 +4,125 @@
 from PyQt4 import QtGui, QtCore
 import os
 import subprocess
-
-
+from datetime import datetime
+from functools import partial
 
 class WhatsNew(object):
+
+
     def __init__(self):
 
+        if self.username == "thoudon" or self.username == "lclavet":
+            self.addBlogPostFrame.show()
+        else:
+            self.addBlogPostFrame.hide()
+
         self.log_entries = {}
+
+        self.addNewBlogPostTextEdit.setStyleSheet("background-color: #f1f1f1;")
+
+        self.addNewBlogPostBtn.clicked.connect(self.add_post_to_blog)
         self.showOnlyMeWhatsNew.stateChanged.connect(self.load_whats_new)
-        self.markAllAsReadBtn.clicked.connect(self.mark_all_as_read)
+        self.markAllNewsAsReadBtn.clicked.connect(self.mark_all_as_read)
         self.whatsNewTreeWidget.itemDoubleClicked.connect(self.tree_double_clicked)
+        self.blog_gridLayout = QtGui.QGridLayout(self.blogScrollAreaWidgetContents)
+        self.load_blog_posts()
         self.load_whats_new()
+
+    def load_blog_posts(self):
+
+        while self.blog_gridLayout.count():
+            item = self.blog_gridLayout.takeAt(0)
+            item.widget().deleteLater()
+
+        blog_posts = self.cursor.execute('''SELECT * FROM blog''').fetchall()
+        for post in reversed(blog_posts):
+            post_id = post[0]
+            post_datetime = post[1]
+            post_title = post[2]
+            post_message = post[3]
+            post_author = post[4]
+
+            title = u"{0} | par {1} | le {2}".format(post_title, self.members[post_author], post_datetime)
+
+            # Frames creation
+            entry_frame = QtGui.QFrame(self.whatsNewMessagesScrollArea)
+            entry_frame_layout = QtGui.QHBoxLayout(entry_frame)
+            entry_frame.setMaximumHeight(150)
+
+            blog_frame = QtGui.QFrame(entry_frame)
+            blog_frame_layout = QtGui.QVBoxLayout(blog_frame)
+
+            buttons_frame = QtGui.QFrame(entry_frame)
+            buttons_frame.setMaximumWidth(60)
+            buttons_frame_layout = QtGui.QVBoxLayout(buttons_frame)
+
+            entry_frame_layout.addWidget(blog_frame)
+            entry_frame_layout.addWidget(buttons_frame)
+
+
+
+            # Blog frame widgets
+            title_lbl = QtGui.QLabel(blog_frame)
+            title_lbl.setText(title)
+
+            message_lbl = QtGui.QLabel(blog_frame)
+            message_lbl.setTextFormat(QtCore.Qt.RichText)
+            message_lbl.setWordWrap(True)
+            message_lbl.setText(post_message + "<br>")
+
+            blog_frame_layout.addWidget(title_lbl)
+            blog_frame_layout.addWidget(message_lbl)
+
+            if self.username == "thoudon" or self.username == "lclavet":
+                # Buttons frame widgets
+                edit_post_button = QtGui.QPushButton("Edit", buttons_frame)
+                delete_post_button = QtGui.QPushButton("Delete", buttons_frame)
+                edit_post_button.clicked.connect(partial(self.edit_blog_post, post_id, post_message))
+                delete_post_button.clicked.connect(partial(self.delete_blog_post, post_id))
+                edit_post_button.setMaximumWidth(64)
+                delete_post_button.setMaximumWidth(64)
+
+                buttons_frame_layout.addWidget(edit_post_button)
+                buttons_frame_layout.addWidget(delete_post_button)
+
+            line_01 = QtGui.QFrame()
+            line_01.setFrameShape(QtGui.QFrame.HLine)
+            line_01.setLineWidth(1)
+            line_01.setFrameShadow(QtGui.QFrame.Sunken)
+
+
+            self.blog_gridLayout.addWidget(entry_frame)
+            self.blog_gridLayout.addWidget(line_01)
+
+    def edit_blog_post(self, post_id, post_message):
+        edit_blog_post_dialog = QtGui.QDialog()
+        edit_blog_post_dialog.setWindowTitle("Edit blog post")
+        self.Lib.apply_style(self, edit_blog_post_dialog)
+        edit_blog_layout = QtGui.QVBoxLayout(edit_blog_post_dialog)
+        edit_post_textEdit = QtGui.QTextEdit(post_message)
+        edit_post_textEdit.selectAll()
+
+        edit_post_acceptBtn = QtGui.QPushButton("Edit")
+        edit_post_acceptBtn.clicked.connect(edit_blog_post_dialog.accept)
+
+        edit_blog_layout.addWidget(edit_post_textEdit)
+        edit_blog_layout.addWidget(edit_post_acceptBtn)
+        edit_blog_post_dialog.exec_()
+
+        if edit_blog_post_dialog.result == 0:
+            return
+
+        edited_blog_post = edit_post_textEdit.toPlainText()
+        edited_blog_post = unicode(self.utf8_codec.fromUnicode(edited_blog_post), 'utf-8')
+        self.cursor.execute('''UPDATE blog SET message=? WHERE blog_id=?''', (edited_blog_post, post_id,))
+        self.db.commit()
+        self.load_blog_posts()
+
+    def delete_blog_post(self, post_id):
+        self.cursor.execute('''DELETE FROM blog WHERE blog_id=?''', (post_id,))
+        self.db.commit()
+        self.load_blog_posts()
 
     def load_whats_new(self):
         self.whatsNewTreeWidget.clear()
@@ -162,3 +270,20 @@ class WhatsNew(object):
 
 
         return
+
+    def add_post_to_blog(self):
+
+        current_time = datetime.now()
+        current_time = current_time.strftime("%d/%m/%Y à %H:%M")
+        current_time = unicode(current_time, "utf-8")
+
+        title = self.blogPostTitleComboBox.currentText()
+        title = unicode(self.utf8_codec.fromUnicode(title), 'utf-8')
+
+        message = self.addNewBlogPostTextEdit.toPlainText()
+        message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
+
+        self.cursor.execute('''INSERT INTO blog(blog_datetime, title, message, author, read_by) VALUES(?,?,?,?,?)''', (current_time, title, message, self.username, "",))
+        self.db.commit()
+
+        self.load_blog_posts()

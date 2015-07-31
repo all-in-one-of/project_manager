@@ -11,7 +11,7 @@ class CommentWidget(object):
         self.CommentsFrame.hide()
         self.comment_text_edit_dic = {}
         self.hideCommentsFrameBtn.clicked.connect(self.hide_comments_frame)
-        self.gridLayout = QtGui.QGridLayout(self.scrollAreaWidgetContents)
+        self.comments_gridLayout = QtGui.QGridLayout(self.scrollAreaWidgetContents)
 
         self.commentLineEdit.returnPressed.connect(self.add_comment)
 
@@ -20,8 +20,8 @@ class CommentWidget(object):
         size = QtCore.QSize(0, self.size().height())
         #self.setFixedSize(0, 0)
         #QWIDGETSIZE_MAX = ((1 << 24) - 1)
-        #self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetFixedSize)
-        #self.gridLayout_6.update()
+        #self.comments_gridLayout_6.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+        #self.comments_gridLayout_6.update()
 
     def load_comments(self):
         self.CommentsFrame.show()
@@ -40,8 +40,8 @@ class CommentWidget(object):
         self.comment_authors = []
         self.cur_alignment = "left"
 
-        while self.gridLayout.count():
-            item = self.gridLayout.takeAt(0)
+        while self.comments_gridLayout.count():
+            item = self.comments_gridLayout.takeAt(0)
             item.widget().deleteLater()
 
         if len(comments) == 0:
@@ -129,13 +129,13 @@ class CommentWidget(object):
             comment_frame_layout.addWidget(comment_text_edit)
             comment_frame_layout.addWidget(author_picture_lbl)
 
-        self.gridLayout.addWidget(self.comment_frame)
+        self.comments_gridLayout.addWidget(self.comment_frame)
 
     def add_comment(self):
         current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
 
-        comment = unicode(self.commentLineEdit.text())
-        comment = self.Lib.normalize_str(self, comment)
+        comment = self.commentLineEdit.text()
+        comment = unicode(self.utf8_codec.fromUnicode(comment), 'utf-8')
         current_time = time.strftime("%d/%m/%Y at %H:%M")
 
         if current_tab_text == "Images Manager":
