@@ -88,7 +88,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         # Backup database
-        self.backup_database()
+        #self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.db.cursor()
@@ -162,7 +162,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
         # Setup disk usage progress bar
-        disk_usage = Lib.get_folder_space(self)
+        #disk_usage = Lib.get_folder_space(self)
+        disk_usage = 10000
         disk_usage = int(float(disk_usage) * 1000) # Multiply disk usage by 1000. Ex: 1.819 to 1819
         disk_usage = (2000 * int(disk_usage)) / 1862 # 2TO in theory = 1.862GB in reality. Remapping real disk usage to the theoric one
         self.diskUsageProgressBar.setFormat('{0}/2000 GB'.format(str(disk_usage)))

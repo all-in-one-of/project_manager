@@ -217,10 +217,10 @@ class Lib(object):
 
         self.msgBox.setStandardButtons(0)
 
-        #self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
-        #self.msgBox_okBtn.setStyleSheet("width: 64px;")
-        #self.msgBox.setDefaultButton(self.msgBox_okBtn)
-        #self.msgBox_okBtn.clicked.connect(self.msgBox.accept)
+        self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
+        self.msgBox_okBtn.setStyleSheet("width: 64px;")
+        self.msgBox.setDefaultButton(self.msgBox_okBtn)
+        self.msgBox_okBtn.clicked.connect(self.msgBox.accept)
 
         if no_button == True:
             self.msgBox_noBtn = self.msgBox.addButton(QtGui.QMessageBox.No)

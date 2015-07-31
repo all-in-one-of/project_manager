@@ -896,8 +896,8 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.main.Lib.apply_style(self.main, self)
 
         # Connections
-        self.availableAssetsListWidget.itemSelectionChanged.connect(left_list_item_clicked)
-        self.assetsToAddListWidget.itemSelectionChanged.connect(right_list_item_clicked)
+        self.availableAssetsListWidget.itemClicked.connect(self.left_list_item_clicked)
+        self.assetsToAddListWidget.itemClicked.connect(self.right_list_item_clicked)
 
         self.addAssetBtn.clicked.connect(self.add_asset_to_list)
         self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
@@ -939,8 +939,10 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             asset_id = asset[0]
             asset_name = asset[4]
             if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
-                item = QtGui.QListWidgetItem(asset_name)
-                item.setData(QtCore.Qt.UserRole, asset)
+                asset_object = self.main.Asset(self.main, asset_id)
+                asset_object.get_infos_from_id()
+                item = QtGui.QListWidgetItem(asset_object.name)
+                item.setData(QtCore.Qt.UserRole, asset_object)
                 self.availableAssetsListWidget.addItem(item)
 
         self.exec_()
@@ -948,17 +950,21 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def left_list_item_clicked(self):
         self.selected_asset = self.availableAssetsListWidget.selectedItems()[0]
         self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
-        self.selected_asset = self.main.Asset(self.main, self.selected_asset[0])
-        self.selected_asset.get_infos_from_id()
-        self.selected_asset.print_asset()
-
+        self.load_image_from_asset()
 
     def right_list_item_clicked(self):
         self.selected_asset = self.assetsToAddListWidget.selectedItems()[0]
         self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
-        self.selected_asset = self.main.Asset(self.main, self.selected_asset[0])
-        self.selected_asset.get_infos_from_id()
-        self.selected_asset.print_asset()
+        self.load_image_from_asset()
+
+    def load_image_from_asset(self):
+        replaced_path = self.selected_asset.full_path.replace("lay", "mod").replace(".hda", "_full.jpg")
+        thumb_path = os.path.split(replaced_path)[0] + "\\.thumb\\"
+        img_path =  os.path.split(replaced_path)[1]
+        full_img_path = thumb_path + img_path
+        qpixmap = QtGui.QPixmap(full_img_path)
+        qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+        self.assetPreviewLbl.setPixmap(qpixmap)
 
     def add_asset_to_list(self):
         # Create listwidget item from selected asset
