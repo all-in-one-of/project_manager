@@ -3,9 +3,10 @@
 
 import os
 import time
+from datetime import datetime
 
 class Asset(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator=""):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator="", number_of_publishes=0):
         self.main = main
         self.id = id
         self.project = project_name
@@ -29,7 +30,21 @@ class Asset(object):
             self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
-        self.last_publish = last_publish
+        if last_publish == "":
+            self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+            self.last_publish_as_date = datetime.now()
+        else:
+            self.last_publish = last_publish
+            date = last_publish.split(" ")[2]
+            day = date.split("/")[0]
+            month = date.split("/")[1]
+            year = date.split("/")[2]
+            time = last_publish.split(" ")[-1]
+            hour = time.split(":")[0]
+            minutes = time.split(":")[1]
+            self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
+
+        self.number_of_publishes = number_of_publishes
         self.creator = creator
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
@@ -42,10 +57,8 @@ class Asset(object):
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
-
-
     def print_asset(self):
-        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.last_publish, self.creator)
+        print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes)
 
     def update_asset_path(self):
         new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
@@ -73,7 +86,7 @@ class Asset(object):
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
                 self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.last_publish, self.creator,))
+        self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -91,6 +104,7 @@ class Asset(object):
             os.remove(self.turn_vid_path)
         except:
             pass
+        self.main.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
         self.main.db.commit()
 
@@ -164,9 +178,13 @@ class Asset(object):
         self.main.db.commit()
 
     def change_last_publish(self):
-        last_publish = time.strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+        cur_time = datetime.now()
+        last_publish = cur_time.strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
         self.last_publish = last_publish
+        self.last_publish_as_date = cur_time
+        self.number_of_publishes += 1
         self.main.cursor.execute('''UPDATE assets SET last_publish=? WHERE asset_id=?''', (last_publish, self.id,))
+        self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.id,))
         self.main.db.commit()
 
     def get_infos_from_id(self):
@@ -183,6 +201,7 @@ class Asset(object):
         last_access = asset[11]
         last_publish = asset[12]
         creator = asset[13]
+        number_of_publishes = asset[14]
 
         self.project = project_name
         self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
@@ -200,6 +219,7 @@ class Asset(object):
         self.dependency = asset_dependency
         self.last_access = last_access
         self.last_publish = last_publish
+        self.number_of_publishes = number_of_publishes
         self.creator = creator
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname,
                                                                         self.sequence,

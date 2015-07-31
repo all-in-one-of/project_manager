@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\media\main_window.ui'
+# Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Fri Jul 31 10:25:06 2015
+# Created: Fri Jul 31 15:07:03 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -366,6 +366,9 @@ class Ui_Form(object):
         self.deleteAssetBtn.setObjectName(_fromUtf8("deleteAssetBtn"))
         self.horizontalLayout.addWidget(self.deleteAssetBtn)
         self.gridLayout.addWidget(self.assetFromScratchFrame, 5, 6, 1, 1)
+        self.addAssetsToLayoutBtn = QtGui.QPushButton(self.listsFrame)
+        self.addAssetsToLayoutBtn.setObjectName(_fromUtf8("addAssetsToLayoutBtn"))
+        self.gridLayout.addWidget(self.addAssetsToLayoutBtn, 5, 7, 1, 1)
         self.verticalLayout_2.addWidget(self.listsFrame)
         self.infoFrame = QtGui.QFrame(self.assetLoaderTab)
         self.infoFrame.setFrameShape(QtGui.QFrame.NoFrame)
@@ -412,7 +415,7 @@ class Ui_Form(object):
         self.horizontalLayout_4.addWidget(self.thumbTurnBtn)
         self.verticalLayout_4.addWidget(self.thumbDisplayTypeFrame)
         self.thumbnailProgressBar = QtGui.QProgressBar(self.thumbnailFrame)
-        self.thumbnailProgressBar.setMaximumSize(QtCore.QSize(16777215, 14))
+        self.thumbnailProgressBar.setMaximumSize(QtCore.QSize(500, 14))
         self.thumbnailProgressBar.setProperty("value", 0)
         self.thumbnailProgressBar.setOrientation(QtCore.Qt.Horizontal)
         self.thumbnailProgressBar.setObjectName(_fromUtf8("thumbnailProgressBar"))
@@ -477,20 +480,13 @@ class Ui_Form(object):
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.frame_3)
         self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
-        self.addAssetAsFavoriteBtn = QtGui.QPushButton(self.frame_3)
-        self.addAssetAsFavoriteBtn.setMinimumSize(QtCore.QSize(32, 32))
-        self.addAssetAsFavoriteBtn.setMaximumSize(QtCore.QSize(32, 32))
-        self.addAssetAsFavoriteBtn.setText(_fromUtf8(""))
-        self.addAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
-        self.addAssetAsFavoriteBtn.setObjectName(_fromUtf8("addAssetAsFavoriteBtn"))
-        self.horizontalLayout_2.addWidget(self.addAssetAsFavoriteBtn)
-        self.removeAssetAsFavoriteBtn = QtGui.QPushButton(self.frame_3)
-        self.removeAssetAsFavoriteBtn.setMinimumSize(QtCore.QSize(32, 32))
-        self.removeAssetAsFavoriteBtn.setMaximumSize(QtCore.QSize(32, 32))
-        self.removeAssetAsFavoriteBtn.setText(_fromUtf8(""))
-        self.removeAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
-        self.removeAssetAsFavoriteBtn.setObjectName(_fromUtf8("removeAssetAsFavoriteBtn"))
-        self.horizontalLayout_2.addWidget(self.removeAssetAsFavoriteBtn)
+        self.addRemoveAssetAsFavoriteBtn = QtGui.QPushButton(self.frame_3)
+        self.addRemoveAssetAsFavoriteBtn.setMinimumSize(QtCore.QSize(32, 32))
+        self.addRemoveAssetAsFavoriteBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.addRemoveAssetAsFavoriteBtn.setText(_fromUtf8(""))
+        self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
+        self.addRemoveAssetAsFavoriteBtn.setObjectName(_fromUtf8("addRemoveAssetAsFavoriteBtn"))
+        self.horizontalLayout_2.addWidget(self.addRemoveAssetAsFavoriteBtn)
         self.gridLayout_5.addWidget(self.frame_3, 3, 0, 1, 1)
         self.verticalLayout.addWidget(self.stateFrame)
         self.gridLayout_3.addWidget(self.assetInfoFrame, 0, 2, 1, 1)
@@ -1773,7 +1769,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(6)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1850,6 +1846,7 @@ class Ui_Form(object):
         self.addShotBtn.setText(_translate("Form", "+", None))
         self.createAssetFromScratchAssetBtn.setText(_translate("Form", "Create Asset from Asset", None))
         self.deleteAssetBtn.setText(_translate("Form", "x", None))
+        self.addAssetsToLayoutBtn.setText(_translate("Form", "Add Assets to Layout", None))
         self.assetInfoGrp.setTitle(_translate("Form", "Info", None))
         self.thumbFullBtn.setText(_translate("Form", "Full", None))
         self.thumbQuadBtn.setText(_translate("Form", "Quad", None))
@@ -1857,7 +1854,7 @@ class Ui_Form(object):
         self.loadObjInGplayBtn.setText(_translate("Form", "Load OBJ in Gplay", None))
         self.updateThumbBtn.setText(_translate("Form", "Update Thumbnail", None))
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
-        self.lastPublishedLbl.setText(_translate("Form", "Last published: ", None))
+        self.lastPublishedLbl.setText(_translate("Form", "Last published by: ", None))
         self.showAssetCommentBtn.setText(_translate("Form", "Show comments", None))
         self.createVersionBtn.setText(_translate("Form", "Create version", None))
         self.publishBtn.setText(_translate("Form", "Publish", None))

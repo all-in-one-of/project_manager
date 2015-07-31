@@ -9,10 +9,10 @@ def convert_ui():
     ''' Drag an drop a file on the QtUiConvert.bat file associated with this python script to convert a .ui file to a .py file using pyuic
     '''
 
-    cur_dir = os.path.dirname(os.path.realpath(__file__)).replace("tools", "")
-    ui_path = os.path.dirname(cur_dir) + "\\media\\main_window.ui"
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    ui_path = cur_dir + "\\main_window.ui"
     
-    window_tmp_path = os.path.dirname(cur_dir) + "\\ui\\main_window_tmp.py"
+    window_tmp_path = os.path.dirname(cur_dir) + "\\main_window_tmp.py"
 
     # Check wether or not a file was dropped on the .py file
     if len(sys.argv) < 2:
@@ -35,13 +35,12 @@ def convert_ui():
     f.close()
 
 
-
     line_to_find = "QtCore.QMetaObject.connectSlotsByName(Form)"
     match = False # This variable is set to true when line_to_find is found in the file
 
     # Delete old ui (the python one) file and create a new file "main_window.py"
-    os.remove(os.path.dirname(cur_dir) + "\\ui\\main_window.py")
-    f = open(os.path.dirname(cur_dir) + "\\ui\\main_window.py", "a")
+    os.remove(cur_dir + "\\main_window.py")
+    f = open(cur_dir + "\\main_window.py", "a")
     
     # Loop over each line and write "return Form" when the line_to_find is found. Otherwise just write each line
     # exactly the same
@@ -62,3 +61,5 @@ def convert_ui():
 
 if __name__ == "__main__":
     convert_ui()
+    raw_input("Please enter a key to exit...")
+

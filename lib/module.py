@@ -24,7 +24,6 @@ class Lib(object):
 
         self.updateThumbBtn.setEnabled(False)
 
-
         self.full_obj_path = obj_path
         self.obj_tmp_path = "C:\\Temp\\" + obj_path.split("\\")[-1]
         self.type = type
@@ -61,7 +60,9 @@ class Lib(object):
         if self.type == "quad":
             self.resolution = str(int(self.resolution) / 2)
 
-
+        if os.path.getsize(self.full_obj_path) < 100:
+            self.message_box(type="warning", text="It looks like the published modeling is nothing. Make sure you model something before trying to make a thumbnail out of it!")
+            return
 
         self.create_thumbnail_process = QtCore.QProcess(self)
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
@@ -78,7 +79,6 @@ class Lib(object):
         while self.create_thumbnail_process.canReadLine():
             self.i += 1
             out = self.create_thumbnail_process.readLine()
-
             self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
@@ -205,7 +205,7 @@ class Lib(object):
 
         self.db.commit()
 
-    def message_box(self, type="Warning", text="warning"):
+    def message_box(self, type="Warning", text="warning", no_button=False):
 
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
@@ -218,6 +218,12 @@ class Lib(object):
         self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
         self.msgBox_okBtn.setStyleSheet("width: 64px;")
         self.msgBox.setDefaultButton(self.msgBox_okBtn)
+        self.msgBox_okBtn.clicked.connect(self.msgBox.accept)
+
+        if no_button == True:
+            self.msgBox_noBtn = self.msgBox.addButton(QtGui.QMessageBox.No)
+            self.msgBox_noBtn.setStyleSheet("width: 64px;")
+            self.msgBox_noBtn.clicked.connect(self.msgBox.reject)
 
         if type == "warning":
             self.msgBox.setIcon(QtGui.QMessageBox.Warning)
@@ -240,6 +246,7 @@ class Lib(object):
         self.thumbnail_creation_box_noBtn = self.thumbnail_creation_box.addButton(QtGui.QMessageBox.No)
         self.thumbnail_creation_box_okBtn.setStyleSheet("width: 64px;")
         self.thumbnail_creation_box_noBtn.setStyleSheet("width: 64px;")
+        self.thumbnail_creation_box_okBtn.clicked.connect(self.thumbnail_creation_box.accept)
         self.thumbnail_creation_box.setDefaultButton(self.thumbnail_creation_box_okBtn)
 
         return self.thumbnail_creation_box.exec_()

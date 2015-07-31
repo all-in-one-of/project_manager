@@ -16,7 +16,7 @@ class AssetLoader(object):
         self.favorite_icon = QtGui.QIcon(self.cur_path + "\\media\\favorite.png")
         self.unfavorite_icon = QtGui.QIcon(self.cur_path + "\\media\\unfavorite.png")
 
-
+        self.addAssetsToLayoutBtn.hide()
 
         self.assets = {}
         self.selected_asset = None
@@ -65,12 +65,10 @@ class AssetLoader(object):
 
         # Connect the buttons
         self.showAssetCommentBtn.clicked.connect(self.show_comments)
-        self.addAssetAsFavoriteBtn.clicked.connect(self.add_to_favorite)
-        self.removeAssetAsFavoriteBtn.clicked.connect(self.remove_from_favorite)
-        self.addAssetAsFavoriteBtn.setIcon(self.favorite_icon)
-        self.removeAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
-        self.addAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
-        self.removeAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+        self.addRemoveAssetAsFavoriteBtn.clicked.connect(self.change_favorite_state)
+        self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
+        self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+
 
 
 
@@ -101,7 +99,7 @@ class AssetLoader(object):
         self.commentLineEdit.setFocus()
         self.CommentWidget.load_comments(self)
 
-    def add_to_favorite(self):
+    def change_favorite_state(self):
         if self.selected_asset == None:
             return
 
@@ -109,19 +107,11 @@ class AssetLoader(object):
         if is_asset_favorited == None: # Asset is not already favorited by member
             self.cursor.execute('''INSERT INTO favorited_assets(asset_id, member) VALUES(?,?)''', (self.selected_asset.id, self.username,))
             self.db.commit()
-            self.addAssetAsFavoriteBtn.setEnabled(False)
-            self.removeAssetAsFavoriteBtn.setEnabled(True)
-
-    def remove_from_favorite(self):
-        if self.selected_asset == None:
-            return
-
-        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
-        if is_asset_favorited != None:  # Asset is not already favorited by member
+            self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
+        else:
             self.cursor.execute('''DELETE FROM favorited_assets WHERE asset_id=? AND member=?''', (is_asset_favorited[0], is_asset_favorited[1],))
             self.db.commit()
-            self.addAssetAsFavoriteBtn.setEnabled(True)
-            self.removeAssetAsFavoriteBtn.setEnabled(False)
+            self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -256,11 +246,13 @@ class AssetLoader(object):
             asset_tags = asset[9]
             asset_dependency = asset[10]
             last_access = asset[11]
-            creator = asset[12]
+            last_publish = asset[12]
+            creator = asset[13]
+            number_of_publishes = asset[14]
 
 
             asset_item = QtGui.QListWidgetItem(asset_name)
-            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, creator)
+            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes)
             asset_item.setData(QtCore.Qt.UserRole, asset)
             self.assets[asset] = asset_item
             if asset.version != "out" and asset.type != "ref":
@@ -398,6 +390,7 @@ class AssetLoader(object):
 
         self.verticalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
+        self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
@@ -427,16 +420,7 @@ class AssetLoader(object):
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
         # Set pixmap
-        if self.selected_asset.type == "ref":
-            qpixmap = QtGui.QPixmap(self.selected_asset.full_path)
-            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset.full_path)
-            self.assetImg.setPixmap(qpixmap)
-            self.updateThumbBtn.setVisible(False)
-            self.createVersionBtn.setVisible(False)
-            self.publishBtn.setVisible(False)
-
-        elif self.selected_asset.type == "mod":
+        if self.selected_asset.type == "mod":
             if not os.path.isfile(self.selected_asset.full_img_path):
                 img_path, width = self.no_img_found, 300
             else:
@@ -454,17 +438,19 @@ class AssetLoader(object):
             self.assetImg.setPixmap(qpixmap)
 
 
+        if self.selected_asset.type == "lay":
+            if self.username == "thoudon" or self.username == "lclavet":
+                self.addAssetsToLayoutBtn.show()
+
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
         # Set favorite button state
         is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
         if is_asset_favorited == None:
-            self.addAssetAsFavoriteBtn.setEnabled(True)
-            self.removeAssetAsFavoriteBtn.setEnabled(False)
+            self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         else:
-            self.addAssetAsFavoriteBtn.setEnabled(False)
-            self.removeAssetAsFavoriteBtn.setEnabled(True)
+            self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
 
     def update_last_published_time_lbl(self, asset=None):
         if asset == None:
@@ -472,12 +458,10 @@ class AssetLoader(object):
 
         if asset.type == "mod":
             # Set last published date label
-            last_modified_time = self.Lib.modification_date(self, asset.obj_path)
-            last_modified_time_str = last_modified_time.strftime("%d/%m/%Y at %H:%M")
-
             day_today = datetime.datetime.now()
-            number_of_days_since_last_publish = day_today - last_modified_time
+            number_of_days_since_last_publish = day_today - self.selected_asset.last_publish_as_date
             number_of_days_since_last_publish = number_of_days_since_last_publish.days
+
             if number_of_days_since_last_publish == 0:
                 number_of_days_since_last_publish = "today"
             elif number_of_days_since_last_publish > 7:
@@ -486,7 +470,7 @@ class AssetLoader(object):
             else:
                 number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
 
-            self.lastPublishedLbl.setText("Last published: {0} ({1})".format(last_modified_time_str, number_of_days_since_last_publish))
+            self.lastPublishedLbl.setText("Last published by: {0} ({1})".format(self.selected_asset.last_publish, number_of_days_since_last_publish))
 
     def versionList_DoubleClicked(self):
         selected_version = self.versionList.selectedItems()[0]
@@ -541,7 +525,7 @@ class AssetLoader(object):
 
         old_version_path = self.selected_asset.full_path
         new_version = str(int(self.selected_asset.version) + 1).zfill(2)
-        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator)
+        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator, self.selected_asset.number_of_publishes)
         asset.add_asset_to_db()
 
         shutil.copy(old_version_path, asset.full_path)
@@ -576,12 +560,14 @@ class AssetLoader(object):
             print(out)
 
     def publish_process_finished(self):
+        # Check if current asset has been favorited by someone.
         favorited_by = self.cursor.execute('''SELECT member FROM favorited_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
         if favorited_by != None:
             favorited_by = [i[0] for i in favorited_by]
         else:
             favorited_by = []
 
+        # Add log entry saying that the asset has been published.
         self.Lib.add_entry_to_log(self, "All", favorited_by, self.selected_asset.id, "publish", "Asset {0} of type {1} has been published by {2}".format(self.selected_asset.name, self.selected_asset.type, self.selected_asset.last_publish))
         self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
@@ -631,56 +617,69 @@ class AssetLoader(object):
             return
 
         if type == "full":
-            if not os.path.isfile(self.selected_asset.full_img_path):
-                self.update_thumbnail()
-                return
-            last_modified_time_img = self.Lib.modification_date(self, self.selected_asset.full_img_path)
-            last_modified_time_publish = self.Lib.modification_date(self, self.selected_asset.obj_path)
-
-            if last_modified_time_img < last_modified_time_publish:
-                result = self.Lib.thumbnail_creation_box(self, text="A new version has been published. Do you want to create a thumbnail for it?")
-                if result == QtGui.QMessageBox.Ok:
-                    os.remove(self.selected_asset.full_img_path)
-                    self.update_thumbnail()
-                    return
-
-            qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
-            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset.full_img_path)
-            self.assetImg.setPixmap(qpixmap)
+            result = self.check_thumbnails_conditions(type="full")
+            if result == True:
+                qpixmap = QtGui.QPixmap(self.selected_asset.full_img_path)
+                qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+                self.assetImg.setData(self.selected_asset.full_img_path)
+                self.assetImg.setPixmap(qpixmap)
 
         elif type == "quad":
-            if not os.path.isfile(self.selected_asset.quad_img_path):
-                self.update_thumbnail()
-                return
-            last_modified_time_img = self.Lib.modification_date(self, self.selected_asset.quad_img_path)
-            last_modified_time_publish = self.Lib.modification_date(self, self.selected_asset.obj_path)
-            if last_modified_time_img < last_modified_time_publish:
-                result = self.Lib.thumbnail_creation_box(self, text="A new version has been published. Do you want to create a thumbnail for it?")
-                if result == QtGui.QMessageBox.Ok:
-                    os.remove(self.selected_asset.quad_img_path)
-                    self.update_thumbnail()
-                    return
-            qpixmap = QtGui.QPixmap(self.selected_asset.quad_img_path)
-            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.selected_asset.quad_img_path)
-            self.assetImg.setPixmap(qpixmap)
+            result = self.check_thumbnails_conditions(type="quad")
+            if result == True:
+                qpixmap = QtGui.QPixmap(self.selected_asset.quad_img_path)
+                qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+                self.assetImg.setData(self.selected_asset.quad_img_path)
+                self.assetImg.setPixmap(qpixmap)
 
         elif type == "turn":
-            if not os.path.isfile(self.selected_asset.turn_vid_path):
-                self.update_thumbnail()
-                return
+            result = self.check_thumbnails_conditions(type="turn")
+            if result == True:
+                subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", self.selected_asset.turn_vid_path, "/fullscreen"])
 
-            last_modified_time_img = self.Lib.modification_date(self, self.selected_asset.turn_vid_path)
-            last_modified_time_publish = self.Lib.modification_date(self, self.selected_asset.obj_path)
-            if last_modified_time_img < last_modified_time_publish:
-                result = self.Lib.thumbnail_creation_box(self, text="A new version has been published. Do you want to create a thumbnail for it?")
-                if result == QtGui.QMessageBox.Ok:
-                    os.remove(self.selected_asset.turn_vid_path)
+    def check_thumbnails_conditions(self, type=""):
+        '''
+        When user clicks on full, quad or turn to show given view, this function check if the asset has already been published at least once, if
+        there is already a thumbnail or not, and if there's a new published version from which user can make a new thumbnail.
+        '''
+
+        if type == "full":
+            path = self.selected_asset.full_img_path
+        elif type == "quad":
+            path = self.selected_asset.quad_img_path
+        elif type == "turn":
+            path = self.selected_asset.turn_vid_path
+
+        # Asset has never been published, ask for first publish.
+        if self.selected_asset.number_of_publishes == 0:
+            result = self.Lib.message_box(self, type="warning", text="This asset has never been published. Do you want to publish it?", no_button=True)
+            if result == 0:
+                return False
+            else:
+                self.publish_asset()
+                return False
+
+        # There's a new published version, ask if user wants to create a new thumbnail
+        if os.path.isfile(path):
+            last_publish_time = self.selected_asset.last_publish_as_date
+            last_modified_img_time = self.Lib.modification_date(self, path)
+            if last_publish_time > last_modified_img_time:
+                result = self.Lib.thumbnail_creation_box(self, text="There's a new publish available. Do you want to create a thumbnail for it?")
+                if result == 1:
+                    os.remove(path)
                     self.update_thumbnail()
-                    return
+                    return False
 
-            subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", self.selected_asset.turn_vid_path, "/fullscreen"])
+        # Thumbnail has never been created for asset, ask if user wants to create a thumbnail
+        if not os.path.isfile(path):
+            result = self.Lib.message_box(self, type="warning", text="There is no thumbnail for this asset. Do you want to create one?", no_button=True)
+            if result == 0:
+                return False
+            else:
+                self.update_thumbnail()
+                return False
+
+        return True
 
     def load_obj_in_gplay(self):
         subprocess.Popen(["Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\gplay.exe", self.selected_asset.obj_path], shell=True)
@@ -705,13 +704,15 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "shd":
             process = QtCore.QProcess(self)
-            process.start("Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\houdinifx.exe",
-                          [self.selected_asset.main_hda_path])
+            process.start(self.houdini_path, [self.selected_asset.main_hda_path])
 
         elif self.selected_asset.type == "lay":
             process = QtCore.QProcess(self)
-            process.start("Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\houdinifx.exe",
-                          [self.selected_asset.full_path])
+            process.start(self.houdini_path, [self.selected_asset.full_path])
+
+        elif self.selected_asset.type == "rig":
+            process = QtCore.QProcess(self)
+            process.start(self.maya_path, [self.selected_asset.full_path])
 
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
@@ -725,6 +726,8 @@ class AssetLoader(object):
         # Remove item from asset widget list
         for item in self.assetList.selectedItems():
             self.assetList.takeItem(self.assetList.row(item))
+
+        self.load_all_assets_for_first_time()
 
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
@@ -769,7 +772,7 @@ class AssetLoader(object):
                 extension = "hip"
 
         # Get asset name
-        asset_name = str(name_line_edit.text())
+        asset_name = unicode(name_line_edit.text())
         asset_name = self.Lib.normalize_str(self, asset_name)
         asset_name = asset_name_tmp = self.Lib.convert_to_camel_case(self, asset_name)
 
@@ -792,6 +795,8 @@ class AssetLoader(object):
 
     def create_asset_from_asset(self):
         if self.selected_department_name == "mod":
+            if self.selected_asset == None: return
+            if self.selected_asset.type != "mod": return
             self.create_from_asset_dialog = QtGui.QDialog(self)
             self.Lib.apply_style(self, self.create_from_asset_dialog)
 
@@ -813,7 +818,7 @@ class AssetLoader(object):
 
         self.create_from_asset_dialog.close()
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
 
         obj_path = str(self.selected_asset.obj_path)
@@ -831,22 +836,22 @@ class AssetLoader(object):
     def create_modeling_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
         # Create modeling scene asset
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
         main_id = asset.id
         shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
         # Create default publish cube (obj)
-        obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", self.username)
+        obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", "", self.username)
         obj_asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
         # Create main HDA database entry
-        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], main_id, "", self.username)
+        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], main_id, "", "", self.username)
         main_hda_asset.add_asset_to_db()
 
         # Create shading HDA database entry
-        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_id, "", self.username)
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_id, "", "", self.username)
         shading_hda_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
@@ -858,7 +863,7 @@ class AssetLoader(object):
     def create_layout_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hipnc", "lay", "01", [], "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hipnc", "lay", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\houdini.hipnc", asset.full_path)
 
@@ -881,3 +886,6 @@ class AssetLoader(object):
 
 
 
+class AddAssetsToLayoutWindow(object):
+    def __init__(self):
+        pass

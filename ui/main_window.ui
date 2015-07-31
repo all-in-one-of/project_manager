@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>6</number>
+            <number>0</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -866,6 +866,13 @@
                   </layout>
                  </widget>
                 </item>
+                <item row="5" column="7">
+                 <widget class="QPushButton" name="addAssetsToLayoutBtn">
+                  <property name="text">
+                   <string>Add Assets to Layout</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -972,7 +979,7 @@
                        <widget class="QProgressBar" name="thumbnailProgressBar">
                         <property name="maximumSize">
                          <size>
-                          <width>16777215</width>
+                          <width>500</width>
                           <height>14</height>
                          </size>
                         </property>
@@ -1094,7 +1101,7 @@
                          <item row="1" column="0">
                           <widget class="QLabel" name="lastPublishedLbl">
                            <property name="text">
-                            <string>Last published: </string>
+                            <string>Last published by: </string>
                            </property>
                           </widget>
                          </item>
@@ -1131,32 +1138,7 @@
                              <number>0</number>
                             </property>
                             <item>
-                             <widget class="QPushButton" name="addAssetAsFavoriteBtn">
-                              <property name="minimumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="text">
-                               <string/>
-                              </property>
-                              <property name="iconSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="removeAssetAsFavoriteBtn">
+                             <widget class="QPushButton" name="addRemoveAssetAsFavoriteBtn">
                               <property name="minimumSize">
                                <size>
                                 <width>32</width>
