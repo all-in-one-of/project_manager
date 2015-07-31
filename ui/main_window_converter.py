@@ -10,9 +10,9 @@ def convert_ui():
     '''
 
     cur_dir = os.path.dirname(os.path.realpath(__file__))
-    ui_path = cur_dir + "\\add_assets_to_layout.ui"
+    ui_path = cur_dir + "\\main_window.ui"
     
-    window_tmp_path = cur_dir + "\\add_assets_to_layout_tmp.py"
+    window_tmp_path = os.path.dirname(cur_dir) + "\\main_window_tmp.py"
 
     # Check wether or not a file was dropped on the .py file
     if len(sys.argv) < 2:
@@ -35,20 +35,19 @@ def convert_ui():
     f.close()
 
 
-
-    line_to_find = "QtCore.QMetaObject.connectSlotsByName("
+    line_to_find = "QtCore.QMetaObject.connectSlotsByName(Form)"
     match = False # This variable is set to true when line_to_find is found in the file
 
-    # Delete old ui (the python one) file and create a new file "add_assets_to_layout.py"
-    os.remove(cur_dir + "\\add_assets_to_layout.py")
-    f = open(cur_dir + "\\add_assets_to_layout.py", "a")
+    # Delete old ui (the python one) file and create a new file "main_window.py"
+    os.remove(cur_dir + "\\main_window.py")
+    f = open(cur_dir + "\\main_window.py", "a")
     
     # Loop over each line and write "return Form" when the line_to_find is found. Otherwise just write each line
     # exactly the same
     for line in tmp_file:
         if match:
             f.write("        \n")
-            f.write("        return self\n")
+            f.write("        return Form\n")
             match = False
         if line_to_find in line:  # if string is found, then set match to True
             f.write(line)
@@ -62,3 +61,5 @@ def convert_ui():
 
 if __name__ == "__main__":
     convert_ui()
+    raw_input("Please enter a key to exit...")
+

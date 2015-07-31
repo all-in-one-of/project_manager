@@ -9,6 +9,7 @@ import shutil
 from threading import Thread
 import datetime
 
+from ui.add_assets_to_layout_tmp import Ui_addAssetsToLayoutWidget
 
 class AssetLoader(object):
     def __init__(self):
@@ -69,7 +70,7 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
 
-
+        self.addAssetsToLayoutBtn.clicked.connect(self.add_assets_to_layout)
 
 
         self.addProjectBtn.clicked.connect(self.add_project)
@@ -346,6 +347,7 @@ class AssetLoader(object):
         self.assetImg.setData(self.no_img_found)
         self.assetImg.setPixmap(qpixmap)
 
+        self.addAssetsToLayoutBtn.hide()
         self.updateThumbBtn.hide()
 
         if self.selected_department_name == "ref":
@@ -552,12 +554,6 @@ class AssetLoader(object):
                 self.publish_process.finished.connect(self.publish_process_finished)
                 self.publish_process.readyReadStandardOutput.connect(self.read_data)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
-
-    def read_data(self):
-        while self.publish_process.canReadLine():
-
-            out = self.publish_process.readLine()
-            print(out)
 
     def publish_process_finished(self):
         # Check if current asset has been favorited by someone.
@@ -884,8 +880,108 @@ class AssetLoader(object):
         # Show info message
         self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
 
+    def add_assets_to_layout(self):
+
+        AddAssetsToLayoutWindow(self)
 
 
-class AddAssetsToLayoutWindow(object):
-    def __init__(self):
-        pass
+class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
+    def __init__(self, main):
+        super(AddAssetsToLayoutWindow, self).__init__()
+
+        self.main = main
+
+        # Initialize the guis
+        self.add_assets_layout = self.setupUi(self)
+        self.main.Lib.apply_style(self.main, self)
+
+        # Connections
+        self.availableAssetsListWidget.itemSelectionChanged.connect(left_list_item_clicked)
+        self.assetsToAddListWidget.itemSelectionChanged.connect(right_list_item_clicked)
+
+        self.addAssetBtn.clicked.connect(self.add_asset_to_list)
+        self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
+
+        self.assets_in_layout = []
+        self.assets_in_layout_db = []
+
+        self.get_assets_from_layout = QtCore.QProcess(self)
+        self.get_assets_from_layout.readyRead.connect(self.get_assets_from_process_output)
+        self.get_assets_from_layout.finished.connect(self.finished)
+        self.get_assets_from_layout.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_get_assets_in_layout.py", self.main.selected_asset.full_path])
+
+    def get_assets_from_process_output(self):
+        while self.get_assets_from_layout.canReadLine():
+            out = str(self.get_assets_from_layout.readLine())
+            self.assets_in_layout.append(out)
+
+    def finished(self):
+        self.assets_in_layout = [i.strip(' \t\n\r') for i in self.assets_in_layout]
+
+        # Get only last three / of all paths (ex: H:/01-NAD/_pipeline/test_project_files/assets/lay/nat_xxx_xxxx_lay_colonne_out.hda = \assets\lay\nat_xxx_xxxx_lay_colonne_out.hda)
+        self.assets_in_layout = ["\\" + "\\".join(i.split("/")[-3:len(i.split("/"))]) for i in self.assets_in_layout]
+        self.assets_in_layout_db = []
+        for asset_path in self.assets_in_layout: # Get database entries from assets path
+            asset_from_db = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_path=?''', (asset_path,)).fetchone()
+            asset_id = asset_from_db[0]
+            asset = self.main.Asset(self.main, asset_id)
+            asset.get_infos_from_id()
+            self.assets_in_layout_db.append(asset)
+
+        # Get IDs of all assets in layout
+        self.assets_in_layout_db_id = [i.id for i in self.assets_in_layout_db]
+        # Get all layout assets
+        self.all_layout_assets = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_type="lay" AND asset_extension="hda"''').fetchall()
+
+
+        # Add available assets to left list if they're not already in layout scene
+        for asset in self.all_layout_assets:
+            asset_id = asset[0]
+            asset_name = asset[4]
+            if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
+                item = QtGui.QListWidgetItem(asset_name)
+                item.setData(QtCore.Qt.UserRole, asset)
+                self.availableAssetsListWidget.addItem(item)
+
+        self.exec_()
+
+    def left_list_item_clicked(self):
+        self.selected_asset = self.availableAssetsListWidget.selectedItems()[0]
+        self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        self.selected_asset = self.main.Asset(self.main, self.selected_asset[0])
+        self.selected_asset.get_infos_from_id()
+        self.selected_asset.print_asset()
+
+
+    def right_list_item_clicked(self):
+        self.selected_asset = self.assetsToAddListWidget.selectedItems()[0]
+        self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        self.selected_asset = self.main.Asset(self.main, self.selected_asset[0])
+        self.selected_asset.get_infos_from_id()
+        self.selected_asset.print_asset()
+
+    def add_asset_to_list(self):
+        # Create listwidget item from selected asset
+        item = QtGui.QListWidgetItem(self.selected_asset.name)
+        item.setData(QtCore.Qt.UserRole, self.selected_asset)
+
+        # Add item to right list
+        self.assetsToAddListWidget.addItem(item)
+
+        # Remove item from left list
+        for item in self.availableAssetsListWidget.selectedItems():
+            self.availableAssetsListWidget.takeItem(self.availableAssetsListWidget.row(item))
+
+    def remove_asset_from_list(self):
+        # Create listwidget item from selected asset
+        item = QtGui.QListWidgetItem(self.selected_asset.name)
+        item.setData(QtCore.Qt.UserRole, self.selected_asset)
+
+        # Add item to left list
+        self.availableAssetsListWidget.addItem(item)
+
+        # Remove item from right list
+        for item in self.assetsToAddListWidget.selectedItems():
+            self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(item))
+
+

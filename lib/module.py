@@ -205,7 +205,7 @@ class Lib(object):
 
         self.db.commit()
 
-    def message_box(self, type="Warning", text="warning", no_button=False):
+    def message_box(self, type="Warning", text="warning", no_button=False, exec_now=True):
 
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
@@ -215,10 +215,12 @@ class Lib(object):
         self.msgBox.setWindowTitle("Manager")
         self.msgBox.setText(text)
 
-        self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
-        self.msgBox_okBtn.setStyleSheet("width: 64px;")
-        self.msgBox.setDefaultButton(self.msgBox_okBtn)
-        self.msgBox_okBtn.clicked.connect(self.msgBox.accept)
+        self.msgBox.setStandardButtons(0)
+
+        #self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
+        #self.msgBox_okBtn.setStyleSheet("width: 64px;")
+        #self.msgBox.setDefaultButton(self.msgBox_okBtn)
+        #self.msgBox_okBtn.clicked.connect(self.msgBox.accept)
 
         if no_button == True:
             self.msgBox_noBtn = self.msgBox.addButton(QtGui.QMessageBox.No)
@@ -232,7 +234,10 @@ class Lib(object):
         elif type == "info":
             self.msgBox.setIcon(QtGui.QMessageBox.Information)
 
-        return self.msgBox.exec_()
+        if exec_now == True:
+            return self.msgBox.exec_()
+        else:
+            return self.msgBox
 
     def thumbnail_creation_box(self, text=""):
         self.thumbnail_creation_box = QtGui.QMessageBox()
@@ -476,6 +481,11 @@ class Lib(object):
     def remove_log_entry_from_asset_id(self, asset_id):
         self.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (asset_id,))
         self.db.commit()
+
+    def read_process_data(self, process):
+        while process.canReadLine():
+            out = process.readLine()
+            print(out)
 
 class DesktopWidget(QtGui.QWidget):
 

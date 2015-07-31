@@ -1772,7 +1772,7 @@ class Ui_Form(object):
         self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
-        return Form
+        return self
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Manager", None))

@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="QFrame" name="frame_2">
+    <widget class="QFrame" name="listsFrame">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
@@ -27,7 +27,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QFrame" name="frame_3">
+       <widget class="QFrame" name="addAssetsListFrame">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -39,23 +39,23 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="availableAssetsLbl">
            <property name="text">
             <string>Available assets</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidget"/>
+          <widget class="QListWidget" name="availableAssetsListWidget"/>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit"/>
+          <widget class="QLineEdit" name="filterAssetsLineEdit"/>
          </item>
         </layout>
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="frame">
+       <widget class="QFrame" name="addRemoveAssetFrame">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -67,7 +67,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="addAssetBtn">
            <property name="maximumSize">
             <size>
              <width>32</width>
@@ -80,7 +80,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_2">
+          <widget class="QPushButton" name="removeAssetBtn">
            <property name="maximumSize">
             <size>
              <width>32</width>
@@ -96,7 +96,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="frame_4">
+       <widget class="QFrame" name="assetsToAddFrame">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -108,14 +108,14 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_3">
+          <widget class="QLabel" name="assetsToAddLbl">
            <property name="text">
             <string>Assets to add</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidget_2"/>
+          <widget class="QListWidget" name="assetsToAddListWidget"/>
          </item>
         </layout>
        </widget>
@@ -124,7 +124,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="assetPreviewLbl">
      <property name="minimumSize">
       <size>
        <width>500</width>
