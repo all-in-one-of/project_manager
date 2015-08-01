@@ -392,8 +392,6 @@ class ReferenceTab(object):
             self.all_references_ListWidgetItems.remove(ref)
             self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
 
-
-
     def reference_doubleClicked(self):
         '''
         Trigger action based when user double click an item

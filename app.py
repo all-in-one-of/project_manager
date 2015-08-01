@@ -163,7 +163,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Setup disk usage progress bar
         #disk_usage = Lib.get_folder_space(self)
-        disk_usage = 10000
+        disk_usage = 1.819
         disk_usage = int(float(disk_usage) * 1000) # Multiply disk usage by 1000. Ex: 1.819 to 1819
         disk_usage = (2000 * int(disk_usage)) / 1862 # 2TO in theory = 1.862GB in reality. Remapping real disk usage to the theoric one
         self.diskUsageProgressBar.setFormat('{0}/2000 GB'.format(str(disk_usage)))
@@ -523,7 +523,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             css = QtCore.QFile(self.cur_path + "\\media\\cleanlooks.css")
             css.open(QtCore.QIODevice.ReadOnly)
             if css.isOpen():
-                self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+                self.Form.setStyleSheet(QtCore.QVariant(css.readAll()).toString().replace("checkbox|placeholder", self.cur_path.replace("\\", "/") + "/media/checkbox.png"))
         elif self.themePrefComboBox.currentIndex() == 2:
             self.prefBckGroundColorSlider.setValue(255)
             self.theme = 2

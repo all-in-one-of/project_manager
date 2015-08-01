@@ -37,7 +37,7 @@ QCheckBox::indicator{
 
 QCheckBox::indicator:checked
 {
-    image:url(Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_asset_manager/media/checkbox.png);
+    image:url(checkbox|placeholder);
 }
 
 

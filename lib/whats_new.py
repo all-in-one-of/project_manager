@@ -12,7 +12,7 @@ class WhatsNew(object):
 
     def __init__(self):
 
-        if self.username == "thoudon" or self.username == "lclavet":
+        if self.username == "yjobin" or self.username == "lclavet":
             self.addBlogPostFrame.show()
         else:
             self.addBlogPostFrame.hide()

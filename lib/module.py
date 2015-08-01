@@ -68,7 +68,7 @@ class Lib(object):
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
         self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
         self.create_thumbnail_process.finished.connect(self.create_thumbnail_finished)
-        self.create_thumbnail_process.start("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\Blender\\2.72\\blender-app.exe", ["-b",
+        self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b",
                                                                                                                                         self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend",
                                                                                                                                         "--python-text",
                                                                                                                                         "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
@@ -215,8 +215,6 @@ class Lib(object):
         self.msgBox.setWindowTitle("Manager")
         self.msgBox.setText(text)
 
-        self.msgBox.setStandardButtons(0)
-
         self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
         self.msgBox_okBtn.setStyleSheet("width: 64px;")
         self.msgBox.setDefaultButton(self.msgBox_okBtn)
@@ -285,7 +283,7 @@ class Lib(object):
             css = QtCore.QFile(self.cur_path + "\\media\\style.css")
             css.open(QtCore.QIODevice.ReadOnly)
             if css.isOpen():
-                form.setStyleSheet(QtCore.QVariant(css.readAll()).toString())
+                form.setStyleSheet(QtCore.QVariant(css.readAll()).toString().replace("checkbox|placeholder", self.cur_path.replace("\\", "/") + "/media/checkbox.png"))
             css.close()
 
         elif int(self.theme) == 2:

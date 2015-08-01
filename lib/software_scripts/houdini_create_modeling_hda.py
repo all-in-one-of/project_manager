@@ -93,7 +93,7 @@ copnet_node.moveToGoodPosition()
 
 # Create Subnet and HDA for Material Node
 material_node = hou.node("/obj").collapseIntoSubnet([shopnet_node, copnet_node])
-material_node = material_node.createDigitalAsset(asset_name + "-shd", shading_hda_path, asset_name)
+material_node = material_node.createDigitalAsset(asset_name + "-shd", shading_hda_path, asset_name + "-shd")
 material_node.setName("shader_building")
 material_node.moveToGoodPosition()
 

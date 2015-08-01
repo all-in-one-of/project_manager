@@ -547,12 +547,10 @@ class AssetLoader(object):
             elif self.selected_asset.extension == "ma":
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
-                self.publish_process.readyReadStandardOutput.connect(self.read_data)
                 self.publish_process.start(self.maya_batch_path, ["H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path])
             elif self.selected_asset.extension == "scn":
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
-                self.publish_process.readyReadStandardOutput.connect(self.read_data)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
 
     def publish_process_finished(self):
@@ -901,6 +899,8 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
         self.addAssetBtn.clicked.connect(self.add_asset_to_list)
         self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
+        self.addAssetsToLayoutBtn.clicked.connect(self.add_assets_to_layout)
+
 
         self.assets_in_layout = []
         self.assets_in_layout_db = []
@@ -916,9 +916,8 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             self.assets_in_layout.append(out)
 
     def finished(self):
+        # Remove whitespace, new line, and other special characters from assets paths.
         self.assets_in_layout = [i.strip(' \t\n\r') for i in self.assets_in_layout]
-        #item = QtGui.QListWidgetItem("Bonjour")
-        #self.availableAssetsListWidget.addItem("Bonjour")
 
         # Get only last three / of all paths (ex: H:/01-NAD/_pipeline/test_project_files/assets/lay/nat_xxx_xxxx_lay_colonne_out.hda = \assets\lay\nat_xxx_xxxx_lay_colonne_out.hda)
         self.assets_in_layout = ["\\" + "\\".join(i.split("/")[-3:len(i.split("/"))]) for i in self.assets_in_layout]
@@ -942,7 +941,10 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 asset_object = self.main.Asset(self.main, asset_id)
                 asset_object.get_infos_from_id()
                 item = QtGui.QListWidgetItem(asset_object.name)
-                item.setIcon(QtGui.QIcon(asset_object.full_img_path))
+                if not os.path.isfile(asset_object.full_img_path):
+                    item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                else:
+                    item.setIcon(QtGui.QIcon(asset_object.full_img_path))
                 item.setData(QtCore.Qt.UserRole, asset_object)
                 self.availableAssetsListWidget.addItem(item)
 
@@ -953,14 +955,14 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             self.selected_asset = self.availableAssetsListWidget.selectedItems()[0]
             self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         except:
-            self.selected_asset == None
+            self.selected_asset = None
 
     def right_list_item_clicked(self):
         try:
             self.selected_asset = self.assetsToAddListWidget.selectedItems()[0]
             self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         except:
-            self.selected_asset == None
+            self.selected_asset = None
 
     def add_asset_to_list(self):
         # Create listwidget item from selected asset
@@ -988,4 +990,19 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for item in self.assetsToAddListWidget.selectedItems():
             self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(item))
 
+    def add_assets_to_layout(self):
+        assets_list = []
+        for i in xrange(self.assetsToAddListWidget.count()):
+            list_item = self.assetsToAddListWidget.item(i)
+            asset = list_item.data(QtCore.Qt.UserRole).toPyObject()
+            assets_list.append(asset.full_path.replace("\\", "/"))
 
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(self.process_finished)
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_import_multiple_hdas_into_layout.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_list)])
+
+
+    def process_finished(self):
+        self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported into layout scene!")
+        self.houdini_hda_process.kill()
