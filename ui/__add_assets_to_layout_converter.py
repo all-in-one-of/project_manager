@@ -21,9 +21,8 @@ def convert_ui():
         script_path = sys.argv[1] # Get path of dropped file
 
     # Converts the .ui file to a temp .py file
-    subprocess.Popen(["python.exe", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\WinPython\\python-2.7.9.amd64\\Lib\\site-packages\\PyQt4\\uic\\pyuic.py", ui_path, "-o",
+    subprocess.Popen(["python.exe", "H:\\01-NAD\\Divers\\WinPython\\python-2.7.9.amd64\\Lib\\site-packages\\PyQt4\\uic\\pyuic.py", ui_path, "-o",
                       window_tmp_path, "-x"])
-
     time.sleep(0.5)
 
     # Retrieve all lines from converted python file in tmp_file list
@@ -40,7 +39,10 @@ def convert_ui():
     match = False # This variable is set to true when line_to_find is found in the file
 
     # Delete old ui (the python one) file and create a new file "add_assets_to_layout.py"
-    os.remove(cur_dir + "\\add_assets_to_layout.py")
+    try:
+        os.remove(cur_dir + "\\add_assets_to_layout.py")
+    except:
+        pass
     f = open(cur_dir + "\\add_assets_to_layout.py", "a")
     
     # Loop over each line and write "return Form" when the line_to_find is found. Otherwise just write each line
@@ -62,3 +64,4 @@ def convert_ui():
 
 if __name__ == "__main__":
     convert_ui()
+    raw_input("Please enter a key to exit...")

@@ -49,7 +49,11 @@ class Asset(object):
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
-        self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
+        if self.type == "lay" and self.extension == "hda":
+            self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
+        else:
+            self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
+
         self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_quad", "jpg")
         self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_turn", "mp4")
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
@@ -226,7 +230,10 @@ class Asset(object):
                                                                         self.shot, self.name, self.version,
                                                                         self.extension)
         self.full_path = self.project_path + self.path
-        self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
+        if self.type == "lay" and self.extension == "hda":
+            self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
+        else:
+            self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_full", "jpg")
         self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_quad", "jpg")
         self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out_turn", "mp4")
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")

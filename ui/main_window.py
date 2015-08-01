@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Fri Jul 31 15:07:03 2015
+# Created: Fri Jul 31 20:04:40 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1772,7 +1772,7 @@ class Ui_Form(object):
         self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
-        return self
+        return Form
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Manager", None))

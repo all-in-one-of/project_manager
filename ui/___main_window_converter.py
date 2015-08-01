@@ -12,7 +12,7 @@ def convert_ui():
     cur_dir = os.path.dirname(os.path.realpath(__file__))
     ui_path = cur_dir + "\\main_window.ui"
     
-    window_tmp_path = os.path.dirname(cur_dir) + "\\main_window_tmp.py"
+    window_tmp_path = cur_dir + "\\main_window_tmp.py"
 
     # Check wether or not a file was dropped on the .py file
     if len(sys.argv) < 2:
@@ -21,7 +21,7 @@ def convert_ui():
         script_path = sys.argv[1] # Get path of dropped file
 
     # Converts the .ui file to a temp .py file
-    subprocess.Popen(["python.exe", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\WinPython\\python-2.7.9.amd64\\Lib\\site-packages\\PyQt4\\uic\\pyuic.py", ui_path, "-o",
+    subprocess.Popen(["python.exe", "H:\\01-NAD\\Divers\\WinPython\\python-2.7.9.amd64\\Lib\\site-packages\\PyQt4\\uic\\pyuic.py", ui_path, "-o",
                       window_tmp_path, "-x"])
 
     time.sleep(0.5)
@@ -39,7 +39,10 @@ def convert_ui():
     match = False # This variable is set to true when line_to_find is found in the file
 
     # Delete old ui (the python one) file and create a new file "main_window.py"
-    os.remove(cur_dir + "\\main_window.py")
+    try:
+        os.remove(cur_dir + "\\main_window.py")
+    except:
+        pass
     f = open(cur_dir + "\\main_window.py", "a")
     
     # Loop over each line and write "return Form" when the line_to_find is found. Otherwise just write each line

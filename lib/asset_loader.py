@@ -9,7 +9,7 @@ import shutil
 from threading import Thread
 import datetime
 
-from ui.add_assets_to_layout_tmp import Ui_addAssetsToLayoutWidget
+from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
 class AssetLoader(object):
     def __init__(self):
@@ -917,6 +917,8 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
     def finished(self):
         self.assets_in_layout = [i.strip(' \t\n\r') for i in self.assets_in_layout]
+        #item = QtGui.QListWidgetItem("Bonjour")
+        #self.availableAssetsListWidget.addItem("Bonjour")
 
         # Get only last three / of all paths (ex: H:/01-NAD/_pipeline/test_project_files/assets/lay/nat_xxx_xxxx_lay_colonne_out.hda = \assets\lay\nat_xxx_xxxx_lay_colonne_out.hda)
         self.assets_in_layout = ["\\" + "\\".join(i.split("/")[-3:len(i.split("/"))]) for i in self.assets_in_layout]
@@ -933,42 +935,37 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         # Get all layout assets
         self.all_layout_assets = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_type="lay" AND asset_extension="hda"''').fetchall()
 
-
         # Add available assets to left list if they're not already in layout scene
         for asset in self.all_layout_assets:
             asset_id = asset[0]
-            asset_name = asset[4]
             if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
                 asset_object = self.main.Asset(self.main, asset_id)
                 asset_object.get_infos_from_id()
                 item = QtGui.QListWidgetItem(asset_object.name)
+                item.setIcon(QtGui.QIcon(asset_object.full_img_path))
                 item.setData(QtCore.Qt.UserRole, asset_object)
                 self.availableAssetsListWidget.addItem(item)
 
         self.exec_()
 
     def left_list_item_clicked(self):
-        self.selected_asset = self.availableAssetsListWidget.selectedItems()[0]
-        self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
-        self.load_image_from_asset()
+        try:
+            self.selected_asset = self.availableAssetsListWidget.selectedItems()[0]
+            self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        except:
+            self.selected_asset == None
 
     def right_list_item_clicked(self):
-        self.selected_asset = self.assetsToAddListWidget.selectedItems()[0]
-        self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
-        self.load_image_from_asset()
-
-    def load_image_from_asset(self):
-        replaced_path = self.selected_asset.full_path.replace("lay", "mod").replace(".hda", "_full.jpg")
-        thumb_path = os.path.split(replaced_path)[0] + "\\.thumb\\"
-        img_path =  os.path.split(replaced_path)[1]
-        full_img_path = thumb_path + img_path
-        qpixmap = QtGui.QPixmap(full_img_path)
-        qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-        self.assetPreviewLbl.setPixmap(qpixmap)
+        try:
+            self.selected_asset = self.assetsToAddListWidget.selectedItems()[0]
+            self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        except:
+            self.selected_asset == None
 
     def add_asset_to_list(self):
         # Create listwidget item from selected asset
         item = QtGui.QListWidgetItem(self.selected_asset.name)
+        item.setIcon(QtGui.QIcon(self.selected_asset.full_img_path))
         item.setData(QtCore.Qt.UserRole, self.selected_asset)
 
         # Add item to right list
@@ -981,6 +978,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def remove_asset_from_list(self):
         # Create listwidget item from selected asset
         item = QtGui.QListWidgetItem(self.selected_asset.name)
+        item.setIcon(QtGui.QIcon(self.selected_asset.full_img_path))
         item.setData(QtCore.Qt.UserRole, self.selected_asset)
 
         # Add item to left list
