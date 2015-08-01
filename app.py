@@ -61,11 +61,11 @@ from lib.whats_new import WhatsNew
 from lib.asset import Asset
 from lib.asset_loader import AssetLoader
 from lib.reference_moodboard import Moodboard_Creator
+from lib.log import LogEntry
 
 
 
-
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, Task, AssetLoader, Moodboard_Creator):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator):
     def __init__(self):
         super(Main, self).__init__()
 
@@ -80,6 +80,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.CommentWidget = CommentWidget
         self.Task = Task
         self.Asset = Asset
+        self.LogEntry = LogEntry
         self.Moodboard_Creator = Moodboard_Creator
 
         # Database Setup
@@ -118,6 +119,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                                          "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
                                          "Simulation": "sim", "Shading": "shd", "Layout": "lay", "DMP": "dmp",
                                          "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
+        self.departments_longname = {"spt": "Script", "stb": "Storyboard", "ref": "References", "cpt": "Concepts",
+                                      "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
+                                      "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP",
+                                      "cmp": "Compositing", "edt": "Editing", "rnd": "RnD"}
         refresh_icon = QtGui.QIcon(self.cur_path + "\\media\\refresh.png")
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
@@ -505,8 +510,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.setup_tags()
         self.mt_item_added = True
         MyTasks.mt_add_tasks_from_database(self)
-        WhatsNew.load_whats_new(self)
-        ReferenceTab.refresh_reference_list(self)
+        self.WhatsNew.load_whats_new(self)
+        self.ReferenceTab.refresh_reference_list(self)
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:

@@ -215,8 +215,6 @@ class Lib(object):
         self.msgBox.setWindowTitle("Manager")
         self.msgBox.setText(text)
 
-        self.msgBox.setStandardButtons(0)
-
         self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
         self.msgBox_okBtn.setStyleSheet("width: 64px;")
         self.msgBox.setDefaultButton(self.msgBox_okBtn)
