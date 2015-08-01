@@ -344,19 +344,26 @@ class TaskManager(object):
         task = self.Task(self, task_id)
         task.get_infos_from_id()
 
-        # If clicked widget is a pushbutton, then confirm task
+        # If clicked widget is a pushbutton, then confirm/unconfirm task
         if type(clicked_widget) == QtGui.QPushButton:
             if task.confirmation == "0":
                 clicked_widget.setText("UnConfirm")
                 task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
                 task.change_confirmation(1)
-                self.add_log_entry(text="{0} assigned a new {1} task to {2}".format(self.members[self.username], task.department, self.members[task.assignation]), people=[self.members[task.assignation]])
+                # Add Log Entry
+                log_entry = self.LogEntry(self, 0, task.id, [], [task.assignation], self.username, task.assignation, "task", "{0} has assigned a new {1} task to {2}: {3}.".format(self.members[self.username], task.department, self.members[task.assignation], task.description), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+                log_entry.add_log_to_database()
             else:
                 clicked_widget.setText("Confirm")
                 task_id_widget.setBackground(QtGui.QColor(135, 45, 44))
                 task.change_confirmation(0)
+                # Delete Log Entry
+                self.cursor.execute('''DELETE FROM log WHERE log_dependancy=? AND log_type="task"''', (task.id,))
+                self.db.commit()
             self.tmTableWidget.resizeColumnsToContents()
             self.tmTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+
+
             return
 
         if task_description != task.description: task.change_description(task_description)

@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>0</height>
+    <width>1453</width>
+    <height>923</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -324,7 +324,13 @@
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>0</height>
+                 <height>230</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>235</height>
                 </size>
                </property>
                <property name="frameShape">
@@ -4101,10 +4107,90 @@
               <number>3</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="showOnlyMeWhatsNew">
-               <property name="text">
-                <string>Show only news concerning me</string>
+              <widget class="QFrame" name="frame_4">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
                </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_20">
+                <property name="margin">
+                 <number>3</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="showOnlyMeWhatsNew">
+                  <property name="text">
+                   <string>Show only news concerning me</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="filterNewsByTypeFrame">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <property name="margin">
+                 <number>3</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="showNewPublishesCheckBox">
+                  <property name="text">
+                   <string>Show Publishes</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showNewAssetsCheckBox">
+                  <property name="text">
+                   <string>Show New Assets</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showNewTasksCheckBox">
+                  <property name="text">
+                   <string>Show New Tasks</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showNewImagesCheckBox">
+                  <property name="text">
+                   <string>Show New Images</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showNewCommentsCheckBox">
+                  <property name="text">
+                   <string>Show New comments</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
              <item>
@@ -4121,7 +4207,7 @@
                   <x>0</x>
                   <y>0</y>
                   <width>1043</width>
-                  <height>359</height>
+                  <height>555</height>
                  </rect>
                 </property>
                </widget>
@@ -4129,39 +4215,6 @@
              </item>
              <item>
               <widget class="QPushButton" name="markAllNewsAsReadBtn">
-               <property name="text">
-                <string>Mark all as read</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QScrollArea" name="whatsNewMessagesScrollArea">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>200</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="blogScrollAreaWidgetContents">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>1043</width>
-                  <height>200</height>
-                 </rect>
-                </property>
-               </widget>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="markAllBlogPostsAsReadBtn">
                <property name="text">
                 <string>Mark all as read</string>
                </property>

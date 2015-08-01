@@ -12,7 +12,7 @@ import pafy
 from collections import Counter
 import shutil
 import webbrowser
-from datetime import datetime
+import datetime
 
 
 class ReferenceTab(object):

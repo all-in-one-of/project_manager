@@ -395,6 +395,10 @@ class AssetLoader(object):
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
+        else:
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
         self.verticalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
@@ -708,7 +712,7 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "lay":
             process = QtCore.QProcess(self)
-            process.start(self.houdini_path, [self.selected_asset.full_path])
+            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "rig":
             process = QtCore.QProcess(self)
@@ -1012,7 +1016,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_import_multiple_hdas_into_layout.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_list)])
 
-
     def process_finished(self):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported into layout scene!")
         self.houdini_hda_process.kill()
+        self.assetsToAddListWidget.clear()

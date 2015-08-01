@@ -8,7 +8,9 @@ class LogEntry(object):
         self.dependancy = dependancy
         if len(viewed_by) == 0:
             self.viewed_by = ["obolduc", "vdelbroucq", "lclavet", "costiguy", "dcayerdesforges", "yshan", "earismendez", "jberger", "lgregoire", "yjobin", "cgonnord", "mroz", "slachapelle", "thoudon", "erodrigue", "mbeaudoin", "mchretien", "achaput"]
-        else:
+        elif "," in viewed_by:
+            self.viewed_by = viewed_by.split(",")
+        elif type(viewed_by) == list:
             self.viewed_by = viewed_by
         self.members_concerned = members_concerned
         self.created_by = created_by
@@ -25,3 +27,14 @@ class LogEntry(object):
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
+        #self.main.WhatsNew.create_feed_entry(self.main, type=self.type, members_concerned=self.members_concerned, dependancy=self.dependancy, created_by=self.created_by, log_to=self.log_to, description=self.description, log_time=self.time)
+
+
+    def remove_log_from_database(self):
+        self.main.cursor.execute('''DELETE FROM log WHERE log_id=?''', (self.id,))
+        self.main.db.commit()
+
+    def update_viewed_by(self):
+        self.viewed_by.remove(self.main.username)
+        self.main.cursor.execute('''UPDATE log SET viewed_by=? WHERE log_id=?''', (",".join(self.viewed_by), self.id,))
+        self.main.db.commit()

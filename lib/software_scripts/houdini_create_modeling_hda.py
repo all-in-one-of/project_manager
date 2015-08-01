@@ -58,6 +58,11 @@ attribCopy_node.setColor(hou.Color((0.867, 0, 0)))
 out_node.setColor(hou.Color((0, 0, 0)))
 out_layout_node.setColor(hou.Color((0, 0, 0)))
 
+attribCopy_node.parm("srcgrouptype").set(2)
+attribCopy_node.parm("destgrouptype").set(2)
+attribCopy_node.parm("attrib").set(2)
+attribCopy_node.parm("attribname").set("shop_materialpath")
+
 out_node.setDisplayFlag(True)
 out_node.setRenderFlag(True)
 

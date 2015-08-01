@@ -222,11 +222,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Initialize modules and connections
         AssetLoader.__init__(self)
-        ReferenceTab.__init__(self)
-        TaskManager.__init__(self)
-        CommentWidget.__init__(self)
-        MyTasks.__init__(self)
-        WhatsNew.__init__(self)
+        self.ReferenceTab.__init__(self)
+        self.TaskManager.__init__(self)
+        self.CommentWidget.__init__(self)
+        self.MyTasks.__init__(self)
+        self.WhatsNew.__init__(self)
+
+        self.WhatsNew.load_whats_new(self)
 
         #self.check_news_thread = CheckNews(self)
         #self.check_news_thread.daemon = True
@@ -506,12 +508,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def refresh_all(self):
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
-        self.WhatsNew.load_blog_posts(self)
         self.setup_tags()
         self.mt_item_added = True
         MyTasks.mt_add_tasks_from_database(self)
-        self.WhatsNew.load_whats_new(self)
         self.ReferenceTab.refresh_reference_list(self)
+        self.WhatsNew.load_whats_new(self)
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:
