@@ -12,6 +12,7 @@ import datetime
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
 class AssetLoader(object):
+
     def __init__(self):
 
         self.favorite_icon = QtGui.QIcon(self.cur_path + "\\media\\favorite.png")
@@ -232,6 +233,10 @@ class AssetLoader(object):
         self.versions = []
         self.assetList.clear()
         self.versionList.clear()
+
+        self.departmentList.clearSelection()
+        self.assetList.clearSelection()
+        self.versionList.clearSelection()
 
         all_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,)).fetchall()
         for asset in all_assets:
@@ -461,7 +466,7 @@ class AssetLoader(object):
         if asset.type == "mod":
             # Set last published date label
             day_today = datetime.datetime.now()
-            number_of_days_since_last_publish = day_today - self.selected_asset.last_publish_as_date
+            number_of_days_since_last_publish = day_today - asset.last_publish_as_date
             number_of_days_since_last_publish = number_of_days_since_last_publish.days
 
             if number_of_days_since_last_publish == 0:
@@ -472,7 +477,7 @@ class AssetLoader(object):
             else:
                 number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
 
-            self.lastPublishedLbl.setText("Last published by: {0} ({1})".format(self.selected_asset.last_publish, number_of_days_since_last_publish))
+            self.lastPublishedLbl.setText("Last published by: {0} ({1})".format(asset.last_publish, number_of_days_since_last_publish))
 
     def versionList_DoubleClicked(self):
         selected_version = self.versionList.selectedItems()[0]
@@ -562,7 +567,8 @@ class AssetLoader(object):
             favorited_by = []
 
         # Add log entry saying that the asset has been published.
-        self.Lib.add_entry_to_log(self, "All", favorited_by, self.selected_asset.id, "publish", "Asset {0} of type {1} has been published by {2}".format(self.selected_asset.name, self.selected_asset.type, self.selected_asset.last_publish))
+        log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
         self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
@@ -874,6 +880,10 @@ class AssetLoader(object):
 
         # Update last publish
         self.update_last_published_time_lbl(asset)
+
+        # Add Log Entry
+        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "asset", "{0} has created a new {1} asset ({2}).".format(self.members[self.username], self.departments_longname[asset.type], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
 
         # Show info message
         self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")

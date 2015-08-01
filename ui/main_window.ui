@@ -4108,18 +4108,23 @@
               </widget>
              </item>
              <item>
-              <widget class="QTreeWidget" name="whatsNewTreeWidget">
+              <widget class="QScrollArea" name="newsFeedScrollArea">
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::NoFrame</enum>
                </property>
-               <attribute name="headerVisible">
-                <bool>false</bool>
-               </attribute>
-               <column>
-                <property name="text">
-                 <string notr="true">1</string>
+               <property name="widgetResizable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="newsFeedScrollAreaWidgetContents">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>1043</width>
+                  <height>359</height>
+                 </rect>
                 </property>
-               </column>
+               </widget>
               </widget>
              </item>
              <item>

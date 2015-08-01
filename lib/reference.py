@@ -12,6 +12,7 @@ import pafy
 from collections import Counter
 import shutil
 import webbrowser
+from datetime import datetime
 
 
 class ReferenceTab(object):
@@ -621,8 +622,9 @@ class ReferenceTab(object):
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
             asset.change_dependency(URL)
 
-        # Add entry to log
-        self.Lib.add_entry_to_log(self, "All", asset.id, "image", "{0} has added a new image named {1}".format(self.members[asset.creator], asset.name))
+        # Add Log Entry
+        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "image", "{0} has added a new image from web named '{1}'.".format(self.members[self.username], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
 
         # Add item to lists
         new_item = QtGui.QListWidgetItem()
@@ -692,7 +694,6 @@ class ReferenceTab(object):
             self.ref_assets_instances.append(asset)
             assets.append(asset)
 
-
             # Rename file and place it in correct folder
             os.rename(file_path, asset.full_path)
 
@@ -704,8 +705,9 @@ class ReferenceTab(object):
                     image_width = 1920
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
-            # Add entry to log
-            self.Lib.add_entry_to_log(self, "All", asset.id, "image", "{0} has added a new image named {1}".format(self.members[asset.creator], asset.name))
+            # Add Log Entry
+            log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "image", "{0} has added a new image from files named '{1}'.".format(self.members[self.username], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+            log_entry.add_log_to_database()
 
             # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
@@ -756,8 +758,9 @@ class ReferenceTab(object):
         image_width = downloaded_img.size[0]
         self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
-        # Add entry to log
-        self.Lib.add_entry_to_log(self, "All", asset.id, "image", "{0} has added a new image named {1}".format(self.members[asset.creator], asset.name))
+        # Add Log Entry
+        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "image", "{0} has created a new image from screenshot named '{1}'.".format(self.members[self.username], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
 
         # Add reference to reference list
         new_item = QtGui.QListWidgetItem()

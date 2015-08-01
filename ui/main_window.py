@@ -2,7 +2,9 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sat Aug 01 09:11:26 2015
+
+# Created: Sat Aug 01 09:16:12 2015
+
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1638,12 +1640,15 @@ class Ui_Form(object):
         self.showOnlyMeWhatsNew = QtGui.QCheckBox(self.whatsNewTab)
         self.showOnlyMeWhatsNew.setObjectName(_fromUtf8("showOnlyMeWhatsNew"))
         self.verticalLayout_31.addWidget(self.showOnlyMeWhatsNew)
-        self.whatsNewTreeWidget = QtGui.QTreeWidget(self.whatsNewTab)
-        self.whatsNewTreeWidget.setFrameShape(QtGui.QFrame.Box)
-        self.whatsNewTreeWidget.setObjectName(_fromUtf8("whatsNewTreeWidget"))
-        self.whatsNewTreeWidget.headerItem().setText(0, _fromUtf8("1"))
-        self.whatsNewTreeWidget.header().setVisible(False)
-        self.verticalLayout_31.addWidget(self.whatsNewTreeWidget)
+        self.newsFeedScrollArea = QtGui.QScrollArea(self.whatsNewTab)
+        self.newsFeedScrollArea.setFrameShape(QtGui.QFrame.NoFrame)
+        self.newsFeedScrollArea.setWidgetResizable(True)
+        self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
+        self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 359))
+        self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
+        self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
+        self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
         self.markAllNewsAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
         self.markAllNewsAsReadBtn.setObjectName(_fromUtf8("markAllNewsAsReadBtn"))
         self.verticalLayout_31.addWidget(self.markAllNewsAsReadBtn)
