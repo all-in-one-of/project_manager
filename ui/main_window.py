@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Fri Jul 31 20:04:40 2015
+# Created: Sat Aug 01 09:16:12 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1632,25 +1632,31 @@ class Ui_Form(object):
         self.whatsNewTab = QtGui.QWidget()
         self.whatsNewTab.setObjectName(_fromUtf8("whatsNewTab"))
         self.verticalLayout_31 = QtGui.QVBoxLayout(self.whatsNewTab)
+        self.verticalLayout_31.setSpacing(3)
+        self.verticalLayout_31.setMargin(3)
         self.verticalLayout_31.setObjectName(_fromUtf8("verticalLayout_31"))
         self.showOnlyMeWhatsNew = QtGui.QCheckBox(self.whatsNewTab)
         self.showOnlyMeWhatsNew.setObjectName(_fromUtf8("showOnlyMeWhatsNew"))
         self.verticalLayout_31.addWidget(self.showOnlyMeWhatsNew)
-        self.whatsNewTreeWidget = QtGui.QTreeWidget(self.whatsNewTab)
-        self.whatsNewTreeWidget.setFrameShape(QtGui.QFrame.Box)
-        self.whatsNewTreeWidget.setObjectName(_fromUtf8("whatsNewTreeWidget"))
-        self.whatsNewTreeWidget.headerItem().setText(0, _fromUtf8("1"))
-        self.whatsNewTreeWidget.header().setVisible(False)
-        self.verticalLayout_31.addWidget(self.whatsNewTreeWidget)
+        self.newsFeedScrollArea = QtGui.QScrollArea(self.whatsNewTab)
+        self.newsFeedScrollArea.setFrameShape(QtGui.QFrame.NoFrame)
+        self.newsFeedScrollArea.setWidgetResizable(True)
+        self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
+        self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 359))
+        self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
+        self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
+        self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
         self.markAllNewsAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
         self.markAllNewsAsReadBtn.setObjectName(_fromUtf8("markAllNewsAsReadBtn"))
         self.verticalLayout_31.addWidget(self.markAllNewsAsReadBtn)
         self.whatsNewMessagesScrollArea = QtGui.QScrollArea(self.whatsNewTab)
+        self.whatsNewMessagesScrollArea.setMaximumSize(QtCore.QSize(16777215, 200))
         self.whatsNewMessagesScrollArea.setFrameShape(QtGui.QFrame.NoFrame)
         self.whatsNewMessagesScrollArea.setWidgetResizable(True)
         self.whatsNewMessagesScrollArea.setObjectName(_fromUtf8("whatsNewMessagesScrollArea"))
         self.blogScrollAreaWidgetContents = QtGui.QWidget()
-        self.blogScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1031, 244))
+        self.blogScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 200))
         self.blogScrollAreaWidgetContents.setObjectName(_fromUtf8("blogScrollAreaWidgetContents"))
         self.whatsNewMessagesScrollArea.setWidget(self.blogScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.whatsNewMessagesScrollArea)
@@ -1658,11 +1664,12 @@ class Ui_Form(object):
         self.markAllBlogPostsAsReadBtn.setObjectName(_fromUtf8("markAllBlogPostsAsReadBtn"))
         self.verticalLayout_31.addWidget(self.markAllBlogPostsAsReadBtn)
         self.addBlogPostFrame = QtGui.QFrame(self.whatsNewTab)
+        self.addBlogPostFrame.setMaximumSize(QtCore.QSize(16777215, 200))
         self.addBlogPostFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.addBlogPostFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.addBlogPostFrame.setObjectName(_fromUtf8("addBlogPostFrame"))
         self.verticalLayout_9 = QtGui.QVBoxLayout(self.addBlogPostFrame)
-        self.verticalLayout_9.setSpacing(3)
+        self.verticalLayout_9.setSpacing(0)
         self.verticalLayout_9.setMargin(0)
         self.verticalLayout_9.setObjectName(_fromUtf8("verticalLayout_9"))
         self.blogPostTitleComboBox = QtGui.QComboBox(self.addBlogPostFrame)
@@ -1671,6 +1678,7 @@ class Ui_Form(object):
         self.blogPostTitleComboBox.addItem(_fromUtf8(""))
         self.verticalLayout_9.addWidget(self.blogPostTitleComboBox)
         self.addNewBlogPostTextEdit = QtGui.QTextEdit(self.addBlogPostFrame)
+        self.addNewBlogPostTextEdit.setMaximumSize(QtCore.QSize(16777215, 150))
         self.addNewBlogPostTextEdit.setObjectName(_fromUtf8("addNewBlogPostTextEdit"))
         self.verticalLayout_9.addWidget(self.addNewBlogPostTextEdit)
         self.addNewBlogPostBtn = QtGui.QPushButton(self.addBlogPostFrame)
@@ -1769,7 +1777,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(0)
+        self.Tabs.setCurrentIndex(6)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

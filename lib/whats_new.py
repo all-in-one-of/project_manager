@@ -12,7 +12,7 @@ class WhatsNew(object):
 
     def __init__(self):
 
-        if self.username == "thoudon" or self.username == "lclavet":
+        if self.username == "yjobin" or self.username == "lclavet":
             self.addBlogPostFrame.show()
         else:
             self.addBlogPostFrame.hide()
@@ -24,8 +24,8 @@ class WhatsNew(object):
         self.addNewBlogPostBtn.clicked.connect(self.add_post_to_blog)
         self.showOnlyMeWhatsNew.stateChanged.connect(self.load_whats_new)
         self.markAllNewsAsReadBtn.clicked.connect(self.mark_all_as_read)
-        self.whatsNewTreeWidget.itemDoubleClicked.connect(self.tree_double_clicked)
         self.blog_gridLayout = QtGui.QGridLayout(self.blogScrollAreaWidgetContents)
+        self.newsfeed_gridLayout = QtGui.QGridLayout(self.newsFeedScrollAreaWidgetContents)
         self.load_blog_posts()
         self.load_whats_new()
 
@@ -125,7 +125,6 @@ class WhatsNew(object):
         self.load_blog_posts()
 
     def load_whats_new(self):
-        self.whatsNewTreeWidget.clear()
 
         big_font = QtGui.QFont()
         big_font.setPointSize(16)
@@ -154,6 +153,8 @@ class WhatsNew(object):
             tasks_log_entries = [entry for entry in tasks_log_entries if self.username in entry[3]]
             images_log_entries = [entry for entry in images_log_entries if self.username in entry[3]]
 
+        print(assets_log_entries)
+
         # Set number of new log entries
         number_of_log_entries = len(publishes_log_entries) + len(assets_log_entries) + len(comments_log_entries) + len(tasks_log_entries) + len(images_log_entries)
 
@@ -170,52 +171,122 @@ class WhatsNew(object):
 
         for entry in reversed(publishes_log_entries):
             asset_id = entry[1]
-            log_description = entry[5]
+            log_from = entry[4]
+            log_to = entry[5]
+            log_description = entry[7]
+            log_time = entry[8]
             asset = self.Asset(self, asset_id)
             asset.get_infos_from_id()
-            publishes_entries.append((log_description, asset))
+            publishes_entries.append((log_description, log_from, log_to, log_time, asset))
+
+        for entry in reversed(assets_log_entries):
+            asset_id = entry[1]
+            log_from = entry[4]
+            log_description = entry[7]
+            asset = self.Asset(self, asset_id)
+            asset.get_infos_from_id()
+            images_entries.append((log_description, log_from, asset))
 
         for entry in reversed(images_log_entries):
             asset_id = entry[1]
-            log_description = entry[5]
+            log_from = entry[4]
+            log_description = entry[7]
             asset = self.Asset(self, asset_id)
             asset.get_infos_from_id()
-            images_entries.append((log_description, asset))
+            images_entries.append((log_description, log_from, asset))
 
         for entry in reversed(comments_log_entries):
             asset_id = entry[1]
-            log_description = entry[5]
+            log_from = entry[4]
+            log_description = entry[7]
             asset = self.Asset(self, asset_id)
             asset.get_infos_from_id()
-            comments_entries.append((log_description, asset))
+            comments_entries.append((log_description, log_from, asset))
 
 
 
-        self.log_entries["Publishes"] = publishes_entries
-        self.log_entries["Assets"] = assets_entries
-        self.log_entries["Comments"] = comments_entries
-        self.log_entries["Tasks"] = tasks_entries
-        self.log_entries["Images"] = images_entries
+        self.log_entries["publishes"] = publishes_entries
+        self.log_entries["assets"] = assets_entries
+        self.log_entries["comments"] = comments_entries
+        self.log_entries["tasks"] = tasks_entries
+        self.log_entries["images"] = images_entries
 
-        for top_items, child_items in self.log_entries.items():
-            if len(child_items) == 0: # There's nothing new in current category
-                continue
-            top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
-            top_item.setText(0, top_items + " (" + str(len(child_items)) + ")")
-            top_item.setFont(0, big_font)
-            self.whatsNewTreeWidget.addTopLevelItem(top_item)
-            for child in child_items:
-                child_item = QtGui.QTreeWidgetItem(top_item)
-                child_item.setText(0, child[0])
-                child_item.setFont(0, small_font)
-                child_item.setData(0, QtCore.Qt.UserRole, child)
-                top_item.addChild(child_item)
+        for key, values in self.log_entries.items():
+            if key == "publishes":
+                for each_entry in values:
+                    log_description = each_entry[0]
+                    log_from = each_entry[1]
+                    log_to = each_entry[2]
+                    log_time = each_entry[3]
+                    self.create_feed_entry(feed_type="publishes", log_from=log_from, log_to=log_to, log_description=log_description, log_time=log_time)
 
-        if self.whatsNewTreeWidget.topLevelItemCount() == 0:
-            top_item = QtGui.QTreeWidgetItem(self.whatsNewTreeWidget)
-            top_item.setText(0, "There's nothing new :(")
-            top_item.setFont(0, big_font)
-            self.whatsNewTreeWidget.addTopLevelItem(top_item)
+
+    def create_feed_entry(self, feed_type="", dependancy="", log_from="", log_to="", log_description="", log_time=""):
+
+        # Create Feed Entry
+        # Main Frame
+        feedEntryFrame = QtGui.QFrame(self.newsFeedScrollArea)
+        feedEntryFrame_layout = QtGui.QHBoxLayout(feedEntryFrame)
+        feedEntryFrame.setMaximumHeight(120)
+
+        # Profile Picture Frame
+        feedPicFrame = QtGui.QFrame(feedEntryFrame)
+        feedPicFrame_layout = QtGui.QHBoxLayout(feedPicFrame)
+
+
+        profilPicFromLbl = QtGui.QLabel(feedEntryFrame)
+        profilPicFromLbl.setMinimumSize(80, 80)
+        profilPicFromLbl.setMaximumSize(80, 80)
+        profilPicFromLbl.setFrameShape(QtGui.QFrame.Box)
+        profilPicFromLbl.setFrameShadow(QtGui.QFrame.Sunken)
+        profilPicFromLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\members_photos\\" + log_from + ".jpg"))
+        feedPicFrame_layout.addWidget(profilPicFromLbl)
+
+
+
+
+        if feed_type == "tasks":
+            arrowLbl = QtGui.QLabel("->")
+            feedPicFrame_layout.addWidget(arrowLbl)
+
+            profilPibToLbl = QtGui.QLabel(feedEntryFrame)
+            profilPibToLbl.setMinimumSize(80, 80)
+            profilPibToLbl.setMaximumSize(80, 80)
+            profilPibToLbl.setFrameShape(QtGui.QFrame.Box)
+            profilPibToLbl.setFrameShadow(QtGui.QFrame.Sunken)
+            profilPibToLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\members_photos\\" + log_to + ".jpg"))
+            feedPicFrame_layout.addWidget(profilPibToLbl)
+
+        # Profile Text Frame
+        feedTextFrame = QtGui.QFrame(feedEntryFrame)
+        feedTextFrame_layout = QtGui.QVBoxLayout(feedTextFrame)
+        if feed_type == "publishes":
+            feedTitleLbl = QtGui.QLabel("Asset published | " + log_time, feedEntryFrame)
+        elif feed_type == "assets":
+            feedTitleLbl = QtGui.QLabel("Asset Created | " + log_time, feedEntryFrame)
+        elif feed_type == "comments":
+            feedTitleLbl = QtGui.QLabel("Comment Added | " + log_time, feedEntryFrame)
+        elif feed_type == "tasks":
+            feedTitleLbl = QtGui.QLabel("Task Created | " + log_time, feedEntryFrame)
+        elif feed_type == "images":
+            feedTitleLbl = QtGui.QLabel("Image Added | " + log_time, feedEntryFrame)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setWeight(75)
+        feedTitleLbl.setFont(font)
+
+        feedMessageLbl = QtGui.QLabel(log_description, feedEntryFrame)
+        vertical_spacer = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        feedTextFrame_layout.addWidget(feedTitleLbl)
+        feedTextFrame_layout.addWidget(feedMessageLbl)
+        feedTextFrame_layout.addItem(vertical_spacer)
+
+        # Add Widgets to layout
+        feedEntryFrame_layout.addWidget(feedPicFrame)
+        feedEntryFrame_layout.addWidget(feedTextFrame)
+        horizontal_spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.newsfeed_gridLayout.addWidget(feedEntryFrame)
+        feedEntryFrame_layout.addItem(horizontal_spacer)
 
     def mark_all_as_read(self):
 
