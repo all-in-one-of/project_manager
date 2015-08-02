@@ -6,6 +6,7 @@ import os
 import subprocess
 from datetime import datetime
 from functools import partial
+import sip
 
 class WhatsNew(object):
 
@@ -41,28 +42,27 @@ class WhatsNew(object):
 
     def load_whats_new(self):
 
-        self.log_entries_db_new = []
-
-        # Get all log entries based on type
-        self.log_entries_db_new = self.cursor.execute('''SELECT * FROM log ''').fetchall()
-        self.log_entries_db_new = [entry for entry in self.log_entries_db_new if self.username in entry[2]] # Get unread entries
-
-        if self.log_entries_db_new > self.log_entries_db:
-            seen = set(self.log_entries_db)
-            seen_add = seen.add
-            self.new_entries = [x for x in self.log_entries_db_new if not (x in seen or seen_add(x))]
-            self.log_entries_db = self.log_entries_db_new
-        else:
-            self.new_entries = []
-
-        self.Tabs.setTabText(self.Tabs.count() - 1, "What's New (" + str(len(self.log_entries_db)) + ")")
+        for i in range(self.newsfeed_gridLayout.count()):
+            self.newsfeed_gridLayout.itemAt(i).widget().close()
 
         # List storing log entries objects
+        self.log_entries_db = []
         self.log_entries = []
         self.log_widgets = []
 
+        # Get all log entries based on type
+        self.log_entries_db = self.cursor.execute('''SELECT * FROM log ''').fetchall()
+        self.log_entries_db = [entry for entry in self.log_entries_db if self.username in entry[2]] # Get unread entries
+
+        #
+        # if len(self.log_entries_db) == 0:
+        #     self.create_feed_entry(type="nothing", created_by="default", description="Booh :(")
+        #     return
+
+        self.Tabs.setTabText(self.Tabs.count() - 1, "What's New (" + str(len(self.log_entries_db)) + ")")
+
         # Create log entry objects
-        for entry in self.new_entries:
+        for entry in self.log_entries_db:
             log_id = entry[0]
             log_dependancy = entry[1]
             log_viewed_by = entry[2]
@@ -77,11 +77,10 @@ class WhatsNew(object):
             self.log_entries.append(log)
 
         # Add log entries to GUI
-        for log in self.log_entries[::-1]:
+        for log in reversed(self.log_entries):
             self.create_feed_entry(type=log.type, members_concerned=log.members_concerned, dependancy=log.dependancy, created_by=log.created_by, log_to=log.log_to, description=log.description, log_time=log.time)
 
         self.filter_feed_entries()
-        self.first_load = False
 
     def create_feed_entry(self, type="", members_concerned=[], dependancy="", created_by="", log_to="", description="", log_time=""):
 
@@ -138,6 +137,8 @@ class WhatsNew(object):
             feedTitleLbl = QtGui.QLabel(" Task Created | " + log_time, feedEntryFrame)
         elif type == "image":
             feedTitleLbl = QtGui.QLabel(" Image Added | " + log_time, feedEntryFrame)
+        elif type == "nothing":
+            feedTitleLbl = QtGui.QLabel(" There's nothing new :(", feedEntryFrame)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setWeight(75)
@@ -155,10 +156,9 @@ class WhatsNew(object):
         feedEntryFrame_layout.addWidget(feedPicFrame)
         feedEntryFrame_layout.addWidget(feedTextFrame)
         feedEntryFrame_layout.addItem(horizontal_spacer)
-        if self.first_load:
-            self.newsfeed_gridLayout.addWidget(feedEntryFrame)
-        else:
-            self.newsfeed_gridLayout.insertWidget(0, feedEntryFrame)
+
+        self.newsfeed_gridLayout.addWidget(feedEntryFrame)
+
 
     def filter_feed_entries(self):
 
