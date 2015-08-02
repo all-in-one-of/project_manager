@@ -4,6 +4,7 @@
 from PyQt4 import QtGui, QtCore
 import time
 from functools import partial
+from datetime import datetime
 
 class CommentWidget(object):
 
@@ -140,28 +141,32 @@ class CommentWidget(object):
 
         if current_tab_text == "Images Manager":
             self.selected_asset.add_comment(self.username, comment, current_time, "ref")
-            self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
+            self.add_comment_log_entry(self.selected_asset, "image")
 
         elif current_tab_text == "Task Manager" or current_tab_text == "Tasks":
             self.selected_asset.add_comment(self.username, comment, current_time, "task")
-            self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on task {1}".format(self.members[self.username], self.selected_asset.id))
+            self.add_comment_log_entry(self.selected_asset, "task")
 
         elif current_tab_text == "Asset Loader":
             self.selected_asset.add_comment(self.username, comment, current_time, "asset")
-            self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
+            self.add_comment_log_entry(self.selected_asset, "asset")
 
         elif "What's New" in current_tab_text:
             if self.selected_asset.type == "ref":
                 self.selected_asset.add_comment(self.username, comment, current_time, "ref")
-                self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on image {1}".format(self.members[self.username], self.selected_asset.name))
+                self.add_comment_log_entry(self.selected_asset, "image")
 
             else:
                 self.selected_asset.add_comment(self.username, comment, current_time, "asset")
-                self.Lib.add_entry_to_log(self, "All", self.comment_authors + [self.username], self.selected_asset.id, "comment", "{0} added a new comment on asset {1}".format(self.members[self.username], self.selected_asset.name))
-
+                self.add_comment_log_entry(self.selected_asset, "asset")
 
         self.load_comments()
         self.commentLineEdit.clear()
+
+    def add_comment_log_entry(self, asset, type):
+        # Add Log Entry
+        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "comment", "{0} added a new comment on {1} {2}.".format(self.members[self.username], type, asset.name), datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
 
     def delete_comment(self, comment_author, comment_text, comment_time):
         self.selected_asset.remove_comment(comment_author, comment_text, comment_time)

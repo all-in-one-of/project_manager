@@ -29,7 +29,6 @@ class LogEntry(object):
 
         #self.main.WhatsNew.create_feed_entry(self.main, type=self.type, members_concerned=self.members_concerned, dependancy=self.dependancy, created_by=self.created_by, log_to=self.log_to, description=self.description, log_time=self.time)
 
-
     def remove_log_from_database(self):
         self.main.cursor.execute('''DELETE FROM log WHERE log_id=?''', (self.id,))
         self.main.db.commit()

@@ -824,7 +824,7 @@ class ReferenceTab(object):
             references_to_load.append(asset.full_path)
 
         references_to_load = " ".join(references_to_load)
-        subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\kuadro.exe",
+        subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\kuadro.exe",
                           [references_to_load]], close_fds=True)
 
     def load_ref_in_photoshop(self):

@@ -76,10 +76,6 @@ class WhatsNew(object):
             log = self.LogEntry(self, log_id, log_dependancy, log_viewed_by, log_members_concerned, log_from, log_to, log_type, log_description, log_time)
             self.log_entries.append(log)
 
-
-        for i in self.log_entries[::-1]:
-            print(i.id)
-
         # Add log entries to GUI
         for log in self.log_entries[::-1]:
             self.create_feed_entry(type=log.type, members_concerned=log.members_concerned, dependancy=log.dependancy, created_by=log.created_by, log_to=log.log_to, description=log.description, log_time=log.time)

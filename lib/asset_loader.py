@@ -536,7 +536,7 @@ class AssetLoader(object):
 
         old_version_path = self.selected_asset.full_path
         new_version = str(int(self.selected_asset.version) + 1).zfill(2)
-        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.creator, self.selected_asset.number_of_publishes)
+        asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.last_publish, self.selected_asset.creator, self.selected_asset.number_of_publishes)
         asset.add_asset_to_db()
 
         shutil.copy(old_version_path, asset.full_path)
