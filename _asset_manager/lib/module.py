@@ -126,7 +126,7 @@ class Lib(object):
             file_sequence = self.obj_tmp_path.replace(".obj", "_%02d.jpg")
             movie_path = self.obj_tmp_path.replace(".obj", "_turn.mp4")
             subprocess.call(
-                ["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
+                [self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
                  movie_path])
 
             thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_turn.mp4")

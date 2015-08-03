@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sat Aug 01 16:39:30 2015
+# Created: Sun Aug 02 20:48:21 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -209,8 +209,6 @@ class Ui_Form(object):
         self.departmentList.setMinimumSize(QtCore.QSize(0, 150))
         self.departmentList.setFrameShape(QtGui.QFrame.Box)
         self.departmentList.setObjectName(_fromUtf8("departmentList"))
-        item = QtGui.QListWidgetItem()
-        self.departmentList.addItem(item)
         item = QtGui.QListWidgetItem()
         self.departmentList.addItem(item)
         item = QtGui.QListWidgetItem()
@@ -681,6 +679,7 @@ class Ui_Form(object):
         self.tmAddTaskBtn.setObjectName(_fromUtf8("tmAddTaskBtn"))
         self.horizontalLayout_32.addWidget(self.tmAddTaskBtn)
         self.tmRemoveTaskBtn = QtGui.QPushButton(self.tmTaskManagementFrame)
+        self.tmRemoveTaskBtn.setStyleSheet(_fromUtf8(""))
         self.tmRemoveTaskBtn.setObjectName(_fromUtf8("tmRemoveTaskBtn"))
         self.horizontalLayout_32.addWidget(self.tmRemoveTaskBtn)
         self.tmCompleteTaskBtn = QtGui.QPushButton(self.tmTaskManagementFrame)
@@ -1842,24 +1841,22 @@ class Ui_Form(object):
         __sortingEnabled = self.departmentList.isSortingEnabled()
         self.departmentList.setSortingEnabled(False)
         item = self.departmentList.item(0)
-        item.setText(_translate("Form", "All", None))
-        item = self.departmentList.item(1)
         item.setText(_translate("Form", "Modeling", None))
-        item = self.departmentList.item(2)
+        item = self.departmentList.item(1)
         item.setText(_translate("Form", "Texturing", None))
-        item = self.departmentList.item(3)
+        item = self.departmentList.item(2)
         item.setText(_translate("Form", "Rigging", None))
-        item = self.departmentList.item(4)
+        item = self.departmentList.item(3)
         item.setText(_translate("Form", "Animation", None))
-        item = self.departmentList.item(5)
+        item = self.departmentList.item(4)
         item.setText(_translate("Form", "Simulation", None))
-        item = self.departmentList.item(6)
+        item = self.departmentList.item(5)
         item.setText(_translate("Form", "Shading", None))
-        item = self.departmentList.item(7)
+        item = self.departmentList.item(6)
         item.setText(_translate("Form", "Layout", None))
-        item = self.departmentList.item(8)
+        item = self.departmentList.item(7)
         item.setText(_translate("Form", "DMP", None))
-        item = self.departmentList.item(9)
+        item = self.departmentList.item(8)
         item.setText(_translate("Form", "Compositing", None))
         self.departmentList.setSortingEnabled(__sortingEnabled)
         self.projectList.setSortingEnabled(True)

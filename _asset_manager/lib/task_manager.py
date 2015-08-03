@@ -51,9 +51,6 @@ class TaskManager(object):
         self.tmHideDoneCheckBox.clicked.connect(self.filter)
         self.tmHideConfirmedCheckBox.clicked.connect(self.filter)
 
-        self.tmRemoveTaskBtn.setStyleSheet("QPushButton {background-color: #872d2c;} QPushButton:hover {background-color: #1b81ca;}")
-        self.tmCompleteTaskBtn.setStyleSheet("QPushButton {background-color: #98cd00;} QPushButton:hover {background-color: #1b81ca;}")
-
         self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterBySequenceComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByShotComboBox.currentIndexChanged.connect(self.filter)

@@ -38,7 +38,7 @@ class AssetLoader(object):
         self.projectList_Clicked()
 
         self.selected_project_name = str(self.projectList.selectedItems()[0].text())
-        self.selected_department_name = "All"
+        self.selected_department_name = "mod"
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
 
@@ -230,6 +230,7 @@ class AssetLoader(object):
         Add all assets from selected project. Only run once to rebuild assets objects from Asset class.
         '''
         self.assets = {}
+        assets_list = []
         self.versions = []
         self.assetList.clear()
         self.versionList.clear()
@@ -256,13 +257,28 @@ class AssetLoader(object):
             creator = asset[13]
             number_of_publishes = asset[14]
 
-
+            # Create ListWidget Item
             asset_item = QtGui.QListWidgetItem(asset_name)
+
+            # Create asset object and attach it to the ListWidgetItem
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes)
             asset_item.setData(QtCore.Qt.UserRole, asset)
+
+            # Dictionary of asset objects associated with listwidget item (Exemple Class Asset -> ListWidgetItem)
+            # Useful to have access to both the asset object and its associated ListWidgetItem.
             self.assets[asset] = asset_item
+
+            # Append each item's sequence, shot, name and type to a list to only add first version of an asset to assetList
+            assets_list.append((asset.sequence, asset.shot, asset.name, asset.type))
             if asset.version != "out" and asset.type != "ref":
-                self.assetList.addItem(asset_item)
+                # If there's less than 2 entries for an asset, add it to the assetList.
+                # If there's more than 2 entries, it means that current loop is on the version 02 or more of an asset.
+                # Therefore, its first version is already in the assetList and you don't need to add the other versions too.
+                if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
+                    self.assetList.addItem(asset_item)
+                    asset_item.setHidden(True) # Hide item by default
+
+                # Add all versions to version List.
                 version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
                 version_item.setData(QtCore.Qt.UserRole, asset)
                 self.versions.append(version_item)
@@ -288,7 +304,6 @@ class AssetLoader(object):
 
         # Populate the sequences and shots lists
         self.seqList.clear()
-        self.seqList.addItem("All")
         self.seqList.addItem("None")
         self.seqReferenceList.clear()
         self.seqReferenceList.addItem("All")
@@ -313,7 +328,7 @@ class AssetLoader(object):
     def seqList_Clicked(self):
 
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
-        if self.selected_sequence_name == "None" or self.selected_sequence_name == "All":
+        if self.selected_sequence_name == "None":
             self.selected_sequence_name = "xxx"
 
         # Add shots to shot list and reference tool shot list
@@ -343,8 +358,7 @@ class AssetLoader(object):
 
     def departmentList_Clicked(self):
         self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
-        if self.selected_department_name != "All":
-            self.selected_department_name = self.departments_shortname[self.selected_department_name]
+        self.selected_department_name = self.departments_shortname[self.selected_department_name]
 
         qpixmap = QtGui.QPixmap(self.no_img_found)
         qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -409,18 +423,11 @@ class AssetLoader(object):
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
         for version in self.versions:
             asset = version.data(QtCore.Qt.UserRole).toPyObject()
-            if self.selected_department_name == "All":
-                if selected_asset.name == asset.name:
-                    version.setHidden(False)
-                    version.setSelected(True)
-                else:
-                    version.setHidden(True)
+            if selected_asset.name == asset.name and asset.type == self.selected_department_name:
+                version.setHidden(False)
+                version.setSelected(True)
             else:
-                if selected_asset.name == asset.name and asset.type == self.selected_department_name:
-                    version.setHidden(False)
-                    version.setSelected(True)
-                else:
-                    version.setHidden(True)
+                version.setHidden(True)
 
         self.updateThumbBtn.show()
         self.versionList_Clicked()
@@ -495,7 +502,7 @@ class AssetLoader(object):
         [asset.setHidden(False) for asset in self.assets.values()]
 
         for asset, asset_item in self.assets.items():
-            if asset.sequence != self.selected_sequence_name and str(self.seqList.selectedItems()[0].text()) != "All":
+            if asset.sequence != self.selected_sequence_name:
                 asset_item.setHidden(True)
 
             try: # If this block succeed, it means that item selected on sequence list is something else than "All" or "None".
@@ -505,7 +512,7 @@ class AssetLoader(object):
                 if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxx":
                     asset_item.setHidden(True)
 
-            if asset.type != self.selected_department_name and self.selected_department_name != "All":
+            if asset.type != self.selected_department_name:
                 asset_item.setHidden(True)
 
     def filterList_textChanged(self, list_type):
@@ -543,6 +550,8 @@ class AssetLoader(object):
         version_item.setData(QtCore.Qt.UserRole, asset)
         self.versions.append(version_item)
         self.versionList.addItem(version_item)
+        self.versionList.setItemSelected(version_item, True)
+        self.versionList_Clicked()
 
     def publish_asset(self):
 
@@ -648,10 +657,14 @@ class AssetLoader(object):
 
         if type == "full":
             path = self.selected_asset.full_img_path
+            type_full_text = "full resolution image"
         elif type == "quad":
             path = self.selected_asset.quad_img_path
+            type_full_text = "quad-view image"
         elif type == "turn":
             path = self.selected_asset.turn_vid_path
+            type_full_text = "turntable"
+
 
         # Asset has never been published, ask for first publish.
         if self.selected_asset.number_of_publishes == 0:
@@ -675,7 +688,7 @@ class AssetLoader(object):
 
         # Thumbnail has never been created for asset, ask if user wants to create a thumbnail
         if not os.path.isfile(path):
-            result = self.Lib.message_box(self, type="warning", text="There is no thumbnail for this asset. Do you want to create one?", no_button=True)
+            result = self.Lib.message_box(self, type="warning", text="There is no {0} for this asset. Do you want to create one?".format(type_full_text), no_button=True)
             if result == 0:
                 return False
             else:
@@ -736,6 +749,7 @@ class AssetLoader(object):
         [version.setHidden(True) for version in self.versions]
 
     def create_asset_from_scratch(self):
+
         # Create soft selection and asset name dialog
         dialog = QtGui.QDialog(self)
         self.Lib.apply_style(self, dialog)
