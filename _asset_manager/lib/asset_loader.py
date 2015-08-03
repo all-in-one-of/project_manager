@@ -316,7 +316,6 @@ class AssetLoader(object):
         if self.selected_sequence_name == "None" or self.selected_sequence_name == "All":
             self.selected_sequence_name = "xxx"
 
-
         # Add shots to shot list and reference tool shot list
         if self.selected_sequence_name == "xxx":
             self.shotList.clear()

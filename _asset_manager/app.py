@@ -105,7 +105,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
         self.cur_path = os.path.dirname(os.path.realpath(__file__))  # H:\01-NAD\_pipeline\_utilities\_asset_manager
         self.cur_path_one_folder_up = self.cur_path.replace("\\_asset_manager", "")  # H:\01-NAD\_pipeline\_utilities
-        self.NEF_folder = self.cur_path_one_folder_up + "\\NEF"  # H:\01-NAD\_pipeline\_utilities\NEF
+        self.NEF_folder = self.cur_path_one_folder_up + "\\_NEF"  # H:\01-NAD\_pipeline\_utilities\NEF
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.username = os.getenv('USERNAME')
@@ -488,7 +488,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         # Get creation_time of last database backup and compare it to current  time
         database_files = Lib.get_files_from_folder(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\backup")
         if len(database_files) > 1000:
-            Lib.message_box("Trop de backups détectés pour la base de donnée. Veuillez avertir Thibault, merci ;)")
+            Lib.message_box(u"Trop de backups détectés pour la base de donnée. Veuillez avertir Thibault, merci ;)")
 
         database_files = sorted(database_files)
         last_database_file = database_files[-1]

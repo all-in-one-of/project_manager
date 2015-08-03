@@ -54,10 +54,10 @@ class WhatsNew(object):
         self.log_entries_db = self.cursor.execute('''SELECT * FROM log ''').fetchall()
         self.log_entries_db = [entry for entry in self.log_entries_db if self.username in entry[2]] # Get unread entries
 
-        #
-        # if len(self.log_entries_db) == 0:
-        #     self.create_feed_entry(type="nothing", created_by="default", description="Booh :(")
-        #     return
+
+        if len(self.log_entries_db) == 0:
+            self.create_feed_entry(type="nothing", created_by="default", description="Booh :(")
+            return
 
         self.Tabs.setTabText(self.Tabs.count() - 1, "What's New (" + str(len(self.log_entries_db)) + ")")
 

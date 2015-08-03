@@ -351,7 +351,7 @@ class TaskManager(object):
                 task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
                 task.change_confirmation(1)
                 # Add Log Entry
-                log_entry = self.LogEntry(self, 0, task.id, [], [task.assignation], self.username, task.assignation, "task", "{0} has assigned a new {1} task to {2}: {3}.".format(self.members[self.username], task.department, self.members[task.assignation], task.description), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+                log_entry = self.LogEntry(self, 0, task.id, [], [task.assignation], self.username, task.assignation, "task", u"{0} has assigned a new {1} task to {2}: {3}.".format(self.members[self.username], task.department, self.members[task.assignation], task.description), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
                 log_entry.add_log_to_database()
             else:
                 clicked_widget.setText("Confirm")
