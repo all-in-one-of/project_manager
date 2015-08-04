@@ -84,8 +84,8 @@ class PeopleTab(object):
 
     def profil_pic_clicked(self, lbl, value):
 
-        username = value.split("\\")[-1].replace(".jpg", "")
-        infos = self.cursor.execute('''SELECT * FROM preferences WHERE username=?''', (username,)).fetchone()
+        self.profile_username = value.split("\\")[-1].replace(".jpg", "")
+        infos = self.cursor.execute('''SELECT * FROM preferences WHERE username=?''', (self.profile_username,)).fetchone()
 
         self.email = infos[5]
         self.cell = infos[6]
@@ -96,6 +96,10 @@ class PeopleTab(object):
 
 
     def send_email_clicked(self):
-        subject = unicode("Projet Nature:" + self.emailObjectLineEdit.text())
-        message = unicode(self.emailMessageTextEdit.toPlainText())
-        self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=[str(self.email)], subject=subject, message=message)
+
+        subject = self.emailObjectLineEdit.text()
+        subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8')
+
+        message = self.emailMessageTextEdit.toPlainText()
+        message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
+        self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=[str(self.email)], subject=subject, message=message, username=self.members[self.profile_username])

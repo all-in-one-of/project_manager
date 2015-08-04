@@ -68,9 +68,7 @@ class Lib(object):
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
         self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
         self.create_thumbnail_process.finished.connect(self.create_thumbnail_finished)
-        self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b",
-                                                                                                                                        self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend",
-                                                                                                                                        "--python-text",
+        self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b",self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
                                                                                                                                         "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
                                                                                                                                         str(self.resolution)
                                                                                                                                         ])
@@ -485,14 +483,15 @@ class Lib(object):
             out = process.readLine()
             print(out)
 
-    def send_email(self, from_addr="nad.update@gmail.com", addr_list=[], subject="", message="", login="nad.update@gmail.com", password="python123"):
+    def send_email(self, from_addr="nad.update@gmail.com", addr_list=[], subject="", message="", login="nad.update@gmail.com", password="python123", username=""):
 
-
+        subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8').encode('utf-8')
+        message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8').encode('utf-8')
 
         smtpserver = 'smtp.gmail.com:25'
-        header = 'From: %s\n' % from_addr
-        header += 'To: %s\n' % ','.join(addr_list)
-        header += 'Subject: %s\n\n' % subject
+        header = 'From: {0}\n'.format(from_addr)
+        header += 'To: {0}\n'.format(','.join(addr_list))
+        header += 'Subject: {0}\n\n'.format(subject)
         message = header + message
 
         server = smtplib.SMTP(smtpserver)
@@ -500,6 +499,8 @@ class Lib(object):
         server.login(login, password)
         problems = server.sendmail(from_addr, addr_list, message)
         server.quit()
+
+        self.message_box(type="info", text="Mail successfully sent to " + username + " (" + ",".join(addr_list) + ")")
 
 class DesktopWidget(QtGui.QWidget):
 
