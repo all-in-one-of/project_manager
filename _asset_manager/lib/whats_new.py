@@ -12,7 +12,7 @@ class WhatsNew(object):
 
     def __init__(self):
 
-        if self.username == "yjobin" or self.username == "lclavet":
+        if self.username == "thoudon" or self.username == "lclavet":
             self.addBlogPostFrame.show()
         else:
             self.addBlogPostFrame.hide()
@@ -99,16 +99,25 @@ class WhatsNew(object):
         feedPicFrame = QtGui.QFrame(feedEntryFrame)
         feedPicFrame_layout = QtGui.QHBoxLayout(feedPicFrame)
 
+        # If type is important, show warning sign in front of member profile picture
+        if type == "important":
+            feedEntryFrame.setMaximumHeight(250)
+            importantLbl = QtGui.QLabel(feedEntryFrame)
+            importantLbl.setMinimumSize(80, 80)
+            importantLbl.setMaximumSize(80, 80)
+            importantLbl.setLineWidth(0)
+            importantLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\warning.png"))
+            feedPicFrame_layout.addWidget(importantLbl)
 
+        # Add member profile picture
         profilPicFromLbl = QtGui.QLabel(feedEntryFrame)
         profilPicFromLbl.setMinimumSize(80, 80)
         profilPicFromLbl.setMaximumSize(80, 80)
-        profilPicFromLbl.setFrameShape(QtGui.QFrame.Box)
-        profilPicFromLbl.setFrameShadow(QtGui.QFrame.Plain)
+        profilPicFromLbl.setLineWidth(0)
         profilPicFromLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\members_photos\\" + created_by + ".jpg"))
         feedPicFrame_layout.addWidget(profilPicFromLbl)
 
-
+        # If type is task, add picture of member to whom the task is assigned
         if type == "task":
             arrowLbl = QtGui.QLabel("->")
             feedPicFrame_layout.addWidget(arrowLbl)
@@ -116,10 +125,11 @@ class WhatsNew(object):
             profilPicToLbl = QtGui.QLabel(feedEntryFrame)
             profilPicToLbl.setMinimumSize(80, 80)
             profilPicToLbl.setMaximumSize(80, 80)
-            profilPicToLbl.setFrameShape(QtGui.QFrame.Box)
-            profilPicToLbl.setFrameShadow(QtGui.QFrame.Plain)
+            profilPicToLbl.setLineWidth(0)
             profilPicToLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\members_photos\\" + log_to + ".jpg"))
             feedPicFrame_layout.addWidget(profilPicToLbl)
+
+
 
         # Text Frame
         feedTextFrame = QtGui.QFrame(feedEntryFrame)
@@ -127,7 +137,9 @@ class WhatsNew(object):
         feedTitleFrame = QtGui.QFrame(feedTextFrame)
         feedTitleFrame_layout = QtGui.QHBoxLayout(feedTitleFrame)
         feedIconLbl = QtGui.QLabel()
+        #if type != "important":
         feedIconLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\whatsnewicons\\" + type + ".png"))
+
         if type == "publish":
             feedTitleLbl = QtGui.QLabel(" Asset published | " + log_time, feedEntryFrame)
         elif type == "asset":
@@ -138,8 +150,12 @@ class WhatsNew(object):
             feedTitleLbl = QtGui.QLabel(" Task Created | " + log_time, feedEntryFrame)
         elif type == "image":
             feedTitleLbl = QtGui.QLabel(" Image Added | " + log_time, feedEntryFrame)
+        elif type == "important":
+            feedTitleLbl = QtGui.QLabel("MESSAGE IMPORTANT | " + log_time, feedEntryFrame)
+            feedTitleLbl.setStyleSheet("color: red;")
         elif type == "nothing":
             feedTitleLbl = QtGui.QLabel(" There's nothing new :(", feedEntryFrame)
+
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setWeight(75)
@@ -149,6 +165,7 @@ class WhatsNew(object):
         feedTitleFrame_layout.addItem(horizontal_spacer)
 
         feedMessageLbl = QtGui.QLabel(description, feedEntryFrame)
+        feedMessageLbl.setWordWrap(True)
         feedTextFrame_layout.addWidget(feedTitleFrame)
         feedTextFrame_layout.addWidget(feedMessageLbl)
         feedTextFrame_layout.addItem(vertical_spacer)
@@ -176,6 +193,8 @@ class WhatsNew(object):
             checkbox_states.append("image")
         if self.showNewCommentsCheckBox.checkState():
             checkbox_states.append("comment")
+
+        checkbox_states.append("important")
 
         for feed_entry, type, members_concerned in self.log_widgets:
             # Current feed entry type is checked
@@ -218,101 +237,7 @@ class WhatsNew(object):
         message = self.addNewBlogPostTextEdit.toPlainText()
         message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
 
-        self.cursor.execute('''INSERT INTO blog(blog_datetime, title, message, author, read_by) VALUES(?,?,?,?,?)''', (current_time, title, message, self.username, "",))
-        self.db.commit()
-
-        self.load_blog_posts()
-
-    def load_blog_posts(self):
-
-        while self.blog_gridLayout.count():
-            item = self.blog_gridLayout.takeAt(0)
-            item.widget().deleteLater()
-
-        blog_posts = self.cursor.execute('''SELECT * FROM blog''').fetchall()
-        for post in reversed(blog_posts):
-            post_id = post[0]
-            post_datetime = post[1]
-            post_title = post[2]
-            post_message = post[3]
-            post_author = post[4]
-
-            title = u"{0} | par {1} | le {2}".format(post_title, self.members[post_author], post_datetime)
-
-            # Frames creation
-            entry_frame = QtGui.QFrame(self.whatsNewMessagesScrollArea)
-            entry_frame_layout = QtGui.QHBoxLayout(entry_frame)
-            entry_frame.setMaximumHeight(150)
-
-            blog_frame = QtGui.QFrame(entry_frame)
-            blog_frame_layout = QtGui.QVBoxLayout(blog_frame)
-
-            buttons_frame = QtGui.QFrame(entry_frame)
-            buttons_frame.setMaximumWidth(60)
-            buttons_frame_layout = QtGui.QVBoxLayout(buttons_frame)
-
-            entry_frame_layout.addWidget(blog_frame)
-            entry_frame_layout.addWidget(buttons_frame)
+        log_entry = self.LogEntry(self, 0, "", [], [], self.username, "", "important", message, datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
 
 
-
-            # Blog frame widgets
-            title_lbl = QtGui.QLabel(blog_frame)
-            title_lbl.setText(title)
-
-            message_lbl = QtGui.QLabel(blog_frame)
-            message_lbl.setTextFormat(QtCore.Qt.RichText)
-            message_lbl.setWordWrap(True)
-            message_lbl.setText(post_message + "<br>")
-
-            blog_frame_layout.addWidget(title_lbl)
-            blog_frame_layout.addWidget(message_lbl)
-
-            if self.username == "thoudon" or self.username == "lclavet":
-                # Buttons frame widgets
-                edit_post_button = QtGui.QPushButton("Edit", buttons_frame)
-                delete_post_button = QtGui.QPushButton("Delete", buttons_frame)
-                edit_post_button.clicked.connect(partial(self.edit_blog_post, post_id, post_message))
-                delete_post_button.clicked.connect(partial(self.delete_blog_post, post_id))
-                edit_post_button.setMaximumWidth(64)
-                delete_post_button.setMaximumWidth(64)
-
-                buttons_frame_layout.addWidget(edit_post_button)
-                buttons_frame_layout.addWidget(delete_post_button)
-
-            line_01 = QtGui.QFrame()
-            line_01.setFrameShape(QtGui.QFrame.HLine)
-            line_01.setLineWidth(1)
-            line_01.setFrameShadow(QtGui.QFrame.Sunken)
-
-            self.blog_gridLayout.addWidget(entry_frame)
-            self.blog_gridLayout.addWidget(line_01)
-
-    def edit_blog_post(self, post_id, post_message):
-        edit_blog_post_dialog = QtGui.QDialog()
-        edit_blog_post_dialog.setWindowTitle("Edit blog post")
-        self.Lib.apply_style(self, edit_blog_post_dialog)
-        edit_blog_layout = QtGui.QVBoxLayout(edit_blog_post_dialog)
-        edit_post_textEdit = QtGui.QTextEdit(post_message)
-        edit_post_textEdit.selectAll()
-
-        edit_post_acceptBtn = QtGui.QPushButton("Edit")
-        edit_post_acceptBtn.clicked.connect(edit_blog_post_dialog.accept)
-
-        edit_blog_layout.addWidget(edit_post_textEdit)
-        edit_blog_layout.addWidget(edit_post_acceptBtn)
-        edit_blog_post_dialog.exec_()
-
-        if edit_blog_post_dialog.result == 0:
-            return
-
-        edited_blog_post = edit_post_textEdit.toPlainText()
-        edited_blog_post = unicode(self.utf8_codec.fromUnicode(edited_blog_post), 'utf-8')
-        self.cursor.execute('''UPDATE blog SET message=? WHERE blog_id=?''', (edited_blog_post, post_id,))
-        self.db.commit()
-        self.load_blog_posts()
-
-    def delete_blog_post(self, post_id):
-        self.cursor.execute('''DELETE FROM blog WHERE blog_id=?''', (post_id,))
-        self.db.commit()
-        self.load_blog_posts()

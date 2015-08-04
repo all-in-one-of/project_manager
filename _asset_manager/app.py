@@ -85,8 +85,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab = PeopleTab
 
         # Database Setup
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
 
 
         # Backup database
@@ -477,19 +477,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         username = str(self.usernameAdminComboBox.currentText())
         self.username = username
 
-    def add_log_entry(self, text, people=[], value=""):
-
-        people = ",".join(people)
-
-        cur_date = time.strftime("%d/%m/%Y")
-        cur_time = time.strftime("%H:%M:%S")
-
-        log_time = cur_date + " - " + cur_time
-
-        self.cursor.execute('''INSERT INTO log(log_time, log_entry, log_people, log_value) VALUES (?, ?, ?, ?)''',
-                            (log_time, text, people, value))
-
-        self.db.commit()
 
     def backup_database(self):
         # Get creation_time of last database backup and compare it to current  time

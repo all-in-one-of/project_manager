@@ -493,9 +493,9 @@ class Lib(object):
 
         smtpserver = 'smtp.gmail.com:25'
         header = 'From: {0}\n'.format(from_addr)
-        header += 'To: {0}\n'.format(','.join(addr_list))
-        header += 'Subject: {0}\n\n'.format(subject)
-        message = header + message
+        header += 'To: %s\n' % ','.join(addr_list)
+        header += 'Subject: {0} par {1}\n\n'.format(subject, username)
+        message = header + message + "\nEnvoyé par " + username + " depuis Manager 2.0"
 
         server = smtplib.SMTP(smtpserver)
         server.starttls()
@@ -503,7 +503,7 @@ class Lib(object):
         problems = server.sendmail(from_addr, addr_list, message)
         server.quit()
 
-        self.message_box(type="info", text="Mail successfully sent to " + username + " (" + ",".join(addr_list) + ")")
+        self.message_box(type="info", text="Mail successfully sent!")
 
 class DesktopWidget(QtGui.QWidget):
 

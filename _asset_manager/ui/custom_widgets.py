@@ -47,7 +47,10 @@ class profilPicLabel(QtGui.QLabel):
         self._data = None
 
     def mousePressEvent(self, ev):
-        self.emit(QtCore.SIGNAL('clicked'), self, self._data)
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            self.emit(QtCore.SIGNAL('double_clicked'), self, self._data)
+        else:
+            self.emit(QtCore.SIGNAL('clicked'), self, self._data)
 
     def getData(self):
         return self._data

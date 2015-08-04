@@ -57,11 +57,31 @@ class PeopleTab(object):
                                self.cur_path + "\\media\\members_photos\\yshan.jpg",
                                 self.cur_path + "\\media\\members_photos\\rtremblay.jpg"]
 
+        self.members_mail = ["amelie-chaput@hotmail.com",
+                             "ostiguy.chloe@gmail.com",
+                             "christopher.gonnord@gmail.com",
+                             "david.cayerdesforges@gmail.com",
+                             "edwin.arismendez@gmail.com",
+                             "etienne.rodrigue89@gmail.com",
+                             "jeremy.berger3d@gmail.com",
+                             "lau-gregoire@hotmail.com",
+                             "clavet.lp@gmail.com",
+                             "marcantoinech@gmail.com",
+                             "beaudoinmathieu@hotmail.com",
+                             "maximeroz@gmail.com",
+                             "ol.bolduc@gmail.com",
+                             "simonlachapelle@gmail.com",
+                             "valentin.delbroucq@gmail.com",
+                             "yannjobinphoto@gmail.com",
+                             "yishan3d@gmail.com",
+                             "rtremblay@nad.ca"]
+
         # Add image to labels
         for i, lbl in enumerate(self.profilPicLblList):
             lbl.setPixmap(QtGui.QPixmap(self.members_photos[i]))
             lbl.setData(self.members_photos[i])
             self.connect(lbl, QtCore.SIGNAL('clicked'), self.profil_pic_clicked)
+            self.connect(lbl, QtCore.SIGNAL('double_clicked'), self.check_on_double_click)
 
         self.profilPicInfoLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\members_photos\\default.jpg"))
 
@@ -113,7 +133,6 @@ class PeopleTab(object):
         self.lastActiveLbl.setText("Last Active: {0} ({1} days, {2} hours, {3} minutes ago)".format(self.last_active, last_active_period.days, last_active_period.hours, last_active_period.minutes))
         self.profilPicInfoLbl.setPixmap(QtGui.QPixmap(value))
 
-
     def send_email_clicked(self):
 
         subject = self.emailObjectLineEdit.text()
@@ -121,4 +140,201 @@ class PeopleTab(object):
 
         message = self.emailMessageTextEdit.toPlainText()
         message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
-        self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=[str(self.email)], subject=subject, message=message, username=self.members[self.profile_username])
+
+        addr_list = []
+
+        if self.achaputProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[0])
+        if self.costiguyProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[1])
+        if self.cgonnordProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[2])
+        if self.dcayerdesforgesProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[3])
+        if self.earismendezProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[4])
+        if self.erodrigueProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[5])
+        if self.jbergerProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[6])
+        if self.lgregoireProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[7])
+        if self.lclavetProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[8])
+        if self.mchretienProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[9])
+        if self.mbeaudoinProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[10])
+        if self.mrozProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[11])
+        if self.obolducProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[12])
+        if self.slachapelleProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[13])
+        if self.thoudonProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[14])
+        if self.vdelbroucqProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[15])
+        if self.yjobinProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[16])
+        if self.yshanProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[17])
+        if self.rtremblayProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[18])
+
+        self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
+
+    def check_on_double_click(self, lbl, value):
+
+
+        if value.split("\\")[-1].replace(".jpg", "") == "achaput":
+            if self.achaputProfilCheckBox.checkState() == 2:
+                self.achaputProfilCheckBox.setCheckState(0)
+                self.achaputProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.achaputProfilCheckBox.setCheckState(2)
+                self.achaputProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "costiguy":
+            if self.costiguyProfilCheckBox.checkState() == 2:
+                self.costiguyProfilCheckBox.setCheckState(0)
+                self.costiguyProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.costiguyProfilCheckBox.setCheckState(2)
+                self.costiguyProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "cgonnord":
+            if self.cgonnordProfilCheckBox.checkState() == 2:
+                self.cgonnordProfilCheckBox.setCheckState(0)
+                self.cgonnordProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.cgonnordProfilCheckBox.setCheckState(2)
+                self.cgonnordProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "dcayerdesforges":
+            if self.dcayerdesforgesProfilCheckBox.checkState() == 2:
+                self.dcayerdesforgesProfilCheckBox.setCheckState(0)
+                self.dcayerdesforgesProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.dcayerdesforgesProfilCheckBox.setCheckState(2)
+                self.dcayerdesforgesProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "earismendez":
+            if self.earismendezProfilCheckBox.checkState() == 2:
+                self.earismendezProfilCheckBox.setCheckState(0)
+                self.earismendezProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.earismendezProfilCheckBox.setCheckState(2)
+                self.earismendezProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "erodrigue":
+            if self.erodrigueProfilCheckBox.checkState() == 2:
+                self.erodrigueProfilCheckBox.setCheckState(0)
+                self.erodrigueProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.erodrigueProfilCheckBox.setCheckState(2)
+                self.erodrigueProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "jberger":
+            if self.jbergerProfilCheckBox.checkState() == 2:
+                self.jbergerProfilCheckBox.setCheckState(0)
+                self.jbergerProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.jbergerProfilCheckBox.setCheckState(2)
+                self.jbergerProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "lgregoire":
+            if self.lgregoireProfilCheckBox.checkState() == 2:
+                self.lgregoireProfilCheckBox.setCheckState(0)
+                self.lgregoireProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.lgregoireProfilCheckBox.setCheckState(2)
+                self.lgregoireProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "lclavet":
+            if self.lclavetProfilCheckBox.checkState() == 2:
+                self.lclavetProfilCheckBox.setCheckState(0)
+                self.lclavetProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.lclavetProfilCheckBox.setCheckState(2)
+                self.lclavetProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "mchretien":
+            if self.mchretienProfilCheckBox.checkState() == 2:
+                self.mchretienProfilCheckBox.setCheckState(0)
+                self.mchretienProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.mchretienProfilCheckBox.setCheckState(2)
+                self.mchretienProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "mbeaudoin":
+            if self.mbeaudoinProfilCheckBox.checkState() == 2:
+                self.mbeaudoinProfilCheckBox.setCheckState(0)
+                self.mbeaudoinProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.mbeaudoinProfilCheckBox.setCheckState(2)
+                self.mbeaudoinProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "mroz":
+            if self.mrozProfilCheckBox.checkState() == 2:
+                self.mrozProfilCheckBox.setCheckState(0)
+                self.mrozProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.mrozProfilCheckBox.setCheckState(2)
+                self.mrozProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "obolduc":
+            if self.obolducProfilCheckBox.checkState() == 2:
+                self.obolducProfilCheckBox.setCheckState(0)
+                self.obolducProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.obolducProfilCheckBox.setCheckState(2)
+                self.obolducProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "slachapelle":
+            if self.slachapelleProfilCheckBox.checkState() == 2:
+                self.slachapelleProfilCheckBox.setCheckState(0)
+                self.slachapelleProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.slachapelleProfilCheckBox.setCheckState(2)
+                self.slachapelleProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "thoudon":
+            if self.thoudonProfilCheckBox.checkState() == 2:
+                self.thoudonProfilCheckBox.setCheckState(0)
+                self.thoudonProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.thoudonProfilCheckBox.setCheckState(2)
+                self.thoudonProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "vdelbroucq":
+            if self.vdelbroucqProfilCheckBox.checkState() == 2:
+                self.vdelbroucqProfilCheckBox.setCheckState(0)
+                self.vdelbroucqProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.vdelbroucqProfilCheckBox.setCheckState(2)
+                self.vdelbroucqProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "yjobin":
+            if self.yjobinProfilCheckBox.checkState() == 2:
+                self.yjobinProfilCheckBox.setCheckState(0)
+                self.yjobinProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.yjobinProfilCheckBox.setCheckState(2)
+                self.yjobinProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "yshan":
+            if self.yshanProfilCheckBox.checkState() == 2:
+                self.yshanProfilCheckBox.setCheckState(0)
+                self.yshanProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.yshanProfilCheckBox.setCheckState(2)
+                self.yshanProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "rtremblay":
+            if self.rtremblayProfilCheckBox.checkState() == 2:
+                self.rtremblayProfilCheckBox.setCheckState(0)
+                self.rtremblayProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.rtremblayProfilCheckBox.setCheckState(2)
+                self.rtremblayProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")

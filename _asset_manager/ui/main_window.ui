@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>6</number>
+            <number>7</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -4106,20 +4106,8 @@
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_55">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>9</number>
-                </property>
-                <item>
+               <layout class="QGridLayout" name="gridLayout_10">
+                <item row="0" column="1">
                  <widget class="profilPicLabel" name="profilePicLbl">
                   <property name="minimumSize">
                    <size>
@@ -4137,10 +4125,20 @@
                    <enum>QFrame::Box</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Sunken</enum>
+                   <enum>QFrame::Plain</enum>
+                  </property>
+                  <property name="lineWidth">
+                   <number>0</number>
                   </property>
                   <property name="text">
                    <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="rtremblayProfilCheckBox">
+                  <property name="text">
+                   <string>Robin</string>
                   </property>
                  </widget>
                 </item>
@@ -4189,7 +4187,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4214,7 +4215,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4239,7 +4243,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4264,7 +4271,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4289,7 +4299,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4314,52 +4327,55 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="5">
+                    <widget class="QCheckBox" name="erodrigueProfilCheckBox">
+                     <property name="text">
+                      <string>Étienne</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="2" column="0">
-                    <widget class="QLabel" name="label">
+                    <widget class="QCheckBox" name="achaputProfilCheckBox">
                      <property name="text">
                       <string>Amélie</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1">
-                    <widget class="QLabel" name="label_2">
-                     <property name="text">
-                      <string>Chloé</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="2" column="2">
-                    <widget class="QLabel" name="label_3">
+                    <widget class="QCheckBox" name="cgonnordProfilCheckBox">
                      <property name="text">
-                      <string>Christopher</string>
+                      <string>Chris</string>
                      </property>
                     </widget>
                    </item>
                    <item row="2" column="3">
-                    <widget class="QLabel" name="label_4">
+                    <widget class="QCheckBox" name="dcayerdesforgesProfilCheckBox">
                      <property name="text">
                       <string>David</string>
                      </property>
                     </widget>
                    </item>
                    <item row="2" column="4">
-                    <widget class="QLabel" name="label_5">
+                    <widget class="QCheckBox" name="earismendezProfilCheckBox">
                      <property name="text">
                       <string>Edwin</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="5">
-                    <widget class="QLabel" name="label_6">
+                   <item row="2" column="1">
+                    <widget class="QCheckBox" name="costiguyProfilCheckBox">
                      <property name="text">
-                      <string>Étienne</string>
+                      <string>Chloé</string>
                      </property>
                     </widget>
                    </item>
@@ -4396,7 +4412,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4421,7 +4440,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4446,7 +4468,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4471,7 +4496,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4496,7 +4524,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4521,7 +4552,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4529,42 +4563,42 @@
                     </widget>
                    </item>
                    <item row="1" column="0">
-                    <widget class="QLabel" name="label_7">
+                    <widget class="QCheckBox" name="jbergerProfilCheckBox">
                      <property name="text">
                       <string>Jérémy</string>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="QLabel" name="label_8">
+                    <widget class="QCheckBox" name="lgregoireProfilCheckBox">
                      <property name="text">
                       <string>Laurence</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="2">
-                    <widget class="QLabel" name="label_9">
-                     <property name="text">
-                      <string>Louis-Philippe</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="1" column="3">
-                    <widget class="QLabel" name="label_10">
+                    <widget class="QCheckBox" name="mchretienProfilCheckBox">
                      <property name="text">
-                      <string>Marc-Antoine</string>
+                      <string>Marc</string>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="4">
-                    <widget class="QLabel" name="label_11">
+                    <widget class="QCheckBox" name="mbeaudoinProfilCheckBox">
                      <property name="text">
                       <string>Mathieu</string>
                      </property>
                     </widget>
                    </item>
+                   <item row="1" column="2">
+                    <widget class="QCheckBox" name="lclavetProfilCheckBox">
+                     <property name="text">
+                      <string>LP</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="1" column="5">
-                    <widget class="QLabel" name="label_12">
+                    <widget class="QCheckBox" name="mrozProfilCheckBox">
                      <property name="text">
                       <string>Maxime</string>
                      </property>
@@ -4603,7 +4637,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4628,7 +4665,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4653,7 +4693,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4675,13 +4718,19 @@
                       </size>
                      </property>
                      <property name="frameShape">
-                      <enum>QFrame::Box</enum>
+                      <enum>QFrame::NoFrame</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
+                     </property>
+                     <property name="scaledContents">
+                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -4703,7 +4752,10 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
@@ -4728,52 +4780,55 @@
                       <enum>QFrame::Box</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Sunken</enum>
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
                      </property>
                      <property name="text">
                       <string/>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_13">
-                     <property name="text">
-                      <string>Olivier</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="label_14">
-                     <property name="text">
-                      <string>Simon</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QLabel" name="label_15">
-                     <property name="text">
-                      <string>Thibault</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="3">
-                    <widget class="QLabel" name="valentinDelbroucqLbl">
-                     <property name="text">
-                      <string>Valentin</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="1" column="4">
-                    <widget class="QLabel" name="yannJobinLbl">
+                    <widget class="QCheckBox" name="yjobinProfilCheckBox">
                      <property name="text">
                       <string>Yann</string>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="5">
-                    <widget class="QLabel" name="yiShanLbl">
+                    <widget class="QCheckBox" name="yshanProfilCheckBox">
                      <property name="text">
                       <string>Yi</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QCheckBox" name="thoudonProfilCheckBox">
+                     <property name="text">
+                      <string>Thibault</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="slachapelleProfilCheckBox">
+                     <property name="text">
+                      <string>Simon</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="QCheckBox" name="vdelbroucqProfilCheckBox">
+                     <property name="text">
+                      <string>Valentin</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="obolducProfilCheckBox">
+                     <property name="text">
+                      <string>Olivier</string>
                      </property>
                     </widget>
                    </item>
