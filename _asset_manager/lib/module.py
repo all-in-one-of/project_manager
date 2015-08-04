@@ -15,7 +15,7 @@ import time
 import distutils.core
 import shutil
 import datetime
-
+import smtplib
 
 
 class Lib(object):
@@ -485,6 +485,22 @@ class Lib(object):
             out = process.readLine()
             print(out)
 
+    def send_email(self, from_addr="nad.update@gmail.com", addr_list=[], subject="", message="", login="nad.update@gmail.com", password="python123"):
+
+
+
+        smtpserver = 'smtp.gmail.com:25'
+        header = 'From: %s\n' % from_addr
+        header += 'To: %s\n' % ','.join(addr_list)
+        header += 'Subject: %s\n\n' % subject
+        message = header + message
+
+        server = smtplib.SMTP(smtpserver)
+        server.starttls()
+        server.login(login, password)
+        problems = server.sendmail(from_addr, addr_list, message)
+        server.quit()
+
 class DesktopWidget(QtGui.QWidget):
 
     def __init__(self, task_name, task_department, task_status, task_start, task_end, task_bid):
@@ -655,7 +671,11 @@ class CheckNews(Thread):
 
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
     test = Lib()
-    test.create_thumbnails(obj_path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\lib\\thumbnailer\\statue.obj", type="quad", sampling="100", resolution="10")
-    app.exit()
+    test.send_email()
+
+
+    # app = QtGui.QApplication(sys.argv)
+    # test = Lib()
+    # test.create_thumbnails(obj_path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\lib\\thumbnailer\\statue.obj", type="quad", sampling="100", resolution="10")
+    # app.exit()

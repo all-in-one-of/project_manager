@@ -62,10 +62,10 @@ from lib.asset import Asset
 from lib.asset_loader import AssetLoader
 from lib.reference_moodboard import Moodboard_Creator
 from lib.log import LogEntry
+from lib.people import PeopleTab
 
 
-
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab):
     def __init__(self):
         super(Main, self).__init__()
 
@@ -82,6 +82,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Asset = Asset
         self.LogEntry = LogEntry
         self.Moodboard_Creator = Moodboard_Creator
+        self.PeopleTab = PeopleTab
 
         # Database Setup
         #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
@@ -227,6 +228,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.CommentWidget.__init__(self)
         self.MyTasks.__init__(self)
         self.WhatsNew.__init__(self)
+        self.PeopleTab.__init__(self)
 
         self.WhatsNew.load_whats_new(self)
 

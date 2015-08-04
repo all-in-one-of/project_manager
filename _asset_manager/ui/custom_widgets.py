@@ -33,15 +33,25 @@ class ThibQLabel(QtGui.QLabel):
         except:
             return
 
-
         webbrowser.open(image_path)
-
-
-
-
 
     def data(self):
         return self._data
 
     def setData(self, data):
         self._data = data
+
+class profilPicLabel(QtGui.QLabel):
+    def __init__(self, parent, *args, **kwargs):
+        QtGui.QLabel.__init__(self, parent, *args, **kwargs)
+        self._data = None
+
+    def mousePressEvent(self, ev):
+        self.emit(QtCore.SIGNAL('clicked'), self, self._data)
+
+    def getData(self):
+        return self._data
+
+    def setData(self, data):
+        self._data = data
+
