@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Aug 04 16:33:42 2015
+# Created: Tue Aug 04 18:00:07 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -174,7 +174,7 @@ class Ui_Form(object):
         self.shotLbl.setAlignment(QtCore.Qt.AlignCenter)
         self.shotLbl.setObjectName(_fromUtf8("shotLbl"))
         self.gridLayout.addWidget(self.shotLbl, 0, 2, 1, 1)
-        self.versionList = QtGui.QListWidget(self.listsFrame)
+        self.versionList = ThibListWidget(self.listsFrame)
         self.versionList.setFrameShape(QtGui.QFrame.Box)
         self.versionList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.versionList.setObjectName(_fromUtf8("versionList"))
@@ -2009,6 +2009,9 @@ class Ui_Form(object):
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
         self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 555))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
+        self.label = QtGui.QLabel(self.newsFeedScrollAreaWidgetContents)
+        self.label.setGeometry(QtCore.QRect(330, 160, 46, 13))
+        self.label.setObjectName(_fromUtf8("label"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
         self.markAllNewsAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
@@ -2023,11 +2026,6 @@ class Ui_Form(object):
         self.verticalLayout_9.setSpacing(0)
         self.verticalLayout_9.setMargin(0)
         self.verticalLayout_9.setObjectName(_fromUtf8("verticalLayout_9"))
-        self.blogPostTitleComboBox = QtGui.QComboBox(self.addBlogPostFrame)
-        self.blogPostTitleComboBox.setObjectName(_fromUtf8("blogPostTitleComboBox"))
-        self.blogPostTitleComboBox.addItem(_fromUtf8(""))
-        self.blogPostTitleComboBox.addItem(_fromUtf8(""))
-        self.verticalLayout_9.addWidget(self.blogPostTitleComboBox)
         self.addNewBlogPostTextEdit = QtGui.QTextEdit(self.addBlogPostFrame)
         self.addNewBlogPostTextEdit.setMaximumSize(QtCore.QSize(16777215, 150))
         self.addNewBlogPostTextEdit.setObjectName(_fromUtf8("addNewBlogPostTextEdit"))
@@ -2128,7 +2126,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(6)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -2430,10 +2428,9 @@ class Ui_Form(object):
         self.showNewTasksCheckBox.setText(_translate("Form", "Show New Tasks", None))
         self.showNewImagesCheckBox.setText(_translate("Form", "Show New Images", None))
         self.showNewCommentsCheckBox.setText(_translate("Form", "Show New comments", None))
+        self.label.setText(_translate("Form", "TextLabel", None))
         self.markAllNewsAsReadBtn.setText(_translate("Form", "Mark all as read", None))
-        self.blogPostTitleComboBox.setItemText(0, _translate("Form", "Message d\'information générale", None))
-        self.blogPostTitleComboBox.setItemText(1, _translate("Form", "Avertissement", None))
-        self.addNewBlogPostBtn.setText(_translate("Form", "Add Blog Post", None))
+        self.addNewBlogPostBtn.setText(_translate("Form", "Add Important Message", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.whatsNewTab), _translate("Form", "What\'s New", None))
         self.diskUsageLbl.setText(_translate("Form", "Disk usage:", None))
         self.deadlineLbl.setText(_translate("Form", "Time left:", None))

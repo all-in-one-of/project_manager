@@ -80,6 +80,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.CommentWidget = CommentWidget
         self.Task = Task
         self.Asset = Asset
+        self.AssetLoader = AssetLoader
         self.LogEntry = LogEntry
         self.Moodboard_Creator = Moodboard_Creator
         self.PeopleTab = PeopleTab
@@ -239,7 +240,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
         self.check_news_thread.daemon = True
         self.check_news_thread.start()
-
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -477,7 +477,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         username = str(self.usernameAdminComboBox.currentText())
         self.username = username
 
-
     def backup_database(self):
         # Get creation_time of last database backup and compare it to current  time
         database_files = Lib.get_files_from_folder(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\backup")
@@ -589,7 +588,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         if key == QtCore.Qt.Key_Escape:
             sys.exit()
         if key == QtCore.Qt.Key_Delete:
-            ReferenceTab.remove_selected_references(self)
+            current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
+            if current_tab_text == "Images Manager":
+                ReferenceTab.remove_selected_references(self)
+            elif current_tab_text == "Asset Loader":
+                self.AssetLoader.remove_version(self)
         if key == QtCore.Qt.Key_F2:
             selected_reference = self.referenceThumbListWidget.selectedItems()[0]
             asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()

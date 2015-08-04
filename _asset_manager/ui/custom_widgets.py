@@ -19,6 +19,29 @@ class ThibListWidget(QtGui.QListWidget):
         else:
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta())))
 
+    def keyPressEvent(self, QKeyEvent):
+        key = QKeyEvent.key()
+
+        if key == QtCore.Qt.Key_Up:
+            while True:
+                try:
+                    self.setCurrentRow(self.currentRow() - 1)
+                    item = self.selectedItems()[0]
+                    self.emit(QtCore.SIGNAL('arrow_key_pressed'))
+                except:
+                    break
+                if not item.isHidden():
+                    break
+        elif key == QtCore.Qt.Key_Down:
+            while True:
+                try:
+                    self.setCurrentRow(self.currentRow() + 1)
+                    item = self.selectedItems()[0]
+                    self.emit(QtCore.SIGNAL('arrow_key_pressed'))
+                except:
+                    break
+                if not item.isHidden():
+                    break
 
 
 class ThibQLabel(QtGui.QLabel):

@@ -20,13 +20,14 @@ import smtplib
 
 class Lib(object):
 
-    def create_thumbnails(self, obj_path="", thumbs_to_create=""):
+    def create_thumbnails(self, obj_path="", thumbs_to_create="", version=""):
 
         self.updateThumbBtn.setEnabled(False)
 
         self.full_obj_path = obj_path
         self.obj_tmp_path = "C:\\Temp\\" + obj_path.split("\\")[-1]
         self.type = type
+        self.version = version
         self.i = 0
 
         self.thumbnailProgressBar.show()
@@ -37,17 +38,17 @@ class Lib(object):
         if "full" in self.thumbs_to_create:
             self.type = "full"
             self.sampling = 100
-            self.resolution = 100
+            self.resolution = 50
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
         elif "quad" in self.thumbs_to_create:
             self.type = "quad"
             self.sampling = 25
-            self.resolution = 100
+            self.resolution = 50
             self.thumbs_to_create = thumbs_to_create.replace("quad", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
             self.sampling = 10
-            self.resolution = 100
+            self.resolution = 50
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
         if self.type == "full":
@@ -70,7 +71,7 @@ class Lib(object):
         self.create_thumbnail_process.finished.connect(self.create_thumbnail_finished)
         self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b",self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
                                                                                                                                         "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
-                                                                                                                                        str(self.resolution)
+                                                                                                                                        str(self.resolution), self.version
                                                                                                                                         ])
 
     def create_thumbnail_new_data(self):
@@ -84,11 +85,11 @@ class Lib(object):
     def create_thumbnail_finished(self):
 
         if self.type == "full":
-            filename = self.obj_tmp_path.replace(".obj", "_full.jpg")
+            filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
             self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_full.jpg")
-            shutil.copy(self.obj_tmp_path.replace(".obj", "_full.jpg"), thumb_filename)
-            os.remove(self.obj_tmp_path.replace(".obj", "_full.jpg"))
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
+            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
 
         elif self.type == "quad":
             full_scale_width = int(1920 * float(self.resolution) * 2 / 100)
@@ -99,10 +100,10 @@ class Lib(object):
 
             im = Image.new("RGB", (full_scale_width, full_scale_height), "black")
 
-            view01 = Image.open(self.obj_tmp_path.replace(".obj", "_000.jpg"))
-            view02 = Image.open(self.obj_tmp_path.replace(".obj", "_090.jpg"))
-            view03 = Image.open(self.obj_tmp_path.replace(".obj", "_180.jpg"))
-            view04 = Image.open(self.obj_tmp_path.replace(".obj", "_270.jpg"))
+            view01 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_000.jpg"))
+            view02 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_090.jpg"))
+            view03 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_180.jpg"))
+            view04 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_270.jpg"))
 
             # get the correct size
 
@@ -111,27 +112,27 @@ class Lib(object):
             im.paste(view03, (0, quad_scale_height))
             im.paste(view04, (quad_scale_width, quad_scale_height))
 
-            im.save(self.obj_tmp_path.replace(".obj", "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_quad.jpg")
-            shutil.copy(self.obj_tmp_path.replace(".obj", "_quad.jpg"), thumb_filename)
-            os.remove(self.obj_tmp_path.replace(".obj", "_quad.jpg"))
+            im.save(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_quad.jpg")
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"), thumb_filename)
+            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"))
 
             for i in range(0, 360, 90):
-                os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(3) + ".jpg"))
+                os.remove(self.obj_tmp_path.replace("out.obj", "_" + str(i).zfill(3) + ".jpg"))
 
 
         elif self.type == "turn":
-            file_sequence = self.obj_tmp_path.replace(".obj", "_%02d.jpg")
-            movie_path = self.obj_tmp_path.replace(".obj", "_turn.mp4")
+            file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")
+            movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4")
             subprocess.call(
                 [self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
                  movie_path])
 
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_turn.mp4")
-            shutil.copy(self.obj_tmp_path.replace(".obj", "_turn.mp4"), thumb_filename)
-            os.remove(self.obj_tmp_path.replace(".obj", "_turn.mp4"))
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_turn.mp4")
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"), thumb_filename)
+            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"))
             for i in range(24):
-                os.remove(self.obj_tmp_path.replace(".obj", "_" + str(i).zfill(2) + ".jpg"))
+                os.remove(self.obj_tmp_path.replace("out.obj", "_" + str(i).zfill(2) + ".jpg"))
 
         self.create_thumbnail_process.kill()
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
@@ -139,7 +140,7 @@ class Lib(object):
         if len(self.thumbs_to_create) > 0:
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create)
         else:
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace(".obj", "_full.jpg")
+            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
             qpixmap = QtGui.QPixmap(thumb_filename)
             qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(thumb_filename)

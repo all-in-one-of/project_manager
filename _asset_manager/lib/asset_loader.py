@@ -62,6 +62,8 @@ class AssetLoader(object):
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
+        self.connect(self.versionList, QtCore.SIGNAL('arrow_key_pressed'), self.versionList_Clicked)
+
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
@@ -433,6 +435,12 @@ class AssetLoader(object):
         self.versionList_Clicked()
 
     def versionList_Clicked(self):
+        # If user press arrow key in a tab other than Asset Loader, don't do anything
+        current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
+        if current_tab_text != "Asset Loader":
+            return
+
+
         selected_version = self.versionList.selectedItems()[0]
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
@@ -553,6 +561,19 @@ class AssetLoader(object):
         self.versionList.setItemSelected(version_item, True)
         self.versionList_Clicked()
 
+    def remove_version(self):
+
+        # Confirm dialog
+        confirm_dialog = QtGui.QMessageBox()
+        reply = confirm_dialog.question(self, 'Delete selected version', "Are you sure ?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        self.Lib.apply_style(self, confirm_dialog)
+        if reply != QtGui.QMessageBox.Yes:
+            return
+
+        self.selected_asset.remove_asset_from_db()
+        for item in self.versionList.selectedItems():
+            self.versionList.takeItem(self.versionList.row(item))
+
     def publish_asset(self):
 
         self.selected_asset.change_last_publish()
@@ -622,7 +643,7 @@ class AssetLoader(object):
             if checkbox_turn.isChecked():
                 thumbs_to_create += "turn"
 
-            self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create)
+            self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version)
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
