@@ -149,7 +149,7 @@ class ReferenceTab(object):
                           tags, dependency, last_access, last_publish, creator)
             self.ref_assets_instances.append(asset)
             ref_item = QtGui.QListWidgetItem()
-            ref_item.setIcon(QtGui.QIcon(asset.full_path))
+            ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
             ref_item.setData(QtCore.Qt.UserRole, asset)
 
             if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors
@@ -388,7 +388,7 @@ class ReferenceTab(object):
         for ref in selected_references:
             asset = ref.data(QtCore.Qt.UserRole).toPyObject()
             asset.remove_asset_from_db()
-            self.Lib.remove_log_entry_from_asset_id(self, asset.id)
+            self.Lib.remove_log_entry_from_asset_id(self, asset.id, "image")
             del asset
             self.all_references_ListWidgetItems.remove(ref)
             self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
@@ -622,6 +622,11 @@ class ReferenceTab(object):
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
             asset.change_dependency(URL)
 
+        # Create low res thumbnail for preview on list widget
+        shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
+        self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
+
+
         # Add Log Entry
         log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "image", "{0} has added a new image from web named '{1}'.".format(self.members[self.username], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
@@ -629,7 +634,7 @@ class ReferenceTab(object):
         # Add item to lists
         new_item = QtGui.QListWidgetItem()
         new_item.setData(QtCore.Qt.UserRole, asset)
-        new_item.setIcon(QtGui.QIcon(asset.full_path))
+        new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
         self.all_references_ListWidgetItems.append(new_item)
         self.referenceThumbListWidget.addItem(new_item)
 
@@ -705,13 +710,17 @@ class ReferenceTab(object):
                     image_width = 1920
             self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
+            # Create low res thumbnail for preview on list widget		+
+            shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
+            self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
+
             # Add Log Entry
             log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "image", "{0} has added a new image from files named '{1}'.".format(self.members[self.username], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
             # Add reference to reference list
             new_item = QtGui.QListWidgetItem()
-            new_item.setIcon(QtGui.QIcon(asset.full_path))
+            new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
             new_item.setData(QtCore.Qt.UserRole, asset)
 
             self.referenceThumbListWidget.addItem(new_item)
@@ -758,13 +767,17 @@ class ReferenceTab(object):
         image_width = downloaded_img.size[0]
         self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)
 
+        # Create low res thumbnail for preview on list widget
+        shutil.copy(asset.full_path, asset.full_path.replace(".jpg", "_thumb.jpg"))
+        self.Lib.compress_image(self, asset.full_path.replace(".jpg", "_thumb.jpg"), 512, 30)
+
         # Add Log Entry
         log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "image", "{0} has created a new image from screenshot named '{1}'.".format(self.members[self.username], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
 
         # Add reference to reference list
         new_item = QtGui.QListWidgetItem()
-        new_item.setIcon(QtGui.QIcon(asset.full_path))
+        new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
         new_item.setData(QtCore.Qt.UserRole, asset)
 
         self.referenceThumbListWidget.addItem(new_item)
@@ -986,7 +999,7 @@ class ReferenceTab(object):
 
                     self.ref_assets_instances.append(asset)
                     ref_item = QtGui.QListWidgetItem(asset.name)
-                    ref_item.setIcon(QtGui.QIcon(asset.full_path))
+                    ref_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
                     ref_item.setData(QtCore.Qt.UserRole, asset)
 
                     if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors

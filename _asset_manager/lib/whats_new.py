@@ -57,6 +57,7 @@ class WhatsNew(object):
 
         if len(self.log_entries_db) == 0:
             self.create_feed_entry(type="nothing", created_by="default", description="Booh :(")
+            self.Tabs.setTabText(self.Tabs.count() - 1, "What's New")
             return
 
         self.Tabs.setTabText(self.Tabs.count() - 1, "What's New (" + str(len(self.log_entries_db)) + ")")

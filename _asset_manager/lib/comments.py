@@ -170,10 +170,10 @@ class CommentWidget(object):
 
     def delete_comment(self, comment_author, comment_text, comment_time):
         self.selected_asset.remove_comment(comment_author, comment_text, comment_time)
+        self.Lib.remove_log_entry_from_asset_id(self, self.selected_asset.id, "comment")
         self.load_comments()
 
     def edit_comment(self, comment_text_edit, comment_author, comment_text, comment_time):
-
         edit_comment_dialog = QtGui.QDialog()
         edit_comment_dialog.setWindowTitle("Edit comment")
         self.Lib.apply_style(self, edit_comment_dialog)

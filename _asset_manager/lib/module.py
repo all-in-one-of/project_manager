@@ -474,8 +474,11 @@ class Lib(object):
         self.cursor.execute('''INSERT INTO log(log_dependancy, viewed_by, members_concerned, log_type, log_description) VALUES(?,?,?,?,?)''', (asset_id, members_list, members_concerned, type, description))
         self.db.commit()
 
-    def remove_log_entry_from_asset_id(self, asset_id):
-        self.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (asset_id,))
+    def remove_log_entry_from_asset_id(self, asset_id, type=None):
+        if type != None:
+            self.cursor.execute('''DELETE FROM log WHERE log_dependancy=? AND log_type=?''', (asset_id, type))
+        else:
+            self.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (asset_id,))
         self.db.commit()
 
     def read_process_data(self, process):
@@ -625,49 +628,14 @@ class DesktopWidget(QtGui.QWidget):
         elif task_status == "Done":
             cell_item.setStyleSheet("background-color: #4b4b4b;")
 
-class CheckNews(Thread):
+class CheckNews(QtCore.QThread):
     def __init__(self, main):
-        Thread.__init__(self)
-        self.last_news = ""
-        self.main = main
-        self.check_news_cursor = self.main.db.cursor()
-        self.last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()[0]
+        QtCore.QThread.__init__(self)
 
     def run(self):
         while True:
-            self.check_news()
-            time.sleep(30)
-
-    def check_news(self):
-        last_news_id = self.check_news_cursor.execute('''SELECT max(log_id) FROM log''').fetchone()
-        last_news_id = last_news_id[0]
-
-        if last_news_id > self.last_news_id: # There are new entries on the log
-            log_entry = self.check_news_cursor.execute('''SELECT log_entry FROM log WHERE log_id=?''', (last_news_id,)).fetchone()[0]
-            username = log_entry.split(" ")[0]
-
-            if "reference" in log_entry:
-                title = "{0} added a new reference!".format(username)
-                self.main.tray_message = "Click here to see it"
-            elif "comment" in log_entry:
-                title = "{0} added a new comment!".format(username)
-                self.main.tray_message = "Click here to see it"
-            elif "task" in log_entry:
-                title = "{0} added a new task!".format(username)
-                self.main.tray_message = "Click here to see it"
-            else:
-                title = "New event"
-                self.main.tray_message = "Unknown"
-
-            self.main.tray_icon_log_id = last_news_id
-            self.main.tray_icon.showMessage(title, self.main.tray_message, QtGui.QSystemTrayIcon.Information, 10000)
-            self.last_news_id = last_news_id
-        elif last_news_id < self.last_news_id:
-            self.last_news_id = last_news_id
-
-        if not self.main.Tabs.currentIndex() == self.main.Tabs.count() - 1:
-            self.main.WhatsNew.load_whats_new(self.main)
-            self.add_to_check_news = 0
+            self.emit(QtCore.SIGNAL("refresh_all"))
+            time.sleep(5)
 
 
 

@@ -85,12 +85,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab = PeopleTab
 
         # Database Setup
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
 
 
         # Backup database
-        #self.backup_database()
+        self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.db.cursor()
@@ -124,6 +124,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                                       "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
                                       "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP",
                                       "cmp": "Compositing", "edt": "Editing", "rnd": "RnD"}
+
         refresh_icon = QtGui.QIcon(self.cur_path + "\\media\\refresh.png")
         self.refreshAllBtn.setIcon(refresh_icon)
         self.refreshAllBtn.setIconSize(QtCore.QSize(24, 24))
@@ -210,6 +211,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.mariPathLineEdit.setText(self.mari_path)
         self.blenderPathLineEdit.setText(self.blender_path)
 
+        self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (self.username,))
+        self.db.commit()
+
         # Preferences setup
         self.prefBckGroundColorSlider.sliderMoved.connect(self.change_pref_background_color_pixmap)
         self.prefBckGroundColorSlider.setStyleSheet("background-color; red;")
@@ -229,12 +233,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.MyTasks.__init__(self)
         self.WhatsNew.__init__(self)
         self.PeopleTab.__init__(self)
-
         self.WhatsNew.load_whats_new(self)
 
-        #self.check_news_thread = CheckNews(self)
-        #self.check_news_thread.daemon = True
-        #self.check_news_thread.start()
+        self.check_news_thread = CheckNews(self)
+        self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
+        self.check_news_thread.daemon = True
+        self.check_news_thread.start()
+
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -508,12 +513,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
 
     def refresh_all(self):
-        self.load_all_assets_for_first_time()
-        self.load_assets_from_selected_seq_shot_dept()
-        self.setup_tags()
+        self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (self.username,))
+        self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
+        self.db.commit()
+        self.PeopleTab.get_online_status(self)
+        #self.load_all_assets_for_first_time()
+        #self.load_assets_from_selected_seq_shot_dept()
+        #self.setup_tags()
         self.mt_item_added = True
         MyTasks.mt_add_tasks_from_database(self)
-        self.ReferenceTab.refresh_reference_list(self)
+        #self.ReferenceTab.refresh_reference_list(self)
         self.WhatsNew.load_whats_new(self)
 
     def change_theme(self):
@@ -600,9 +609,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             ReferenceTab.rename_reference(self, asset)
 
     def closeEvent(self, event):
+        self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
+        self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
+
         self.save_tags_list()
         self.Lib.save_prefs
         self.close()
+        self.db.commit()
         app.exit()
 
         # self.quit_msg = "Are you sure you want to exit the program?"

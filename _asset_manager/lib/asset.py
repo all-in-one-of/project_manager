@@ -30,7 +30,7 @@ class Asset(object):
             self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
-        if last_publish == "":
+        if last_publish == "" or last_publish == None:
             self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
             self.last_publish_as_date = datetime.now()
         else:
@@ -96,6 +96,10 @@ class Asset(object):
 
     def remove_asset_from_db(self):
         os.remove(self.full_path)
+        try:
+            os.remove(self.full_path.replace(".jpg", "_thumb.jpg"))
+        except:
+            pass
         try:
             os.remove(self.full_img_path)
         except:

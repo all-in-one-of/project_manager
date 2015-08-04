@@ -3,6 +3,8 @@
 
 from PyQt4 import QtGui, QtCore
 from functools import partial
+from datetime import datetime
+from dateutil import relativedelta
 
 class PeopleTab(object):
     def __init__(self):
@@ -14,7 +16,8 @@ class PeopleTab(object):
         self.sendEmailBtn.clicked.connect(self.send_email_clicked)
 
 
-        self.profilPicLblList = [self.profilePicLbl_01,
+        self.profilPicLblList = [
+                                 self.profilePicLbl_01,
                               self.profilePicLbl_02,
                               self.profilePicLbl_03,
                               self.profilePicLbl_04,
@@ -31,9 +34,10 @@ class PeopleTab(object):
                               self.profilePicLbl_15,
                               self.profilePicLbl_16,
                               self.profilePicLbl_17,
-                              self.profilePicLbl_18]
+                              self.profilePicLbl_18, self.profilePicLbl]
 
-        self.members_photos = [self.cur_path + "\\media\\members_photos\\achaput.jpg",
+        self.members_photos = [
+                               self.cur_path + "\\media\\members_photos\\achaput.jpg",
                                self.cur_path + "\\media\\members_photos\\costiguy.jpg",
                                self.cur_path + "\\media\\members_photos\\cgonnord.jpg",
                                self.cur_path + "\\media\\members_photos\\dcayerdesforges.jpg",
@@ -50,7 +54,8 @@ class PeopleTab(object):
                                self.cur_path + "\\media\\members_photos\\thoudon.jpg",
                                self.cur_path + "\\media\\members_photos\\vdelbroucq.jpg",
                                self.cur_path + "\\media\\members_photos\\yjobin.jpg",
-                               self.cur_path + "\\media\\members_photos\\yshan.jpg"]
+                               self.cur_path + "\\media\\members_photos\\yshan.jpg",
+                                self.cur_path + "\\media\\members_photos\\rtremblay.jpg"]
 
         # Add image to labels
         for i, lbl in enumerate(self.profilPicLblList):
@@ -90,8 +95,22 @@ class PeopleTab(object):
         self.email = infos[5]
         self.cell = infos[6]
 
+        self.last_active = infos[4]
+        now = datetime.now()
+        date = self.last_active.split(" ")[0]
+        time = self.last_active.split(" ")[-1]
+        day = date.split("/")[0]
+        month = date.split("/")[1]
+        year = date.split("/")[2]
+        hour = time.split(":")[0]
+        minutes = time.split(":")[1]
+        self.last_active_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
+
+        last_active_period = relativedelta.relativedelta(now, self.last_active_as_date)
+
         self.emailInfoLbl.setText("E-mail: " + self.email)
         self.cellInfoLbl.setText("Cell: " + self.cell)
+        self.lastActiveLbl.setText("Last Active: {0} ({1} days, {2} hours, {3} minutes ago)".format(self.last_active, last_active_period.days, last_active_period.hours, last_active_period.minutes))
         self.profilPicInfoLbl.setPixmap(QtGui.QPixmap(value))
 
 
