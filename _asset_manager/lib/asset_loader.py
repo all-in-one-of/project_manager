@@ -275,12 +275,13 @@ class AssetLoader(object):
             last_publish = asset[12]
             creator = asset[13]
             number_of_publishes = asset[14]
+            publish_from_version = asset[15]
 
             # Create ListWidget Item
             asset_item = QtGui.QListWidgetItem(asset_name)
 
             # Create asset object and attach it to the ListWidgetItem
-            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes)
+            asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes, publish_from_version)
             asset_item.setData(QtCore.Qt.UserRole, asset)
 
             # Dictionary of asset objects associated with listwidget item (Exemple Class Asset -> ListWidgetItem)
@@ -649,6 +650,9 @@ class AssetLoader(object):
                 self.publish_process.finished.connect(self.publish_process_finished)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
 
+            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
+            self.db.commit()
+
         if self.selected_asset.type == "rig":
             shutil.copy2(self.selected_asset.full_path, self.selected_asset.rig_out_path)
             self.publish_process_finished()
@@ -967,7 +971,6 @@ class AssetLoader(object):
         self.process.waitForFinished()
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
 
-
     def create_tex_asset_from_mod(self):
         self.create_from_asset_dialog.close()
         print("Tex")
@@ -989,10 +992,11 @@ class AssetLoader(object):
         # Create default publish cube (obj)
         obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", "", self.username)
         obj_asset.add_asset_to_db()
+        obj_id = obj_asset.id
         shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
         # Create main HDA database entry
-        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], main_id, "", "", self.username)
+        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], main_id + "," + obj_id, "", "", self.username)
         main_hda_asset.add_asset_to_db()
 
         # Create shading HDA database entry
@@ -1121,8 +1125,6 @@ class AnimSceneChooser(QtGui.QDialog):
         process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_rig_as_reference.py", self.main.selected_asset.rig_out_path, asset.full_path])
 
 
-
-
 class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):
         super(AddAssetsToLayoutWindow, self).__init__()
@@ -1140,7 +1142,6 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.addAssetBtn.clicked.connect(self.add_asset_to_list)
         self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
         self.addAssetsToLayoutBtn.clicked.connect(self.add_assets_to_layout)
-
 
         self.assets_in_layout = []
         self.assets_in_layout_db = []
@@ -1180,35 +1181,48 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
                 asset_object = self.main.Asset(self.main, asset_id)
                 asset_object.get_infos_from_id()
+
+                # Get out asset (obj) from modeling digital asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
+                obj_out_asset = self.main.Asset(self.main, asset_object.dependency.split(",")[1])
+                obj_out_asset.get_infos_from_id()
+
+                # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
+                last_published_asset = self.main.Asset(self.main, obj_out_asset.publish_from_version)
+                last_published_asset.get_infos_from_id()
+
                 item = QtGui.QListWidgetItem(asset_object.name)
-                if not os.path.isfile(asset_object.full_img_path):
+                # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
+                if not os.path.isfile(last_published_asset.full_img_path):
                     item.setIcon(QtGui.QIcon(self.main.no_img_found))
                 else:
-                    item.setIcon(QtGui.QIcon(asset_object.full_img_path))
-                item.setData(QtCore.Qt.UserRole, asset_object)
+                    item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
+                item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.full_img_path))
                 self.availableAssetsListWidget.addItem(item)
 
         self.exec_()
 
     def left_list_item_clicked(self):
         try:
-            self.selected_asset = self.availableAssetsListWidget.selectedItems()[0]
-            self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+            self.selected_asset_item = self.availableAssetsListWidget.selectedItems()[0]
+            self.selected_asset = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            self.selected_asset_img = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
         except:
             self.selected_asset = None
 
     def right_list_item_clicked(self):
         try:
-            self.selected_asset = self.assetsToAddListWidget.selectedItems()[0]
-            self.selected_asset = self.selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+            self.selected_asset_item = self.assetsToAddListWidget.selectedItems()[0]
+            self.selected_asset = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            self.selected_asset_img = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
         except:
             self.selected_asset = None
 
     def add_asset_to_list(self):
         # Create listwidget item from selected asset
+        print(self.selected_asset)
         item = QtGui.QListWidgetItem(self.selected_asset.name)
-        item.setIcon(QtGui.QIcon(self.selected_asset.full_img_path))
-        item.setData(QtCore.Qt.UserRole, self.selected_asset)
+        item.setIcon(QtGui.QIcon(self.selected_asset_img))
+        item.setData(QtCore.Qt.UserRole, (self.selected_asset, self.selected_asset_img))
 
         # Add item to right list
         self.assetsToAddListWidget.addItem(item)
@@ -1220,8 +1234,8 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def remove_asset_from_list(self):
         # Create listwidget item from selected asset
         item = QtGui.QListWidgetItem(self.selected_asset.name)
-        item.setIcon(QtGui.QIcon(self.selected_asset.full_img_path))
-        item.setData(QtCore.Qt.UserRole, self.selected_asset)
+        item.setIcon(QtGui.QIcon(self.selected_asset_img))
+        item.setData(QtCore.Qt.UserRole, (self.selected_asset, self.selected_asset_img))
 
         # Add item to left list
         self.availableAssetsListWidget.addItem(item)

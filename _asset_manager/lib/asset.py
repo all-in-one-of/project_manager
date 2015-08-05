@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 
 class Asset(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator="", number_of_publishes=0):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator="", number_of_publishes=0, publish_from_version=""):
         self.main = main
         self.id = id
         self.project = project_name
@@ -62,6 +62,7 @@ class Asset(object):
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
+        self.publish_from_version = publish_from_version
 
 
     def print_asset(self):
@@ -217,6 +218,7 @@ class Asset(object):
         last_publish = asset[12]
         creator = asset[13]
         number_of_publishes = asset[14]
+        publish_from_version = asset[15]
 
         self.project = project_name
         self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
@@ -252,7 +254,7 @@ class Asset(object):
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
-
+        self.publish_from_version = publish_from_version
 
 
 
