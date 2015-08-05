@@ -601,11 +601,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def closeEvent(self, event):
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
+        self.db.commit()
 
         self.save_tags_list()
-        self.Lib.save_prefs
+        self.Lib.save_prefs(self)
         self.close()
-        self.db.commit()
         app.exit()
 
         # self.quit_msg = "Are you sure you want to exit the program?"

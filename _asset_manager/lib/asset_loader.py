@@ -440,7 +440,6 @@ class AssetLoader(object):
         if current_tab_text != "Asset Loader":
             return
 
-
         selected_version = self.versionList.selectedItems()[0]
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
@@ -576,6 +575,27 @@ class AssetLoader(object):
 
     def publish_asset(self):
 
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Add a comment")
+        self.Lib.apply_style(self, dialog)
+
+        dialog_layout = QtGui.QVBoxLayout(dialog)
+
+        publish_comment_text_edit = QtGui.QTextEdit(dialog)
+        publish_accept_btn = QtGui.QPushButton("Publish asset!", dialog)
+        publish_accept_btn.clicked.connect(dialog.accept)
+
+        dialog_layout.addWidget(publish_comment_text_edit)
+        dialog_layout.addWidget(publish_accept_btn)
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_text_edit.toPlainText()), 'utf-8')
+        self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment) VALUES(?,?)''', (self.selected_asset.id, publish_comment,))
+        self.db.commit()
+
         self.selected_asset.change_last_publish()
         if self.selected_asset.type == "mod":
             if self.selected_asset.extension == "blend":
@@ -604,6 +624,15 @@ class AssetLoader(object):
         log_entry.add_log_to_database()
         self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
+
+        # Confirm dialog
+        confirm_dialog = QtGui.QMessageBox()
+        reply = confirm_dialog.question(self, 'Create thumbnail?', "Do you want to update the thumbnails?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        self.Lib.apply_style(self, confirm_dialog)
+        if reply == QtGui.QMessageBox.No:
+            return
+
+        self.update_thumbnail()
 
     def update_thumbnail(self):
         if self.selected_asset.type == "mod":
@@ -859,9 +888,8 @@ class AssetLoader(object):
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
 
-        obj_path = str(self.selected_asset.obj_path)
-        file_export = str(self.selected_asset.full_path)
-        file_export = os.path.splitext(file_export)[0].replace("mod", "rig").replace("out", "01") + ".ma"
+        obj_path = str(self.selected_asset.obj_path).replace("\\", "/")
+        file_export = os.path.splitext(obj_path)[0].replace("mod", "rig").replace("out", "01") + ".ma"
         self.process = QtCore.QProcess(self)
         self.process.finished.connect(partial(self.asset_creation_finished, asset))
         self.process.waitForFinished()
