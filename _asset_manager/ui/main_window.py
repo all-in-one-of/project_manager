@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Wed Aug 05 16:04:54 2015
+# Created: Wed Aug 05 17:28:04 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -476,7 +476,7 @@ class Ui_Form(object):
         self.lastPublishedLbl.setObjectName(_fromUtf8("lastPublishedLbl"))
         self.gridLayout_5.addWidget(self.lastPublishedLbl, 2, 0, 1, 1)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_5.addItem(spacerItem1, 7, 0, 1, 1)
+        self.gridLayout_5.addItem(spacerItem1, 6, 0, 1, 1)
         self.smallActionIconFrame = QtGui.QFrame(self.stateFrame)
         self.smallActionIconFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.smallActionIconFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -523,6 +523,11 @@ class Ui_Form(object):
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem2)
         self.gridLayout_5.addWidget(self.smallActionIconFrame, 0, 0, 1, 1)
+        self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
+        self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 50))
+        self.lastPublishComment.setReadOnly(True)
+        self.lastPublishComment.setObjectName(_fromUtf8("lastPublishComment"))
+        self.gridLayout_5.addWidget(self.lastPublishComment, 3, 0, 1, 1)
         self.verticalLayout.addWidget(self.stateFrame)
         self.gridLayout_3.addWidget(self.assetInfoFrame, 0, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.assetInfoGrp)
@@ -1916,7 +1921,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

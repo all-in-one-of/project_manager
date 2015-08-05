@@ -514,6 +514,14 @@ class AssetLoader(object):
         # Set load asset icon to enabled
         self.loadAssetBtn.setIcon(self.load_asset_icon)
 
+        # Set last publish comment
+        publish_comment = self.cursor.execute('''SELECT publish_comment FROM publish_comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
+        try:
+            self.lastPublishComment.setText(publish_comment[0])
+        except:
+            self.lastPublishComment.setText("...")
+
+
     def update_last_published_time_lbl(self, asset=None):
         if asset == None:
             asset = self.selected_asset
@@ -631,9 +639,14 @@ class AssetLoader(object):
         if dialog.result() == 0:
             return
 
+        # Add publish comment to database
         publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_text_edit.toPlainText()), 'utf-8')
-        self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment) VALUES(?,?)''', (self.selected_asset.id, publish_comment,))
+        if self.selected_asset.number_of_publishes == 0:
+            self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment) VALUES(?,?)''', (self.selected_asset.id, publish_comment,))
+        else:
+            self.cursor.execute('''UPDATE publish_comments SET publish_comment=? WHERE asset_id=?''', (publish_comment, self.selected_asset.id,))
         self.db.commit()
+        self.lastPublishComment.setText(publish_comment)
 
         self.selected_asset.change_last_publish()
         if self.selected_asset.type == "mod":

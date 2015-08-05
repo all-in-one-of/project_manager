@@ -383,8 +383,8 @@ class TaskManager(object):
             shot_combobox.addItems(shots_from_sequence)
 
             # Get assets from current sequence and shot
-            assets_from_sequence = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (task.project, task_sequence, self.tm_departments_shortname[task.department],)).fetchall()
-            assets_from_sequence = [str(i[0]) for i in assets_from_sequence]
+            assets_from_sequence = self.cursor.execute('''SELECT asset_name, asset_version FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (task.project, task_sequence, self.tm_departments_shortname[task.department],)).fetchall()
+            assets_from_sequence = [str(i[0] + "-" + i[1]) for i in assets_from_sequence]
             assets_from_sequence.insert(0, "xxxxx")
             # Add assets to asset combo box
             shot_combobox = self.widgets[str(widget_row_index) + ":11"]
