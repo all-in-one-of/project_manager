@@ -22,6 +22,9 @@ class ThibListWidget(QtGui.QListWidget):
     def keyPressEvent(self, QKeyEvent):
         key = QKeyEvent.key()
 
+        if key == QtCore.Qt.Key_Delete:
+            self.emit(QtCore.SIGNAL('delete_selected_asset_version'))
+
         if key == QtCore.Qt.Key_Up:
             while True:
                 try:

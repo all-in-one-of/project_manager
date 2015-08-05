@@ -57,9 +57,12 @@ class Asset(object):
         self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_quad", "jpg")
         self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
+        self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
 
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
+
+
 
     def print_asset(self):
         print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes)
@@ -95,7 +98,10 @@ class Asset(object):
         self.main.db.commit()
 
     def remove_asset_from_db(self):
-        os.remove(self.full_path)
+        try:
+            os.remove(self.full_path)
+        except:
+            pass
         try:
             os.remove(self.full_path.replace(".jpg", "_thumb.jpg"))
         except:

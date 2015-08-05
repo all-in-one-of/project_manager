@@ -17,6 +17,19 @@ class AssetLoader(object):
 
         self.favorite_icon = QtGui.QIcon(self.cur_path + "\\media\\favorite.png")
         self.unfavorite_icon = QtGui.QIcon(self.cur_path + "\\media\\unfavorite.png")
+        self.comment_icon = QtGui.QIcon(self.cur_path + "\\media\\comment.png")
+        self.comment_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\comment_disabled.png")
+        self.publish_icon = QtGui.QIcon(self.cur_path + "\\media\\publish.png")
+        self.publish_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\publish_disabled.png")
+        self.new_version_icon = QtGui.QIcon(self.cur_path + "\\media\\new_version.png")
+        self.new_version_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\new_version_disabled.png")
+        self.load_asset_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset.png")
+        self.load_asset_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset_disabled.png")
+
+        self.showAssetCommentBtn.setIcon(self.comment_disabled_icon)
+        self.publishBtn.setIcon(self.publish_disabled_icon)
+        self.createVersionBtn.setIcon(self.new_version_disabled_icon)
+        self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
 
         self.addAssetsToLayoutBtn.hide()
 
@@ -63,6 +76,7 @@ class AssetLoader(object):
         self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
         self.connect(self.versionList, QtCore.SIGNAL('arrow_key_pressed'), self.versionList_Clicked)
+        self.connect(self.versionList, QtCore.SIGNAL('delete_selected_asset_version'), self.remove_version)
 
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
@@ -107,9 +121,12 @@ class AssetLoader(object):
         if self.selected_asset == None:
             return
 
-        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
+        selected_asset_publish = self.cursor.execute('''SELECT asset_id FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_type=? AND asset_version="out"''', (self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, self.selected_asset.type, )).fetchone()
+        selected_asset_publish_id = selected_asset_publish[0]
+
+        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (selected_asset_publish_id, self.username,)).fetchone()
         if is_asset_favorited == None: # Asset is not already favorited by member
-            self.cursor.execute('''INSERT INTO favorited_assets(asset_id, member) VALUES(?,?)''', (self.selected_asset.id, self.username,))
+            self.cursor.execute('''INSERT INTO favorited_assets(asset_id, member) VALUES(?,?)''', (selected_asset_publish_id, self.username,))
             self.db.commit()
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
         else:
@@ -329,6 +346,8 @@ class AssetLoader(object):
 
     def seqList_Clicked(self):
 
+        self.selected_shot_number = "xxxx"
+
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
         if self.selected_sequence_name == "None":
             self.selected_sequence_name = "xxx"
@@ -470,11 +489,29 @@ class AssetLoader(object):
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
         # Set favorite button state
-        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (self.selected_asset.id, self.username,)).fetchone()
+        selected_asset_publish = self.cursor.execute('''SELECT asset_id FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_type=? AND asset_version="out"''', (self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, self.selected_asset.type,)).fetchone()
+        if not selected_asset_publish == None:
+            selected_asset_publish_id = selected_asset_publish[0]
+        else:
+            selected_asset_publish_id = 0
+
+        is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (selected_asset_publish_id, self.username,)).fetchone()
         if is_asset_favorited == None:
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         else:
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
+
+        # Set comment icon to enabled
+        self.showAssetCommentBtn.setIcon(self.comment_icon)
+
+        # Set publish icon to enabled
+        self.publishBtn.setIcon(self.publish_icon)
+
+        # Set create new version icon to enabled
+        self.createVersionBtn.setIcon(self.new_version_icon)
+
+        # Set load asset icon to enabled
+        self.loadAssetBtn.setIcon(self.load_asset_icon)
 
     def update_last_published_time_lbl(self, asset=None):
         if asset == None:
@@ -512,12 +549,8 @@ class AssetLoader(object):
             if asset.sequence != self.selected_sequence_name:
                 asset_item.setHidden(True)
 
-            try: # If this block succeed, it means that item selected on sequence list is something else than "All" or "None".
-                if asset.shot != self.selected_shot_number and str(self.shotList.selectedItems()[0].text()) != "All":
-                    asset_item.setHidden(True)
-            except:
-                if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxx":
-                    asset_item.setHidden(True)
+            if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
+                asset_item.setHidden(True)
 
             if asset.type != self.selected_department_name:
                 asset_item.setHidden(True)
@@ -549,10 +582,15 @@ class AssetLoader(object):
 
         old_version_path = self.selected_asset.full_path
         new_version = str(int(self.selected_asset.version) + 1).zfill(2)
+
         asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.last_publish, self.selected_asset.creator, self.selected_asset.number_of_publishes)
         asset.add_asset_to_db()
 
-        shutil.copy(old_version_path, asset.full_path)
+        try:
+            shutil.copy(old_version_path, asset.full_path)
+        except:
+            asset.remove_asset_from_db()
+            return
         version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
         version_item.setData(QtCore.Qt.UserRole, asset)
         self.versions.append(version_item)
@@ -610,6 +648,10 @@ class AssetLoader(object):
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
+
+        if self.selected_asset.type == "rig":
+            shutil.copy2(self.selected_asset.full_path, self.selected_asset.rig_out_path)
+            self.publish_process_finished()
 
     def publish_process_finished(self):
         # Check if current asset has been favorited by someone.
@@ -778,7 +820,7 @@ class AssetLoader(object):
             process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_tmp.hipnc")))
             process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_tmp.hipnc")])
 
-        elif self.selected_asset.type == "rig":
+        elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
             process = QtCore.QProcess(self)
             process.start(self.maya_path, [self.selected_asset.full_path])
 
@@ -863,9 +905,9 @@ class AssetLoader(object):
         asset_name = asset_name_tmp
 
         if self.selected_department_name == "mod":
-            self.create_modeling_asset_from_scratch(asset_name, extension, selected_software)
+            self.create_mod_asset_from_scratch(asset_name, extension, selected_software)
         elif self.selected_department_name == "lay":
-            self.create_layout_asset_from_scratch(asset_name)
+            self.create_lay_asset_from_scratch(asset_name)
 
     def create_asset_from_asset(self):
         if self.selected_department_name == "mod":
@@ -874,7 +916,7 @@ class AssetLoader(object):
             self.create_from_asset_dialog = QtGui.QDialog(self)
             self.Lib.apply_style(self, self.create_from_asset_dialog)
 
-            self.create_from_asset_dialog.setWindowTitle("Enter a name")
+            self.create_from_asset_dialog.setWindowTitle("Choose which asset to create")
             self.create_from_asset_dialog_main_layout = QtGui.QHBoxLayout(self.create_from_asset_dialog)
 
             rigBtn = QtGui.QPushButton("Rig", self.create_from_asset_dialog)
@@ -887,6 +929,9 @@ class AssetLoader(object):
             self.create_from_asset_dialog_main_layout.addWidget(texBtn)
 
             self.create_from_asset_dialog.exec_()
+
+        elif self.selected_department_name == "rig":
+            AnimSceneChooser(self)
 
         elif self.selected_department_name == "lay":
             if self.selected_asset == None: return
@@ -922,6 +967,7 @@ class AssetLoader(object):
         self.process.waitForFinished()
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
 
+
     def create_tex_asset_from_mod(self):
         self.create_from_asset_dialog.close()
         print("Tex")
@@ -932,8 +978,7 @@ class AssetLoader(object):
     def create_lgt_asset_from_lay(self):
         pass
 
-
-    def create_modeling_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
+    def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
         # Create modeling scene asset
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", "", self.username)
@@ -960,7 +1005,7 @@ class AssetLoader(object):
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
-    def create_layout_asset_from_scratch(self, asset_name):
+    def create_lay_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hipnc", "lay", "01", [], "", "", "", self.username)
@@ -970,6 +1015,14 @@ class AssetLoader(object):
         self.asset_creation_finished(asset)
 
     def asset_creation_finished(self, asset):
+
+        if self.selected_department_name == "mod" and asset.type == "rig":
+            print("default publish rig")
+            # Create default publish scene
+            out_rig_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "out", [], asset.id, "", "", self.username)
+            out_rig_asset.add_asset_to_db()
+            shutil.copy(asset.full_path, out_rig_asset.full_path)
+
         # Reload assets
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
@@ -991,6 +1044,83 @@ class AssetLoader(object):
     def add_assets_to_layout(self):
 
         AddAssetsToLayoutWindow(self)
+
+
+class AnimSceneChooser(QtGui.QDialog):
+    def __init__(self, main):
+        super(AnimSceneChooser, self).__init__()
+        self.main = main
+
+        self.setWindowTitle("Choose a sequence and a shot")
+        self.main.Lib.apply_style(self.main, self)
+
+        layout = QtGui.QGridLayout(self)
+
+        seqLbl = QtGui.QLabel("Sequence:", self)
+        shotLbl = QtGui.QLabel("Shot:", self)
+
+        self.seqListWidget = QtGui.QListWidget(self)
+        self.shotListWidget = QtGui.QListWidget(self)
+
+        self.seqListWidget.itemClicked.connect(self.filter_shots_based_on_sequence)
+        self.shotListWidget.itemClicked.connect(self.shot_list_clicked)
+
+        seqList = QtCore.QStringList()
+        [seqList.append(i) for i in self.main.shots.keys()]
+        self.seqListWidget.addItems(seqList)
+
+        for seq, shots in self.main.shots.items():
+            item = QtGui.QListWidgetItem("None")
+            item.setData(QtCore.Qt.UserRole, seq)
+            self.shotListWidget.addItem(item)
+            for shot in shots:
+                item = QtGui.QListWidgetItem(shot)
+                item.setData(QtCore.Qt.UserRole, seq)
+                self.shotListWidget.addItem(item)
+
+        createAnimSceneBtn = QtGui.QPushButton("Create animation asset", self)
+        createAnimSceneBtn.clicked.connect(self.create_anm_from_rig)
+
+
+        layout.addWidget(seqLbl, 0, 0)
+        layout.addWidget(shotLbl, 0, 1)
+        layout.addWidget(self.seqListWidget, 1, 0)
+        layout.addWidget(self.shotListWidget, 1, 1)
+        layout.addWidget(createAnimSceneBtn, 2, 0, 2, 2)
+
+        self.seqListWidget.setCurrentRow(0)
+        self.filter_shots_based_on_sequence()
+
+        self.exec_()
+
+    def filter_shots_based_on_sequence(self):
+        self.selected_sequence = self.seqListWidget.selectedItems()[0]
+        self.selected_sequence = str(self.selected_sequence.text())
+
+        for i in xrange(0, self.shotListWidget.count()):
+            seq_from_shot = self.shotListWidget.item(i).data(QtCore.Qt.UserRole).toPyObject()
+            if seq_from_shot == self.selected_sequence:
+                self.shotListWidget.item(i).setHidden(False)
+            else:
+                self.shotListWidget.item(i).setHidden(True)
+
+    def shot_list_clicked(self):
+        self.selected_shot = self.shotListWidget.selectedItems()[0]
+        self.selected_shot = str(self.selected_shot.text())
+        if self.selected_shot == "None":
+            self.selected_shot = "xxxx"
+
+    def create_anm_from_rig(self):
+
+        asset = self.main.Asset(self.main, 0, self.main.selected_project_name, self.selected_sequence, self.selected_shot, self.main.selected_asset.name, "", "ma", "anm", "01", [], "", "", "", self.main.username)
+        asset.add_asset_to_db()
+
+        process = QtCore.QProcess(self)
+        process.finished.connect(partial(self.main.asset_creation_finished, asset))
+        process.waitForFinished()
+        process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_rig_as_reference.py", self.main.selected_asset.rig_out_path, asset.full_path])
+
+
 
 
 class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):

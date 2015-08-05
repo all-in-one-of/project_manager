@@ -119,7 +119,7 @@ class Lib(object):
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"))
 
             for i in range(0, 360, 90):
-                os.remove(self.obj_tmp_path.replace("out.obj", "_" + str(i).zfill(3) + ".jpg"))
+                os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(3) + ".jpg"))
 
 
         elif self.type == "turn":
@@ -153,57 +153,6 @@ class Lib(object):
         if os.path.exists("H:\\plugins"):
             shutil.rmtree("H:\\plugins")
         distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
-
-    def save_prefs(self):
-        """
-        Save preferences
-
-        """
-        photoshop_path = str(self.photoshopPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Photoshop"''',
-                            (photoshop_path,))
-
-        maya_path = str(self.mayaPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Maya"''', (maya_path,))
-
-        maya_batch_path = str(self.mayaBatchPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Maya Batch"''', (maya_batch_path,))
-
-        softimage_path = str(self.softimagePathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Softimage"''',
-                            (softimage_path,))
-
-        softimage_batch_path = str(self.softimageBatchPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Softimage Batch"''',
-                            (softimage_batch_path,))
-
-        houdini_path = str(self.houdiniPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Houdini"''',
-                            (houdini_path,))
-
-        houdini_batch_path = str(self.houdiniPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Houdini Batch"''',
-                            (houdini_batch_path,))
-
-        cinema4d_path = str(self.cinema4dPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Cinema 4D"''',
-                            (cinema4d_path,))
-
-        nuke_path = str(self.nukePathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Nuke"''', (nuke_path,))
-
-        zbrush_path = str(self.zbrushPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="ZBrush"''',
-                            (zbrush_path,))
-
-        mari_path = str(self.mariPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Mari"''', (mari_path,))
-
-        blender_path = str(self.blenderPathLineEdit.text())
-        self.cursor.execute('''UPDATE software_paths SET software_path=? WHERE software_name="Blender"''',
-                            (blender_path,))
-
-        self.db.commit()
 
     def message_box(self, type="Warning", text="warning", no_button=False, exec_now=True):
 
@@ -522,7 +471,7 @@ class Lib(object):
             self.last_active_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
 
             last_active_period = relativedelta.relativedelta(now, self.last_active_as_date)
-            if last_active_period.minutes > 2:
+            if last_active_period.minutes >= 1:
                 self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (member,))
             else:
                 self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (member,))

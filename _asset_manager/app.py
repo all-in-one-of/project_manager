@@ -111,7 +111,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.username = os.getenv('USERNAME')
-        self.refresh_iteration = 0
+        self.refresh_iteration = 1
         self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
                         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
@@ -198,19 +198,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.zbrush_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="ZBrush"''').fetchone()[0])
         self.mari_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Mari"''').fetchone()[0])
         self.blender_path = str(self.cursor.execute('''SELECT software_path FROM software_paths WHERE software_name="Blender"''').fetchone()[0])
-
-        self.photoshopPathLineEdit.setText(self.photoshop_path)
-        self.mayaPathLineEdit.setText(self.maya_path)
-        self.mayaBatchPathLineEdit.setText(self.maya_batch_path)
-        self.softimagePathLineEdit.setText(self.softimage_path)
-        self.softimageBatchPathLineEdit.setText(self.softimage_batch_path)
-        self.houdiniPathLineEdit.setText(self.houdini_path)
-        self.houdiniBatchPathLineEdit.setText(self.houdini_batch_path)
-        self.cinema4dPathLineEdit.setText(self.cinema4d_path)
-        self.nukePathLineEdit.setText(self.nuke_path)
-        self.zbrushPathLineEdit.setText(self.zbrush_path)
-        self.mariPathLineEdit.setText(self.mari_path)
-        self.blenderPathLineEdit.setText(self.blender_path)
 
         self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (self.username,))
         self.db.commit()
@@ -507,7 +494,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.load_all_assets_for_first_time()
         #self.load_assets_from_selected_seq_shot_dept()
         #self.setup_tags()
-        #self.mt_item_added = True
+        self.mt_item_added = True
         if self.refresh_iteration % 5 == 0:
             MyTasks.mt_add_tasks_from_database(self)
         if self.refresh_iteration % 8 == 0:
@@ -596,8 +583,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
             if current_tab_text == "Images Manager":
                 ReferenceTab.remove_selected_references(self)
-            elif current_tab_text == "Asset Loader":
-                self.AssetLoader.remove_version(self)
         if key == QtCore.Qt.Key_F2:
             selected_reference = self.referenceThumbListWidget.selectedItems()[0]
             asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
@@ -609,7 +594,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.db.commit()
 
         self.save_tags_list()
-        self.Lib.save_prefs(self)
         self.close()
         app.exit()
 

@@ -96,15 +96,41 @@ class PeopleTab(object):
         # For each member, add online/offline icon on top of their profile picture depending on status
         for i, member_photo in enumerate(self.members_photos):
             if member_online_status[i] == 1:
-                overlay = QtGui.QImage(self.cur_path + "\\media\\online.png")
-            else:
-                overlay = QtGui.QImage(self.cur_path + "\\media\\offline.png")
+                image = QtGui.QImage(member_photo)
+                p1 = p2 = QtCore.QPoint()
+                p2.setY(image.height())
 
-            image = QtGui.QImage(member_photo)
-            painter = QtGui.QPainter()
-            painter.begin(image)
-            painter.drawImage(51, 4, overlay)
-            painter.end()
+                gradient = QtGui.QLinearGradient(p1, p2)
+                gradient.setColorAt(0, QtCore.Qt.transparent)
+                gradient.setColorAt(1, QtGui.QColor(255, 255, 255, 25))
+
+                painter = QtGui.QPainter(image)
+                painter.fillRect(0, 0, image.width(), image.height(), gradient)
+
+                gradient.setColorAt(0, QtGui.QColor(255, 255, 255, 25))
+                gradient.setColorAt(1, QtCore.Qt.transparent)
+                painter.fillRect(0, 0, image.width(), image.height(), gradient)
+
+                painter.end()
+            else:
+                image = QtGui.QImage(member_photo)
+                p1 = p2 = QtCore.QPoint()
+                p2.setY(image.height())
+
+                gradient = QtGui.QLinearGradient(p1, p2)
+                gradient.setColorAt(0, QtCore.Qt.transparent)
+                gradient.setColorAt(1, QtGui.QColor(0, 0, 0, 180))
+
+                painter = QtGui.QPainter(image)
+                painter.fillRect(0, 0, image.width(), image.height(), gradient)
+
+                gradient.setColorAt(0, QtGui.QColor(0, 0, 0, 180))
+                gradient.setColorAt(1, QtCore.Qt.transparent)
+                painter.fillRect(0, 0, image.width(), image.height(), gradient)
+
+                painter.end()
+
+
             self.profilPicLblList[i].setPixmap(QtGui.QPixmap.fromImage(image))
 
     def profil_pic_clicked(self, lbl, value):
