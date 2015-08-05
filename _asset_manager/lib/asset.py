@@ -112,6 +112,7 @@ class Asset(object):
             os.remove(self.turn_vid_path)
         except:
             pass
+        self.main.cursor.execute('''DELETE FROM favorited_assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
         self.main.db.commit()
@@ -244,6 +245,8 @@ class Asset(object):
 
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
+
+
 
 
 

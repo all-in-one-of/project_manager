@@ -14,8 +14,9 @@ from threading import Thread
 import time
 import distutils.core
 import shutil
-import datetime
+from datetime import datetime
 import smtplib
+from dateutil import relativedelta
 
 
 class Lib(object):
@@ -457,7 +458,7 @@ class Lib(object):
 
     def modification_date(self, filename):
         t = os.path.getmtime(filename)
-        return datetime.datetime.fromtimestamp(t)
+        return datetime.fromtimestamp(t)
 
     def add_entry_to_log(self, members_list="", members_concerned="", asset_id=0, type="", description=""):
         if members_list == "All":
@@ -505,6 +506,26 @@ class Lib(object):
         server.quit()
 
         self.message_box(type="info", text="Mail successfully sent!")
+
+    def check_last_active(self):
+        for member in self.members.keys():
+            last_active = self.cursor.execute('''SELECT last_active FROM preferences WHERE username=?''', (member,)).fetchone()
+            self.last_active = last_active[0]
+            now = datetime.now()
+            date = self.last_active.split(" ")[0]
+            time = self.last_active.split(" ")[-1]
+            day = date.split("/")[0]
+            month = date.split("/")[1]
+            year = date.split("/")[2]
+            hour = time.split(":")[0]
+            minutes = time.split(":")[1]
+            self.last_active_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
+
+            last_active_period = relativedelta.relativedelta(now, self.last_active_as_date)
+            if last_active_period.minutes > 2:
+                self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (member,))
+            else:
+                self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (member,))
 
 class DesktopWidget(QtGui.QWidget):
 
@@ -636,7 +657,7 @@ class CheckNews(QtCore.QThread):
     def run(self):
         while True:
             self.emit(QtCore.SIGNAL("refresh_all"))
-            time.sleep(5)
+            time.sleep(10)
 
 
 

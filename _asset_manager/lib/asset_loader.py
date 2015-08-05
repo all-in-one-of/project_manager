@@ -773,12 +773,19 @@ class AssetLoader(object):
             process.start(self.houdini_path, [self.selected_asset.main_hda_path])
 
         elif self.selected_asset.type == "lay":
+            shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_tmp.hipnc"))
             process = QtCore.QProcess(self)
-            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/")])
+            process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_tmp.hipnc")))
+            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_tmp.hipnc")])
 
         elif self.selected_asset.type == "rig":
             process = QtCore.QProcess(self)
             process.start(self.maya_path, [self.selected_asset.full_path])
+
+    def load_asset_finished(self, file_to_remove=None):
+        if file_to_remove != None:
+            if os.path.isfile(file_to_remove):
+                os.remove(file_to_remove)
 
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
@@ -881,6 +888,26 @@ class AssetLoader(object):
 
             self.create_from_asset_dialog.exec_()
 
+        elif self.selected_department_name == "lay":
+            if self.selected_asset == None: return
+            if self.selected_asset.type != "mod": return
+            self.create_from_asset_dialog = QtGui.QDialog(self)
+            self.Lib.apply_style(self, self.create_from_asset_dialog)
+
+            self.create_from_asset_dialog.setWindowTitle("Enter a name")
+            self.create_from_asset_dialog_main_layout = QtGui.QHBoxLayout(self.create_from_asset_dialog)
+
+            cameraBtn = QtGui.QPushButton("Camera", self.create_from_asset_dialog)
+            lightingBtn = QtGui.QPushButton("Lighting", self.create_from_asset_dialog)
+
+            cameraBtn.clicked.connect(self.create_cam_asset_from_lay)
+            lightingBtn.clicked.connect(self.create_lgt_asset_from_lay)
+
+            self.create_from_asset_dialog_main_layout.addWidget(cameraBtn)
+            self.create_from_asset_dialog_main_layout.addWidget(lightingBtn)
+
+            self.create_from_asset_dialog.exec_()
+
     def create_rig_asset_from_mod(self):
 
         self.create_from_asset_dialog.close()
@@ -898,6 +925,13 @@ class AssetLoader(object):
     def create_tex_asset_from_mod(self):
         self.create_from_asset_dialog.close()
         print("Tex")
+
+    def create_cam_asset_from_lay(self):
+        pass
+
+    def create_lgt_asset_from_lay(self):
+        pass
+
 
     def create_modeling_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 

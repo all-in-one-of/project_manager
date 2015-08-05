@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Aug 04 19:40:26 2015
+# Created: Wed Aug 05 10:31:00 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -227,6 +227,10 @@ class Ui_Form(object):
         self.departmentList.addItem(item)
         item = QtGui.QListWidgetItem()
         self.departmentList.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.departmentList.addItem(item)
+        item = QtGui.QListWidgetItem()
+        self.departmentList.addItem(item)
         self.gridLayout.addWidget(self.departmentList, 3, 3, 1, 1)
         self.projectList = QtGui.QListWidget(self.listsFrame)
         self.projectList.setFrameShape(QtGui.QFrame.Box)
@@ -378,8 +382,8 @@ class Ui_Form(object):
         self.verticalLayout_3.setMargin(0)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.assetInfoGrp = QtGui.QGroupBox(self.infoFrame)
-        self.assetInfoGrp.setMinimumSize(QtCore.QSize(0, 400))
-        self.assetInfoGrp.setMaximumSize(QtCore.QSize(16777215, 400))
+        self.assetInfoGrp.setMinimumSize(QtCore.QSize(0, 0))
+        self.assetInfoGrp.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.assetInfoGrp.setAutoFillBackground(False)
         self.assetInfoGrp.setFlat(True)
         self.assetInfoGrp.setCheckable(False)
@@ -2181,14 +2185,18 @@ class Ui_Form(object):
         item = self.departmentList.item(3)
         item.setText(_translate("Form", "Animation", None))
         item = self.departmentList.item(4)
-        item.setText(_translate("Form", "Simulation", None))
-        item = self.departmentList.item(5)
-        item.setText(_translate("Form", "Shading", None))
-        item = self.departmentList.item(6)
         item.setText(_translate("Form", "Layout", None))
+        item = self.departmentList.item(5)
+        item.setText(_translate("Form", "Camera", None))
+        item = self.departmentList.item(6)
+        item.setText(_translate("Form", "Shading", None))
         item = self.departmentList.item(7)
-        item.setText(_translate("Form", "DMP", None))
+        item.setText(_translate("Form", "Lighting", None))
         item = self.departmentList.item(8)
+        item.setText(_translate("Form", "Simulation", None))
+        item = self.departmentList.item(9)
+        item.setText(_translate("Form", "DMP", None))
+        item = self.departmentList.item(10)
         item.setText(_translate("Form", "Compositing", None))
         self.departmentList.setSortingEnabled(__sortingEnabled)
         self.projectList.setSortingEnabled(True)

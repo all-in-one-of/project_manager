@@ -111,7 +111,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.username = os.getenv('USERNAME')
-
+        self.refresh_iteration = 0
         self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
                         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
@@ -119,7 +119,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
         self.departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
                                          "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
-                                         "Simulation": "sim", "Shading": "shd", "Layout": "lay", "DMP": "dmp",
+                                         "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp",
                                          "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
         self.departments_longname = {"spt": "Script", "stb": "Storyboard", "ref": "References", "cpt": "Concepts",
                                       "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
@@ -499,17 +499,22 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
 
     def refresh_all(self):
-        self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (self.username,))
+        if self.refresh_iteration % 3 == 0:
+            self.Lib.check_last_active(self)
+            self.PeopleTab.get_online_status(self)
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
         self.db.commit()
-        self.PeopleTab.get_online_status(self)
         #self.load_all_assets_for_first_time()
         #self.load_assets_from_selected_seq_shot_dept()
         #self.setup_tags()
-        self.mt_item_added = True
-        MyTasks.mt_add_tasks_from_database(self)
-        #self.ReferenceTab.refresh_reference_list(self)
+        #self.mt_item_added = True
+        if self.refresh_iteration % 5 == 0:
+            MyTasks.mt_add_tasks_from_database(self)
+        if self.refresh_iteration % 8 == 0:
+            self.ReferenceTab.refresh_reference_list(self)
+
         self.WhatsNew.load_whats_new(self)
+        self.refresh_iteration += 1
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:
