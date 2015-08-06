@@ -317,10 +317,12 @@ class AssetLoader(object):
 
         # Query the shots associated with each sequence
         self.shots = {}
+        self.shots_framerange = {}
         for seq in self.sequences:
-            shots = (self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, seq[0],))).fetchall()
-            shots = [str(shot[0]) for shot in shots]
-            self.shots[str(seq[0])] = shots
+            shots = (self.cursor.execute('''SELECT shot_number, frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, seq[0],))).fetchall()
+            self.shots[str(seq[0])] = [str(shot[0]) for shot in shots]
+            for shot in shots:
+                self.shots_framerange[str(seq[0]) + "-" + str(shot[0])] = (shot[1], shot[2])
 
         # Populate the sequences and shots lists
         self.seqList.clear()
@@ -474,7 +476,6 @@ class AssetLoader(object):
             qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
-            self.update_last_published_time_lbl()
         else:
             qpixmap = QtGui.QPixmap(self.no_img_found)
             qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -521,26 +522,36 @@ class AssetLoader(object):
         except:
             self.lastPublishComment.setText("...")
 
+        # Set last publish label
+        if self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc":
+            pass
+        else:
+            asset_published = self.Asset(self, self.selected_asset.dependency)
+            asset_published.get_infos_from_id()
+            self.update_last_published_time_lbl(asset_published)
 
-    def update_last_published_time_lbl(self, asset=None):
-        if asset == None:
-            asset = self.selected_asset
+    def update_last_published_time_lbl(self, asset_published=None):
 
-        if asset.type == "mod":
-            # Set last published date label
-            day_today = datetime.datetime.now()
-            number_of_days_since_last_publish = day_today - asset.last_publish_as_date
-            number_of_days_since_last_publish = number_of_days_since_last_publish.days
+        # Set last published date label
+        day_today = datetime.datetime.now()
+        number_of_days_since_last_publish = day_today - asset_published.last_publish_as_date
+        number_of_days_since_last_publish = number_of_days_since_last_publish.days
 
-            if number_of_days_since_last_publish == 0:
-                number_of_days_since_last_publish = "today"
-            elif number_of_days_since_last_publish > 7:
-                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago. You should publish a new version!"
-                self.lastPublishedLbl.setStyleSheet("color: red;")
-            else:
-                number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
+        if number_of_days_since_last_publish == 0:
+            number_of_days_since_last_publish = "today"
+        elif number_of_days_since_last_publish > 7:
+            number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago. You should publish a new version!"
+            self.lastPublishedLbl.setStyleSheet("color: red;")
+        else:
+            number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
 
-            self.lastPublishedLbl.setText("Last published by: {0} ({1})".format(asset.last_publish, number_of_days_since_last_publish))
+        publish_from_version_asset_id = asset_published.publish_from_version
+        publish_from_version = self.cursor.execute('''SELECT asset_version FROM assets WHERE asset_id=?''', (publish_from_version_asset_id,)).fetchone()
+        if publish_from_version == None or publish_from_version == "":
+            publish_from_version = "01"
+        else:
+            publish_from_version = publish_from_version[0]
+        self.lastPublishedLbl.setText("Last published by: {0} ({1}) from version {2}".format(asset_published.last_publish, number_of_days_since_last_publish, publish_from_version, ))
 
     def versionList_DoubleClicked(self):
         selected_version = self.versionList.selectedItems()[0]
@@ -641,34 +652,49 @@ class AssetLoader(object):
 
         # Add publish comment to database
         publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_text_edit.toPlainText()), 'utf-8')
-        if self.selected_asset.number_of_publishes == 0:
+        is_publish_comment = self.cursor.execute('''SELECT * FROM publish_comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
+        if is_publish_comment == None:
             self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment) VALUES(?,?)''', (self.selected_asset.id, publish_comment,))
         else:
             self.cursor.execute('''UPDATE publish_comments SET publish_comment=? WHERE asset_id=?''', (publish_comment, self.selected_asset.id,))
         self.db.commit()
         self.lastPublishComment.setText(publish_comment)
 
+        # Update last publish time
         self.selected_asset.change_last_publish()
         if self.selected_asset.type == "mod":
             if self.selected_asset.extension == "blend":
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
-                self.publish_process.start(self.blender_path, ["-b", "-P", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
+                self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
             elif self.selected_asset.extension == "ma":
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
-                self.publish_process.start(self.maya_batch_path, ["H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path])
+                self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path])
             elif self.selected_asset.extension == "scn":
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
-                self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", "H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
+                self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
             self.db.commit()
 
-        if self.selected_asset.type == "rig":
+        elif self.selected_asset.type == "rig":
             shutil.copy2(self.selected_asset.full_path, self.selected_asset.rig_out_path)
             self.publish_process_finished()
+
+        elif self.selected_asset.type == "anm":
+            # Get frame range from selected shot
+            framerange = self.shots_framerange[self.selected_asset.sequence + "-" + self.selected_asset.shot]
+            frame_start = framerange[0]
+            frame_end = framerange[1]
+
+            self.publish_process = QtCore.QProcess(self)
+            self.publish_process.finished.connect(self.publish_process_finished)
+            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(frame_start), str(frame_end)])
+
+            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.anim_out_path.replace(self.selected_project_path, ""),))
+            self.db.commit()
 
     def publish_process_finished(self):
         # Check if current asset has been favorited by someone.
@@ -681,7 +707,6 @@ class AssetLoader(object):
         # Add log entry saying that the asset has been published.
         log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
-        self.update_last_published_time_lbl()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
         # Confirm dialog
@@ -974,7 +999,7 @@ class AssetLoader(object):
 
         self.create_from_asset_dialog.close()
 
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], "", "", "", self.username)
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], self.selected_asset.id, "", "", self.username)
         asset.add_asset_to_db()
 
         obj_path = str(self.selected_asset.obj_path).replace("\\", "/")
@@ -999,21 +1024,22 @@ class AssetLoader(object):
         # Create modeling scene asset
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
-        main_id = asset.id
         shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
         # Create default publish cube (obj)
-        obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_id, "", "", self.username)
+        obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
         obj_asset.add_asset_to_db()
-        obj_id = obj_asset.id
         shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
+        # Add publish obj as dependency to main asset
+        asset.change_dependency(obj_asset.id)
+
         # Create main HDA database entry
-        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], main_id + "," + obj_id, "", "", self.username)
+        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], str(asset.id) + "," + str(obj_asset.id), "", "", self.username)
         main_hda_asset.add_asset_to_db()
 
         # Create shading HDA database entry
-        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_id, "", "", self.username)
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], asset.id, "", "", self.username)
         shading_hda_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
@@ -1132,10 +1158,19 @@ class AnimSceneChooser(QtGui.QDialog):
         asset = self.main.Asset(self.main, 0, self.main.selected_project_name, self.selected_sequence, self.selected_shot, self.main.selected_asset.name, "", "ma", "anm", "01", [], "", "", "", self.main.username)
         asset.add_asset_to_db()
 
+        alembic_publish_asset = self.main.Asset(self.main, 0, self.main.selected_project_name, self.selected_sequence, self.selected_shot, self.main.selected_asset.name, "", "abc", "anm", "out", [], asset.id, "", "", self.main.username)
+        alembic_publish_asset.add_asset_to_db()
+
         process = QtCore.QProcess(self)
         process.finished.connect(partial(self.main.asset_creation_finished, asset))
         process.waitForFinished()
         process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_rig_as_reference.py", self.main.selected_asset.rig_out_path, asset.full_path])
+
+        hda_layout_asset = self.main.cursor.execute('''SELECT asset_path FROM assets WHERE asset_name=? AND asset_extension="hda" AND asset_type="lay"''', (asset.name,)).fetchone()
+
+        hda_process = QtCore.QProcess(self)
+        hda_process.waitForFinished()
+        hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_update_hda_from_abc.py", alembic_publish_asset.full_path.replace("\\", "/"), alembic_publish_asset.name, (self.main.selected_project_path + hda_layout_asset[0]).replace("\\", "/")])
 
 
 class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
@@ -1199,6 +1234,10 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 obj_out_asset = self.main.Asset(self.main, asset_object.dependency.split(",")[1])
                 obj_out_asset.get_infos_from_id()
 
+                # If asset has never been published, skip
+                if obj_out_asset.number_of_publishes == 0:
+                    continue
+
                 # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
                 last_published_asset = self.main.Asset(self.main, obj_out_asset.publish_from_version)
                 last_published_asset.get_infos_from_id()
@@ -1232,7 +1271,6 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
     def add_asset_to_list(self):
         # Create listwidget item from selected asset
-        print(self.selected_asset)
         item = QtGui.QListWidgetItem(self.selected_asset.name)
         item.setIcon(QtGui.QIcon(self.selected_asset_img))
         item.setData(QtCore.Qt.UserRole, (self.selected_asset, self.selected_asset_img))
@@ -1261,7 +1299,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         assets_list = []
         for i in xrange(self.assetsToAddListWidget.count()):
             list_item = self.assetsToAddListWidget.item(i)
-            asset = list_item.data(QtCore.Qt.UserRole).toPyObject()
+            asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
             assets_list.append(asset.full_path.replace("\\", "/"))
 
         self.houdini_hda_process = QtCore.QProcess(self)

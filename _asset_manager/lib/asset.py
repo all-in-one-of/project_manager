@@ -57,10 +57,16 @@ class Asset(object):
         self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_quad", "jpg")
         self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
-        self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
+        if self.type == "rig":
+            self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
+
+        if self.type == "anm":
+            self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("anm", self.project_shortname, self.sequence, self.shot, self.name, "out", "abc")
 
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
+
+
 
         self.publish_from_version = publish_from_version
 
@@ -199,8 +205,8 @@ class Asset(object):
         self.last_publish = last_publish
         self.last_publish_as_date = cur_time
         self.number_of_publishes += 1
-        self.main.cursor.execute('''UPDATE assets SET last_publish=? WHERE asset_id=?''', (last_publish, self.id,))
-        self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.id,))
+        self.main.cursor.execute('''UPDATE assets SET last_publish=? WHERE asset_id=?''', (last_publish, self.dependency,))
+        self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.dependency,))
         self.main.db.commit()
 
     def get_infos_from_id(self):

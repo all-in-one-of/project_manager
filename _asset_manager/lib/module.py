@@ -64,6 +64,7 @@ class Lib(object):
 
         if os.path.getsize(self.full_obj_path) < 100:
             self.message_box(type="warning", text="It looks like the published modeling is nothing. Make sure you model something before trying to make a thumbnail out of it!")
+            self.thumbnailProgressBar.hide()
             return
 
         self.create_thumbnail_process = QtCore.QProcess(self)
