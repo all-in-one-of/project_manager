@@ -106,4 +106,5 @@ material_node.moveToGoodPosition()
 main_digital_asset = hou.node("/obj").collapseIntoSubnet([source_node, center_node, material_node])
 main_digital_asset.setName(asset_name)
 main_digital_asset.createDigitalAsset(asset_name, main_hda_path, asset_name)
+main_digital_asset.setColor(hou.Color((0, 0.6, 1)))
 

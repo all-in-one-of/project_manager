@@ -472,7 +472,7 @@ class Lib(object):
             self.last_active_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
 
             last_active_period = relativedelta.relativedelta(now, self.last_active_as_date)
-            if last_active_period.minutes >= 1:
+            if last_active_period.minutes >= 2:
                 self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (member,))
             else:
                 self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (member,))

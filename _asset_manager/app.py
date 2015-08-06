@@ -121,7 +121,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                                          "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
                                          "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp",
                                          "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
-        self.departments_longname = {"spt": "Script", "stb": "Storyboard", "ref": "References", "cpt": "Concepts",
+        self.departments_longname = {"spt": "Script", "stb": "Storyboard", "ref": "References", "cam": "Camera", "cpt": "Concepts", "lgt": "Lighting",
                                       "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
                                       "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP",
                                       "cmp": "Compositing", "edt": "Editing", "rnd": "RnD"}
@@ -223,10 +223,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
-        self.check_news_thread = CheckNews(self)
-        self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
+        #self.check_news_thread = CheckNews(self)
+        #self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
+        #self.check_news_thread.daemon = True
+        #self.check_news_thread.start()
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected

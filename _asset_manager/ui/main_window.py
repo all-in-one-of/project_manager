@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Wed Aug 05 17:28:04 2015
+# Created: Thu Aug 06 14:32:38 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -524,7 +524,7 @@ class Ui_Form(object):
         self.horizontalLayout_2.addItem(spacerItem2)
         self.gridLayout_5.addWidget(self.smallActionIconFrame, 0, 0, 1, 1)
         self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
-        self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 50))
+        self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 100))
         self.lastPublishComment.setReadOnly(True)
         self.lastPublishComment.setObjectName(_fromUtf8("lastPublishComment"))
         self.gridLayout_5.addWidget(self.lastPublishComment, 3, 0, 1, 1)

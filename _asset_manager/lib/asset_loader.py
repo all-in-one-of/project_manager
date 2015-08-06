@@ -7,7 +7,7 @@ from functools import partial
 import os
 import shutil
 from threading import Thread
-import datetime
+from datetime import datetime
 
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
@@ -381,6 +381,11 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def departmentList_Clicked(self):
+
+        # Reset last publish and last access text
+        self.lastAccessLbl.setText("Last accessed by: ...")
+        self.lastPublishedLbl.setText("Last published by: ...")
+
         self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
         self.selected_department_name = self.departments_shortname[self.selected_department_name]
 
@@ -457,6 +462,7 @@ class AssetLoader(object):
         self.versionList_Clicked()
 
     def versionList_Clicked(self):
+
         # If user press arrow key in a tab other than Asset Loader, don't do anything
         current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
         if current_tab_text != "Asset Loader":
@@ -516,16 +522,18 @@ class AssetLoader(object):
         self.loadAssetBtn.setIcon(self.load_asset_icon)
 
         # Set last publish comment
-        publish_comment = self.cursor.execute('''SELECT publish_comment FROM publish_comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
-        try:
-            self.lastPublishComment.setText(publish_comment[0])
-        except:
-            self.lastPublishComment.setText("...")
+        publish_comments = self.cursor.execute('''SELECT publish_time, publish_comment, publish_creator FROM publish_comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
+        comments = ""
+        for comment in reversed(publish_comments):
+            publish_time = comment[0]
+            publish_comment = comment[1]
+            publish_creator = comment[2]
+            comments += u"{0} (by {1}): {2}\n\n".format(publish_time, self.members[publish_creator], publish_comment)
+
+        self.lastPublishComment.setText(comments)
 
         # Set last publish label
-        if self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc":
-            pass
-        else:
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam":
             asset_published = self.Asset(self, self.selected_asset.dependency)
             asset_published.get_infos_from_id()
             self.update_last_published_time_lbl(asset_published)
@@ -533,7 +541,7 @@ class AssetLoader(object):
     def update_last_published_time_lbl(self, asset_published=None):
 
         # Set last published date label
-        day_today = datetime.datetime.now()
+        day_today = datetime.now()
         number_of_days_since_last_publish = day_today - asset_published.last_publish_as_date
         number_of_days_since_last_publish = number_of_days_since_last_publish.days
 
@@ -652,13 +660,8 @@ class AssetLoader(object):
 
         # Add publish comment to database
         publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_text_edit.toPlainText()), 'utf-8')
-        is_publish_comment = self.cursor.execute('''SELECT * FROM publish_comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
-        if is_publish_comment == None:
-            self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment) VALUES(?,?)''', (self.selected_asset.id, publish_comment,))
-        else:
-            self.cursor.execute('''UPDATE publish_comments SET publish_comment=? WHERE asset_id=?''', (publish_comment, self.selected_asset.id,))
+        self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
         self.db.commit()
-        self.lastPublishComment.setText(publish_comment)
 
         # Update last publish time
         self.selected_asset.change_last_publish()
@@ -705,7 +708,7 @@ class AssetLoader(object):
             favorited_by = []
 
         # Add log entry saying that the asset has been published.
-        log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
         self.Lib.message_box(self, text="Asset has been successfully published!", type="info")
 
@@ -801,7 +804,9 @@ class AssetLoader(object):
 
 
         # Asset has never been published, ask for first publish.
-        if self.selected_asset.number_of_publishes == 0:
+        publish_asset = self.Asset(self, self.selected_asset.dependency)
+        publish_asset.get_infos_from_id()
+        if publish_asset.number_of_publishes == 0:
             result = self.Lib.message_box(self, type="warning", text="This asset has never been published. Do you want to publish it?", no_button=True)
             if result == 0:
                 return False
@@ -857,14 +862,22 @@ class AssetLoader(object):
             process.start(self.houdini_path, [self.selected_asset.main_hda_path])
 
         elif self.selected_asset.type == "lay":
-            shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_tmp.hipnc"))
+            shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
             process = QtCore.QProcess(self)
-            process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_tmp.hipnc")))
-            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_tmp.hipnc")])
+            process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
+            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
 
         elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
             process = QtCore.QProcess(self)
             process.start(self.maya_path, [self.selected_asset.full_path])
+
+        elif self.selected_asset.type == "cam":
+            associated_hip_scene = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_id=?''', (self.selected_asset.dependency, )).fetchone()[0]
+            associated_hip_scene = self.selected_project_path + associated_hip_scene
+            shutil.copy2(associated_hip_scene, associated_hip_scene.replace(".hipnc", "_" + self.username + "_camtmp.hipnc"))
+            process = QtCore.QProcess(self)
+            process.finished.connect(partial(self.load_asset_finished, associated_hip_scene.replace(".hipnc", "_" + self.username + "_camtmp.hipnc")))
+            process.start(self.houdini_path, [associated_hip_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_camtmp.hipnc")])
 
     def load_asset_finished(self, file_to_remove=None):
         if file_to_remove != None:
@@ -890,6 +903,11 @@ class AssetLoader(object):
         [version.setHidden(True) for version in self.versions]
 
     def create_asset_from_scratch(self):
+
+        if self.selected_department_name == "lay":
+            if self.selected_sequence_name == "xxx":
+                self.Lib.message_box(self, type="error", text="You must select a sequence to create a layout")
+                return
 
         # Create soft selection and asset name dialog
         dialog = QtGui.QDialog(self)
@@ -977,7 +995,6 @@ class AssetLoader(object):
 
         elif self.selected_department_name == "lay":
             if self.selected_asset == None: return
-            if self.selected_asset.type != "mod": return
             self.create_from_asset_dialog = QtGui.QDialog(self)
             self.Lib.apply_style(self, self.create_from_asset_dialog)
 
@@ -1011,13 +1028,104 @@ class AssetLoader(object):
 
     def create_tex_asset_from_mod(self):
         self.create_from_asset_dialog.close()
-        print("Tex")
 
     def create_cam_asset_from_lay(self):
-        pass
+
+        self.create_from_asset_dialog.close()
+
+        # if selected sequence has no shots, abort
+        shots = self.shots[self.selected_sequence_name]
+        if len(shots) == 0:
+            self.Lib.message_box(self, type="error", text="You can't create a camera for a sequence without any shot")
+            return
+
+        # Create shot list selection dialog
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Choose a shot")
+        self.Lib.apply_style(self, dialog)
+
+        layout = QtGui.QVBoxLayout(dialog)
+
+        shotLbl = QtGui.QLabel("Shot list:", self)
+        shotListWidget = QtGui.QListWidget(self)
+        createCamBtn = QtGui.QPushButton("Create asset", self)
+        createCamBtn.clicked.connect(dialog.accept)
+
+        shots = self.shots[self.selected_sequence_name]
+        shotListWidget.addItems(QtCore.QStringList(shots))
+        shotListWidget.setCurrentRow(0)
+        selected_shot = shots[0]
+
+        layout.addWidget(shotLbl)
+        layout.addWidget(shotListWidget)
+        layout.addWidget(createCamBtn)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        # Get selected item
+        selected_shot = shotListWidget.selectedItems()[0]
+        selected_shot = str(selected_shot.text())
+
+        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "camera-" + selected_shot, "", "hda", "cam", "01", [], self.selected_asset.id, "", "", self.username)
+        camera_asset.add_asset_to_db()
+
+        # Create HDA associated to modeling scene
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, camera_asset))
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_cam_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
 
     def create_lgt_asset_from_lay(self):
-        pass
+
+        self.create_from_asset_dialog.close()
+
+        # if selected sequence has no shots, abort
+        shots = self.shots[self.selected_sequence_name]
+        if len(shots) == 0:
+            self.Lib.message_box(self, type="error", text="You can't create a light for a sequence without any shot")
+            return
+
+        # Create shot list selection dialog
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Choose a shot")
+        self.Lib.apply_style(self, dialog)
+
+        layout = QtGui.QVBoxLayout(dialog)
+
+        shotLbl = QtGui.QLabel("Shot list:", self)
+        shotListWidget = QtGui.QListWidget(self)
+        createCamBtn = QtGui.QPushButton("Create asset", self)
+        createCamBtn.clicked.connect(dialog.accept)
+
+        shots = self.shots[self.selected_sequence_name]
+        shotListWidget.addItems(QtCore.QStringList(shots))
+        shotListWidget.setCurrentRow(0)
+        selected_shot = shots[0]
+
+        layout.addWidget(shotLbl)
+        layout.addWidget(shotListWidget)
+        layout.addWidget(createCamBtn)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        # Get selected item
+        selected_shot = shotListWidget.selectedItems()[0]
+        selected_shot = str(selected_shot.text())
+
+        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
+        camera_asset.add_asset_to_db()
+
+        # Create HDA associated to modeling scene
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, camera_asset))
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_lgt_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
 
     def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
@@ -1035,7 +1143,7 @@ class AssetLoader(object):
         asset.change_dependency(obj_asset.id)
 
         # Create main HDA database entry
-        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], str(asset.id) + "," + str(obj_asset.id), "", "", self.username)
+        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
         main_hda_asset.add_asset_to_db()
 
         # Create shading HDA database entry
@@ -1074,11 +1182,9 @@ class AssetLoader(object):
         asset.change_last_access()
         self.lastAccessLbl.setText("Last accessed by: " + asset.last_access)
 
-        # Update last publish
-        self.update_last_published_time_lbl(asset)
 
         # Add Log Entry
-        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "asset", "{0} has created a new {1} asset ({2}).".format(self.members[self.username], self.departments_longname[asset.type], asset.name), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "asset", "{0} has created a new {1} asset ({2}).".format(self.members[self.username], self.departments_longname[asset.type], asset.name), datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
 
         # Show info message
@@ -1230,16 +1336,20 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 asset_object = self.main.Asset(self.main, asset_id)
                 asset_object.get_infos_from_id()
 
-                # Get out asset (obj) from modeling digital asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
-                obj_out_asset = self.main.Asset(self.main, asset_object.dependency.split(",")[1])
-                obj_out_asset.get_infos_from_id()
+                # Get first modeling scene modeling digital asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
+                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency)
+                first_modeling_scene_asset.get_infos_from_id()
+
+                # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
+                out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency)
+                out_obj_asset.get_infos_from_id()
 
                 # If asset has never been published, skip
-                if obj_out_asset.number_of_publishes == 0:
+                if out_obj_asset.number_of_publishes == 0:
                     continue
 
                 # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
-                last_published_asset = self.main.Asset(self.main, obj_out_asset.publish_from_version)
+                last_published_asset = self.main.Asset(self.main, out_obj_asset.publish_from_version)
                 last_published_asset.get_infos_from_id()
 
                 item = QtGui.QListWidgetItem(asset_object.name)

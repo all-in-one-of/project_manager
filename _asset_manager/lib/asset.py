@@ -30,19 +30,23 @@ class Asset(object):
             self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
-        if last_publish == "" or last_publish == None:
-            self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
-            self.last_publish_as_date = datetime.now()
+        if self.version == "out":
+            if last_publish == "" or last_publish == None:
+                self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+                self.last_publish_as_date = datetime.now()
+            else:
+                self.last_publish = last_publish
+                date = last_publish.split(" ")[2]
+                day = date.split("/")[0]
+                month = date.split("/")[1]
+                year = date.split("/")[2]
+                time = last_publish.split(" ")[-1]
+                hour = time.split(":")[0]
+                minutes = time.split(":")[1]
+                self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
         else:
-            self.last_publish = last_publish
-            date = last_publish.split(" ")[2]
-            day = date.split("/")[0]
-            month = date.split("/")[1]
-            year = date.split("/")[2]
-            time = last_publish.split(" ")[-1]
-            hour = time.split(":")[0]
-            minutes = time.split(":")[1]
-            self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
+            self.last_publish = ""
+            self.last_publish_as_date = ""
 
         self.number_of_publishes = number_of_publishes
         self.creator = creator
@@ -241,7 +245,24 @@ class Asset(object):
             self.tags = []
         self.dependency = asset_dependency
         self.last_access = last_access
-        self.last_publish = last_publish
+        if self.version == "out":
+            if last_publish == "" or last_publish == None:
+                self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+                self.last_publish_as_date = datetime.now()
+            else:
+                self.last_publish = last_publish
+                date = last_publish.split(" ")[2]
+                day = date.split("/")[0]
+                month = date.split("/")[1]
+                year = date.split("/")[2]
+                time = last_publish.split(" ")[-1]
+                hour = time.split(":")[0]
+                minutes = time.split(":")[1]
+                self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
+        else:
+            self.last_publish = ""
+            self.last_publish_as_date = ""
+
         self.number_of_publishes = number_of_publishes
         self.creator = creator
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname,
