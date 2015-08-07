@@ -43,6 +43,7 @@ import shutil
 from datetime import date
 from datetime import datetime
 from dateutil import relativedelta
+from functools import partial
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -227,6 +228,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
         #self.check_news_thread.daemon = True
         #self.check_news_thread.start()
+
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -571,22 +573,35 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                 self.tray_icon.show()
 
     def keyPressEvent(self, event):
+
+        global_pos = self.mapFromGlobal(QtGui.QCursor.pos())
+        widget_under_mouse = self.childAt(global_pos)
+
         key = event.key()
         if key == QtCore.Qt.Key_F11:
             if self.isFullScreen():
                 self.showNormal()
             else:
                 self.showFullScreen()
-        if key == QtCore.Qt.Key_Escape:
+        elif key == QtCore.Qt.Key_Escape:
             sys.exit()
-        if key == QtCore.Qt.Key_Delete:
+        elif key == QtCore.Qt.Key_Delete:
             current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
             if current_tab_text == "Images Manager":
                 ReferenceTab.remove_selected_references(self)
-        if key == QtCore.Qt.Key_F2:
+        elif key == QtCore.Qt.Key_F2:
             selected_reference = self.referenceThumbListWidget.selectedItems()[0]
             asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
             ReferenceTab.rename_reference(self, asset)
+
+        elif key == QtCore.Qt.Key_F1:
+            self.show_wiki_help(widget_under_mouse)
+
+    def show_wiki_help(self, widget):
+        if widget.objectName() == "publishBtn":
+            subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "file:///Z:/Groupes-cours/NAND999-A15-N01/Nature/_info/wiki/wiki.html#Modeling"])
+
+
 
     def closeEvent(self, event):
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
