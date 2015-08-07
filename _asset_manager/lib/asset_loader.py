@@ -107,6 +107,8 @@ class AssetLoader(object):
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
+        self.importHighResObjBtn.clicked.connect(self.import_high_res_obj_into_low_res_scene)
+
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
         self.createAssetFromScratchAssetBtn.clicked.connect(self.create_asset_from_asset)
         self.deleteAssetBtn.clicked.connect(self.delete_asset)
@@ -914,6 +916,23 @@ class AssetLoader(object):
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
 
+    def import_high_res_obj_into_low_res_scene(self):
+        if self.selected_asset.extension == "blend":
+            self.import_obj_process = QtCore.QProcess(self)
+            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Done!"))
+            self.import_obj_process.waitForFinished()
+            self.import_obj_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_import_obj_into_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path.replace("-lowres", "")])
+        elif self.selected_asset.extension == "ma":
+            self.import_obj_process = QtCore.QProcess(self)
+            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Done!"))
+            self.import_obj_process.waitForFinished()
+            self.import_obj_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_into_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path.replace("-lowres", "")])
+        elif self.selected_asset.extension == "scn":
+            pass
+
+
+
+
     def create_asset_from_scratch(self):
 
         if self.selected_department_name == "lay":
@@ -985,6 +1004,9 @@ class AssetLoader(object):
         if self.selected_department_name == "mod":
             if self.selected_asset == None: return
             if self.selected_asset.type != "mod": return
+            if "lowres" in self.selected_asset.name:
+                self.Lib.message_box(self, type="error", text="You can't create an asset from a low-res asset. Please select the corresponding high-res asset.")
+                return
             self.create_from_asset_dialog = QtGui.QDialog(self)
             self.Lib.apply_style(self, self.create_from_asset_dialog)
 
@@ -1193,8 +1215,7 @@ class AssetLoader(object):
     def asset_creation_finished(self, asset):
 
         if self.selected_department_name == "mod" and asset.type == "rig":
-            print("default publish rig")
-            # Create default publish scene
+            # Create default publish scene for rig asset
             out_rig_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "out", [], asset.id, "", "", self.username)
             out_rig_asset.add_asset_to_db()
             shutil.copy(asset.full_path, out_rig_asset.full_path)
