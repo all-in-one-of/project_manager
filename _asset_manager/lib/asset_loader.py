@@ -25,11 +25,15 @@ class AssetLoader(object):
         self.new_version_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\new_version_disabled.png")
         self.load_asset_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset.png")
         self.load_asset_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset_disabled.png")
+        self.import_high_res_obj_icon = QtGui.QIcon(self.cur_path + "\\media\\import_high_res_obj.png")
 
         self.showAssetCommentBtn.setIcon(self.comment_disabled_icon)
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
+        self.importHighResObjBtn.setIcon(self.import_high_res_obj_icon)
+        self.importHighResObjBtn.hide()
+        self.line_4.hide()
 
         self.addAssetsToLayoutBtn.hide()
 
@@ -508,6 +512,14 @@ class AssetLoader(object):
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         else:
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
+
+        # Show import high res obj button if selected asset is a low-res modeling asset
+        if self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
+            self.importHighResObjBtn.show()
+            self.line_4.show()
+        else:
+            self.importHighResObjBtn.hide()
+            self.line_4.hide()
 
         # Set comment icon to enabled
         self.showAssetCommentBtn.setIcon(self.comment_icon)
@@ -1134,20 +1146,33 @@ class AssetLoader(object):
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
+        # Create low res modeling scene asset
+        asset_low_res = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", extension, "mod", "01", [], "", "", "", self.username)
+        asset_low_res.add_asset_to_db()
+        shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset_low_res.full_path)
+
         # Create default publish cube (obj)
         obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
         obj_asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
+        # Create default lowres publish cube (obj)
+        obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], asset_low_res.id, "", "", self.username)
+        obj_lowres_asset.add_asset_to_db()
+        shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
+
         # Add publish obj as dependency to main asset
         asset.change_dependency(obj_asset.id)
+
+        # Add publish obj as dependency to main asset
+        asset_low_res.change_dependency(obj_lowres_asset.id)
 
         # Create main HDA database entry
         main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
         main_hda_asset.add_asset_to_db()
 
         # Create shading HDA database entry
-        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], asset.id, "", "", self.username)
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
         shading_hda_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene

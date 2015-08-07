@@ -1167,6 +1167,108 @@
                              <number>0</number>
                             </property>
                             <item>
+                             <widget class="QPushButton" name="loadAssetBtn">
+                              <property name="minimumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="createVersionBtn">
+                              <property name="minimumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create new version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="publishBtn">
+                              <property name="minimumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Publish&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="Line" name="line_3">
+                              <property name="orientation">
+                               <enum>Qt::Vertical</enum>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="importHighResObjBtn">
+                              <property name="minimumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import high-resolution published obj into low-res modeling scene file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="Line" name="line_4">
+                              <property name="orientation">
+                               <enum>Qt::Vertical</enum>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
                              <widget class="QPushButton" name="addRemoveAssetAsFavoriteBtn">
                               <property name="minimumSize">
                                <size>
@@ -1179,6 +1281,9 @@
                                 <width>32</width>
                                 <height>32</height>
                                </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add asset to favorite&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                               </property>
                               <property name="text">
                                <string/>
@@ -1207,73 +1312,6 @@
                               </property>
                               <property name="toolTip">
                                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show comments&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                              </property>
-                              <property name="text">
-                               <string/>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="Line" name="line_3">
-                              <property name="orientation">
-                               <enum>Qt::Vertical</enum>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="createVersionBtn">
-                              <property name="minimumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="text">
-                               <string/>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="loadAssetBtn">
-                              <property name="minimumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="text">
-                               <string/>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="publishBtn">
-                              <property name="minimumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="toolTip">
-                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Publish&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                               </property>
                               <property name="text">
                                <string/>
