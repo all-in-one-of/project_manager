@@ -3,7 +3,7 @@ import sys
 
 main_hda_path = sys.argv[-4]
 shading_hda_path = sys.argv[-3]
-obj_path = sys.argv[-2]
+obj_path = sys.argv[-2].replace("\\", "/")
 asset_name = sys.argv[-1]
 
 # SOURCE NODE

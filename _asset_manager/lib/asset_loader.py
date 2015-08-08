@@ -928,10 +928,9 @@ class AssetLoader(object):
             self.import_obj_process.waitForFinished()
             self.import_obj_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_into_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path.replace("-lowres", "")])
         elif self.selected_asset.extension == "scn":
-            pass
-
-
-
+            self.import_obj_process = QtCore.QProcess(self)
+            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Done!"))
+            self.import_obj_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_import_obj_into_scene.py", "-main", "import_obj", "-args", "-file_path", self.selected_asset.full_path, "-obj_path", self.selected_asset.obj_path.replace("-lowres", "")])
 
     def create_asset_from_scratch(self):
 
