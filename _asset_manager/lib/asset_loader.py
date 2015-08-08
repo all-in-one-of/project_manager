@@ -31,11 +31,9 @@ class AssetLoader(object):
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
-        self.importHighResObjBtn.setIcon(self.import_high_res_obj_icon)
-        self.importHighResObjBtn.hide()
+        self.importObjBtn.setIcon(self.import_high_res_obj_icon)
+        self.importObjBtn.hide()
         self.line_4.hide()
-
-        self.addAssetsToLayoutBtn.hide()
 
         self.assets = {}
         self.selected_asset = None
@@ -91,9 +89,6 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
 
-        self.addAssetsToLayoutBtn.clicked.connect(self.add_assets_to_layout)
-
-
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
         self.addShotBtn.clicked.connect(self.add_shot)
@@ -107,7 +102,7 @@ class AssetLoader(object):
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
-        self.importHighResObjBtn.clicked.connect(self.import_high_res_obj_into_low_res_scene)
+        self.importObjBtn.clicked.connect(self.import_obj_into_scene)
 
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
         self.createAssetFromScratchAssetBtn.clicked.connect(self.create_asset_from_asset)
@@ -388,6 +383,10 @@ class AssetLoader(object):
 
     def departmentList_Clicked(self):
 
+        # Hide load obj buttons
+        self.importObjBtn.hide()
+        self.line_4.hide()
+
         # Reset last publish and last access text
         self.lastAccessLbl.setText("Last accessed by: ...")
         self.lastPublishedLbl.setText("Last published by: ...")
@@ -400,7 +399,6 @@ class AssetLoader(object):
         self.assetImg.setData(self.no_img_found)
         self.assetImg.setPixmap(qpixmap)
 
-        self.addAssetsToLayoutBtn.hide()
         self.updateThumbBtn.hide()
 
         if self.selected_department_name == "ref":
@@ -446,6 +444,8 @@ class AssetLoader(object):
         else:
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
+
+
 
         self.verticalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
@@ -495,9 +495,6 @@ class AssetLoader(object):
             self.assetImg.setPixmap(qpixmap)
 
 
-        if self.selected_asset.type == "lay":
-            if self.username == "thoudon" or self.username == "lclavet":
-                self.addAssetsToLayoutBtn.show()
 
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
@@ -516,11 +513,11 @@ class AssetLoader(object):
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
 
         # Show import high res obj button if selected asset is a low-res modeling asset
-        if self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
-            self.importHighResObjBtn.show()
+        if (self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name) or (self.selected_asset.type == "anm") or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc"):
+            self.importObjBtn.show()
             self.line_4.show()
         else:
-            self.importHighResObjBtn.hide()
+            self.importObjBtn.hide()
             self.line_4.hide()
 
         # Set comment icon to enabled
@@ -547,10 +544,10 @@ class AssetLoader(object):
         self.lastPublishComment.setText(comments)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam":
-            asset_published = self.Asset(self, self.selected_asset.dependency)
-            asset_published.get_infos_from_id()
-            self.update_last_published_time_lbl(asset_published)
+        #if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam":
+        #    asset_published = self.Asset(self, self.selected_asset.dependency)
+        #    asset_published.get_infos_from_id()
+        #    self.update_last_published_time_lbl(asset_published)
 
     def update_last_published_time_lbl(self, asset_published=None):
 
@@ -916,6 +913,14 @@ class AssetLoader(object):
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
 
+    def import_obj_into_scene(self):
+        if self.selected_asset.type == "mod":
+            self.import_high_res_obj_into_low_res_scene()
+        elif self.selected_asset.type == "anm":
+            AddAssetsToAnimWindow(self)
+        elif self.selected_asset.type == "lay":
+            AddAssetsToLayoutWindow(self)
+
     def import_high_res_obj_into_low_res_scene(self):
         if self.selected_asset.extension == "blend":
             self.import_obj_process = QtCore.QProcess(self)
@@ -1236,7 +1241,6 @@ class AssetLoader(object):
         self.Lib.message_box(self, type="info", text="Asset has been succesfully created!")
 
     def add_assets_to_layout(self):
-
         AddAssetsToLayoutWindow(self)
 
 
@@ -1335,8 +1339,10 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.main.Lib.apply_style(self.main, self)
 
         # Connections
-        self.availableAssetsListWidget.itemClicked.connect(self.left_list_item_clicked)
-        self.assetsToAddListWidget.itemClicked.connect(self.right_list_item_clicked)
+        self.availableAssetsListWidget.doubleClicked.connect(self.add_asset_to_list)
+        self.assetsToAddListWidget.doubleClicked.connect(self.remove_asset_from_list)
+        self.availableAssetsListWidget.setDragEnabled(False)
+        self.assetsToAddListWidget.setDragEnabled(False)
 
         self.addAssetBtn.clicked.connect(self.add_asset_to_list)
         self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
@@ -1408,47 +1414,39 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
         self.exec_()
 
-    def left_list_item_clicked(self):
-        try:
-            self.selected_asset_item = self.availableAssetsListWidget.selectedItems()[0]
-            self.selected_asset = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
-            self.selected_asset_img = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
-        except:
-            self.selected_asset = None
-
-    def right_list_item_clicked(self):
-        try:
-            self.selected_asset_item = self.assetsToAddListWidget.selectedItems()[0]
-            self.selected_asset = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
-            self.selected_asset_img = self.selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
-        except:
-            self.selected_asset = None
-
     def add_asset_to_list(self):
-        # Create listwidget item from selected asset
-        item = QtGui.QListWidgetItem(self.selected_asset.name)
-        item.setIcon(QtGui.QIcon(self.selected_asset_img))
-        item.setData(QtCore.Qt.UserRole, (self.selected_asset, self.selected_asset_img))
+        for asset in self.availableAssetsListWidget.selectedItems():
+            selected_asset_item = asset
+            selected_asset = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            selected_asset_img = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
 
-        # Add item to right list
-        self.assetsToAddListWidget.addItem(item)
+            # Create listwidget item from selected asset
+            item = QtGui.QListWidgetItem(selected_asset.name)
+            item.setIcon(QtGui.QIcon(selected_asset_img))
+            item.setData(QtCore.Qt.UserRole, (selected_asset, selected_asset_img))
 
-        # Remove item from left list
-        for item in self.availableAssetsListWidget.selectedItems():
-            self.availableAssetsListWidget.takeItem(self.availableAssetsListWidget.row(item))
+            # Add item to right list
+            self.assetsToAddListWidget.addItem(item)
+
+            # Remove item from left list
+            self.availableAssetsListWidget.takeItem(self.availableAssetsListWidget.row(asset))
 
     def remove_asset_from_list(self):
-        # Create listwidget item from selected asset
-        item = QtGui.QListWidgetItem(self.selected_asset.name)
-        item.setIcon(QtGui.QIcon(self.selected_asset_img))
-        item.setData(QtCore.Qt.UserRole, (self.selected_asset, self.selected_asset_img))
+        for asset in self.assetsToAddListWidget.selectedItems():
+            selected_asset_item = asset
+            selected_asset = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            selected_asset_img = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
 
-        # Add item to left list
-        self.availableAssetsListWidget.addItem(item)
+            # Create listwidget item from selected asset
+            item = QtGui.QListWidgetItem(selected_asset.name)
+            item.setIcon(QtGui.QIcon(selected_asset_img))
+            item.setData(QtCore.Qt.UserRole, (selected_asset, selected_asset_img))
 
-        # Remove item from right list
-        for item in self.assetsToAddListWidget.selectedItems():
-            self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(item))
+            # Add item to right list
+            self.availableAssetsListWidget.addItem(item)
+
+            # Remove item from left list
+            self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(asset))
 
     def add_assets_to_layout(self):
         assets_list = []
@@ -1466,3 +1464,176 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported into layout scene!")
         self.houdini_hda_process.kill()
         self.assetsToAddListWidget.clear()
+
+
+class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
+    def __init__(self, main):
+        super(AddAssetsToAnimWindow, self).__init__()
+
+        self.main = main
+
+        # Initialize the guis
+        self.add_assets_layout = self.setupUi(self)
+        self.main.Lib.apply_style(self.main, self)
+
+        self.setWindowTitle("Add/remove assets to/from animation scene")
+        self.addAssetsToLayoutBtn.setText("Add/remove assets to/from animation scene")
+
+        # Connections
+        self.availableAssetsListWidget.setDragEnabled(False)
+        self.assetsToAddListWidget.setDragEnabled(False)
+        self.availableAssetsListWidget.doubleClicked.connect(self.add_asset_to_list)
+        self.assetsToAddListWidget.doubleClicked.connect(self.remove_asset_from_list)
+
+        self.addAssetBtn.clicked.connect(self.add_asset_to_list)
+        self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
+        self.addAssetsToLayoutBtn.clicked.connect(self.add_remove_assets_to_anim)
+
+        self.assets_in_anim = []
+        self.assets_not_in_layout_db = []
+        self.assets_in_layout_db = []
+
+        self.get_assets_from_anim = QtCore.QProcess(self)
+        self.get_assets_from_anim.readyRead.connect(self.get_assets_from_process_output)
+        self.get_assets_from_anim.finished.connect(self.finished)
+        self.get_assets_from_anim.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_get_assets_from_anm.py", self.main.selected_asset.full_path])
+
+    def get_assets_from_process_output(self):
+        while self.get_assets_from_anim.canReadLine():
+            out = str(self.get_assets_from_anim.readLine())
+            self.assets_in_anim.append(out)
+
+    def finished(self):
+
+        # Remove line breaks ("\n") from list
+        self.assets_in_anim = [i.replace("\n", "").replace("HighRes", "") for i in self.assets_in_anim]
+
+        # Get all layout modeling assets from database
+        asset_from_db = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_extension="hda" AND asset_type="lay" AND asset_version="out"''').fetchall()
+
+        # Go through each asset and check if it is already in anim scene
+        for asset in asset_from_db:
+            asset_filename = asset[5].split("\\")[-1].replace(".hda", "") # Get asset_filename (Ex: nat_xxx_xxxx_lay_pipe_out from \assets\lay\nat_xxx_xxxx_lay_pipe_out.hda)
+            asset_object = self.main.Asset(self.main, asset[0])
+            asset_object.get_infos_from_id()
+            if not asset_filename in self.assets_in_anim:
+                # Asset is not in anim scene, add it to assets_not_in_layout_db list
+                self.assets_not_in_layout_db.append(asset_object)
+            else:
+                self.assets_in_layout_db.append(asset_object)
+
+
+        # Add assets to list widget
+        for asset in self.assets_not_in_layout_db:
+            # Get version from which the modeling asset was published
+            obj_asset_path = asset.full_path.replace("lay", "mod").replace("hda", "obj") # Get path of obj from modeling (Ex: \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj)
+            obj_asset_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_path=?''', (obj_asset_path.replace(self.main.selected_project_path, ""), )).fetchone()
+            obj_asset = self.main.Asset(self.main, obj_asset_id[0])
+            obj_asset.get_infos_from_id()
+
+            # If asset has never been published, skip
+            if obj_asset.number_of_publishes == 0:
+                continue
+
+            published_from_version = obj_asset.publish_from_version # Published_from_version = id of asset from which the modeling was published
+            last_published_asset = self.main.Asset(self.main, published_from_version)
+            last_published_asset.get_infos_from_id()
+
+            item = QtGui.QListWidgetItem(asset.name)
+            # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
+            if not os.path.isfile(last_published_asset.full_img_path):
+                item.setIcon(QtGui.QIcon(self.main.no_img_found))
+            else:
+                item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
+            item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.full_img_path))
+            self.availableAssetsListWidget.addItem(item)
+
+
+        for asset in self.assets_in_layout_db:
+            # Get version from which the modeling asset was published
+            obj_asset_path = asset.full_path.replace("lay", "mod").replace("hda", "obj")  # Get path of obj from modeling (Ex: \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj)
+            obj_asset_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_path=?''', (obj_asset_path.replace(self.main.selected_project_path, ""),)).fetchone()
+            obj_asset = self.main.Asset(self.main, obj_asset_id[0])
+            obj_asset.get_infos_from_id()
+
+            # If asset has never been published, skip
+            if obj_asset.number_of_publishes == 0:
+                continue
+
+            published_from_version = obj_asset.publish_from_version  # Published_from_version = id of asset from which the modeling was published
+            last_published_asset = self.main.Asset(self.main, published_from_version)
+            last_published_asset.get_infos_from_id()
+
+            item = QtGui.QListWidgetItem(asset.name)
+            # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
+            if not os.path.isfile(last_published_asset.full_img_path):
+                item.setIcon(QtGui.QIcon(self.main.no_img_found))
+            else:
+                item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
+            item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.full_img_path))
+            self.assetsToAddListWidget.addItem(item)
+
+        self.exec_()
+
+    def add_asset_to_list(self):
+        for asset in self.availableAssetsListWidget.selectedItems():
+            selected_asset_item = asset
+            selected_asset = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            selected_asset_img = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
+
+            # Create listwidget item from selected asset
+            item = QtGui.QListWidgetItem(selected_asset.name)
+            item.setIcon(QtGui.QIcon(selected_asset_img))
+            item.setData(QtCore.Qt.UserRole, (selected_asset, selected_asset_img))
+
+            # Add item to right list
+            self.assetsToAddListWidget.addItem(item)
+
+            # Remove item from left list
+            self.availableAssetsListWidget.takeItem(self.availableAssetsListWidget.row(asset))
+
+    def remove_asset_from_list(self):
+        for asset in self.assetsToAddListWidget.selectedItems():
+            selected_asset_item = asset
+            selected_asset = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            selected_asset_img = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
+
+            # Create listwidget item from selected asset
+            item = QtGui.QListWidgetItem(selected_asset.name)
+            item.setIcon(QtGui.QIcon(selected_asset_img))
+            item.setData(QtCore.Qt.UserRole, (selected_asset, selected_asset_img))
+
+            # Add item to right list
+            self.availableAssetsListWidget.addItem(item)
+
+            # Remove item from left list
+            self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(asset))
+
+    def add_remove_assets_to_anim(self):
+        assets_to_add = []
+        for i in xrange(self.assetsToAddListWidget.count()):
+            item_to_add = self.assetsToAddListWidget.item(i)
+            asset = item_to_add.data(QtCore.Qt.UserRole).toPyObject()[0]
+            assets_to_add.append(asset.full_path.replace("\\", "/"))
+
+        assets_to_remove = []
+        for i in xrange(self.availableAssetsListWidget.count()):
+            item_to_add = self.availableAssetsListWidget.item(i)
+            asset = item_to_add.data(QtCore.Qt.UserRole).toPyObject()[0]
+            asset_name = os.path.split(asset.full_path)[1] # Convert \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj to nat_xxx_xxxx_mod_pipe_out.obj
+            asset_name = os.path.splitext(asset_name)[0]  # Convert nat_xxx_xxxx_mod_pipe_out.obj to nat_xxx_xxxx_mod_pipe_out
+            assets_to_remove.append(asset_name)
+
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_export_mod_in_place_from_lay.py", "|".join(assets_to_add)])
+
+        self.maya_ref_process = QtCore.QProcess(self)
+        self.maya_ref_process.finished.connect(self.process_finished)
+        self.maya_ref_process.waitForFinished()
+        self.maya_ref_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_obj_from_lay_as_ref.py", self.main.selected_asset.full_path, "|".join(assets_to_remove), "|".join(assets_to_add)])
+
+    def process_finished(self):
+        self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
+        self.houdini_hda_process.kill()
+        self.maya_ref_process.kill()

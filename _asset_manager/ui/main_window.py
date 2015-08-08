@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Fri Aug 07 11:50:30 2015
+# Created: Sat Aug 08 13:18:35 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -251,9 +251,6 @@ class Ui_Form(object):
         self.departmentLbl.setAlignment(QtCore.Qt.AlignCenter)
         self.departmentLbl.setObjectName(_fromUtf8("departmentLbl"))
         self.gridLayout.addWidget(self.departmentLbl, 0, 3, 1, 1)
-        self.addAssetsToLayoutBtn = QtGui.QPushButton(self.listsFrame)
-        self.addAssetsToLayoutBtn.setObjectName(_fromUtf8("addAssetsToLayoutBtn"))
-        self.gridLayout.addWidget(self.addAssetsToLayoutBtn, 5, 7, 1, 1)
         self.addProjectFrame = QtGui.QFrame(self.listsFrame)
         self.addProjectFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.addProjectFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -507,12 +504,12 @@ class Ui_Form(object):
         self.line_3.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_3.setObjectName(_fromUtf8("line_3"))
         self.horizontalLayout_2.addWidget(self.line_3)
-        self.importHighResObjBtn = QtGui.QPushButton(self.smallActionIconFrame)
-        self.importHighResObjBtn.setMinimumSize(QtCore.QSize(32, 32))
-        self.importHighResObjBtn.setMaximumSize(QtCore.QSize(32, 32))
-        self.importHighResObjBtn.setText(_fromUtf8(""))
-        self.importHighResObjBtn.setObjectName(_fromUtf8("importHighResObjBtn"))
-        self.horizontalLayout_2.addWidget(self.importHighResObjBtn)
+        self.importObjBtn = QtGui.QPushButton(self.smallActionIconFrame)
+        self.importObjBtn.setMinimumSize(QtCore.QSize(32, 32))
+        self.importObjBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.importObjBtn.setText(_fromUtf8(""))
+        self.importObjBtn.setObjectName(_fromUtf8("importObjBtn"))
+        self.horizontalLayout_2.addWidget(self.importObjBtn)
         self.line_4 = QtGui.QFrame(self.smallActionIconFrame)
         self.line_4.setFrameShape(QtGui.QFrame.VLine)
         self.line_4.setFrameShadow(QtGui.QFrame.Sunken)
@@ -1998,7 +1995,6 @@ class Ui_Form(object):
         self.assetLbl.setText(_translate("Form", "Asset", None))
         self.assetList.setSortingEnabled(True)
         self.departmentLbl.setText(_translate("Form", "Department", None))
-        self.addAssetsToLayoutBtn.setText(_translate("Form", "Add Assets to Layout", None))
         self.addProjectLineEdit.setPlaceholderText(_translate("Form", "name", None))
         self.projectShortnameLineEdit.setPlaceholderText(_translate("Form", "shortname", None))
         self.addProjectBtn.setText(_translate("Form", "+", None))
@@ -2023,7 +2019,7 @@ class Ui_Form(object):
         self.loadAssetBtn.setToolTip(_translate("Form", "<html><head/><body><p>Load</p></body></html>", None))
         self.createVersionBtn.setToolTip(_translate("Form", "<html><head/><body><p>Create new version</p></body></html>", None))
         self.publishBtn.setToolTip(_translate("Form", "<html><head/><body><p>Publish</p></body></html>", None))
-        self.importHighResObjBtn.setToolTip(_translate("Form", "<html><head/><body><p>Import high-resolution published obj into low-resolution modeling scene file</p></body></html>", None))
+        self.importObjBtn.setToolTip(_translate("Form", "<html><head/><body><p>Import high-resolution published obj into low-resolution modeling scene file</p></body></html>", None))
         self.addRemoveAssetAsFavoriteBtn.setToolTip(_translate("Form", "<html><head/><body><p>Add asset to favorite</p></body></html>", None))
         self.showAssetCommentBtn.setToolTip(_translate("Form", "<html><head/><body><p>Show comments</p></body></html>", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))

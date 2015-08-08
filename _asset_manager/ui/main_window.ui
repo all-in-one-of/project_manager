@@ -592,13 +592,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="7">
-                 <widget class="QPushButton" name="addAssetsToLayoutBtn">
-                  <property name="text">
-                   <string>Add Assets to Layout</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="5" column="0">
                  <widget class="QFrame" name="addProjectFrame">
                   <property name="frameShape">
@@ -1240,7 +1233,7 @@
                              </widget>
                             </item>
                             <item>
-                             <widget class="QPushButton" name="importHighResObjBtn">
+                             <widget class="QPushButton" name="importObjBtn">
                               <property name="minimumSize">
                                <size>
                                 <width>32</width>
