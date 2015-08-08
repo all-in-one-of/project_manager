@@ -25,7 +25,7 @@ class AssetLoader(object):
         self.new_version_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\new_version_disabled.png")
         self.load_asset_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset.png")
         self.load_asset_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset_disabled.png")
-        self.import_high_res_obj_icon = QtGui.QIcon(self.cur_path + "\\media\\import_high_res_obj.png")
+        self.import_high_res_obj_icon = QtGui.QIcon(self.cur_path + "\\media\\import_layout_asset.png")
 
         self.showAssetCommentBtn.setIcon(self.comment_disabled_icon)
         self.publishBtn.setIcon(self.publish_disabled_icon)
@@ -33,7 +33,7 @@ class AssetLoader(object):
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
         self.importObjBtn.setIcon(self.import_high_res_obj_icon)
         self.importObjBtn.hide()
-        self.line_4.hide()
+
 
         self.assets = {}
         self.selected_asset = None
@@ -385,7 +385,7 @@ class AssetLoader(object):
 
         # Hide load obj buttons
         self.importObjBtn.hide()
-        self.line_4.hide()
+
 
         # Reset last publish and last access text
         self.lastAccessLbl.setText("Last accessed by: ...")
@@ -515,10 +515,9 @@ class AssetLoader(object):
         # Show import high res obj button if selected asset is a low-res modeling asset
         if (self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name) or (self.selected_asset.type == "anm") or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc"):
             self.importObjBtn.show()
-            self.line_4.show()
         else:
             self.importObjBtn.hide()
-            self.line_4.hide()
+
 
         # Set comment icon to enabled
         self.showAssetCommentBtn.setIcon(self.comment_icon)
@@ -544,10 +543,10 @@ class AssetLoader(object):
         self.lastPublishComment.setText(comments)
 
         # Set last publish label
-        #if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam":
-        #    asset_published = self.Asset(self, self.selected_asset.dependency)
-        #    asset_published.get_infos_from_id()
-        #    self.update_last_published_time_lbl(asset_published)
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam":
+           asset_published = self.Asset(self, self.selected_asset.dependency)
+           asset_published.get_infos_from_id()
+           self.update_last_published_time_lbl(asset_published)
 
     def update_last_published_time_lbl(self, asset_published=None):
 
@@ -827,7 +826,10 @@ class AssetLoader(object):
 
         # There's a new published version, ask if user wants to create a new thumbnail
         if os.path.isfile(path):
-            last_publish_time = self.selected_asset.last_publish_as_date
+            publish_asset_id = self.selected_asset.dependency
+            publish_asset = self.Asset(self, publish_asset_id)
+            publish_asset.get_infos_from_id()
+            last_publish_time = publish_asset.last_publish_as_date
             last_modified_img_time = self.Lib.modification_date(self, path)
             if last_publish_time > last_modified_img_time:
                 result = self.Lib.thumbnail_creation_box(self, text="There's a new publish available. Do you want to create a thumbnail for it?")
@@ -1316,6 +1318,8 @@ class AnimSceneChooser(QtGui.QDialog):
         alembic_publish_asset = self.main.Asset(self.main, 0, self.main.selected_project_name, self.selected_sequence, self.selected_shot, self.main.selected_asset.name, "", "abc", "anm", "out", [], asset.id, "", "", self.main.username)
         alembic_publish_asset.add_asset_to_db()
 
+        asset.change_dependency(alembic_publish_asset.id)
+
         process = QtCore.QProcess(self)
         process.finished.connect(partial(self.main.asset_creation_finished, asset))
         process.waitForFinished()
@@ -1326,7 +1330,6 @@ class AnimSceneChooser(QtGui.QDialog):
         hda_process = QtCore.QProcess(self)
         hda_process.waitForFinished()
         hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_update_hda_from_abc.py", alembic_publish_asset.full_path.replace("\\", "/"), alembic_publish_asset.name, (self.main.selected_project_path + hda_layout_asset[0]).replace("\\", "/")])
-
 
 class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):
@@ -1464,7 +1467,6 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported into layout scene!")
         self.houdini_hda_process.kill()
         self.assetsToAddListWidget.clear()
-
 
 class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):
@@ -1630,8 +1632,14 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
         self.maya_ref_process = QtCore.QProcess(self)
         self.maya_ref_process.finished.connect(self.process_finished)
+        self.maya_ref_process.readyRead.connect(self.readydata)
         self.maya_ref_process.waitForFinished()
         self.maya_ref_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_obj_from_lay_as_ref.py", self.main.selected_asset.full_path, "|".join(assets_to_remove), "|".join(assets_to_add)])
+
+    def readydata(self):
+        while self.maya_ref_process.canReadLine():
+            out = self.maya_ref_process.readLine()
+            print(out)
 
     def process_finished(self):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")

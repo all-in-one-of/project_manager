@@ -19,6 +19,10 @@ if len(assets_to_add[0]) > 0:
         asset_to_add = asset_to_add.replace(".hda", ".obj")
         namespace_var = os.path.split(asset_to_add)[1]
         namespace_var = os.path.splitext(namespace_var)[0]
+        all_objects = mc.ls(references=True)
+        if any(namespace_var in s for s in all_objects):
+            continue
+
         mc.file(asset_to_add, r=True, type="OBJ", ignoreVersion=True, gl=True, mergeNamespacesOnClash=False, namespace=namespace_var + "HighRes", options="mo=1;")
         proxy_add_string = 'proxyAdd "' + namespace_var + 'HighResRN" "' + asset_to_add.replace("_out.obj", "-lowres_out.obj") + '" "LowRes";'
         mel.eval(proxy_add_string)

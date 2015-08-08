@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sat Aug 08 13:18:35 2015
+# Created: Sat Aug 08 19:09:40 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -487,6 +487,12 @@ class Ui_Form(object):
         self.loadAssetBtn.setText(_fromUtf8(""))
         self.loadAssetBtn.setObjectName(_fromUtf8("loadAssetBtn"))
         self.horizontalLayout_2.addWidget(self.loadAssetBtn)
+        self.importObjBtn = QtGui.QPushButton(self.smallActionIconFrame)
+        self.importObjBtn.setMinimumSize(QtCore.QSize(32, 32))
+        self.importObjBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.importObjBtn.setText(_fromUtf8(""))
+        self.importObjBtn.setObjectName(_fromUtf8("importObjBtn"))
+        self.horizontalLayout_2.addWidget(self.importObjBtn)
         self.createVersionBtn = QtGui.QPushButton(self.smallActionIconFrame)
         self.createVersionBtn.setMinimumSize(QtCore.QSize(32, 32))
         self.createVersionBtn.setMaximumSize(QtCore.QSize(32, 32))
@@ -504,17 +510,6 @@ class Ui_Form(object):
         self.line_3.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_3.setObjectName(_fromUtf8("line_3"))
         self.horizontalLayout_2.addWidget(self.line_3)
-        self.importObjBtn = QtGui.QPushButton(self.smallActionIconFrame)
-        self.importObjBtn.setMinimumSize(QtCore.QSize(32, 32))
-        self.importObjBtn.setMaximumSize(QtCore.QSize(32, 32))
-        self.importObjBtn.setText(_fromUtf8(""))
-        self.importObjBtn.setObjectName(_fromUtf8("importObjBtn"))
-        self.horizontalLayout_2.addWidget(self.importObjBtn)
-        self.line_4 = QtGui.QFrame(self.smallActionIconFrame)
-        self.line_4.setFrameShape(QtGui.QFrame.VLine)
-        self.line_4.setFrameShadow(QtGui.QFrame.Sunken)
-        self.line_4.setObjectName(_fromUtf8("line_4"))
-        self.horizontalLayout_2.addWidget(self.line_4)
         self.addRemoveAssetAsFavoriteBtn = QtGui.QPushButton(self.smallActionIconFrame)
         self.addRemoveAssetAsFavoriteBtn.setMinimumSize(QtCore.QSize(32, 32))
         self.addRemoveAssetAsFavoriteBtn.setMaximumSize(QtCore.QSize(32, 32))
@@ -2017,9 +2012,9 @@ class Ui_Form(object):
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
         self.lastPublishedLbl.setText(_translate("Form", "Last published by: ", None))
         self.loadAssetBtn.setToolTip(_translate("Form", "<html><head/><body><p>Load</p></body></html>", None))
+        self.importObjBtn.setToolTip(_translate("Form", "<html><head/><body><p>Import high-resolution published obj into low-resolution modeling scene file</p></body></html>", None))
         self.createVersionBtn.setToolTip(_translate("Form", "<html><head/><body><p>Create new version</p></body></html>", None))
         self.publishBtn.setToolTip(_translate("Form", "<html><head/><body><p>Publish</p></body></html>", None))
-        self.importObjBtn.setToolTip(_translate("Form", "<html><head/><body><p>Import high-resolution published obj into low-resolution modeling scene file</p></body></html>", None))
         self.addRemoveAssetAsFavoriteBtn.setToolTip(_translate("Form", "<html><head/><body><p>Add asset to favorite</p></body></html>", None))
         self.showAssetCommentBtn.setToolTip(_translate("Form", "<html><head/><body><p>Show comments</p></body></html>", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))

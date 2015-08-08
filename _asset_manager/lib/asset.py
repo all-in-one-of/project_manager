@@ -45,8 +45,8 @@ class Asset(object):
                 minutes = time.split(":")[1]
                 self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
         else:
-            self.last_publish = ""
-            self.last_publish_as_date = ""
+            self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+            self.last_publish_as_date = self.last_publish_as_date = datetime.now()
 
         self.number_of_publishes = number_of_publishes
         self.creator = creator
@@ -260,8 +260,8 @@ class Asset(object):
                 minutes = time.split(":")[1]
                 self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
         else:
-            self.last_publish = ""
-            self.last_publish_as_date = ""
+            self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+            self.last_publish_as_date = self.last_publish_as_date = datetime.now()
 
         self.number_of_publishes = number_of_publishes
         self.creator = creator

@@ -1182,6 +1182,28 @@
                              </widget>
                             </item>
                             <item>
+                             <widget class="QPushButton" name="importObjBtn">
+                              <property name="minimumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>32</width>
+                                <height>32</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import high-resolution published obj into low-resolution modeling scene file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
                              <widget class="QPushButton" name="createVersionBtn">
                               <property name="minimumSize">
                                <size>
@@ -1227,35 +1249,6 @@
                             </item>
                             <item>
                              <widget class="Line" name="line_3">
-                              <property name="orientation">
-                               <enum>Qt::Vertical</enum>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="importObjBtn">
-                              <property name="minimumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>32</width>
-                                <height>32</height>
-                               </size>
-                              </property>
-                              <property name="toolTip">
-                               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import high-resolution published obj into low-resolution modeling scene file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                              </property>
-                              <property name="text">
-                               <string/>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="Line" name="line_4">
                               <property name="orientation">
                                <enum>Qt::Vertical</enum>
                               </property>

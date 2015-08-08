@@ -223,6 +223,7 @@ class WhatsNew(object):
         for log_entry in self.log_entries:
             log_entry.update_viewed_by()
 
+        self.db.commit()
         self.load_whats_new()
 
     def add_post_to_blog(self):

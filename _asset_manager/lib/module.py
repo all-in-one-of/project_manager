@@ -126,21 +126,19 @@ class Lib(object):
         elif self.type == "turn":
             file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")
             movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4")
-            subprocess.call(
-                [self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24",
-                 movie_path])
+            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
             thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_turn.mp4")
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"))
             for i in range(24):
-                os.remove(self.obj_tmp_path.replace("out.obj", "_" + str(i).zfill(2) + ".jpg"))
+                os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(2) + ".jpg"))
 
         self.create_thumbnail_process.kill()
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
 
         if len(self.thumbs_to_create) > 0:
-            self.create_thumbnails(self.full_obj_path, self.thumbs_to_create)
+            self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
         else:
             thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
             qpixmap = QtGui.QPixmap(thumb_filename)

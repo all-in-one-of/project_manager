@@ -36,4 +36,3 @@ class LogEntry(object):
     def update_viewed_by(self):
         self.viewed_by.remove(self.main.username)
         self.main.cursor.execute('''UPDATE log SET viewed_by=? WHERE log_id=?''', (",".join(self.viewed_by), self.id,))
-        self.main.db.commit()
