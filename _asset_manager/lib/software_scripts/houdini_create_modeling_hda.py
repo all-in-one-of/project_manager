@@ -19,6 +19,7 @@ material_node = source_node.createNode("material")
 transform_node = source_node.createNode("xform")
 out_layout_node = source_node.createNode("null")
 switch_node = source_node.createNode("switch")
+pack_node = source_node.createNode("pack")
 out_node = source_node.createNode("null")
 
 alembic_node = source_node.createNode("alembic")
@@ -32,6 +33,7 @@ material_node.setName("shader")
 transform_node.setName("layout_transform")
 out_layout_node.setName("OUT_LAYOUT")
 switch_node.setName("switch_between_static_and_anim")
+pack_node.setName("pack")
 out_node.setName("OUT_ASSET")
 
 alembic_node.setName("alembic_from_animation")
@@ -43,13 +45,13 @@ switch_high_low_node.setInput(1, file_lowres_node)
 material_node.setInput(0, switch_high_low_node)
 transform_node.setInput(0, material_node)
 out_layout_node.setInput(0, transform_node)
-out_node.setInput(0, switch_node)
-
 attribCopy_node.setInput(0, alembic_node)
 attribCopy_node.setInput(1, out_layout_node)
-
 switch_node.setInput(0, attribCopy_node)
 switch_node.setInput(1, out_layout_node)
+pack_node.setInput(0, switch_node)
+out_node.setInput(0, pack_node)
+
 
 # Set parameters
 file_highres_node.parm("file").set(obj_path)
@@ -64,6 +66,7 @@ transform_node.setColor(hou.Color((0.4, 1, 0.4)))
 switch_node.setColor(hou.Color((0.4, 1, 0.4)))
 material_node.setColor(hou.Color((0.4, 1, 0.4)))
 attribCopy_node.setColor(hou.Color((0.867, 0, 0)))
+pack_node.setColor(hou.Color((0.867, 0, 0)))
 out_node.setColor(hou.Color((0, 0, 0)))
 out_layout_node.setColor(hou.Color((0, 0, 0)))
 
@@ -103,7 +106,6 @@ copnet_node.setColor(hou.Color((0.4, 1, 0.4)))
 
 shopnet_node.moveToGoodPosition()
 copnet_node.moveToGoodPosition()
-
 
 # Create Subnet and HDA for Material Node
 material_node = hou.node("/obj").collapseIntoSubnet([shopnet_node, copnet_node])

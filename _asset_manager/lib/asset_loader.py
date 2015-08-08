@@ -868,7 +868,7 @@ class AssetLoader(object):
                 t = Thread(target=lambda: subprocess.Popen([self.maya_path, self.selected_asset.full_path]))
                 t.start()
             elif self.selected_asset.extension == "scn":
-                t = Thread(target=lambda: subprocess.Popen([self.softimage_path, self.selected_asset.full_path]))
+                t = Thread(target=lambda: subprocess.Popen([self.softimage_path, "-w", "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/softimage/nature", self.selected_asset.full_path]))
                 t.start()
 
         elif self.selected_asset.type == "shd":
