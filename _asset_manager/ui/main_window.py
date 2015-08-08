@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sat Aug 08 19:09:40 2015
+# Created: Sat Aug 08 19:41:21 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -136,7 +136,7 @@ class Ui_Form(object):
         self.line_2.setObjectName(_fromUtf8("line_2"))
         self.verticalLayout_2.addWidget(self.line_2)
         self.listsFrame = QtGui.QFrame(self.assetLoaderTab)
-        self.listsFrame.setMinimumSize(QtCore.QSize(0, 230))
+        self.listsFrame.setMinimumSize(QtCore.QSize(0, 248))
         self.listsFrame.setMaximumSize(QtCore.QSize(16777215, 235))
         self.listsFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.listsFrame.setFrameShadow(QtGui.QFrame.Plain)
@@ -197,6 +197,8 @@ class Ui_Form(object):
         self.departmentList.setMinimumSize(QtCore.QSize(0, 150))
         self.departmentList.setFrameShape(QtGui.QFrame.Box)
         self.departmentList.setObjectName(_fromUtf8("departmentList"))
+        item = QtGui.QListWidgetItem()
+        self.departmentList.addItem(item)
         item = QtGui.QListWidgetItem()
         self.departmentList.addItem(item)
         item = QtGui.QListWidgetItem()
@@ -1984,6 +1986,8 @@ class Ui_Form(object):
         item = self.departmentList.item(9)
         item.setText(_translate("Form", "DMP", None))
         item = self.departmentList.item(10)
+        item.setText(_translate("Form", "Rendering", None))
+        item = self.departmentList.item(11)
         item.setText(_translate("Form", "Compositing", None))
         self.departmentList.setSortingEnabled(__sortingEnabled)
         self.projectList.setSortingEnabled(True)

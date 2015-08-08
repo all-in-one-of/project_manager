@@ -386,7 +386,6 @@ class AssetLoader(object):
         # Hide load obj buttons
         self.importObjBtn.hide()
 
-
         # Reset last publish and last access text
         self.lastAccessLbl.setText("Last accessed by: ...")
         self.lastPublishedLbl.setText("Last published by: ...")
@@ -440,6 +439,11 @@ class AssetLoader(object):
         elif self.selected_department_name == "cmp":
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
+
+        elif self.selected_department_name == "rdr":
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+            self.selected_department_name = "lay"
 
         else:
             self.loadObjInGplayBtn.hide()
@@ -875,10 +879,15 @@ class AssetLoader(object):
             process.start(self.houdini_path, [self.selected_asset.main_hda_path])
 
         elif self.selected_asset.type == "lay":
-            shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
-            process = QtCore.QProcess(self)
-            process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
-            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
+            if str(self.departmentList.selectedItems()[0].text()) != "Rendering":
+                shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
+                process = QtCore.QProcess(self)
+                process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
+                process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
+            else:
+                process = QtCore.QProcess(self)
+                process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path))
+                process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
             process = QtCore.QProcess(self)

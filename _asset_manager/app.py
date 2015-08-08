@@ -120,11 +120,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
         self.departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
                                          "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
-                                         "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp",
+                                         "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp", "Rendering":"rdr",
                                          "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
         self.departments_longname = {"spt": "Script", "stb": "Storyboard", "ref": "References", "cam": "Camera", "cpt": "Concepts", "lgt": "Lighting",
                                       "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
-                                      "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP",
+                                      "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP", "rdr":"Rendering",
                                       "cmp": "Compositing", "edt": "Editing", "rnd": "RnD"}
 
         refresh_icon = QtGui.QIcon(self.cur_path + "\\media\\refresh.png")
@@ -372,45 +372,70 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         self.get_tabs_id_from_name()
 
+
+
         if self.members[self.username] == "Amelie":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
         elif self.members[self.username] == "Chloe":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Christopher":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "David":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Edwin":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Jeremy":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Laurence":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Louis-Philippe":
             pass
@@ -419,26 +444,41 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Mathieu":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Maxime":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Olivier":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Simon":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Thibault":
             pass
@@ -446,16 +486,24 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         elif self.members[self.username] == "Yann":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
         elif self.members[self.username] == "Yi":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
         elif self.members[self.username] == "Valentin":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
+            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
+
 
     def get_tabs_id_from_name(self):
         self.tabs_list = {}
