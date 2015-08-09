@@ -70,8 +70,6 @@ class Asset(object):
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
-
-
         self.publish_from_version = publish_from_version
 
 

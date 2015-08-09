@@ -17,6 +17,7 @@ import shutil
 from datetime import datetime
 import smtplib
 from dateutil import relativedelta
+from glob import glob
 
 
 class Lib(object):
@@ -149,9 +150,24 @@ class Lib(object):
             self.updateThumbBtn.setEnabled(True)
 
     def setup_user_session(self):
-        if os.path.exists("H:\\plugins"):
-            shutil.rmtree("H:\\plugins")
-        distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
+        try:
+            if os.path.exists("H:\\plugins"):
+                shutil.rmtree("H:\\plugins")
+                distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
+        except:
+            pass
+
+        os.makedirs("H:/mari_cache_tmp_synthese")
+
+        mari_cache_file = open("H:/.mari/TheFoundry/CacheLocations.ini", "r")
+        for line in mari_cache_file.readlines():
+            if "Path" in line:
+                mari_cache_path = line.split("=")[-1].replace("\n", "")
+                break
+
+        mari_cache_file.close()
+        self.cursor.execute('''UPDATE preferences SET mari_cache_path=? WHERE username=?''', (mari_cache_path, self.username,))
+        self.db.commit()
 
     def message_box(self, type="Warning", text="warning", no_button=False, exec_now=True):
 
@@ -475,6 +491,34 @@ class Lib(object):
             else:
                 self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (member,))
 
+    def switch_mari_cache(self, cache_location):
+        if cache_location == "perso":
+            mari_cache_path = self.cursor.execute('''SELECT mari_cache_path FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
+        elif cache_location == "server":
+            mari_cache_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex"
+        elif cache_location == "home":
+            mari_cache_path = "H:/mari_cache_tmp_synthese"
+
+        os.remove("H:/.mari/TheFoundry/CacheLocations.ini")
+        mari_cachelocation_file = open("H:/.mari/TheFoundry/CacheLocations.ini", "a")
+        mari_cachelocation_file.write("[CacheRoots]\n")
+        mari_cachelocation_file.write("1\Path=" + mari_cache_path + "\n")
+        mari_cachelocation_file.write("size=1\n")
+        mari_cachelocation_file.close()
+
+    def get_mari_project_path_from_asset_name(self, asset_name, asset_version):
+        paths = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/*")
+        paths = [i.replace("\\", "/") for i in paths]
+        paths = [i for i in paths if not "SINGLE" in i and not "Generic" in i]
+
+        for path in paths:
+            sumary_file = path + "\\Summary.txt"
+            f = open(sumary_file, "r")
+            lines = f.readlines()
+            for line in lines:
+                if "Name=" in line:
+                    if asset_name.lower() + "_" + asset_version in line.lower():
+                        return path
 
 
 class DesktopWidget(QtGui.QWidget):
@@ -610,10 +654,8 @@ class CheckNews(QtCore.QThread):
             time.sleep(10)
 
 
-
 if __name__ == "__main__":
     test = Lib()
-    test.send_email()
 
 
     # app = QtGui.QApplication(sys.argv)

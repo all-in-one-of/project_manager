@@ -619,9 +619,6 @@ class AssetLoader(object):
                         self.assetList.setItemHidden(self.assetList.item(i), True)
 
     def create_new_version(self):
-        if self.selected_asset.version == "out":
-            self.Lib.message_box(self, text="You can't create a new version from a published asset")
-            return
 
         old_version_path = self.selected_asset.full_path
         new_version = str(int(self.selected_asset.version) + 1).zfill(2)
@@ -629,17 +626,55 @@ class AssetLoader(object):
         asset = self.Asset(self, 0, self.selected_asset.project, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", self.selected_asset.extension, self.selected_asset.type, new_version, self.selected_asset.tags, self.selected_asset.dependency, self.selected_asset.last_access, self.selected_asset.last_publish, self.selected_asset.creator, self.selected_asset.number_of_publishes)
         asset.add_asset_to_db()
 
+        if self.selected_asset.type == "tex":
+            texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
+            texture_project_path_last_digit = texture_project_path[-1]
+            new_texture_project_path_last_digit = int(texture_project_path_last_digit) + 1
+            new_texture_project_path = texture_project_path[0:-1] + str(new_texture_project_path_last_digit)
+            shutil.copytree(texture_project_path, new_texture_project_path)
+            summary_file_path = new_texture_project_path + "\\Summary.txt"
+            summary_file_path_tmp = new_texture_project_path + "\\Summary-tmp.txt"
+            f = open(summary_file_path, "r")
+            new_f = open(summary_file_path_tmp, "a")
+            for line in f.readlines():
+                if self.selected_asset.name.lower() + "_" + self.selected_asset.version in line.lower():
+                    new_f.write("Name=" + self.selected_asset.name + "_" + str(int(self.selected_asset.version) + 1).zfill(2) + "\n")
+                else:
+                    new_f.write(line)
+
+            f.close()
+            new_f.close()
+
+            os.remove(summary_file_path)
+            os.rename(summary_file_path_tmp, summary_file_path_tmp.replace("-tmp", ""))
+
+            version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
+            version_item.setData(QtCore.Qt.UserRole, asset)
+            self.versions.append(version_item)
+            self.versionList.addItem(version_item)
+            self.versionList.setItemSelected(version_item, True)
+            self.versionList_Clicked()
+
+            return
+
+
+        if self.selected_asset.version == "out":
+            self.Lib.message_box(self, text="You can't create a new version from a published asset")
+            return
+
         try:
             shutil.copy(old_version_path, asset.full_path)
         except:
             asset.remove_asset_from_db()
             return
+
         version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
         version_item.setData(QtCore.Qt.UserRole, asset)
         self.versions.append(version_item)
         self.versionList.addItem(version_item)
         self.versionList.setItemSelected(version_item, True)
         self.versionList_Clicked()
+
 
     def remove_version(self):
 
@@ -904,10 +939,26 @@ class AssetLoader(object):
             process.finished.connect(partial(self.load_asset_finished, associated_hip_scene.replace(".hipnc", "_" + self.username + "_camtmp.hipnc")))
             process.start(self.houdini_path, [associated_hip_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_camtmp.hipnc")])
 
+        elif self.selected_asset.type == "tex":
+            texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
+            mari_cache_folder_path = texture_project_path.replace("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex", "")
+            self.Lib.switch_mari_cache(self, "home")
+            if os.path.isdir("H:/mari_cache_tmp_synthese/" + mari_cache_folder_path):
+                shutil.rmtree("H:/mari_cache_tmp_synthese/" + mari_cache_folder_path)
+            shutil.copytree(texture_project_path, "H:/mari_cache_tmp_synthese/" + mari_cache_folder_path)
+            self.mari_open_asset_process = QtCore.QProcess(self)
+            self.mari_open_asset_process.finished.connect(partial(self.mari_finished, mari_cache_folder_path))
+            self.mari_open_asset_process.start(self.mari_path, [])
+
     def load_asset_finished(self, file_to_remove=None):
         if file_to_remove != None:
             if os.path.isfile(file_to_remove):
                 os.remove(file_to_remove)
+
+    def mari_finished(self, mari_cache_folder_path):
+        self.mari_open_asset_process.kill()
+        shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + mari_cache_folder_path)
+        shutil.move("H:/mari_cache_tmp_synthese/" + mari_cache_folder_path, "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + mari_cache_folder_path)
 
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
@@ -1110,7 +1161,27 @@ class AssetLoader(object):
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
 
     def create_tex_asset_from_mod(self):
+
         self.create_from_asset_dialog.close()
+
+        obj_publish_path = self.Asset(self, self.selected_asset.dependency)
+        obj_publish_path.get_infos_from_id()
+
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "mari", "tex", "01", [], obj_publish_path.id, "", "", self.username)
+        asset.add_asset_to_db()
+
+        self.Lib.switch_mari_cache(self, "server")
+        self.mari_process = QtCore.QProcess(self)
+        self.mari_process.readyRead.connect(self.mari_process_read_data)
+        self.mari_process.finished.connect(partial(self.asset_creation_finished, asset))
+        self.mari_process.waitForFinished()
+        self.mari_process.start(self.mari_path, ["-t", self.cur_path + "\\lib\\software_scripts\\mari_create_project.py", self.selected_asset.name, self.selected_asset.version, obj_publish_path.full_path])
+
+    def mari_process_read_data(self):
+        while self.mari_process.canReadLine():
+            out = self.mari_process.readLine()
+            if "Welcome to Mari 2.6v2!  Type help() to get started." in out:
+                self.mari_process.kill()
 
     def create_cam_asset_from_lay(self):
 
