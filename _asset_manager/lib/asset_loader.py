@@ -873,6 +873,9 @@ class AssetLoader(object):
             elif self.selected_asset.extension == "scn":
                 t = Thread(target=lambda: subprocess.Popen([self.softimage_path, "-w", "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/softimage/nature", self.selected_asset.full_path]))
                 t.start()
+            elif self.selected_asset.extension == "hda":
+                process = QtCore.QProcess(self)
+                process.start(self.houdini_path, [self.selected_asset.full_path])
 
         elif self.selected_asset.type == "shd":
             process = QtCore.QProcess(self)
@@ -1178,45 +1181,77 @@ class AssetLoader(object):
 
     def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
-        # Create modeling scene asset
-        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", "", self.username)
-        asset.add_asset_to_db()
-        shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
+        if selected_software == "houdini":
 
-        # Create low res modeling scene asset
-        asset_low_res = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", extension, "mod", "01", [], "", "", "", self.username)
-        asset_low_res.add_asset_to_db()
-        shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset_low_res.full_path)
+            # Create main HDA database entry
+            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "01", [], "", "", "", self.username)
+            main_hda_asset.add_asset_to_db()
 
-        # Create default publish cube (obj)
-        obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
-        obj_asset.add_asset_to_db()
-        shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
+            # Create shading HDA database entry
+            shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
+            shading_hda_asset.add_asset_to_db()
 
-        # Create default lowres publish cube (obj)
-        obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], asset_low_res.id, "", "", self.username)
-        obj_lowres_asset.add_asset_to_db()
-        shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
+            # Create default publish cube (obj)
+            obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_hda_asset.id, "", "", self.username)
+            obj_asset.add_asset_to_db()
+            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
-        # Add publish obj as dependency to main asset
-        asset.change_dependency(obj_asset.id)
+            # Add publish obj as dependency to main asset
+            main_hda_asset.change_dependency(obj_asset.id)
 
-        # Add publish obj as dependency to main asset
-        asset_low_res.change_dependency(obj_lowres_asset.id)
+            # Create HDA associated to modeling scene
+            self.houdini_hda_process = QtCore.QProcess(self)
+            self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, main_hda_asset))
+            self.houdini_hda_process.readyRead.connect(self.readdata)
+            self.houdini_hda_process.waitForFinished()
+            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda_for_houdini.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
-        # Create main HDA database entry
-        main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
-        main_hda_asset.add_asset_to_db()
+        else:
+            # Create modeling scene asset
+            asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", "", self.username)
+            asset.add_asset_to_db()
+            shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
-        # Create shading HDA database entry
-        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
-        shading_hda_asset.add_asset_to_db()
+            # Create low res modeling scene asset
+            asset_low_res = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", extension, "mod", "01", [], "", "", "", self.username)
+            asset_low_res.add_asset_to_db()
+            shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset_low_res.full_path)
 
-        # Create HDA associated to modeling scene
-        self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
-        self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
+            # Create default publish cube (obj)
+            obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
+            obj_asset.add_asset_to_db()
+            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
+
+            # Create default lowres publish cube (obj)
+            obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], asset_low_res.id, "", "", self.username)
+            obj_lowres_asset.add_asset_to_db()
+            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
+
+            # Add publish obj as dependency to main asset
+            asset.change_dependency(obj_asset.id)
+
+            # Add publish obj as dependency to main asset
+            asset_low_res.change_dependency(obj_lowres_asset.id)
+
+            # Create main HDA database entry
+            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
+            main_hda_asset.add_asset_to_db()
+
+            # Create shading HDA database entry
+            shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
+            shading_hda_asset.add_asset_to_db()
+
+            # Create HDA associated to modeling scene
+            self.houdini_hda_process = QtCore.QProcess(self)
+            self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
+            self.houdini_hda_process.waitForFinished()
+
+            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
+
+    def readdata(self):
+        while self.houdini_hda_process.canReadLine():
+            out = self.houdini_hda_process.readLine()
+            print(out)
 
     def create_lay_asset_from_scratch(self, asset_name):
 
