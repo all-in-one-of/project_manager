@@ -155,7 +155,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
-        day_end = date(2016,5,1)
+        day_end = date(2016,4,15)
         day_today = datetime.now().date()
 
         months_and_days_left = relativedelta.relativedelta(day_end, day_today)
@@ -228,7 +228,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
         #self.check_news_thread.daemon = True
         #self.check_news_thread.start()
-
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -501,7 +500,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
             self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
-
 
     def get_tabs_id_from_name(self):
         self.tabs_list = {}

@@ -8,6 +8,7 @@ import os
 import shutil
 from threading import Thread
 from datetime import datetime
+import time
 
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
@@ -889,7 +890,6 @@ class AssetLoader(object):
                 process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
             else:
                 process = QtCore.QProcess(self)
-                process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path))
                 process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
@@ -931,6 +931,37 @@ class AssetLoader(object):
         if self.selected_asset.type == "mod":
             self.import_high_res_obj_into_low_res_scene()
         elif self.selected_asset.type == "anm":
+            all_layout_scene = []
+            for asset in self.assets:
+                if asset.type == "lay" and asset.extension == "hipnc":
+                    all_layout_scene.append(asset)
+
+            dialog = QtGui.QDialog(self)
+            dialog.setWindowTitle("Please choose a layout scene")
+            layout = QtGui.QVBoxLayout(dialog)
+
+            listwidget = QtGui.QListWidget(dialog)
+
+            for asset in all_layout_scene:
+                item = QtGui.QListWidgetItem("Sequence: {0} | Shot: {1} | Name: {2}".format(asset.sequence, asset.shot, asset.name))
+                item.setData(QtCore.Qt.UserRole, asset)
+                listwidget.addItem(item)
+
+            acceptBtn = QtGui.QPushButton("Select layout scene", dialog)
+            acceptBtn.clicked.connect(dialog.accept)
+
+            layout.addWidget(listwidget)
+            layout.addWidget(acceptBtn)
+
+            dialog.exec_()
+
+            if dialog.result() == 0:
+                return
+
+
+            selected_scene = listwidget.selectedItems()[0]
+            self.selected_layout_asset = selected_scene.data(QtCore.Qt.UserRole).toPyObject()
+
             AddAssetsToAnimWindow(self)
         elif self.selected_asset.type == "lay":
             AddAssetsToLayoutWindow(self)
@@ -1501,6 +1532,12 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             list_item = self.assetsToAddListWidget.item(i)
             asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
             assets_list.append(asset.full_path.replace("\\", "/"))
+            self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
+            self.main.db.commit()
+
+
+
+
 
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(self.process_finished)
@@ -1554,19 +1591,27 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         # Remove line breaks ("\n") from list
         self.assets_in_anim = [i.replace("\n", "").replace("HighRes", "") for i in self.assets_in_anim]
 
-        # Get all layout modeling assets from database
-        asset_from_db = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_extension="hda" AND asset_type="lay" AND asset_version="out"''').fetchall()
+        # Get all layout assets from selected layout scene
+        assets_id_from_db = self.main.cursor.execute('''SELECT asset_id FROM assets_in_layout WHERE layout_id=?''', (self.main.selected_layout_asset.id,)).fetchall()
+        assets_id_from_db = [i[0] for i in assets_id_from_db]
+
+        layout_assets = []
+        for id in assets_id_from_db:
+            try:
+                asset = self.main.Asset(self.main, id)
+                asset.get_infos_from_id()
+                layout_assets.append(asset)
+            except:
+                pass
 
         # Go through each asset and check if it is already in anim scene
-        for asset in asset_from_db:
-            asset_filename = asset[5].split("\\")[-1].replace(".hda", "") # Get asset_filename (Ex: nat_xxx_xxxx_lay_pipe_out from \assets\lay\nat_xxx_xxxx_lay_pipe_out.hda)
-            asset_object = self.main.Asset(self.main, asset[0])
-            asset_object.get_infos_from_id()
+        for asset in layout_assets:
+            asset_filename = asset.path.split("\\")[-1].replace(".hda", "") # Get asset_filename (Ex: nat_xxx_xxxx_lay_pipe_out from \assets\lay\nat_xxx_xxxx_lay_pipe_out.hda)
             if not asset_filename in self.assets_in_anim:
                 # Asset is not in anim scene, add it to assets_not_in_layout_db list
-                self.assets_not_in_layout_db.append(asset_object)
+                self.assets_not_in_layout_db.append(asset)
             else:
-                self.assets_in_layout_db.append(asset_object)
+                self.assets_in_layout_db.append(asset)
 
 
         # Add assets to list widget
@@ -1614,9 +1659,10 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
             if not os.path.isfile(last_published_asset.full_img_path):
                 item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                item.setData(QtCore.Qt.UserRole, (asset, self.main.no_img_found))
             else:
                 item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
-            item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.full_img_path))
+                item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.full_img_path))
             self.assetsToAddListWidget.addItem(item)
 
         self.exec_()
@@ -1656,36 +1702,39 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(asset))
 
     def add_remove_assets_to_anim(self):
-        assets_to_add = []
+        self.assets_to_add = []
         for i in xrange(self.assetsToAddListWidget.count()):
             item_to_add = self.assetsToAddListWidget.item(i)
             asset = item_to_add.data(QtCore.Qt.UserRole).toPyObject()[0]
-            assets_to_add.append(asset.full_path.replace("\\", "/"))
+            self.assets_to_add.append(asset.full_path.replace("\\", "/"))
 
-        assets_to_remove = []
+        self.assets_to_remove = []
         for i in xrange(self.availableAssetsListWidget.count()):
             item_to_add = self.availableAssetsListWidget.item(i)
             asset = item_to_add.data(QtCore.Qt.UserRole).toPyObject()[0]
-            asset_name = os.path.split(asset.full_path)[1] # Convert \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj to nat_xxx_xxxx_mod_pipe_out.obj
-            asset_name = os.path.splitext(asset_name)[0]  # Convert nat_xxx_xxxx_mod_pipe_out.obj to nat_xxx_xxxx_mod_pipe_out
-            assets_to_remove.append(asset_name)
+            self.assets_to_remove.append(asset.full_path.replace("\\", "/"))
 
         self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(self.houdini_process_finished)
+        #self.houdini_hda_process.readyRead.connect(self.readydata)
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_export_mod_in_place_from_lay.py", "|".join(assets_to_add)])
+        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_export_mod_in_place_from_lay.py", self.main.selected_layout_asset.full_path, "|".join(self.assets_to_add)])
 
+    def houdini_process_finished(self):
         self.maya_ref_process = QtCore.QProcess(self)
-        self.maya_ref_process.finished.connect(self.process_finished)
+        self.maya_ref_process.finished.connect(self.maya_process_finished)
         self.maya_ref_process.readyRead.connect(self.readydata)
         self.maya_ref_process.waitForFinished()
-        self.maya_ref_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_obj_from_lay_as_ref.py", self.main.selected_asset.full_path, "|".join(assets_to_remove), "|".join(assets_to_add)])
+        self.maya_ref_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_obj_from_lay_as_ref.py", self.main.selected_asset.full_path, "|".join(self.assets_to_remove), "|".join(self.assets_to_add)])
+
+
+    def maya_process_finished(self):
+        self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
+        #self.houdini_hda_process.kill()
+        #self.maya_ref_process.kill()
+
 
     def readydata(self):
         while self.maya_ref_process.canReadLine():
             out = self.maya_ref_process.readLine()
             print(out)
-
-    def process_finished(self):
-        self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
-        self.houdini_hda_process.kill()
-        self.maya_ref_process.kill()
