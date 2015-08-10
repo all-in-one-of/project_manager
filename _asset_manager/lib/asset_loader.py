@@ -9,6 +9,7 @@ import shutil
 from threading import Thread
 from datetime import datetime
 import time
+from glob import glob
 
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
@@ -627,34 +628,22 @@ class AssetLoader(object):
         asset.add_asset_to_db()
 
         if self.selected_asset.type == "tex":
+            # Get path of selected texture asset folder
             texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
-            texture_project_path_last_digit = texture_project_path[-1]
-            new_texture_project_path_last_digit = int(texture_project_path_last_digit) + 1
-            new_texture_project_path = texture_project_path[0:-1] + str(new_texture_project_path_last_digit)
-            shutil.copytree(texture_project_path, new_texture_project_path)
-            summary_file_path = new_texture_project_path + "\\Summary.txt"
-            summary_file_path_tmp = new_texture_project_path + "\\Summary-tmp.txt"
-            f = open(summary_file_path, "r")
-            new_f = open(summary_file_path_tmp, "a")
-            for line in f.readlines():
-                if self.selected_asset.name.lower() + "_" + self.selected_asset.version in line.lower():
-                    new_f.write("Name=" + self.selected_asset.name + "_" + str(int(self.selected_asset.version) + 1).zfill(2) + "\n")
-                else:
-                    new_f.write(line)
+            # Switch cache directory location to user H
+            self.Lib.switch_mari_cache(self, "home")
+            # Remove folder if it already exists
+            if os.path.isdir("H:/mari_cache_tmp_synthese/" + texture_project_path):
+                shutil.rmtree("H:/mari_cache_tmp_synthese/" + texture_project_path)
+            # Copy texture asset folder from Z to H
+            shutil.copytree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path, "H:/mari_cache_tmp_synthese/" + texture_project_path)
 
-            f.close()
-            new_f.close()
-
-            os.remove(summary_file_path)
-            os.rename(summary_file_path_tmp, summary_file_path_tmp.replace("-tmp", ""))
-
-            version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
-            version_item.setData(QtCore.Qt.UserRole, asset)
-            self.versions.append(version_item)
-            self.versionList.addItem(version_item)
-            self.versionList.setItemSelected(version_item, True)
-            self.versionList_Clicked()
-
+            # Start mari process
+            self.mari_process = QtCore.QProcess(self)
+            self.mari_process.waitForFinished()
+            self.mari_process.readyRead.connect(self.mari_process_read_data)
+            self.mari_process.finished.connect(partial(self.create_new_tex_version_finished, texture_project_path, asset))
+            self.mari_process.start(self.mari_path, ["-t", self.cur_path + "\\lib\\software_scripts\\mari_create_new_version.py"])
             return
 
 
@@ -675,6 +664,29 @@ class AssetLoader(object):
         self.versionList.setItemSelected(version_item, True)
         self.versionList_Clicked()
 
+    def create_new_tex_version_finished(self, existing_project_path, asset):
+        self.mari_process.kill()
+
+        # Remove folder for current version of texture asset
+        shutil.rmtree("H:/mari_cache_tmp_synthese/" + existing_project_path)
+
+        # Get folder path of new texture asset version
+        paths = glob("H:/mari_cache_tmp_synthese/*")
+        paths = [i.replace("\\", "/") for i in paths]
+        paths = [i for i in paths if not "SINGLE" in i and not "Generic" in i]
+
+        # Copy folder of new texture asset version back to the tex folder
+        shutil.move(paths[0], "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + paths[0].split("/")[-1])
+
+        # Add item to version list
+        version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
+        version_item.setData(QtCore.Qt.UserRole, asset)
+        self.versions.append(version_item)
+        self.versionList.addItem(version_item)
+        self.versionList.setItemSelected(version_item, True)
+        self.versionList_Clicked()
+
+        self.Lib.message_box(self, type="info", text="New version successfully created!")
 
     def remove_version(self):
 
@@ -728,6 +740,10 @@ class AssetLoader(object):
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
+            elif self.selected_asset.extension == "hda":
+                self.publish_process = QtCore.QProcess(self)
+                self.publish_process.finished.connect(self.publish_process_finished)
+                self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_mod_from_mod.py", self.selected_asset.full_path])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
             self.db.commit()
@@ -739,15 +755,30 @@ class AssetLoader(object):
         elif self.selected_asset.type == "anm":
             # Get frame range from selected shot
             framerange = self.shots_framerange[self.selected_asset.sequence + "-" + self.selected_asset.shot]
-            frame_start = framerange[0]
-            frame_end = framerange[1]
+            start_frame = framerange[0]
+            end_frame = framerange[1]
 
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
-            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(frame_start), str(frame_end)])
+            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame)])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.anim_out_path.replace(self.selected_project_path, ""),))
             self.db.commit()
+
+        elif self.selected_asset.type == "cam":
+            # Get frame range from selected shot
+            framerange = self.shots_framerange[self.selected_asset.sequence + "-" + self.selected_asset.shot]
+            start_frame = str(framerange[0])
+            end_frame = str(framerange[1])
+
+            export_path = str(self.selected_asset.full_path.replace("_" + self.selected_asset.version + ".", "_out.").replace(".hda", ".abc").replace("\\", "/"))
+            hda_path = str(self.selected_asset.full_path.replace("\\", "/"))
+            camera_name = str(self.selected_asset.name)
+
+            self.publish_process = QtCore.QProcess(self)
+            self.publish_process.finished.connect(self.publish_process_finished)
+            self.publish_process.waitForFinished()
+            self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_cam_from_lay.py", export_path, hda_path, camera_name, start_frame, end_frame])
 
     def publish_process_finished(self):
         # Check if current asset has been favorited by someone.
@@ -915,10 +946,14 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "shd":
             process = QtCore.QProcess(self)
-            process.start(self.houdini_path, [self.selected_asset.main_hda_path])
+            process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "lay":
-            if str(self.departmentList.selectedItems()[0].text()) != "Rendering":
+            try:
+                selected_dep = str(self.departmentList.selectedItems()[0].text())
+            except:
+                selected_dep = ""
+            if selected_dep != "Rendering":
                 shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
                 process = QtCore.QProcess(self)
                 process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
@@ -941,13 +976,13 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "tex":
             texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
-            mari_cache_folder_path = texture_project_path.replace("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex", "")
             self.Lib.switch_mari_cache(self, "home")
-            if os.path.isdir("H:/mari_cache_tmp_synthese/" + mari_cache_folder_path):
-                shutil.rmtree("H:/mari_cache_tmp_synthese/" + mari_cache_folder_path)
-            shutil.copytree(texture_project_path, "H:/mari_cache_tmp_synthese/" + mari_cache_folder_path)
+            if os.path.isdir("H:/mari_cache_tmp_synthese/" + texture_project_path):
+                shutil.rmtree("H:/mari_cache_tmp_synthese/" + texture_project_path)
+            shutil.copytree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path, "H:/mari_cache_tmp_synthese/" + texture_project_path)
+
             self.mari_open_asset_process = QtCore.QProcess(self)
-            self.mari_open_asset_process.finished.connect(partial(self.mari_finished, mari_cache_folder_path))
+            self.mari_open_asset_process.finished.connect(partial(self.mari_finished, texture_project_path))
             self.mari_open_asset_process.start(self.mari_path, [])
 
     def load_asset_finished(self, file_to_remove=None):
@@ -955,10 +990,12 @@ class AssetLoader(object):
             if os.path.isfile(file_to_remove):
                 os.remove(file_to_remove)
 
-    def mari_finished(self, mari_cache_folder_path):
+    def mari_finished(self, texture_project_path):
         self.mari_open_asset_process.kill()
-        shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + mari_cache_folder_path)
-        shutil.move("H:/mari_cache_tmp_synthese/" + mari_cache_folder_path, "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + mari_cache_folder_path)
+        time.sleep(2)
+        self.Lib.switch_mari_cache(self, "user")
+        shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
+        shutil.move("H:/mari_cache_tmp_synthese/" + texture_project_path, "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
 
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
@@ -1076,7 +1113,7 @@ class AssetLoader(object):
             elif selected_software == "cinema4d":
                 extension = "c4d"
             elif selected_software == "houdini":
-                extension = "hip"
+                extension = "hda"
 
         # Get asset name
         asset_name = unicode(name_line_edit.text())
@@ -1223,8 +1260,13 @@ class AssetLoader(object):
         selected_shot = shotListWidget.selectedItems()[0]
         selected_shot = str(selected_shot.text())
 
-        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "camera-" + selected_shot, "", "hda", "cam", "01", [], self.selected_asset.id, "", "", self.username)
+        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "cam-" + selected_shot, "", "hda", "cam", "01", [], self.selected_asset.id, "", "", self.username)
         camera_asset.add_asset_to_db()
+
+        camera_asset_publish = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "cam-" + selected_shot, "", "abc", "cam", "out", [], camera_asset.id, "", "", self.username)
+        camera_asset_publish.add_asset_to_db()
+
+        shutil.copy(self.NEF_folder + "\\camera.abc", camera_asset_publish.full_path)
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
@@ -1286,7 +1328,7 @@ class AssetLoader(object):
         if selected_software == "houdini":
 
             # Create main HDA database entry
-            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "01", [], "", "", "", self.username)
+            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "01", [], "", "", "", self.username)
             main_hda_asset.add_asset_to_db()
 
             # Create shading HDA database entry
@@ -1297,6 +1339,11 @@ class AssetLoader(object):
             obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_hda_asset.id, "", "", self.username)
             obj_asset.add_asset_to_db()
             shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
+
+            # Create default lowres publish cube (obj)
+            obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], main_hda_asset.id, "", "", self.username)
+            obj_lowres_asset.add_asset_to_db()
+            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
 
             # Add publish obj as dependency to main asset
             main_hda_asset.change_dependency(obj_asset.id)
@@ -1347,7 +1394,6 @@ class AssetLoader(object):
             self.houdini_hda_process = QtCore.QProcess(self)
             self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
             self.houdini_hda_process.waitForFinished()
-
             self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
     def readdata(self):

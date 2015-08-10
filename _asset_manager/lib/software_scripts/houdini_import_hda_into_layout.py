@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# coding=utf-8
+import hou
 import sys
 
 hip_file = sys.argv[-2]

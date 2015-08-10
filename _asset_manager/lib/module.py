@@ -518,7 +518,8 @@ class Lib(object):
             for line in lines:
                 if "Name=" in line:
                     if asset_name.lower() + "_" + asset_version in line.lower():
-                        return path
+                        return path.split("/")[-1] # Return path (Ex: "8e0930b8-61b1-4ade-8dbd-8bb422ef6686")
+            f.close()
 
 
 class DesktopWidget(QtGui.QWidget):

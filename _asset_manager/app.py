@@ -229,6 +229,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.check_news_thread.daemon = True
         #self.check_news_thread.start()
 
+        # Set soft preferences environment variables
+        os.environ["HOUDINI_USER_PREF_DIR"] = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/houdini/houdini__HVER__"
+
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -651,7 +654,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
         self.db.commit()
-
+        self.Lib.switch_mari_cache(self, "perso")
         self.save_tags_list()
         self.close()
         app.exit()
