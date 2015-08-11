@@ -1187,7 +1187,7 @@
                              </widget>
                             </item>
                             <item>
-                             <widget class="QPushButton" name="importObjBtn">
+                             <widget class="QPushButton" name="importIntoSceneBtn">
                               <property name="minimumSize">
                                <size>
                                 <width>32</width>

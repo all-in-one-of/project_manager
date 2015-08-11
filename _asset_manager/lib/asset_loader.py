@@ -33,8 +33,8 @@ class AssetLoader(object):
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
-        self.importObjBtn.setIcon(self.import_high_res_obj_icon)
-        self.importObjBtn.hide()
+        self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
+        self.importIntoSceneBtn.hide()
 
 
         self.assets = {}
@@ -104,7 +104,7 @@ class AssetLoader(object):
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
-        self.importObjBtn.clicked.connect(self.import_obj_into_scene)
+        self.importIntoSceneBtn.clicked.connect(self.import_into_scene)
 
         self.createAssetFromScratchBtn.clicked.connect(self.create_asset_from_scratch)
         self.createAssetFromScratchAssetBtn.clicked.connect(self.create_asset_from_asset)
@@ -386,7 +386,7 @@ class AssetLoader(object):
     def departmentList_Clicked(self):
 
         # Hide load obj buttons
-        self.importObjBtn.hide()
+        self.importIntoSceneBtn.hide()
 
         # Reset last publish and last access text
         self.lastAccessLbl.setText("Last accessed by: ...")
@@ -519,10 +519,10 @@ class AssetLoader(object):
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
 
         # Show import high res obj button if selected asset is a low-res modeling asset
-        if (self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name) or (self.selected_asset.type == "anm") or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc"):
-            self.importObjBtn.show()
+        if (self.selected_asset.type == "mod") or (self.selected_asset.type == "anm") or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc"):
+            self.importIntoSceneBtn.show()
         else:
-            self.importObjBtn.hide()
+            self.importIntoSceneBtn.hide()
 
 
         # Set comment icon to enabled
@@ -1015,9 +1015,10 @@ class AssetLoader(object):
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
 
-    def import_obj_into_scene(self):
+    def import_into_scene(self):
         if self.selected_asset.type == "mod":
-            self.import_high_res_obj_into_low_res_scene()
+            self.import_obj_into_scene()
+
         elif self.selected_asset.type == "anm":
             all_layout_scene = []
             for asset in self.assets:
@@ -1054,21 +1055,34 @@ class AssetLoader(object):
         elif self.selected_asset.type == "lay":
             AddAssetsToLayoutWindow(self)
 
-    def import_high_res_obj_into_low_res_scene(self):
+    def import_obj_into_scene(self):
+        if "lowres" in self.selected_asset.name:
+            obj_file = self.selected_asset.obj_path.replace("-lowres", "")
+        else:
+            # Ask for user to select files
+            obj_file = QtGui.QFileDialog.getOpenFileName(self, 'Select OBJ', 'H:/', "3D Model (*.obj)")
+
+            if len(obj_file) < 1:
+                self.Lib.message_box(self, type="info", text="Please select at least one file!")
+                return
+
         if self.selected_asset.extension == "blend":
             self.import_obj_process = QtCore.QProcess(self)
-            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Done!"))
+            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully imported OBJ file!"))
             self.import_obj_process.waitForFinished()
-            self.import_obj_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_import_obj_into_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path.replace("-lowres", "")])
+            self.import_obj_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_import_obj_into_scene.py", "--", self.selected_asset.full_path, obj_file])
         elif self.selected_asset.extension == "ma":
             self.import_obj_process = QtCore.QProcess(self)
-            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Done!"))
+            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully imported OBJ file!"))
             self.import_obj_process.waitForFinished()
-            self.import_obj_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_into_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path.replace("-lowres", "")])
+            self.import_obj_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_into_scene.py", self.selected_asset.full_path, obj_file])
         elif self.selected_asset.extension == "scn":
             self.import_obj_process = QtCore.QProcess(self)
-            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Done!"))
-            self.import_obj_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_import_obj_into_scene.py", "-main", "import_obj", "-args", "-file_path", self.selected_asset.full_path, "-obj_path", self.selected_asset.obj_path.replace("-lowres", "")])
+            self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully imported OBJ file!"))
+            self.import_obj_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_import_obj_into_scene.py", "-main", "import_obj", "-args", "-file_path", self.selected_asset.full_path, "-obj_path", obj_file])
+
+    def import_cam_into_anm(self):
+        pass
 
     def create_asset_from_scratch(self):
 
