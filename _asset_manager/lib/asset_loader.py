@@ -781,6 +781,13 @@ class AssetLoader(object):
             self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_cam_from_lay.py", export_path, hda_path, camera_name, start_frame, end_frame])
 
     def publish_process_finished(self):
+
+        # If published asset was of type mod, normalize its scale
+        if self.selected_asset.type == "mod":
+            self.normalize_mod_scale_process = QtCore.QProcess(self)
+            self.normalize_mod_scale_process.waitForFinished()
+            self.normalize_mod_scale_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_normalize_mod_scale.py", "--", self.selected_asset.obj_path])
+
         # Check if current asset has been favorited by someone.
         favorited_by = self.cursor.execute('''SELECT member FROM favorited_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
         if favorited_by != None:
@@ -964,7 +971,7 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
             process = QtCore.QProcess(self)
-            process.start(self.maya_path, [self.selected_asset.full_path])
+            process.start(self.maya_path, [self.selected_asset.full_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "cam":
             associated_hip_scene = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_id=?''', (self.selected_asset.dependency, )).fetchone()[0]

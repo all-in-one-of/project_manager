@@ -27,3 +27,4 @@ for ref in all_references:
 
 mc.file(cam_path, r=True, type="Alembic", ignoreVersion=True, gl=True, namespace=namespace, mergeNamespacesOnClash=False, options="mo=1;")
 mc.file(save=True, type='mayaAscii', f=True)
+print("yeah")
