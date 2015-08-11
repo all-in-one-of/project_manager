@@ -1020,6 +1020,28 @@ class AssetLoader(object):
             self.import_obj_into_scene()
 
         elif self.selected_asset.type == "anm":
+
+            self.create_from_asset_dialog = QtGui.QDialog(self)
+            self.Lib.apply_style(self, self.create_from_asset_dialog)
+
+            self.create_from_asset_dialog.setWindowTitle("Choose which asset to import")
+            self.create_from_asset_dialog_main_layout = QtGui.QHBoxLayout(self.create_from_asset_dialog)
+
+            camBtn = QtGui.QPushButton("Camera", self.create_from_asset_dialog)
+            layBtn = QtGui.QPushButton("Layout", self.create_from_asset_dialog)
+
+            camBtn.clicked.connect(self.create_from_asset_dialog.reject)
+            layBtn.clicked.connect(self.create_from_asset_dialog.accept)
+
+            self.create_from_asset_dialog_main_layout.addWidget(camBtn)
+            self.create_from_asset_dialog_main_layout.addWidget(layBtn)
+
+            self.create_from_asset_dialog.exec_()
+
+            if self.create_from_asset_dialog.result() == 0:
+                self.import_cam_into_anm()
+                return
+
             all_layout_scene = []
             for asset in self.assets:
                 if asset.type == "lay" and asset.extension == "hipnc":
@@ -1055,6 +1077,49 @@ class AssetLoader(object):
         elif self.selected_asset.type == "lay":
             AddAssetsToLayoutWindow(self)
 
+    def import_cam_into_anm(self):
+        self.create_from_asset_dialog.close()
+        all_cameras = []
+        for asset in self.assets:
+            if asset.type == "cam" and asset.extension == "abc":
+                all_cameras.append(asset)
+
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Please choose a camera")
+        layout = QtGui.QVBoxLayout(dialog)
+
+        listwidget = QtGui.QListWidget(dialog)
+
+        for asset in all_cameras:
+            item = QtGui.QListWidgetItem("Sequence: {0} | Shot: {1}".format(asset.sequence, asset.shot, asset.name))
+            item.setData(QtCore.Qt.UserRole, asset)
+            listwidget.addItem(item)
+
+        acceptBtn = QtGui.QPushButton("Import selected camera", dialog)
+        acceptBtn.clicked.connect(dialog.accept)
+
+        layout.addWidget(listwidget)
+        layout.addWidget(acceptBtn)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        selected_camera = listwidget.selectedItems()[0]
+        self.selected_camera_asset = selected_camera.data(QtCore.Qt.UserRole).toPyObject()
+
+        self.import_cam_process = QtCore.QProcess(self)
+        self.import_cam_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully imported Camera into scene!"))
+        self.import_cam_process.readyRead.connect(self.sreadata)
+        self.import_cam_process.waitForFinished()
+        self.import_cam_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_cam_into_anm.py", self.selected_asset.full_path, self.selected_camera_asset.full_path])
+
+    def sreadata(self):
+        while self.import_cam_process.canReadLine():
+            out = self.import_cam_process.readLine()
+            print(out)
+
     def import_obj_into_scene(self):
         if "lowres" in self.selected_asset.name:
             obj_file = self.selected_asset.obj_path.replace("-lowres", "")
@@ -1063,7 +1128,6 @@ class AssetLoader(object):
             obj_file = QtGui.QFileDialog.getOpenFileName(self, 'Select OBJ', 'H:/', "3D Model (*.obj)")
 
             if len(obj_file) < 1:
-                self.Lib.message_box(self, type="info", text="Please select at least one file!")
                 return
 
         if self.selected_asset.extension == "blend":
@@ -1080,9 +1144,6 @@ class AssetLoader(object):
             self.import_obj_process = QtCore.QProcess(self)
             self.import_obj_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully imported OBJ file!"))
             self.import_obj_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_import_obj_into_scene.py", "-main", "import_obj", "-args", "-file_path", self.selected_asset.full_path, "-obj_path", obj_file])
-
-    def import_cam_into_anm(self):
-        pass
 
     def create_asset_from_scratch(self):
 
