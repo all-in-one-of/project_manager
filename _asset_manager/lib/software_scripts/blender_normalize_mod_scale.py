@@ -20,7 +20,7 @@ scaleFactor = maxDimension / max(OBJ.dimensions)
 OBJ.scale = (scaleFactor,scaleFactor,scaleFactor)
 
 # Center pivot
-bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN', center='BOUNDS')
 
 # Move object to origin
 bpy.ops.object.location_clear()

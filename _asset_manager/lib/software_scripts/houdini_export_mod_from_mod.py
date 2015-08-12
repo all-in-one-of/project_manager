@@ -4,7 +4,7 @@ import hou
 hda_path = sys.argv[-1].replace("\\", "/")
 
 hou.hda.installFile(hda_path)
-hda_name = hda_path[hda_path.find("_mod_")+len("_mod_"):hda_path.rfind("_")]
+hda_name = hda_path[hda_path.find("_lay_")+len("_lay_"):hda_path.rfind("_")]
 hou.node("/obj").createNode(hda_name, hda_name)
 hou.node("/obj/" + hda_name).allowEditingOfContents()
 switch_node = hou.node("/obj/{0}/layout/switch_between_high-res_and_low-res".format(hda_name))

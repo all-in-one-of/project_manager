@@ -462,11 +462,18 @@ class AssetLoader(object):
 
         selected_asset = self.assetList.selectedItems()[0]
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+
         for version in self.versions:
             asset = version.data(QtCore.Qt.UserRole).toPyObject()
             if selected_asset.name == asset.name and asset.type == self.selected_department_name:
                 version.setHidden(False)
                 version.setSelected(True)
+            # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
+            elif self.selected_department_name == "mod" and asset.extension == "hda" and asset.type == "lay" and asset.version != "out" and selected_asset.name == asset.name:
+                version.setHidden(False)
+                version.setSelected(True)
+            elif self.selected_department_name == "lay" and asset.extension == "hda" and asset.type == "lay" and asset.version != "out" and selected_asset.name == asset.name:
+                version.setHidden(True)
             else:
                 version.setHidden(True)
 
@@ -549,10 +556,11 @@ class AssetLoader(object):
         self.lastPublishComment.setText(comments)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam":
-           asset_published = self.Asset(self, self.selected_asset.dependency)
-           asset_published.get_infos_from_id()
-           self.update_last_published_time_lbl(asset_published)
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type:
+
+            asset_published = self.Asset(self, self.selected_asset.dependency)
+            asset_published.get_infos_from_id()
+            self.update_last_published_time_lbl(asset_published)
 
     def update_last_published_time_lbl(self, asset_published=None):
 
@@ -597,6 +605,12 @@ class AssetLoader(object):
                 asset_item.setHidden(True)
 
             if asset.type != self.selected_department_name:
+                asset_item.setHidden(True)
+
+            # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
+            if self.selected_department_name == "mod" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                asset_item.setHidden(False)
+            elif self.selected_department_name == "lay" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
                 asset_item.setHidden(True)
 
     def filterList_textChanged(self, list_type):
@@ -740,10 +754,14 @@ class AssetLoader(object):
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
-            elif self.selected_asset.extension == "hda":
-                self.publish_process = QtCore.QProcess(self)
-                self.publish_process.finished.connect(self.publish_process_finished)
-                self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_mod_from_mod.py", self.selected_asset.full_path])
+
+            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
+            self.db.commit()
+
+        elif self.selected_asset.type == "lay":
+            self.publish_process = QtCore.QProcess(self)
+            self.publish_process.finished.connect(self.publish_process_finished)
+            self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_mod_from_mod.py", self.selected_asset.full_path])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
             self.db.commit()
@@ -810,7 +828,7 @@ class AssetLoader(object):
         self.update_thumbnail()
 
     def update_thumbnail(self):
-        if self.selected_asset.type == "mod":
+        if self.selected_asset.type == "mod" or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
 
             dialog = QtGui.QDialog(self)
             dialog.setWindowTitle("Select options")
@@ -848,6 +866,46 @@ class AssetLoader(object):
                 thumbs_to_create += "turn"
 
             self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version)
+
+        elif self.selected_asset.type == "anm":
+
+            shots = (self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, ))).fetchall()
+            start_frame = str(shots[0][0])
+            end_frame = str(shots[0][1])
+            self.i = 0
+            self.thumbnailProgressBar.show()
+            self.thumbnailProgressBar.setMaximum(int(end_frame) - int(start_frame) + 9)
+            self.thumbnailProgressBar.setValue(0)
+            self.maya_playblast = QtCore.QProcess(self)
+            self.maya_playblast.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame))
+            self.maya_playblast.readyRead.connect(self.playblast_ready_read)
+            self.maya_playblast.waitForFinished()
+            self.maya_playblast.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
+
+    def create_mov_from_playblast(self, start_frame, end_frame):
+        file_sequence = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
+        movie_path = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_playblast.mp4"
+
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
+
+        thumb_filename = os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".mp4"
+        shutil.copy(movie_path, thumb_filename)
+
+        os.remove(movie_path)
+        for i in range(int(start_frame), int(end_frame)):
+            os.remove("H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
+
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
+    def playblast_ready_read(self):
+        while self.maya_playblast.canReadLine():
+            self.i += 1
+            self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
+            hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
+            self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
+            out = self.maya_playblast.readLine()
+            print(out)
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -947,15 +1005,18 @@ class AssetLoader(object):
             elif self.selected_asset.extension == "scn":
                 t = Thread(target=lambda: subprocess.Popen([self.softimage_path, "-w", "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/softimage/nature", self.selected_asset.full_path]))
                 t.start()
-            elif self.selected_asset.extension == "hda":
-                process = QtCore.QProcess(self)
-                process.start(self.houdini_path, [self.selected_asset.full_path])
 
         elif self.selected_asset.type == "shd":
             process = QtCore.QProcess(self)
             process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "lay":
+            # User is trying to open a houdini modeling asset
+            if self.selected_department_name == "mod":
+                process = QtCore.QProcess(self)
+                process.start(self.houdini_path, [self.selected_asset.full_path])
+                return
+
             try:
                 selected_dep = str(self.departmentList.selectedItems()[0].text())
             except:
@@ -1118,14 +1179,8 @@ class AssetLoader(object):
 
         self.import_cam_process = QtCore.QProcess(self)
         self.import_cam_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully imported Camera into scene!"))
-        self.import_cam_process.readyRead.connect(self.sreadata)
         self.import_cam_process.waitForFinished()
         self.import_cam_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_cam_into_anm.py", self.selected_asset.full_path, self.selected_camera_asset.full_path])
-
-    def sreadata(self):
-        while self.import_cam_process.canReadLine():
-            out = self.import_cam_process.readLine()
-            print(out)
 
     def import_obj_into_scene(self):
         if "lowres" in self.selected_asset.name:
@@ -1220,9 +1275,8 @@ class AssetLoader(object):
             self.create_lay_asset_from_scratch(asset_name)
 
     def create_asset_from_asset(self):
-        if self.selected_department_name == "mod":
+        if self.selected_department_name == "mod" or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
             if self.selected_asset == None: return
-            if self.selected_asset.type != "mod": return
             if "lowres" in self.selected_asset.name:
                 self.Lib.message_box(self, type="error", text="You can't create an asset from a low-res asset. Please select the corresponding high-res asset.")
                 return
@@ -1324,8 +1378,18 @@ class AssetLoader(object):
         createCamBtn = QtGui.QPushButton("Create asset", self)
         createCamBtn.clicked.connect(dialog.accept)
 
+        existing_cam_shots = self.cursor.execute('''SELECT shot_number FROM assets WHERE asset_type="cam" AND sequence_name=?''', (self.selected_sequence_name,)).fetchall()
+        if len(existing_cam_shots) > 0:
+            existing_cam_shots = [str(i[0]) for i in existing_cam_shots]
+
         shots = self.shots[self.selected_sequence_name]
-        shotListWidget.addItems(QtCore.QStringList(shots))
+        shots_with_no_cam = list(set(shots) - set(existing_cam_shots))
+
+        if len(shots_with_no_cam) == 0:
+            self.Lib.message_box(self, type="warning", text="There's already a camera for every shot in this sequence")
+            return
+
+        shotListWidget.addItems(QtCore.QStringList(shots_with_no_cam))
         shotListWidget.setCurrentRow(0)
         selected_shot = shots[0]
 
@@ -1375,17 +1439,27 @@ class AssetLoader(object):
 
         shotLbl = QtGui.QLabel("Shot list:", self)
         shotListWidget = QtGui.QListWidget(self)
-        createCamBtn = QtGui.QPushButton("Create asset", self)
-        createCamBtn.clicked.connect(dialog.accept)
+        createLgtBtn = QtGui.QPushButton("Create asset", self)
+        createLgtBtn.clicked.connect(dialog.accept)
+
+        existing_lights_shots = self.cursor.execute('''SELECT shot_number FROM assets WHERE asset_type="lgt" AND sequence_name=?''', (self.selected_sequence_name, )).fetchall()
+        if len(existing_lights_shots) > 0:
+            existing_lights_shots = [str(i[0]) for i in existing_lights_shots]
 
         shots = self.shots[self.selected_sequence_name]
-        shotListWidget.addItems(QtCore.QStringList(shots))
+        shots_with_no_lights = list(set(shots) - set(existing_lights_shots))
+
+        if len(shots_with_no_lights) == 0:
+            self.Lib.message_box(self, type="warning", text="There's already a light for every shot in this sequence")
+            return
+
+        shotListWidget.addItems(QtCore.QStringList(shots_with_no_lights))
         shotListWidget.setCurrentRow(0)
         selected_shot = shots[0]
 
         layout.addWidget(shotLbl)
         layout.addWidget(shotListWidget)
-        layout.addWidget(createCamBtn)
+        layout.addWidget(createLgtBtn)
 
         dialog.exec_()
 
@@ -1396,14 +1470,14 @@ class AssetLoader(object):
         selected_shot = shotListWidget.selectedItems()[0]
         selected_shot = str(selected_shot.text())
 
-        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
-        camera_asset.add_asset_to_db()
+        light_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
+        light_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, camera_asset))
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, light_asset))
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_lgt_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_lgt_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), light_asset.full_path.replace("\\", "/"), selected_shot])
 
     def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
@@ -1595,15 +1669,21 @@ class AnimSceneChooser(QtGui.QDialog):
         asset.change_dependency(alembic_publish_asset.id)
 
         process = QtCore.QProcess(self)
-        process.finished.connect(partial(self.main.asset_creation_finished, asset))
         process.waitForFinished()
         process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_rig_as_reference.py", self.main.selected_asset.rig_out_path, asset.full_path])
 
         hda_layout_asset = self.main.cursor.execute('''SELECT asset_path FROM assets WHERE asset_name=? AND asset_extension="hda" AND asset_type="lay"''', (asset.name,)).fetchone()
 
         hda_process = QtCore.QProcess(self)
+        hda_process.finished.connect(partial(self.create_abc, asset))
         hda_process.waitForFinished()
         hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_update_hda_from_abc.py", alembic_publish_asset.full_path.replace("\\", "/"), alembic_publish_asset.name, (self.main.selected_project_path + hda_layout_asset[0]).replace("\\", "/")])
+
+
+    def create_abc(self, asset):
+        self.publish_process = QtCore.QProcess(self)
+        self.publish_process.finished.connect(partial(self.main.asset_creation_finished, asset))
+        self.publish_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", asset.full_path.replace("\\", "/"), asset.anim_out_path.replace("\\", "/"), "1", "2"])
 
 class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):
@@ -1664,9 +1744,12 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 asset_object = self.main.Asset(self.main, asset_id)
                 asset_object.get_infos_from_id()
 
-                # Get first modeling scene modeling digital asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
-                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency)
-                first_modeling_scene_asset.get_infos_from_id()
+                if asset_object.extension == "hda" and asset_object.type == "lay" and asset_object.version != "out": # Asset is a houdini modeling asset
+                    first_modeling_scene_asset = asset_object
+                else:
+                    # Get first modeling scene modeling digital asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
+                    first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency)
+                    first_modeling_scene_asset.get_infos_from_id()
 
                 # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
                 out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency)
@@ -1730,13 +1813,10 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for i in xrange(self.assetsToAddListWidget.count()):
             list_item = self.assetsToAddListWidget.item(i)
             asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            asset.print_asset()
             assets_list.append(asset.full_path.replace("\\", "/"))
             self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
             self.main.db.commit()
-
-
-
-
 
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(self.process_finished)

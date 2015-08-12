@@ -31,7 +31,8 @@ for object in all_objects:
     if "HighRes" in object:
         mc.select(object, add=True)
 mc.createDisplayLayer(name="High Resolution", nr=True)
-mc.setAttr("High_Resolution.visibility", False)
+mc.setAttr("Low_Resolution.visibility", False)
+mc.setAttr("High_Resolution.visibility", True)
 
 # Save file
 mc.file(rename=export_path)

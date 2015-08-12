@@ -648,8 +648,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         if widget.objectName() == "publishBtn":
             subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "file:///Z:/Groupes-cours/NAND999-A15-N01/Nature/_info/wiki/wiki.html#Modeling"])
 
-
-
     def closeEvent(self, event):
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))

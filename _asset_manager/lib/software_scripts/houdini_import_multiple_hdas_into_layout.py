@@ -9,7 +9,7 @@ hdas_to_import = hdas_to_import.split("|")
 
 hou.hipFile.load(hip_file)
 for hda in hdas_to_import:
-    hda_name = hda[hda.find("_lay_")+len("_lay_"):hda.rfind("_out.")]
+    hda_name = hda[hda.find("_lay_")+len("_lay_"):hda.rfind("_")]
     hou.hda.installFile(hda)
     hda_node = hou.node("/obj").createNode(hda_name, hda_name)
     hda_node.moveToGoodPosition()

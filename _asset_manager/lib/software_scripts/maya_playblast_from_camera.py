@@ -3,23 +3,40 @@ import sys
 import maya.standalone
 maya.standalone.initialize( name='python' )
 import maya.cmds as mc
-import maya.mel as mel
+
+file_path = sys.argv[-1]
+mc.loadPlugin("AbcImport")
+
+camera_animation = mc.listCameras()[0]
+
+mc.file(file_path, o=True)
+
+mc.workspace("C:/Temp", o=True)
+mc.setAttr('defaultRenderGlobals.currentRenderer', 'mayaHardware2', type='string')
+
+mc.setAttr("defaultResolution.width", 1920)
+mc.setAttr("defaultResolution.height", 1080)
+
+mc.setAttr("hardwareRenderingGlobals.vertexAnimationCache", 2)
+mc.setAttr("hardwareRenderingGlobals.ssaoEnable", 1)
+mc.setAttr("hardwareRenderingGlobals.ssaoSamples", 16)
+mc.setAttr("hardwareRenderingGlobals.lineAAEnable", 1)
+mc.setAttr("hardwareRenderingGlobals.imageFormat", 8)
+mc.setAttr("hardwareRenderingGlobals.animation", 1)
+mc.setAttr("hardwareRenderingGlobals.animationRange", 0)
+mc.setAttr("hardwareRenderingGlobals.startFrame", 1)
+mc.setAttr("hardwareRenderingGlobals.endFrame", 50)
+mc.setAttr(camera_animation + ":cameraProperties.renderable", 1)
+mc.setAttr("frontShape.renderable", 0)
+mc.setAttr("perspShape.renderable", 0)
+mc.setAttr("sideShape.renderable", 0)
+mc.setAttr("topShape.renderable", 0)
+
+mc.batchRender()
 
 
 
-def __init__(self):
-    self.get_camera()
-    self.default_render_format()
-    self.playblast()
 
-def get_camera(self):
-    camera_animation = mc.listCameras()[0]
-    mc.lookThru(camera_animation)
 
-def playblast(self):
-    path = "H:\\Image Test\\"
-    output_name = "shit"
-    mc.playblast(filename= path + output_name, format="image", viewer=False, showOrnaments=False, framePadding=4, )
 
-def default_render_format(self):
-    mel.eval("setAttr defaultRenderGlobals.imageFormat 8;")
+
