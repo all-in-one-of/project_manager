@@ -25,8 +25,8 @@ class Lib(object):
     def create_thumbnails(self, obj_path="", thumbs_to_create="", version=""):
 
         self.updateThumbBtn.setEnabled(False)
-
         self.full_obj_path = obj_path
+        self.obj_name = obj_path[obj_path.find("_mod_")+len("_mod_"):obj_path.rfind("_out")]
         self.obj_tmp_path = "C:\\Temp\\" + obj_path.split("\\")[-1]
         self.type = type
         self.version = version
@@ -49,8 +49,8 @@ class Lib(object):
             self.thumbs_to_create = thumbs_to_create.replace("quad", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
-            self.sampling = 10
-            self.resolution = 50
+            self.sampling = 25
+            self.resolution = 25
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
         if self.type == "full":
@@ -134,6 +134,7 @@ class Lib(object):
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"))
             for i in range(24):
                 os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(2) + ".jpg"))
+
 
         self.create_thumbnail_process.kill()
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
@@ -520,7 +521,6 @@ class Lib(object):
                     if asset_name.lower() + "_" + asset_version in line.lower():
                         return path.split("/")[-1] # Return path (Ex: "8e0930b8-61b1-4ade-8dbd-8bb422ef6686")
             f.close()
-
 
 class DesktopWidget(QtGui.QWidget):
 

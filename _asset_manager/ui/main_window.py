@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Aug 11 09:22:46 2015
+# Created: Thu Aug 13 13:13:48 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -418,12 +418,25 @@ class Ui_Form(object):
         self.thumbTurnBtn.setObjectName(_fromUtf8("thumbTurnBtn"))
         self.horizontalLayout_4.addWidget(self.thumbTurnBtn)
         self.verticalLayout_4.addWidget(self.thumbDisplayTypeFrame)
+        self.showPlayBlastBtn = QtGui.QPushButton(self.thumbnailFrame)
+        self.showPlayBlastBtn.setObjectName(_fromUtf8("showPlayBlastBtn"))
+        self.verticalLayout_4.addWidget(self.showPlayBlastBtn)
         self.thumbnailProgressBar = QtGui.QProgressBar(self.thumbnailFrame)
         self.thumbnailProgressBar.setMaximumSize(QtCore.QSize(500, 14))
         self.thumbnailProgressBar.setProperty("value", 0)
         self.thumbnailProgressBar.setOrientation(QtCore.Qt.Horizontal)
         self.thumbnailProgressBar.setObjectName(_fromUtf8("thumbnailProgressBar"))
         self.verticalLayout_4.addWidget(self.thumbnailProgressBar)
+        self.videoFrame = QtGui.QFrame(self.thumbnailFrame)
+        self.videoFrame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.videoFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.videoFrame.setLineWidth(0)
+        self.videoFrame.setObjectName(_fromUtf8("videoFrame"))
+        self.vboxlayout = QtGui.QVBoxLayout(self.videoFrame)
+        self.vboxlayout.setSpacing(0)
+        self.vboxlayout.setMargin(0)
+        self.vboxlayout.setObjectName(_fromUtf8("vboxlayout"))
+        self.verticalLayout_4.addWidget(self.videoFrame)
         self.assetImg = ThibQLabel(self.thumbnailFrame)
         self.assetImg.setMinimumSize(QtCore.QSize(500, 300))
         self.assetImg.setMaximumSize(QtCore.QSize(500, 300))
@@ -475,7 +488,12 @@ class Ui_Form(object):
         self.lastPublishedLbl.setObjectName(_fromUtf8("lastPublishedLbl"))
         self.gridLayout_5.addWidget(self.lastPublishedLbl, 2, 0, 1, 1)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_5.addItem(spacerItem1, 6, 0, 1, 1)
+        self.gridLayout_5.addItem(spacerItem1, 4, 0, 1, 1)
+        self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
+        self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 100))
+        self.lastPublishComment.setReadOnly(True)
+        self.lastPublishComment.setObjectName(_fromUtf8("lastPublishComment"))
+        self.gridLayout_5.addWidget(self.lastPublishComment, 3, 0, 1, 1)
         self.smallActionIconFrame = QtGui.QFrame(self.stateFrame)
         self.smallActionIconFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.smallActionIconFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -528,11 +546,6 @@ class Ui_Form(object):
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem2)
         self.gridLayout_5.addWidget(self.smallActionIconFrame, 0, 0, 1, 1)
-        self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
-        self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 100))
-        self.lastPublishComment.setReadOnly(True)
-        self.lastPublishComment.setObjectName(_fromUtf8("lastPublishComment"))
-        self.gridLayout_5.addWidget(self.lastPublishComment, 3, 0, 1, 1)
         self.verticalLayout.addWidget(self.stateFrame)
         self.gridLayout_3.addWidget(self.assetInfoFrame, 0, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.assetInfoGrp)
@@ -2011,6 +2024,7 @@ class Ui_Form(object):
         self.thumbFullBtn.setText(_translate("Form", "Full", None))
         self.thumbQuadBtn.setText(_translate("Form", "Quad", None))
         self.thumbTurnBtn.setText(_translate("Form", "Turntable", None))
+        self.showPlayBlastBtn.setText(_translate("Form", "Show playblast", None))
         self.loadObjInGplayBtn.setText(_translate("Form", "Load OBJ in Gplay", None))
         self.updateThumbBtn.setText(_translate("Form", "Update Thumbnail", None))
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))

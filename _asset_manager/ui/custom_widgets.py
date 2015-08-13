@@ -4,6 +4,8 @@
 from PyQt4 import QtGui, QtCore
 import subprocess
 import webbrowser
+from PyQt4 import phonon
+import os
 
 class ThibListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
@@ -58,7 +60,6 @@ class ThibQLabel(QtGui.QLabel):
             image_path = self._data
         except:
             return
-
         webbrowser.open(image_path)
 
     def data(self):
@@ -83,4 +84,7 @@ class profilPicLabel(QtGui.QLabel):
 
     def setData(self, data):
         self._data = data
+
+
+
 

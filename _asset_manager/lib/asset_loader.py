@@ -2,6 +2,7 @@
 # coding=utf-8
 
 from PyQt4 import QtGui, QtCore
+from PyQt4.phonon import Phonon
 import subprocess
 from functools import partial
 import os
@@ -113,6 +114,10 @@ class AssetLoader(object):
         self.createVersionBtn.clicked.connect(self.create_new_version)
         self.publishBtn.clicked.connect(self.publish_asset)
 
+        self.showPlayBlastBtn.clicked.connect(self.show_anm_playblast)
+        self.showPlayBlastBtn.hide()
+
+
     def show_comments(self):
         if self.selected_asset == None:
             return
@@ -121,6 +126,7 @@ class AssetLoader(object):
         self.CommentWidget.load_comments(self)
 
     def change_favorite_state(self):
+
         if self.selected_asset == None:
             return
 
@@ -404,51 +410,63 @@ class AssetLoader(object):
 
         if self.selected_department_name == "ref":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "mod":
             self.loadObjInGplayBtn.show()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.show()
 
         elif self.selected_department_name == "tex":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rig":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "anm":
+            self.showPlayBlastBtn.show()
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "sim":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "shd":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "lay":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "dmp":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "cmp":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rdr":
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
             self.selected_department_name = "lay"
 
         else:
             self.loadObjInGplayBtn.hide()
+            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
 
@@ -501,12 +519,23 @@ class AssetLoader(object):
             qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
+        elif self.selected_asset.type == "anm":
+            if not os.path.isfile(self.selected_asset.anim_playblast_path.replace("mp4", "jpg")):
+                img_path, width = self.no_img_found, 300
+            else:
+                if os.path.isfile(self.selected_asset.anim_playblast_path.replace("mp4", "jpg")):
+                    img_path, width = self.selected_asset.anim_playblast_path.replace("mp4", "jpg"), 500
+
+            qpixmap = QtGui.QPixmap(img_path)
+            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(img_path)
+            self.assetImg.setPixmap(qpixmap)
+
         else:
             qpixmap = QtGui.QPixmap(self.no_img_found)
             qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
             self.assetImg.setData(self.no_img_found)
             self.assetImg.setPixmap(qpixmap)
-
 
 
         # Set labels
@@ -874,7 +903,7 @@ class AssetLoader(object):
             end_frame = str(shots[0][1])
             self.i = 0
             self.thumbnailProgressBar.show()
-            self.thumbnailProgressBar.setMaximum(int(end_frame) - int(start_frame) + 9)
+            self.thumbnailProgressBar.setMaximum(int(end_frame) - int(start_frame))
             self.thumbnailProgressBar.setValue(0)
             self.maya_playblast = QtCore.QProcess(self)
             self.maya_playblast.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame))
@@ -892,7 +921,9 @@ class AssetLoader(object):
         shutil.copy(movie_path, thumb_filename)
 
         os.remove(movie_path)
-        for i in range(int(start_frame), int(end_frame)):
+        for i in range(int(start_frame), int(end_frame) + 1):
+            if i == int(start_frame):
+                shutil.copy("H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".jpg")
             os.remove("H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
@@ -906,6 +937,9 @@ class AssetLoader(object):
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
             out = self.maya_playblast.readLine()
             print(out)
+
+    def show_anm_playblast(self):
+        subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.anim_playblast_path])
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -930,7 +964,7 @@ class AssetLoader(object):
         elif type == "turn":
             result = self.check_thumbnails_conditions(type="turn")
             if result == True:
-                subprocess.Popen(["Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\MPC\\mpc-hc.exe", self.selected_asset.turn_vid_path, "/fullscreen"])
+                subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turn_vid_path])
 
     def check_thumbnails_conditions(self, type=""):
         '''
