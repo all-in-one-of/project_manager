@@ -980,13 +980,6 @@
                           </widget>
                          </item>
                          <item>
-                          <widget class="QPushButton" name="thumbQuadBtn">
-                           <property name="text">
-                            <string>Quad</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
                           <widget class="QPushButton" name="thumbTurnBtn">
                            <property name="text">
                             <string>Turntable</string>
@@ -1147,6 +1140,13 @@
                          <enum>QFrame::Raised</enum>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_5">
+                         <item row="3" column="0">
+                          <widget class="QLabel" name="hasUvLbl">
+                           <property name="text">
+                            <string>Has UV? No</string>
+                           </property>
+                          </widget>
+                         </item>
                          <item row="1" column="0">
                           <widget class="QLabel" name="lastAccessLbl">
                            <property name="maximumSize">
@@ -1167,7 +1167,7 @@
                            </property>
                           </widget>
                          </item>
-                         <item row="4" column="0">
+                         <item row="6" column="0">
                           <spacer name="verticalSpacer_2">
                            <property name="orientation">
                             <enum>Qt::Vertical</enum>
@@ -1180,7 +1180,7 @@
                            </property>
                           </spacer>
                          </item>
-                         <item row="3" column="0">
+                         <item row="5" column="0">
                           <widget class="QTextEdit" name="lastPublishComment">
                            <property name="maximumSize">
                             <size>
@@ -1364,6 +1364,13 @@
                              </spacer>
                             </item>
                            </layout>
+                          </widget>
+                         </item>
+                         <item row="4" column="0">
+                          <widget class="QLabel" name="isInLayoutLbl">
+                           <property name="text">
+                            <string>Is in layout? No</string>
+                           </property>
                           </widget>
                          </item>
                         </layout>

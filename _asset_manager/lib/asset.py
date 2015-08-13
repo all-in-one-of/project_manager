@@ -55,11 +55,9 @@ class Asset(object):
         self.full_path = self.project_path + self.path
         if self.type == "lay" and self.extension == "hda":
             self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
-            self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_quad", "jpg")
             self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
         else:
             self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
-            self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_quad", "jpg")
             self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
 
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
@@ -131,6 +129,11 @@ class Asset(object):
             os.remove(self.turn_vid_path)
         except:
             pass
+        if self.type == "mod":
+            try:
+                os.remove(self.full_path.replace("\\mod\\", "\\shd\\").replace("_mod_", "_shd_").replace(self.extension, "hda"))
+            except:
+                pass
         self.main.cursor.execute('''DELETE FROM favorited_assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
@@ -276,7 +279,6 @@ class Asset(object):
             self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
         else:
             self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
-        self.quad_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_quad", "jpg")
         self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
 

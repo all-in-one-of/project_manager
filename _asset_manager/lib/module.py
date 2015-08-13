@@ -40,28 +40,18 @@ class Lib(object):
         if "full" in self.thumbs_to_create:
             self.type = "full"
             self.sampling = 100
-            self.resolution = 50
+            self.resolution = 30
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
-        elif "quad" in self.thumbs_to_create:
-            self.type = "quad"
-            self.sampling = 25
-            self.resolution = 50
-            self.thumbs_to_create = thumbs_to_create.replace("quad", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
             self.sampling = 25
-            self.resolution = 25
+            self.resolution = 50
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
         if self.type == "full":
             self.thumbnailProgressBar.setMaximum(67 + int(self.sampling))
-        elif self.type == "quad":
-            self.thumbnailProgressBar.setMaximum(211 + (int(self.sampling) * 4))
         elif self.type == "turn":
             self.thumbnailProgressBar.setMaximum(1171 + (int(self.sampling) * 20))
-
-        if self.type == "quad":
-            self.resolution = str(int(self.resolution) / 2)
 
         if os.path.getsize(self.full_obj_path) < 100:
             self.message_box(type="warning", text="It looks like the published modeling is nothing. Make sure you model something before trying to make a thumbnail out of it!")
@@ -93,36 +83,6 @@ class Lib(object):
             thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
-
-        elif self.type == "quad":
-            full_scale_width = int(1920 * float(self.resolution) * 2 / 100)
-            full_scale_height = int(1152 * float(self.resolution) * 2 / 100)
-
-            quad_scale_width = int(1920 * float(self.resolution) / 100)
-            quad_scale_height = int(1152 * float(self.resolution) / 100)
-
-            im = Image.new("RGB", (full_scale_width, full_scale_height), "black")
-
-            view01 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_000.jpg"))
-            view02 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_090.jpg"))
-            view03 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_180.jpg"))
-            view04 = Image.open(self.obj_tmp_path.replace("out.obj", self.version + "_270.jpg"))
-
-            # get the correct size
-
-            im.paste(view01, (0, 0))
-            im.paste(view02, (quad_scale_width, 0))
-            im.paste(view03, (0, quad_scale_height))
-            im.paste(view04, (quad_scale_width, quad_scale_height))
-
-            im.save(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"), "JPEG", quality=100, optimize=True, progressive=True)
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_quad.jpg")
-            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"), thumb_filename)
-            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_quad.jpg"))
-
-            for i in range(0, 360, 90):
-                os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(3) + ".jpg"))
-
 
         elif self.type == "turn":
             file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")

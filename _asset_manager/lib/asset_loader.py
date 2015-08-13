@@ -77,6 +77,7 @@ class AssetLoader(object):
         self.departmentList.itemClicked.connect(self.departmentList_Clicked)
         self.seqList.itemClicked.connect(self.seqList_Clicked)  # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
         self.shotList.itemClicked.connect(self.shotList_Clicked)
+        self.shotList.itemDoubleClicked.connect(self.shotList_DoubleClicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
@@ -97,7 +98,6 @@ class AssetLoader(object):
         self.addShotBtn.clicked.connect(self.add_shot)
 
         self.thumbFullBtn.clicked.connect(partial(self.switch_thumbnail_display, "full"))
-        self.thumbQuadBtn.clicked.connect(partial(self.switch_thumbnail_display, "quad"))
         self.thumbTurnBtn.clicked.connect(partial(self.switch_thumbnail_display, "turn"))
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
@@ -116,7 +116,6 @@ class AssetLoader(object):
 
         self.showPlayBlastBtn.clicked.connect(self.show_anm_playblast)
         self.showPlayBlastBtn.hide()
-
 
     def show_comments(self):
         if self.selected_asset == None:
@@ -244,8 +243,8 @@ class AssetLoader(object):
             return
 
         # Add shot to database
-        self.cursor.execute('''INSERT INTO shots(project_name, sequence_name, shot_number) VALUES (?, ?, ?)''',
-                            (self.selected_project_name, self.selected_sequence_name, shot_number))
+        self.cursor.execute('''INSERT INTO shots(project_name, sequence_name, shot_number, frame_start, frame_end) VALUES (?, ?, ?, ?, ?)''',
+                            (self.selected_project_name, self.selected_sequence_name, shot_number, "1", "1"))
 
         self.db.commit()
 
@@ -389,6 +388,56 @@ class AssetLoader(object):
             self.selected_shot_number = "xxxx"
         self.load_assets_from_selected_seq_shot_dept()
 
+    def shotList_DoubleClicked(self):
+
+        if self.selected_shot_number == "All" or self.selected_shot_number == "xxxx":
+            return
+
+        framerange = self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_sequence_name, self.selected_shot_number,)).fetchone()
+        start_frame = framerange[0]
+        end_frame = framerange[1]
+
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Change Framerange")
+        dialog.setMinimumWidth(200)
+        layout = QtGui.QGridLayout(dialog)
+
+        start_spinbox = QtGui.QSpinBox()
+        end_spinbox = QtGui.QSpinBox()
+
+        start_spinbox.setMinimum(1)
+        start_spinbox.setMaximum(10000)
+        end_spinbox.setMinimum(1)
+        end_spinbox.setMaximum(10000)
+
+        start_spinbox.setValue(start_frame)
+        end_spinbox.setValue(end_frame)
+
+        if self.username != "thoudon" or self.username != "lclavet":
+            update_btn = QtGui.QPushButton("Update Framerange", dialog)
+            update_btn.clicked.connect(dialog.accept)
+            layout.addWidget(start_spinbox, 0, 0)
+            layout.addWidget(end_spinbox, 0, 1)
+            layout.addWidget(update_btn, 1, 0, 2, 2)
+        else:
+            start_spinbox.setDisabled(True)
+            end_spinbox.setDisabled(True)
+            layout.addWidget(start_spinbox, 0, 0)
+            layout.addWidget(end_spinbox, 0, 1)
+
+
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        new_start_frame = start_spinbox.value()
+        new_end_frame = end_spinbox.value()
+
+        self.cursor.execute('''UPDATE shots SET frame_start=?, frame_end=? WHERE project_name=? AND sequence_name=? AND shot_number=?''', (new_start_frame, new_end_frame, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number,))
+        self.db.commit()
+
     def departmentList_Clicked(self):
 
         # Hide load obj buttons
@@ -531,6 +580,17 @@ class AssetLoader(object):
             self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
 
+        elif self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out":
+            if not os.path.isfile(self.selected_asset.full_img_path):
+                img_path, width = self.no_img_found, 300
+            else:
+                img_path, width = self.selected_asset.full_img_path, 500
+
+            qpixmap = QtGui.QPixmap(img_path)
+            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(img_path)
+            self.assetImg.setPixmap(qpixmap)
+
         else:
             qpixmap = QtGui.QPixmap(self.no_img_found)
             qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -585,7 +645,7 @@ class AssetLoader(object):
         self.lastPublishComment.setText(comments)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type:
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
 
             asset_published = self.Asset(self, self.selected_asset.dependency)
             asset_published.get_infos_from_id()
@@ -830,9 +890,10 @@ class AssetLoader(object):
     def publish_process_finished(self):
 
         # If published asset was of type mod, normalize its scale
-        if self.selected_asset.type == "mod":
+        if self.selected_asset.type == "mod" or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
             self.normalize_mod_scale_process = QtCore.QProcess(self)
             self.normalize_mod_scale_process.waitForFinished()
+            print(self.selected_asset.obj_path)
             self.normalize_mod_scale_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_normalize_mod_scale.py", "--", self.selected_asset.obj_path])
 
         # Check if current asset has been favorited by someone.
@@ -866,9 +927,6 @@ class AssetLoader(object):
             checkbox_full = QtGui.QCheckBox("Single image (Full Resolution Render)", dialog)
             if not os.path.isfile(self.selected_asset.full_img_path): # If full don't exist, set checkbox to true
                 checkbox_full.setCheckState(2)
-            checkbox_quad = QtGui.QCheckBox("Four images (Quad View)", dialog)
-            if not os.path.isfile(self.selected_asset.quad_img_path): # If quad don't exist, set checkbox to true
-                checkbox_quad.setCheckState(2)
             checkbox_turn = QtGui.QCheckBox("Turntable (video)", dialog)
             if not os.path.isfile(self.selected_asset.turn_vid_path): # If turn don't exist, set checkbox to true
                 checkbox_turn.setCheckState(2)
@@ -877,7 +935,6 @@ class AssetLoader(object):
             create_btn.clicked.connect(dialog.accept)
 
             dialog_main_layout.addWidget(checkbox_full)
-            dialog_main_layout.addWidget(checkbox_quad)
             dialog_main_layout.addWidget(checkbox_turn)
             dialog_main_layout.addWidget(create_btn)
 
@@ -889,8 +946,6 @@ class AssetLoader(object):
             thumbs_to_create = ""
             if checkbox_full.isChecked():
                 thumbs_to_create += "full"
-            if checkbox_quad.isChecked():
-                thumbs_to_create += "quad"
             if checkbox_turn.isChecked():
                 thumbs_to_create += "turn"
 
@@ -953,14 +1008,6 @@ class AssetLoader(object):
                 self.assetImg.setData(self.selected_asset.full_img_path)
                 self.assetImg.setPixmap(qpixmap)
 
-        elif type == "quad":
-            result = self.check_thumbnails_conditions(type="quad")
-            if result == True:
-                qpixmap = QtGui.QPixmap(self.selected_asset.quad_img_path)
-                qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-                self.assetImg.setData(self.selected_asset.quad_img_path)
-                self.assetImg.setPixmap(qpixmap)
-
         elif type == "turn":
             result = self.check_thumbnails_conditions(type="turn")
             if result == True:
@@ -975,9 +1022,6 @@ class AssetLoader(object):
         if type == "full":
             path = self.selected_asset.full_img_path
             type_full_text = "full resolution image"
-        elif type == "quad":
-            path = self.selected_asset.quad_img_path
-            type_full_text = "quad-view image"
         elif type == "turn":
             path = self.selected_asset.turn_vid_path
             type_full_text = "turntable"
@@ -1382,7 +1426,7 @@ class AssetLoader(object):
         self.mari_process.readyRead.connect(self.mari_process_read_data)
         self.mari_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.mari_process.waitForFinished()
-        self.mari_process.start(self.mari_path, ["-t", self.cur_path + "\\lib\\software_scripts\\mari_create_project.py", self.selected_asset.name, self.selected_asset.version, obj_publish_path.full_path])
+        self.mari_process.start(self.mari_path, ["-t", self.cur_path + "\\lib\\software_scripts\\mari_create_project.py", self.selected_asset.name, "01", obj_publish_path.full_path])
 
     def mari_process_read_data(self):
         while self.mari_process.canReadLine():

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Thu Aug 13 13:13:48 2015
+# Created: Thu Aug 13 13:59:10 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -411,9 +411,6 @@ class Ui_Form(object):
         self.thumbFullBtn = QtGui.QPushButton(self.thumbDisplayTypeFrame)
         self.thumbFullBtn.setObjectName(_fromUtf8("thumbFullBtn"))
         self.horizontalLayout_4.addWidget(self.thumbFullBtn)
-        self.thumbQuadBtn = QtGui.QPushButton(self.thumbDisplayTypeFrame)
-        self.thumbQuadBtn.setObjectName(_fromUtf8("thumbQuadBtn"))
-        self.horizontalLayout_4.addWidget(self.thumbQuadBtn)
         self.thumbTurnBtn = QtGui.QPushButton(self.thumbDisplayTypeFrame)
         self.thumbTurnBtn.setObjectName(_fromUtf8("thumbTurnBtn"))
         self.horizontalLayout_4.addWidget(self.thumbTurnBtn)
@@ -480,6 +477,9 @@ class Ui_Form(object):
         self.stateFrame.setObjectName(_fromUtf8("stateFrame"))
         self.gridLayout_5 = QtGui.QGridLayout(self.stateFrame)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.hasUvLbl = QtGui.QLabel(self.stateFrame)
+        self.hasUvLbl.setObjectName(_fromUtf8("hasUvLbl"))
+        self.gridLayout_5.addWidget(self.hasUvLbl, 3, 0, 1, 1)
         self.lastAccessLbl = QtGui.QLabel(self.stateFrame)
         self.lastAccessLbl.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.lastAccessLbl.setObjectName(_fromUtf8("lastAccessLbl"))
@@ -488,12 +488,12 @@ class Ui_Form(object):
         self.lastPublishedLbl.setObjectName(_fromUtf8("lastPublishedLbl"))
         self.gridLayout_5.addWidget(self.lastPublishedLbl, 2, 0, 1, 1)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_5.addItem(spacerItem1, 4, 0, 1, 1)
+        self.gridLayout_5.addItem(spacerItem1, 6, 0, 1, 1)
         self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
         self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 100))
         self.lastPublishComment.setReadOnly(True)
         self.lastPublishComment.setObjectName(_fromUtf8("lastPublishComment"))
-        self.gridLayout_5.addWidget(self.lastPublishComment, 3, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.lastPublishComment, 5, 0, 1, 1)
         self.smallActionIconFrame = QtGui.QFrame(self.stateFrame)
         self.smallActionIconFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.smallActionIconFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -546,6 +546,9 @@ class Ui_Form(object):
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem2)
         self.gridLayout_5.addWidget(self.smallActionIconFrame, 0, 0, 1, 1)
+        self.isInLayoutLbl = QtGui.QLabel(self.stateFrame)
+        self.isInLayoutLbl.setObjectName(_fromUtf8("isInLayoutLbl"))
+        self.gridLayout_5.addWidget(self.isInLayoutLbl, 4, 0, 1, 1)
         self.verticalLayout.addWidget(self.stateFrame)
         self.gridLayout_3.addWidget(self.assetInfoFrame, 0, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.assetInfoGrp)
@@ -2022,11 +2025,11 @@ class Ui_Form(object):
         self.projectLbl.setText(_translate("Form", "Project", None))
         self.assetInfoGrp.setTitle(_translate("Form", "Info", None))
         self.thumbFullBtn.setText(_translate("Form", "Full", None))
-        self.thumbQuadBtn.setText(_translate("Form", "Quad", None))
         self.thumbTurnBtn.setText(_translate("Form", "Turntable", None))
         self.showPlayBlastBtn.setText(_translate("Form", "Show playblast", None))
         self.loadObjInGplayBtn.setText(_translate("Form", "Load OBJ in Gplay", None))
         self.updateThumbBtn.setText(_translate("Form", "Update Thumbnail", None))
+        self.hasUvLbl.setText(_translate("Form", "Has UV? No", None))
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
         self.lastPublishedLbl.setText(_translate("Form", "Last published by: ", None))
         self.loadAssetBtn.setToolTip(_translate("Form", "<html><head/><body><p>Load</p></body></html>", None))
@@ -2035,6 +2038,7 @@ class Ui_Form(object):
         self.publishBtn.setToolTip(_translate("Form", "<html><head/><body><p>Publish</p></body></html>", None))
         self.addRemoveAssetAsFavoriteBtn.setToolTip(_translate("Form", "<html><head/><body><p>Add asset to favorite</p></body></html>", None))
         self.showAssetCommentBtn.setToolTip(_translate("Form", "<html><head/><body><p>Show comments</p></body></html>", None))
+        self.isInLayoutLbl.setText(_translate("Form", "Is in layout? No", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))
         self.tmFilterByGroupBox.setTitle(_translate("Form", "Filter by", None))
         self.tmProjectLbl.setText(_translate("Form", "Project:", None))
