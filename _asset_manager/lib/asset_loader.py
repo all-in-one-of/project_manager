@@ -535,12 +535,6 @@ class AssetLoader(object):
             if selected_asset.name == asset.name and asset.type == self.selected_department_name:
                 version.setHidden(False)
                 version.setSelected(True)
-            # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
-            elif self.selected_department_name == "mod" and asset.extension == "hda" and asset.type == "lay" and asset.version != "out" and selected_asset.name == asset.name:
-                version.setHidden(False)
-                version.setSelected(True)
-            elif self.selected_department_name == "lay" and asset.extension == "hda" and asset.type == "lay" and asset.version != "out" and selected_asset.name == asset.name:
-                version.setHidden(True)
             else:
                 version.setHidden(True)
 
@@ -598,6 +592,11 @@ class AssetLoader(object):
             self.assetImg.setPixmap(qpixmap)
 
 
+        if self.selected_asset.type == "mod" or self.selected_asset.type == "anm" or self.selected_asset.type == "lay":
+            self.importIntoSceneBtn.show()
+        else:
+            self.importIntoSceneBtn.hide()
+
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
@@ -613,13 +612,6 @@ class AssetLoader(object):
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         else:
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
-
-        # Show import high res obj button if selected asset is a low-res modeling asset
-        if (self.selected_asset.type == "mod") or (self.selected_asset.type == "anm") or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hipnc"):
-            self.importIntoSceneBtn.show()
-        else:
-            self.importIntoSceneBtn.hide()
-
 
         # Set comment icon to enabled
         self.showAssetCommentBtn.setIcon(self.comment_icon)
@@ -645,7 +637,7 @@ class AssetLoader(object):
         self.lastPublishComment.setText(comments)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type:
 
             asset_published = self.Asset(self, self.selected_asset.dependency)
             asset_published.get_infos_from_id()
@@ -843,14 +835,10 @@ class AssetLoader(object):
                 self.publish_process = QtCore.QProcess(self)
                 self.publish_process.finished.connect(self.publish_process_finished)
                 self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
-
-            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
-            self.db.commit()
-
-        elif self.selected_asset.type == "lay":
-            self.publish_process = QtCore.QProcess(self)
-            self.publish_process.finished.connect(self.publish_process_finished)
-            self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_mod_from_mod.py", self.selected_asset.full_path])
+            elif self.selected_asset.extension == "hda":
+                self.publish_process = QtCore.QProcess(self)
+                self.publish_process.finished.connect(self.publish_process_finished)
+                self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_mod_from_mod.py", self.selected_asset.full_path])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
             self.db.commit()
@@ -918,7 +906,7 @@ class AssetLoader(object):
         self.update_thumbnail()
 
     def update_thumbnail(self):
-        if self.selected_asset.type == "mod" or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
+        if self.selected_asset.type == "mod":
 
             dialog = QtGui.QDialog(self)
             dialog.setWindowTitle("Select options")
@@ -965,6 +953,14 @@ class AssetLoader(object):
             self.maya_playblast.readyRead.connect(self.playblast_ready_read)
             self.maya_playblast.waitForFinished()
             self.maya_playblast.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
+
+        elif self.selected_asset.type == "cam":
+            associated_hip_scene = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_id=?''', (self.selected_asset.dependency,)).fetchone()[0]
+            associated_hip_scene = self.selected_project_path + associated_hip_scene
+
+            self.houdini_flipbook_process = QtCore.QProcess(self)
+            self.houdini_flipbook_process.waitForFinished()
+            self.houdini_flipbook_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
 
     def create_mov_from_playblast(self, start_frame, end_frame):
         file_sequence = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
@@ -1083,18 +1079,15 @@ class AssetLoader(object):
             elif self.selected_asset.extension == "scn":
                 t = Thread(target=lambda: subprocess.Popen([self.softimage_path, "-w", "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/softimage/nature", self.selected_asset.full_path]))
                 t.start()
+            elif self.selected_asset.extension == "hda":
+                process = QtCore.QProcess(self)
+                process.start(self.houdini_path, [self.selected_asset.full_path])
 
         elif self.selected_asset.type == "shd":
             process = QtCore.QProcess(self)
             process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "lay":
-            # User is trying to open a houdini modeling asset
-            if self.selected_department_name == "mod":
-                process = QtCore.QProcess(self)
-                process.start(self.houdini_path, [self.selected_asset.full_path])
-                return
-
             try:
                 selected_dep = str(self.departmentList.selectedItems()[0].text())
             except:
@@ -1162,6 +1155,9 @@ class AssetLoader(object):
         [version.setHidden(True) for version in self.versions]
 
     def import_into_scene(self):
+        if self.selected_asset == None:
+            return
+
         if self.selected_asset.type == "mod":
             self.import_obj_into_scene()
 
@@ -1560,9 +1556,12 @@ class AssetLoader(object):
     def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
         if selected_software == "houdini":
+            # Create modeling scene asset
+            asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "mod", "01", [], "", "", "", self.username)
+            asset.add_asset_to_db()
 
             # Create main HDA database entry
-            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "01", [], "", "", "", self.username)
+            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
             main_hda_asset.add_asset_to_db()
 
             # Create shading HDA database entry
@@ -1570,24 +1569,30 @@ class AssetLoader(object):
             shading_hda_asset.add_asset_to_db()
 
             # Create default publish cube (obj)
-            obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], main_hda_asset.id, "", "", self.username)
+            obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
             obj_asset.add_asset_to_db()
             shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
             # Create default lowres publish cube (obj)
-            obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], main_hda_asset.id, "", "", self.username)
+            obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], asset.id, "", "", self.username)
             obj_lowres_asset.add_asset_to_db()
             shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
 
             # Add publish obj as dependency to main asset
-            main_hda_asset.change_dependency(obj_asset.id)
+            asset.change_dependency(obj_asset.id)
+
+            # Create modeling HDA
+            self.houdini_hda_process = QtCore.QProcess(self)
+            self.houdini_hda_process.readyRead.connect(self.readdata)
+            self.houdini_hda_process.waitForFinished()
+            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda_for_houdini.py", asset.name, asset.obj_path, asset.full_path])
 
             # Create HDA associated to modeling scene
             self.houdini_hda_process = QtCore.QProcess(self)
             self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, main_hda_asset))
             self.houdini_hda_process.readyRead.connect(self.readdata)
             self.houdini_hda_process.waitForFinished()
-            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda_for_houdini.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
+            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
         else:
             # Create modeling scene asset
@@ -1670,7 +1675,6 @@ class AssetLoader(object):
 
     def add_assets_to_layout(self):
         AddAssetsToLayoutWindow(self)
-
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):
@@ -1819,15 +1823,12 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for asset in self.all_layout_assets:
             asset_id = asset[0]
             if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
-                asset_object = self.main.Asset(self.main, asset_id)
+                asset_object = self.main.Asset(self.main, asset_id) # Get layout hda digital asset
                 asset_object.get_infos_from_id()
 
-                if asset_object.extension == "hda" and asset_object.type == "lay" and asset_object.version != "out": # Asset is a houdini modeling asset
-                    first_modeling_scene_asset = asset_object
-                else:
-                    # Get first modeling scene modeling digital asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
-                    first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency)
-                    first_modeling_scene_asset.get_infos_from_id()
+                # Get first modeling scene (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
+                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency)
+                first_modeling_scene_asset.get_infos_from_id()
 
                 # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
                 out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency)
