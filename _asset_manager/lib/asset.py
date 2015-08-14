@@ -68,6 +68,9 @@ class Asset(object):
             self.anim_playblast_path = self.project_path + "\\assets\\{0}\\.playblast\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
             self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("anm", self.project_shortname, self.sequence, self.shot, self.name, "out", "abc")
 
+        if self.type == "cam":
+            self.cam_playblast_path = self.project_path + "\\assets\\cam\\.playblast\\{0}_{1}_{2}_{3}_{4}_{5}.{6}".format(self.project_shortname, self.sequence, self.shot, "cam", self.name, self.version, "mp4")
+
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
@@ -290,6 +293,8 @@ class Asset(object):
             self.anim_playblast_path = self.project_path + "\\assets\\anm\\.playblast\\{0}".format(self.name)
             self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("anm", self.project_shortname, self.sequence, self.shot, self.name, "out", "abc")
 
+        if self.type == "cam":
+            self.cam_playblast_path = self.project_path + "\\assets\\cam\\.playblast\\{0}".format(self.name)
 
         if self.type == "shd":
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")

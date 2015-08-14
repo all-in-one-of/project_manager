@@ -114,7 +114,7 @@ class AssetLoader(object):
         self.createVersionBtn.clicked.connect(self.create_new_version)
         self.publishBtn.clicked.connect(self.publish_asset)
 
-        self.showPlayBlastBtn.clicked.connect(self.show_anm_playblast)
+        self.showPlayBlastBtn.clicked.connect(self.show_playblast)
         self.showPlayBlastBtn.hide()
 
     def show_comments(self):
@@ -467,6 +467,11 @@ class AssetLoader(object):
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.show()
 
+        elif self.selected_department_name == "cam":
+            self.showPlayBlastBtn.show()
+            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayTypeFrame.hide()
+
         elif self.selected_department_name == "tex":
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
@@ -579,6 +584,18 @@ class AssetLoader(object):
                 img_path, width = self.no_img_found, 300
             else:
                 img_path, width = self.selected_asset.full_img_path, 500
+
+            qpixmap = QtGui.QPixmap(img_path)
+            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(img_path)
+            self.assetImg.setPixmap(qpixmap)
+
+        elif self.selected_asset.type == "cam":
+            if not os.path.isfile(self.selected_asset.cam_playblast_path.replace("mp4", "jpg")):
+                img_path, width = self.no_img_found, 300
+            else:
+                if os.path.isfile(self.selected_asset.cam_playblast_path.replace("mp4", "jpg")):
+                    img_path, width = self.selected_asset.cam_playblast_path.replace("mp4", "jpg"), 500
 
             qpixmap = QtGui.QPixmap(img_path)
             qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
@@ -948,19 +965,30 @@ class AssetLoader(object):
             self.thumbnailProgressBar.show()
             self.thumbnailProgressBar.setMaximum(int(end_frame) - int(start_frame))
             self.thumbnailProgressBar.setValue(0)
-            self.maya_playblast = QtCore.QProcess(self)
-            self.maya_playblast.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame))
-            self.maya_playblast.readyRead.connect(self.playblast_ready_read)
-            self.maya_playblast.waitForFinished()
-            self.maya_playblast.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
+
+            self.playblast_process = QtCore.QProcess(self)
+            self.playblast_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame))
+            self.playblast_process.readyRead.connect(self.playblast_ready_read)
+            self.playblast_process.waitForFinished()
+            self.playblast_process.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
 
         elif self.selected_asset.type == "cam":
             associated_hip_scene = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_id=?''', (self.selected_asset.dependency,)).fetchone()[0]
             associated_hip_scene = self.selected_project_path + associated_hip_scene
 
-            self.houdini_flipbook_process = QtCore.QProcess(self)
-            self.houdini_flipbook_process.waitForFinished()
-            self.houdini_flipbook_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
+            shots = (self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot,))).fetchall()
+            start_frame = str(shots[0][0])
+            end_frame = str(shots[0][1])
+            self.i = 0
+            self.thumbnailProgressBar.show()
+            self.thumbnailProgressBar.setMaximum(20)
+            self.thumbnailProgressBar.setValue(0)
+
+            self.playblast_process = QtCore.QProcess(self)
+            self.playblast_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame))
+            self.playblast_process.readyRead.connect(self.playblast_ready_read)
+            self.playblast_process.waitForFinished()
+            self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", associated_hip_scene, self.selected_asset.name, start_frame, end_frame])
 
     def create_mov_from_playblast(self, start_frame, end_frame):
         file_sequence = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
@@ -978,19 +1006,44 @@ class AssetLoader(object):
             os.remove("H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.thumbnailProgressBar.hide()
+        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
+    def create_mov_from_flipbook(self, start_frame, end_frame):
+        file_sequence = "C:/Temp/playblast.%04d.jpg"
+        movie_path = "C:/Temp/" + self.selected_asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_playblast.mp4"
+
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
+
+        movie_output_path = os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".mp4"
+        shutil.copy(movie_path, movie_output_path)
+
+        os.remove(movie_path)
+        for i in range(int(start_frame), int(end_frame) + 1):
+            if i == int(start_frame):
+                shutil.copy("C:/Temp/playblast." + str(i).zfill(4) + ".jpg",
+                            os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".jpg")
+            os.remove("C:/Temp/playblast." + str(i).zfill(4) + ".jpg")
+
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.thumbnailProgressBar.hide()
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
     def playblast_ready_read(self):
-        while self.maya_playblast.canReadLine():
+        while self.playblast_process.canReadLine():
             self.i += 1
             self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
-            out = self.maya_playblast.readLine()
+            out = self.playblast_process.readLine()
             print(out)
 
-    def show_anm_playblast(self):
-        subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.anim_playblast_path])
+    def show_playblast(self):
+        if self.selected_asset.type == "anm":
+            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.anim_playblast_path])
+
+        elif self.selected_asset.type == "cam":
+            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.cam_playblast_path])
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
