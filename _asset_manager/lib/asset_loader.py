@@ -526,6 +526,7 @@ class AssetLoader(object):
             self.hasUvSeparator.hide()
 
         elif self.selected_department_name == "mod":
+            self.createAssetFromScratchAssetBtn.show()
             self.hasUvToggleBtn.show()
             self.hasUvSeparator.show()
             self.loadObjInGplayBtn.show()
@@ -534,6 +535,7 @@ class AssetLoader(object):
             self.showPlayBlastBtn.hide()
 
         elif self.selected_department_name == "cam":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -542,6 +544,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "tex":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -550,6 +553,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rig":
+            self.createAssetFromScratchAssetBtn.show()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -558,6 +562,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "anm":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -566,6 +571,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "sim":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -574,6 +580,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "shd":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.show()
@@ -582,6 +589,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "lay":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -590,6 +598,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "dmp":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -598,6 +607,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "cmp":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -606,6 +616,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rdr":
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -615,6 +626,7 @@ class AssetLoader(object):
             self.selected_department_name = "lay"
 
         else:
+            self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.loadObjInGplayBtn.hide()
@@ -636,6 +648,7 @@ class AssetLoader(object):
         self.loadAssetBtn.setDisabled(False)
         self.importIntoSceneBtn.setDisabled(False)
         self.hasUvToggleBtn.setDisabled(False)
+        self.addRemoveAssetAsFavoriteBtn.setDisabled(False)
 
         selected_asset = self.assetList.selectedItems()[0]
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
@@ -1646,6 +1659,11 @@ class AssetLoader(object):
 
     def create_rig_asset_from_mod(self):
 
+        is_asset_rig_already_existing = self.cursor.execute('''SELECT * FROM assets WHERE asset_type="rig" AND asset_name=?''', (self.selected_asset.name,)).fetchone()
+        if is_asset_rig_already_existing != None:
+            self.Lib.message_box(self, type="error", text="A rig already exists for this asset.")
+            return
+
         self.create_from_asset_dialog.close()
 
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "01", [], self.selected_asset.id, "", "", self.username)
@@ -1659,6 +1677,11 @@ class AssetLoader(object):
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
 
     def create_tex_asset_from_mod(self):
+
+        is_asset_tex_already_existing = self.cursor.execute('''SELECT * FROM assets WHERE asset_type="tex" AND asset_name=?''', (self.selected_asset.name,)).fetchone()
+        if is_asset_tex_already_existing != None:
+            self.Lib.message_box(self, type="error", text="A texture scene already exists for this asset.")
+            return
 
         self.create_from_asset_dialog.close()
 

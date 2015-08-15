@@ -16,6 +16,7 @@
 import mari, os, hashlib
 import PythonQt.QtGui as gui
 import PythonQt.QtCore as core
+import subprocess
 
 
 class MariExportManager(gui.QDialog):
@@ -32,7 +33,8 @@ class MariExportManager(gui.QDialog):
         obj = mari.geo.current()
         obj_name = str(obj.name())
         obj_name = obj_name[obj_name.find("_mod_") + len("_mod_"):obj_name.rfind("_")]
-        self.nomenclature = "nat_feu_0010_tex_" + obj_name + "-$CHANNEL.png"
+        self.nomenclature = obj_name + "-$CHANNEL.png"
+        print(self.nomenclature)
 
         # Construire la fenetre et le layout de base
         self.setWindowTitle("Export Manager")
@@ -84,7 +86,7 @@ class MariExportManager(gui.QDialog):
 
         # Label & Checkbox builder
         geo_dict = {}
-        for geo in geo_list:  # Iterating over each object (geo = Cube, Sphere, Torus)
+        for geo in self.geo_list:  # Iterating over each object (geo = Cube, Sphere, Torus)
 
             obj_label = gui.QLabel(str(geo.name()))
             checkbox_group_layout.addWidget(obj_label)
@@ -163,7 +165,13 @@ class MariExportManager(gui.QDialog):
             for chan in channelList:
                 print chan
                 chan.exportImagesFlattened(self.path_export + self.nomenclature)
+                proc = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/icp.exe", self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()), self.path_export + self.nomenclature.replace(".png", ".rat").replace("$CHANNEL", chan.name())])
+                proc.wait()
+                proc = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/icp.exe", self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()), self.path_export + self.nomenclature.replace(".png", ".jpg").replace("$CHANNEL", chan.name())])
+                proc.wait()
+                os.remove(self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()))
 
+        print "Exporting finished."
 
     def export_selected_fc(self):
         # Export SELECTED maps selon les Checkbox
@@ -173,6 +181,14 @@ class MariExportManager(gui.QDialog):
                 chan = self.checkbox_dict[key]
                 print chan
                 chan.exportImagesFlattened(self.path_export + self.nomenclature)
+                proc = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/icp.exe", self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()), self.path_export + self.nomenclature.replace(".png", ".rat").replace("$CHANNEL", chan.name())])
+                proc.wait()
+                proc = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/icp.exe", self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()), self.path_export + self.nomenclature.replace(".png", ".jpg").replace("$CHANNEL", chan.name())])
+                proc.wait()
+                os.remove(self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()))
+
+        print "Exporting finished."
+
             # object = "Cube"
             # channel = "Diffuse"
             # geo_dict = {"Cube":objet cube}
