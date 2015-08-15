@@ -111,17 +111,11 @@ class Lib(object):
             self.updateThumbBtn.setEnabled(True)
 
     def setup_user_session(self):
-        try:
-            if os.path.exists("H:\\plugins"):
-                shutil.rmtree("H:\\plugins")
-                distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:\\plugins")
-        except:
-            pass
+        if not os.path.isdir("H:/plugins"):
+            distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:/plugins")
 
-        try:
+        if not os.path.isdir("H:/mari_cache_tmp_synthese"):
             os.makedirs("H:/mari_cache_tmp_synthese")
-        except:
-            pass
 
         mari_cache_file = open("H:/.mari/TheFoundry/CacheLocations.ini", "r")
         for line in mari_cache_file.readlines():
@@ -131,7 +125,9 @@ class Lib(object):
 
         mari_cache_file.close()
 
-        os.system("setx MARI_SCRIPT_PATH " + self.cur_path.replace("\\", "/") + "/lib/software_scripts/mari")
+        if not os.path.isdir("H:/Documents/Mari/Scripts"):
+            os.makedirs("H:/Documents/Mari/Scripts")
+            distutils.dir_util.copy_tree("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_asset_manager/lib/software_scripts/mari", "H:/Documents/Mari/Scripts")
 
         self.cursor.execute('''UPDATE preferences SET mari_cache_path=? WHERE username=?''', (mari_cache_path, self.username,))
         self.db.commit()
@@ -472,7 +468,6 @@ class Lib(object):
         mari_cachelocation_file.write("1\Path=" + mari_cache_path + "\n")
         mari_cachelocation_file.write("size=1\n")
         mari_cachelocation_file.close()
-
 
     def get_mari_project_path_from_asset_name(self, asset_name, asset_version):
         paths = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/*")

@@ -18,25 +18,37 @@ class AssetLoader(object):
 
     def __init__(self):
 
-        self.favorite_icon = QtGui.QIcon(self.cur_path + "\\media\\favorite.png")
-        self.unfavorite_icon = QtGui.QIcon(self.cur_path + "\\media\\unfavorite.png")
-        self.comment_icon = QtGui.QIcon(self.cur_path + "\\media\\comment.png")
-        self.comment_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\comment_disabled.png")
-        self.publish_icon = QtGui.QIcon(self.cur_path + "\\media\\publish.png")
-        self.publish_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\publish_disabled.png")
-        self.new_version_icon = QtGui.QIcon(self.cur_path + "\\media\\new_version.png")
-        self.new_version_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\new_version_disabled.png")
-        self.load_asset_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset.png")
-        self.load_asset_disabled_icon = QtGui.QIcon(self.cur_path + "\\media\\load_asset_disabled.png")
-        self.import_high_res_obj_icon = QtGui.QIcon(self.cur_path + "\\media\\import_layout_asset.png")
+        self.favorite_icon = QtGui.QIcon(self.cur_path + "/media/favorite.png")
+        self.unfavorite_icon = QtGui.QIcon(self.cur_path + "/media/unfavorite.png")
+        self.comment_icon = QtGui.QIcon(self.cur_path + "/media/comment.png")
+        self.comment_disabled_icon = QtGui.QIcon(self.cur_path + "/media/comment_disabled.png")
+        self.publish_icon = QtGui.QIcon(self.cur_path + "/media/publish.png")
+        self.publish_disabled_icon = QtGui.QIcon(self.cur_path + "/media/publish_disabled.png")
+        self.new_version_icon = QtGui.QIcon(self.cur_path + "/media/new_version.png")
+        self.new_version_disabled_icon = QtGui.QIcon(self.cur_path + "/media/new_version_disabled.png")
+        self.load_asset_icon = QtGui.QIcon(self.cur_path + "/media/load_asset.png")
+        self.load_asset_disabled_icon = QtGui.QIcon(self.cur_path + "/media/load_asset_disabled.png")
+        self.import_high_res_obj_icon = QtGui.QIcon(self.cur_path + "/media/import_layout_asset.png")
+        self.has_uv_icon = QtGui.QIcon(self.cur_path + "/media/hasuv.png")
+        self.has_uv_disabled_icon = QtGui.QIcon(self.cur_path + "/media/hasuv_disabled.png")
 
         self.showAssetCommentBtn.setIcon(self.comment_disabled_icon)
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
-        self.importIntoSceneBtn.hide()
+        self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
+        self.showAssetCommentBtn.setDisabled(True)
+        self.publishBtn.setDisabled(True)
+        self.createVersionBtn.setDisabled(True)
+        self.loadAssetBtn.setDisabled(True)
+        self.importIntoSceneBtn.setDisabled(True)
+        self.hasUvToggleBtn.setIconSize(QtCore.QSize(24, 24))
+        self.hasUvToggleBtn.setDisabled(True)
 
+        self.hasUvToggleBtn.hide()
+        self.hasUvSeparator.hide()
+        self.importIntoSceneBtn.hide()
 
         self.assets = {}
         self.selected_asset = None
@@ -91,7 +103,10 @@ class AssetLoader(object):
         self.showAssetCommentBtn.clicked.connect(self.show_comments)
         self.addRemoveAssetAsFavoriteBtn.clicked.connect(self.change_favorite_state)
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
+        self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+
+        self.hasUvToggleBtn.clicked.connect(self.change_uv_state)
 
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
@@ -121,8 +136,6 @@ class AssetLoader(object):
         self.showPlayBlastBtn.hide()
         self.thumbDisplayShdFrame.hide()
 
-
-
     def show_comments(self):
         if self.selected_asset == None:
             return
@@ -147,6 +160,20 @@ class AssetLoader(object):
             self.cursor.execute('''DELETE FROM favorited_assets WHERE asset_id=? AND member=?''', (is_asset_favorited[0], is_asset_favorited[1],))
             self.db.commit()
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
+
+    def change_uv_state(self):
+        if self.selected_asset == None:
+            return
+
+        is_asset_uved = self.cursor.execute('''SELECT * FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id, )).fetchone()
+        if is_asset_uved == None:
+            self.cursor.execute('''INSERT INTO uved_assets(asset_id, has_uv) VALUES(?,?)''', (self.selected_asset.id, 1,))
+            self.db.commit()
+            self.hasUvToggleBtn.setIcon(self.has_uv_icon)
+        else:
+            self.cursor.execute('''DELETE FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id,))
+            self.db.commit()
+            self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
 
     def add_project(self):
         if not str(self.addProjectLineEdit.text()):
@@ -363,6 +390,16 @@ class AssetLoader(object):
 
     def seqList_Clicked(self):
 
+        # Disable all buttons
+        self.showAssetCommentBtn.setDisabled(True)
+        self.publishBtn.setDisabled(True)
+        self.createVersionBtn.setDisabled(True)
+        self.loadAssetBtn.setDisabled(True)
+        self.importIntoSceneBtn.setDisabled(True)
+        self.hasUvToggleBtn.setDisabled(True)
+        self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+
+
         self.selected_shot_number = "xxxx"
 
         self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
@@ -389,9 +426,30 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def shotList_Clicked(self):
+
+        # Disable all buttons
+        self.showAssetCommentBtn.setDisabled(True)
+        self.publishBtn.setDisabled(True)
+        self.createVersionBtn.setDisabled(True)
+        self.loadAssetBtn.setDisabled(True)
+        self.importIntoSceneBtn.setDisabled(True)
+        self.hasUvToggleBtn.setDisabled(True)
+        self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+
         self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
         if self.selected_shot_number == "None" or self.selected_shot_number == "All":
             self.selected_shot_number = "xxxx"
+
+        if os.path.isfile("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/" + self.selected_sequence_name + "_" + self.selected_shot_number + ".jpg"):
+            img_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/" + self.selected_sequence_name + "_" + self.selected_shot_number + ".jpg"
+        else:
+            img_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/default_stb_img.png"
+
+        qpixmap = QtGui.QPixmap(img_path)
+        qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
+        self.assetImg.setData(img_path)
+        self.assetImg.setPixmap(qpixmap)
+
         self.load_assets_from_selected_seq_shot_dept()
 
     def shotList_DoubleClicked(self):
@@ -446,6 +504,15 @@ class AssetLoader(object):
 
     def departmentList_Clicked(self):
 
+        # Disable all buttons
+        self.showAssetCommentBtn.setDisabled(True)
+        self.publishBtn.setDisabled(True)
+        self.createVersionBtn.setDisabled(True)
+        self.loadAssetBtn.setDisabled(True)
+        self.importIntoSceneBtn.setDisabled(True)
+        self.hasUvToggleBtn.setDisabled(True)
+        self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+
         # Hide load obj buttons
         self.importIntoSceneBtn.hide()
 
@@ -468,68 +535,92 @@ class AssetLoader(object):
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
 
         elif self.selected_department_name == "mod":
-            self.thumbDisplayShdFrame.hide()
+            self.hasUvToggleBtn.show()
+            self.hasUvSeparator.show()
             self.loadObjInGplayBtn.show()
-            self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.show()
+            self.thumbDisplayShdFrame.hide()
+            self.showPlayBlastBtn.hide()
 
         elif self.selected_department_name == "cam":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.showPlayBlastBtn.show()
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "tex":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rig":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "anm":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.showPlayBlastBtn.show()
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "sim":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "shd":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.show()
             self.showPlayBlastBtn.hide()
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "lay":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "dmp":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "cmp":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rdr":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
@@ -537,6 +628,8 @@ class AssetLoader(object):
             self.selected_department_name = "lay"
 
         else:
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
@@ -549,6 +642,14 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
+
+        # Enable buttons
+        self.showAssetCommentBtn.setDisabled(False)
+        self.publishBtn.setDisabled(False)
+        self.createVersionBtn.setDisabled(False)
+        self.loadAssetBtn.setDisabled(False)
+        self.importIntoSceneBtn.setDisabled(False)
+        self.hasUvToggleBtn.setDisabled(False)
 
         selected_asset = self.assetList.selectedItems()[0]
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
@@ -632,6 +733,18 @@ class AssetLoader(object):
             self.assetImg.setData(img_path)
             self.assetImg.setPixmap(qpixmap)
 
+        elif self.selected_asset.type == "rig":
+            if not os.path.isfile(self.selected_asset.rig_out_path.replace(".ma", ".jpg")):
+                img_path, width = self.no_img_found, 300
+            else:
+                if os.path.isfile(self.selected_asset.rig_out_path.replace(".ma", ".jpg")):
+                    img_path, width = self.selected_asset.rig_out_path.replace(".ma", ".jpg"), 500
+
+            qpixmap = QtGui.QPixmap(img_path)
+            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(img_path)
+            self.assetImg.setPixmap(qpixmap)
+
         else:
             qpixmap = QtGui.QPixmap(self.no_img_found)
             qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -643,6 +756,15 @@ class AssetLoader(object):
             self.importIntoSceneBtn.show()
         else:
             self.importIntoSceneBtn.hide()
+
+
+        if self.selected_asset.type == "mod" and "lowres" in self.selected_asset.full_path:
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+        elif self.selected_asset.type == "mod":
+            self.hasUvToggleBtn.show()
+            self.hasUvSeparator.show()
+
 
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
@@ -659,6 +781,13 @@ class AssetLoader(object):
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         else:
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
+
+        # Set is Uved button state
+        is_asset_uved = self.cursor.execute('''SELECT * FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
+        if is_asset_uved == None:
+            self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
+        else:
+            self.hasUvToggleBtn.setIcon(self.has_uv_icon)
 
         # Set comment icon to enabled
         self.showAssetCommentBtn.setIcon(self.comment_icon)
@@ -1032,6 +1161,9 @@ class AssetLoader(object):
             self.playblast_process.waitForFinished()
             self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.selected_asset.full_path, self.selected_asset.name])
 
+        elif self.selected_asset.type == "rig":
+            self.Lib.take_screenshot(self, path=self.selected_asset.rig_out_path.replace(".ma", ".jpg"))
+
     def create_mov_from_turn(self):
         all_files = glob("C:\\Temp\\*")
         all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
@@ -1104,6 +1236,9 @@ class AssetLoader(object):
             out = self.playblast_process.readLine()
 
     def show_playblast(self):
+        if self.selected_asset == None:
+            return
+
         if self.selected_asset.type == "anm":
             subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.anim_playblast_path])
 
@@ -1111,6 +1246,9 @@ class AssetLoader(object):
             subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.cam_playblast_path])
 
     def show_shd_turn(self, type):
+        if self.selected_asset == None:
+            return
+
         if type == "geo":
             subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turngeo_path])
         elif type == "hdr":
