@@ -7,3 +7,4 @@ mesh_path = sys.argv[-1].replace("\\", "/")
 
 mari.projects.create(project_name + "_" + project_version, mesh_path, "")
 
+

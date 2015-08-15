@@ -990,6 +990,35 @@
                        </widget>
                       </item>
                       <item>
+                       <widget class="QFrame" name="thumbDisplayShdFrame">
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_7">
+                         <property name="margin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QPushButton" name="showGeoTurnBtn">
+                           <property name="text">
+                            <string>360° Geo</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QPushButton" name="showHdrTurnBtn">
+                           <property name="text">
+                            <string>360° HDR</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="QPushButton" name="showPlayBlastBtn">
                         <property name="text">
                          <string>Show playblast</string>

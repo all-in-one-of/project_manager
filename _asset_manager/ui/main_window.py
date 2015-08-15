@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Thu Aug 13 13:59:10 2015
+# Created: Fri Aug 14 15:11:47 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -415,6 +415,20 @@ class Ui_Form(object):
         self.thumbTurnBtn.setObjectName(_fromUtf8("thumbTurnBtn"))
         self.horizontalLayout_4.addWidget(self.thumbTurnBtn)
         self.verticalLayout_4.addWidget(self.thumbDisplayTypeFrame)
+        self.thumbDisplayShdFrame = QtGui.QFrame(self.thumbnailFrame)
+        self.thumbDisplayShdFrame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.thumbDisplayShdFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.thumbDisplayShdFrame.setObjectName(_fromUtf8("thumbDisplayShdFrame"))
+        self.horizontalLayout_7 = QtGui.QHBoxLayout(self.thumbDisplayShdFrame)
+        self.horizontalLayout_7.setMargin(0)
+        self.horizontalLayout_7.setObjectName(_fromUtf8("horizontalLayout_7"))
+        self.showGeoTurnBtn = QtGui.QPushButton(self.thumbDisplayShdFrame)
+        self.showGeoTurnBtn.setObjectName(_fromUtf8("showGeoTurnBtn"))
+        self.horizontalLayout_7.addWidget(self.showGeoTurnBtn)
+        self.showHdrTurnBtn = QtGui.QPushButton(self.thumbDisplayShdFrame)
+        self.showHdrTurnBtn.setObjectName(_fromUtf8("showHdrTurnBtn"))
+        self.horizontalLayout_7.addWidget(self.showHdrTurnBtn)
+        self.verticalLayout_4.addWidget(self.thumbDisplayShdFrame)
         self.showPlayBlastBtn = QtGui.QPushButton(self.thumbnailFrame)
         self.showPlayBlastBtn.setObjectName(_fromUtf8("showPlayBlastBtn"))
         self.verticalLayout_4.addWidget(self.showPlayBlastBtn)
@@ -2026,6 +2040,8 @@ class Ui_Form(object):
         self.assetInfoGrp.setTitle(_translate("Form", "Info", None))
         self.thumbFullBtn.setText(_translate("Form", "Full", None))
         self.thumbTurnBtn.setText(_translate("Form", "Turntable", None))
+        self.showGeoTurnBtn.setText(_translate("Form", "360° Geo", None))
+        self.showHdrTurnBtn.setText(_translate("Form", "360° HDR", None))
         self.showPlayBlastBtn.setText(_translate("Form", "Show playblast", None))
         self.loadObjInGplayBtn.setText(_translate("Form", "Load OBJ in Gplay", None))
         self.updateThumbBtn.setText(_translate("Form", "Update Thumbnail", None))

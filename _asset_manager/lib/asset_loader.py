@@ -101,6 +101,9 @@ class AssetLoader(object):
         self.thumbTurnBtn.clicked.connect(partial(self.switch_thumbnail_display, "turn"))
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
+        self.showGeoTurnBtn.clicked.connect(partial(self.show_shd_turn, "geo"))
+        self.showHdrTurnBtn.clicked.connect(partial(self.show_shd_turn, "hdr"))
+
         self.seqFilterClearBtn.clicked.connect(partial(self.clear_filter, "seq"))
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
@@ -116,6 +119,9 @@ class AssetLoader(object):
 
         self.showPlayBlastBtn.clicked.connect(self.show_playblast)
         self.showPlayBlastBtn.hide()
+        self.thumbDisplayShdFrame.hide()
+
+
 
     def show_comments(self):
         if self.selected_asset == None:
@@ -458,61 +464,73 @@ class AssetLoader(object):
         self.updateThumbBtn.hide()
 
         if self.selected_department_name == "ref":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "mod":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.show()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.show()
 
         elif self.selected_department_name == "cam":
+            self.thumbDisplayShdFrame.hide()
             self.showPlayBlastBtn.show()
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "tex":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rig":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "anm":
+            self.thumbDisplayShdFrame.hide()
             self.showPlayBlastBtn.show()
             self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "sim":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "shd":
-            self.loadObjInGplayBtn.hide()
+            self.thumbDisplayShdFrame.show()
             self.showPlayBlastBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "lay":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "dmp":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "cmp":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rdr":
+            self.thumbDisplayShdFrame.hide()
             self.loadObjInGplayBtn.hide()
             self.showPlayBlastBtn.hide()
             self.thumbDisplayTypeFrame.hide()
@@ -596,6 +614,18 @@ class AssetLoader(object):
             else:
                 if os.path.isfile(self.selected_asset.cam_playblast_path.replace("mp4", "jpg")):
                     img_path, width = self.selected_asset.cam_playblast_path.replace("mp4", "jpg"), 500
+
+            qpixmap = QtGui.QPixmap(img_path)
+            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
+            self.assetImg.setData(img_path)
+            self.assetImg.setPixmap(qpixmap)
+
+        elif self.selected_asset.type == "shd":
+            if not os.path.isfile(self.selected_asset.turnimg_path):
+                img_path, width = self.no_img_found, 300
+            else:
+                if os.path.isfile(self.selected_asset.turnimg_path):
+                    img_path, width = self.selected_asset.turnimg_path, 500
 
             qpixmap = QtGui.QPixmap(img_path)
             qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
@@ -990,6 +1020,42 @@ class AssetLoader(object):
             self.playblast_process.waitForFinished()
             self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", associated_hip_scene, self.selected_asset.name, start_frame, end_frame])
 
+        elif self.selected_asset.type == "shd":
+            self.i = 0
+            self.thumbnailProgressBar.show()
+            self.thumbnailProgressBar.setMaximum(242)
+            self.thumbnailProgressBar.setValue(0)
+
+            self.playblast_process = QtCore.QProcess(self)
+            self.playblast_process.finished.connect(self.create_mov_from_turn)
+            self.playblast_process.readyRead.connect(self.playblast_ready_read)
+            self.playblast_process.waitForFinished()
+            self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.selected_asset.full_path, self.selected_asset.name])
+
+    def create_mov_from_turn(self):
+        all_files = glob("C:\\Temp\\*")
+        all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
+
+        turn_folder = os.path.split(self.selected_asset.full_path)[0] + "\\.turn\\" # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
+        filename_path = self.selected_asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4") # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
+        filename_path_geo = filename_path.replace(self.selected_asset.name + "_" + self.selected_asset.version, self.selected_asset.name + "_" + self.selected_asset.version + "_turngeo")
+        filename_path_hdr = filename_path.replace(self.selected_asset.name + "_" + self.selected_asset.version, self.selected_asset.name + "_" + self.selected_asset.version + "_turnhdr")
+        movie_path_geo =  (turn_folder + filename_path_geo).replace("\\", "/")
+        movie_path_hdr =  (turn_folder + filename_path_hdr).replace("\\", "/")
+
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "C:/Temp/turn_geo.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_geo])
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "C:/Temp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
+
+        for i, each_file in enumerate(all_files):
+            if i == 0:
+                shutil.move(each_file, movie_path_geo.replace("_turngeo.mp4", ".jpg"))
+            else:
+                os.remove(each_file)
+
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.thumbnailProgressBar.hide()
+        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
     def create_mov_from_playblast(self, start_frame, end_frame):
         file_sequence = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
         movie_path = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_playblast.mp4"
@@ -1036,7 +1102,6 @@ class AssetLoader(object):
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
             out = self.playblast_process.readLine()
-            print(out)
 
     def show_playblast(self):
         if self.selected_asset.type == "anm":
@@ -1044,6 +1109,12 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "cam":
             subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.cam_playblast_path])
+
+    def show_shd_turn(self, type):
+        if type == "geo":
+            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turngeo_path])
+        elif type == "hdr":
+            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turnhdr_path])
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -1185,7 +1256,8 @@ class AssetLoader(object):
     def mari_finished(self, texture_project_path):
         self.mari_open_asset_process.kill()
         time.sleep(2)
-        self.Lib.switch_mari_cache(self, "user")
+        self.Lib.switch_mari_cache(self, "perso")
+
         shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
         shutil.move("H:/mari_cache_tmp_synthese/" + texture_project_path, "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
 
@@ -1700,7 +1772,10 @@ class AssetLoader(object):
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\houdini.hipnc", asset.full_path)
 
-        self.asset_creation_finished(asset)
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_glob_lgt_into_lay.py", asset.full_path.replace("lay", "lgt").replace(".hipnc", ".hda"), asset.full_path])
 
     def asset_creation_finished(self, asset):
 
@@ -2149,3 +2224,5 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         while self.maya_ref_process.canReadLine():
             out = self.maya_ref_process.readLine()
             print(out)
+
+

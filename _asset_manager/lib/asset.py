@@ -72,6 +72,9 @@ class Asset(object):
             self.cam_playblast_path = self.project_path + "\\assets\\cam\\.playblast\\{0}_{1}_{2}_{3}_{4}_{5}.{6}".format(self.project_shortname, self.sequence, self.shot, "cam", self.name, self.version, "mp4")
 
         if self.type == "shd":
+            self.turngeo_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turngeo.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.turnhdr_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turnhdr.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.turnimg_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "jpg")
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
         self.publish_from_version = publish_from_version
@@ -297,6 +300,9 @@ class Asset(object):
             self.cam_playblast_path = self.project_path + "\\assets\\cam\\.playblast\\{0}".format(self.name)
 
         if self.type == "shd":
+            self.turngeo_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turngeo.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.turnhdr_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turnhdr.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.turnimg_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "jpg")
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
         self.publish_from_version = publish_from_version

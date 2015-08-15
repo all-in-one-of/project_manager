@@ -118,7 +118,10 @@ class Lib(object):
         except:
             pass
 
-        os.makedirs("H:/mari_cache_tmp_synthese")
+        try:
+            os.makedirs("H:/mari_cache_tmp_synthese")
+        except:
+            pass
 
         mari_cache_file = open("H:/.mari/TheFoundry/CacheLocations.ini", "r")
         for line in mari_cache_file.readlines():
@@ -127,6 +130,9 @@ class Lib(object):
                 break
 
         mari_cache_file.close()
+
+        os.system("setx MARI_SCRIPT_PATH " + self.cur_path.replace("\\", "/") + "/lib/software_scripts/mari")
+
         self.cursor.execute('''UPDATE preferences SET mari_cache_path=? WHERE username=?''', (mari_cache_path, self.username,))
         self.db.commit()
 
@@ -467,6 +473,7 @@ class Lib(object):
         mari_cachelocation_file.write("size=1\n")
         mari_cachelocation_file.close()
 
+
     def get_mari_project_path_from_asset_name(self, asset_name, asset_version):
         paths = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/*")
         paths = [i.replace("\\", "/") for i in paths]
@@ -617,6 +624,7 @@ class CheckNews(QtCore.QThread):
 
 if __name__ == "__main__":
     test = Lib()
+    test.switch_mari_cache("server")
 
 
     # app = QtGui.QApplication(sys.argv)

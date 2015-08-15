@@ -28,18 +28,16 @@ rop_geo_low.parm("sopoutput").set(obj_path.replace("_out.obj", "-lowres_out.obj"
 # MATERIAL NODE
 # Shopnet / Copnet
 shopnet_node = hou.node("/obj/" + asset_name).createNode("shopnet")
-copnet_node = hou.node("/obj/" + asset_name).createNode("cop2net")
 shopnet_node.setName("shopnet")
-copnet_node.setName("copnet")
-
 shopnet_node.setColor(hou.Color((0.4, 1, 0.4)))
-copnet_node.setColor(hou.Color((0.4, 1, 0.4)))
-
 shopnet_node.moveToGoodPosition()
-copnet_node.moveToGoodPosition()
+
+stickynote_node = hou.node("/obj/" + asset_name).createStickyNote("texture_paths")
+stickynote_node.setText("No texture available.")
+
 
 # Create Subnet and HDA for Material Node
-material_node = hou.node("/obj/" + asset_name).collapseIntoSubnet([shopnet_node, copnet_node])
+material_node = hou.node("/obj/" + asset_name).collapseIntoSubnet([shopnet_node])
 material_node = material_node.createDigitalAsset(asset_name + "-shd", shading_hda_path, asset_name + "-shd")
 material_node.setName("shader_building")
 material_node.moveToGoodPosition()
