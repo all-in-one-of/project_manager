@@ -187,7 +187,7 @@ class Lib(object):
 
         """
         resolution = QtGui.QDesktopWidget().screenGeometry()
-        self.move((resolution.width() / 2) - (self.frameSize().width() / 2) + 400, (resolution.height() / 2) - (self.frameSize().height() / 2) + 50)
+        self.move((resolution.width() / 2) - (self.frameSize().width() / 2), (resolution.height() / 2) - (self.frameSize().height() / 2))
         self.setFixedSize(0, 0)
 
     def open_in_explorer(self):

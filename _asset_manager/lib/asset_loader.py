@@ -32,13 +32,11 @@ class AssetLoader(object):
         self.has_uv_icon = QtGui.QIcon(self.cur_path + "/media/hasuv.png")
         self.has_uv_disabled_icon = QtGui.QIcon(self.cur_path + "/media/hasuv_disabled.png")
 
-        self.showAssetCommentBtn.setIcon(self.comment_disabled_icon)
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
         self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
-        self.showAssetCommentBtn.setDisabled(True)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
@@ -100,7 +98,6 @@ class AssetLoader(object):
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
         # Connect the buttons
-        self.showAssetCommentBtn.clicked.connect(self.show_comments)
         self.addRemoveAssetAsFavoriteBtn.clicked.connect(self.change_favorite_state)
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
@@ -135,13 +132,6 @@ class AssetLoader(object):
         self.showPlayBlastBtn.clicked.connect(self.show_playblast)
         self.showPlayBlastBtn.hide()
         self.thumbDisplayShdFrame.hide()
-
-    def show_comments(self):
-        if self.selected_asset == None:
-            return
-        self.CommentsFrame.show()
-        self.commentLineEdit.setFocus()
-        self.CommentWidget.load_comments(self)
 
     def change_favorite_state(self):
 
@@ -391,7 +381,6 @@ class AssetLoader(object):
     def seqList_Clicked(self):
 
         # Disable all buttons
-        self.showAssetCommentBtn.setDisabled(True)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
@@ -428,7 +417,6 @@ class AssetLoader(object):
     def shotList_Clicked(self):
 
         # Disable all buttons
-        self.showAssetCommentBtn.setDisabled(True)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
@@ -505,7 +493,6 @@ class AssetLoader(object):
     def departmentList_Clicked(self):
 
         # Disable all buttons
-        self.showAssetCommentBtn.setDisabled(True)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
@@ -644,7 +631,6 @@ class AssetLoader(object):
     def assetList_Clicked(self):
 
         # Enable buttons
-        self.showAssetCommentBtn.setDisabled(False)
         self.publishBtn.setDisabled(False)
         self.createVersionBtn.setDisabled(False)
         self.loadAssetBtn.setDisabled(False)
@@ -790,7 +776,6 @@ class AssetLoader(object):
             self.hasUvToggleBtn.setIcon(self.has_uv_icon)
 
         # Set comment icon to enabled
-        self.showAssetCommentBtn.setIcon(self.comment_icon)
 
         # Set publish icon to enabled
         self.publishBtn.setIcon(self.publish_icon)
@@ -811,6 +796,9 @@ class AssetLoader(object):
             comments += u"{0} (by {1}): {2}\n\n".format(publish_time, self.members[publish_creator], publish_comment)
 
         self.lastPublishComment.setText(comments)
+
+        # Load comments
+        self.CommentWidget.load_comments(self)
 
         # Set last publish label
         if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type:

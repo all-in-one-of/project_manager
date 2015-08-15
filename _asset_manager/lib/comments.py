@@ -9,24 +9,11 @@ from datetime import datetime
 class CommentWidget(object):
 
     def __init__(self):
-        self.CommentsFrame.hide()
         self.comment_text_edit_dic = {}
-        self.hideCommentsFrameBtn.clicked.connect(self.hide_comments_frame)
         self.comments_gridLayout = QtGui.QGridLayout(self.scrollAreaWidgetContents)
-
         self.commentLineEdit.returnPressed.connect(self.add_comment)
 
-    def hide_comments_frame(self):
-        self.CommentsFrame.hide()
-        size = QtCore.QSize(0, self.size().height())
-        #self.setFixedSize(0, 0)
-        #QWIDGETSIZE_MAX = ((1 << 24) - 1)
-        #self.comments_gridLayout_6.setSizeConstraint(QtGui.QLayout.SetFixedSize)
-        #self.comments_gridLayout_6.update()
-
     def load_comments(self):
-        self.CommentsFrame.show()
-
         current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
 
         if current_tab_text == "Images Manager":
@@ -37,6 +24,8 @@ class CommentWidget(object):
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="asset"''', (self.selected_asset.id,)).fetchall()
         elif "What's New" in current_tab_text:
             comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=?''', (self.selected_asset.id,)).fetchall()
+
+        self.commentsForAssetLbl.setText("Comments for asset: {0} ({1})".format(self.selected_asset.name, self.selected_asset.type))
 
         self.comment_authors = []
         self.cur_alignment = "left"

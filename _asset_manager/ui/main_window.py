@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sat Aug 15 15:50:56 2015
+# Created: Sat Aug 15 16:37:49 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -495,8 +495,6 @@ class Ui_Form(object):
         self.lastAccessLbl.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.lastAccessLbl.setObjectName(_fromUtf8("lastAccessLbl"))
         self.gridLayout_5.addWidget(self.lastAccessLbl, 1, 0, 1, 1)
-        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_5.addItem(spacerItem1, 5, 0, 1, 1)
         self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
         self.lastPublishComment.setMaximumSize(QtCore.QSize(16777215, 100))
         self.lastPublishComment.setReadOnly(True)
@@ -508,6 +506,8 @@ class Ui_Form(object):
         self.isInLayoutLbl = QtGui.QLabel(self.stateFrame)
         self.isInLayoutLbl.setObjectName(_fromUtf8("isInLayoutLbl"))
         self.gridLayout_5.addWidget(self.isInLayoutLbl, 3, 0, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_5.addItem(spacerItem1, 5, 0, 1, 1)
         self.smallActionIconFrame = QtGui.QFrame(self.stateFrame)
         self.smallActionIconFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.smallActionIconFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -548,7 +548,7 @@ class Ui_Form(object):
         self.hasUvToggleBtn.setMinimumSize(QtCore.QSize(32, 32))
         self.hasUvToggleBtn.setMaximumSize(QtCore.QSize(32, 32))
         self.hasUvToggleBtn.setText(_fromUtf8(""))
-        self.hasUvToggleBtn.setIconSize(QtCore.QSize(32, 32))
+        self.hasUvToggleBtn.setIconSize(QtCore.QSize(24, 32))
         self.hasUvToggleBtn.setObjectName(_fromUtf8("hasUvToggleBtn"))
         self.horizontalLayout_2.addWidget(self.hasUvToggleBtn)
         self.hasUvSeparator = QtGui.QFrame(self.smallActionIconFrame)
@@ -563,12 +563,6 @@ class Ui_Form(object):
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
         self.addRemoveAssetAsFavoriteBtn.setObjectName(_fromUtf8("addRemoveAssetAsFavoriteBtn"))
         self.horizontalLayout_2.addWidget(self.addRemoveAssetAsFavoriteBtn)
-        self.showAssetCommentBtn = QtGui.QPushButton(self.smallActionIconFrame)
-        self.showAssetCommentBtn.setMinimumSize(QtCore.QSize(32, 32))
-        self.showAssetCommentBtn.setMaximumSize(QtCore.QSize(32, 32))
-        self.showAssetCommentBtn.setText(_fromUtf8(""))
-        self.showAssetCommentBtn.setObjectName(_fromUtf8("showAssetCommentBtn"))
-        self.horizontalLayout_2.addWidget(self.showAssetCommentBtn)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem2)
         self.gridLayout_5.addWidget(self.smallActionIconFrame, 0, 0, 1, 1)
@@ -1945,9 +1939,9 @@ class Ui_Form(object):
         self.CommentsFrame.setObjectName(_fromUtf8("CommentsFrame"))
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.CommentsFrame)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
-        self.hideCommentsFrameBtn = QtGui.QPushButton(self.CommentsFrame)
-        self.hideCommentsFrameBtn.setObjectName(_fromUtf8("hideCommentsFrameBtn"))
-        self.verticalLayout_5.addWidget(self.hideCommentsFrameBtn)
+        self.commentsForAssetLbl = QtGui.QLabel(self.CommentsFrame)
+        self.commentsForAssetLbl.setObjectName(_fromUtf8("commentsForAssetLbl"))
+        self.verticalLayout_5.addWidget(self.commentsForAssetLbl)
         self.commentLineEdit = QtGui.QLineEdit(self.CommentsFrame)
         self.commentLineEdit.setObjectName(_fromUtf8("commentLineEdit"))
         self.verticalLayout_5.addWidget(self.commentLineEdit)
@@ -1957,7 +1951,7 @@ class Ui_Form(object):
         self.commentsScrollArea.setWidgetResizable(True)
         self.commentsScrollArea.setObjectName(_fromUtf8("commentsScrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 362, 846))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 362, 856))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.commentsScrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_5.addWidget(self.commentsScrollArea)
@@ -2061,9 +2055,7 @@ class Ui_Form(object):
         self.importIntoSceneBtn.setToolTip(_translate("Form", "<html><head/><body><p>Import high-resolution published obj into low-resolution modeling scene file</p></body></html>", None))
         self.createVersionBtn.setToolTip(_translate("Form", "<html><head/><body><p>Create new version</p></body></html>", None))
         self.publishBtn.setToolTip(_translate("Form", "<html><head/><body><p>Publish</p></body></html>", None))
-        self.hasUvToggleBtn.setToolTip(_translate("Form", "<html><head/><body><p>Toggle UV flag</p></body></html>", None))
         self.addRemoveAssetAsFavoriteBtn.setToolTip(_translate("Form", "<html><head/><body><p>Add asset to favorite</p></body></html>", None))
-        self.showAssetCommentBtn.setToolTip(_translate("Form", "<html><head/><body><p>Show comments</p></body></html>", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))
         self.tmFilterByGroupBox.setTitle(_translate("Form", "Filter by", None))
         self.tmProjectLbl.setText(_translate("Form", "Project:", None))
@@ -2259,8 +2251,8 @@ class Ui_Form(object):
         self.diskUsageLbl.setText(_translate("Form", "Disk usage:", None))
         self.deadlineLbl.setText(_translate("Form", "Time left:", None))
         self.deadlineProgressBar.setToolTip(_translate("Form", "Time left for the whole project. Calculated between june 28 2015 and may 1st 2016.", None))
-        self.hideCommentsFrameBtn.setText(_translate("Form", "Hide", None))
-        self.commentLineEdit.setPlaceholderText(_translate("Form", "Enter comment here...", None))
+        self.commentsForAssetLbl.setText(_translate("Form", "Comments for asset:", None))
+        self.commentLineEdit.setPlaceholderText(_translate("Form", "Enter comment here and press return...", None))
 
 from custom_widgets import ThibQLabel, ThibListWidget, profilPicLabel
 

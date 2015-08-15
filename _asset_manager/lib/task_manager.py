@@ -549,7 +549,6 @@ class TaskManager(object):
         self.selected_asset = task_item.data(QtCore.Qt.UserRole).toPyObject()
         if self.selected_asset == None: return # User clicked on the days left cell
 
-        self.CommentsFrame.show()
         self.commentLineEdit.setFocus()
         self.CommentWidget.load_comments(self)
 

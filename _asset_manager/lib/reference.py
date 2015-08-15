@@ -363,7 +363,16 @@ class ReferenceTab(object):
         Add tags to existing tags list so user can remove them
         '''
         self.selected_references = self.referenceThumbListWidget.selectedItems()
+
+        try:
+            selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+            self.selected_asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
+            self.CommentWidget.load_comments(self)
+        except:
+            pass
+
         all_tags = self.get_all_tags_from_references(self.selected_references)
+
 
         # Add tags to existing tags list
         self.existingTagsListWidget.clear()
@@ -397,22 +406,14 @@ class ReferenceTab(object):
         '''
         Trigger action based when user double click an item
         '''
-        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
+
         self.selected_asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
-
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:  # Viewing comments
-            self.CommentsFrame.show()
-            self.commentLineEdit.setFocus()
-            self.CommentWidget.load_comments(self)
-
-        else:  # Opening video / image in chrome / windows image view
-
-            if "vimeo" in self.selected_asset.dependency or "youtube" in self.selected_asset.dependency:
-                subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", self.selected_asset.dependency])
-            else:
-                # Open image in windows viewer
-                webbrowser.open(self.selected_asset.full_path)
+        if "vimeo" in self.selected_asset.dependency or "youtube" in self.selected_asset.dependency:
+            subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", self.selected_asset.dependency])
+        else:
+            # Open image in windows viewer
+            webbrowser.open(self.selected_asset.full_path)
 
     def rename_reference(self, asset):
         '''
