@@ -344,7 +344,7 @@
                  <number>0</number>
                 </property>
                 <item row="3" column="2">
-                 <widget class="QListWidget" name="shotList">
+                 <widget class="ThibListWidget" name="shotList">
                   <property name="frameShape">
                    <enum>QFrame::Box</enum>
                   </property>
@@ -354,7 +354,7 @@
                  </widget>
                 </item>
                 <item row="3" column="1">
-                 <widget class="QListWidget" name="seqList">
+                 <widget class="ThibListWidget" name="seqList">
                   <property name="frameShape">
                    <enum>QFrame::Box</enum>
                   </property>
@@ -453,7 +453,7 @@
                  </widget>
                 </item>
                 <item row="3" column="3">
-                 <widget class="QListWidget" name="departmentList">
+                 <widget class="ThibListWidget" name="departmentList">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -466,6 +466,11 @@
                   <property name="sortingEnabled">
                    <bool>false</bool>
                   </property>
+                  <item>
+                   <property name="text">
+                    <string>All</string>
+                   </property>
+                  </item>
                   <item>
                    <property name="text">
                     <string>Modeling</string>
@@ -562,7 +567,7 @@
                  </widget>
                 </item>
                 <item row="3" column="6">
-                 <widget class="QListWidget" name="assetList">
+                 <widget class="ThibListWidget" name="assetList">
                   <property name="frameShape">
                    <enum>QFrame::Box</enum>
                   </property>
@@ -633,59 +638,6 @@
                      </property>
                      <property name="text">
                       <string>+</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QFrame" name="seqFilterFrame">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_6">
-                   <property name="spacing">
-                    <number>6</number>
-                   </property>
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLineEdit" name="seqFilter">
-                     <property name="placeholderText">
-                      <string>filter</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="seqFilterClearBtn">
-                     <property name="maximumSize">
-                      <size>
-                       <width>24</width>
-                       <height>24</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>x</string>
-                     </property>
-                     <property name="iconSize">
-                      <size>
-                       <width>16</width>
-                       <height>16</height>
-                      </size>
-                     </property>
-                     <property name="checkable">
-                      <bool>false</bool>
-                     </property>
-                     <property name="default">
-                      <bool>false</bool>
-                     </property>
-                     <property name="flat">
-                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -4971,6 +4923,147 @@
    <header>custom_widgets</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>projectList</tabstop>
+  <tabstop>seqList</tabstop>
+  <tabstop>shotList</tabstop>
+  <tabstop>departmentList</tabstop>
+  <tabstop>assetList</tabstop>
+  <tabstop>versionList</tabstop>
+  <tabstop>commentsScrollArea</tabstop>
+  <tabstop>commentLineEdit</tabstop>
+  <tabstop>meOnlyCheckBox</tabstop>
+  <tabstop>createAssetFromScratchBtn</tabstop>
+  <tabstop>refreshAllBtn</tabstop>
+  <tabstop>Tabs</tabstop>
+  <tabstop>assignedToFilterComboBox</tabstop>
+  <tabstop>addProjectLineEdit</tabstop>
+  <tabstop>projectShortnameLineEdit</tabstop>
+  <tabstop>addProjectBtn</tabstop>
+  <tabstop>assetFilter</tabstop>
+  <tabstop>assetFilterClearBtn</tabstop>
+  <tabstop>addSequenceLineEdit</tabstop>
+  <tabstop>addSequenceBtn</tabstop>
+  <tabstop>shotSpinBox</tabstop>
+  <tabstop>addShotBtn</tabstop>
+  <tabstop>createAssetFromScratchAssetBtn</tabstop>
+  <tabstop>deleteAssetBtn</tabstop>
+  <tabstop>thumbFullBtn</tabstop>
+  <tabstop>thumbTurnBtn</tabstop>
+  <tabstop>showGeoTurnBtn</tabstop>
+  <tabstop>showHdrTurnBtn</tabstop>
+  <tabstop>showPlayBlastBtn</tabstop>
+  <tabstop>loadObjInGplayBtn</tabstop>
+  <tabstop>updateThumbBtn</tabstop>
+  <tabstop>lastPublishComment</tabstop>
+  <tabstop>loadAssetBtn</tabstop>
+  <tabstop>importIntoSceneBtn</tabstop>
+  <tabstop>createVersionBtn</tabstop>
+  <tabstop>publishBtn</tabstop>
+  <tabstop>hasUvToggleBtn</tabstop>
+  <tabstop>addRemoveAssetAsFavoriteBtn</tabstop>
+  <tabstop>tmFilterByProjectComboBox</tabstop>
+  <tabstop>tmFilterBySequenceComboBox</tabstop>
+  <tabstop>tmFilterByShotComboBox</tabstop>
+  <tabstop>tmFilterByDeptComboBox</tabstop>
+  <tabstop>tmFilterByStatusComboBox</tabstop>
+  <tabstop>tmFilterByMemberComboBox</tabstop>
+  <tabstop>tmBidOperationComboBox</tabstop>
+  <tabstop>tmFilterByBidComboBox</tabstop>
+  <tabstop>tmHideDoneCheckBox</tabstop>
+  <tabstop>tmHideConfirmedCheckBox</tabstop>
+  <tabstop>tmNbrOfRowsToAddSpinBox</tabstop>
+  <tabstop>tmAddTaskBtn</tabstop>
+  <tabstop>tmRemoveTaskBtn</tabstop>
+  <tabstop>tmCompleteTaskBtn</tabstop>
+  <tabstop>tmTableWidget</tabstop>
+  <tabstop>tmShowBidCurveBtn</tabstop>
+  <tabstop>mtFilterByProjectComboBox</tabstop>
+  <tabstop>mtFilterBySequenceComboBox</tabstop>
+  <tabstop>mtFilterByShotComboBox</tabstop>
+  <tabstop>mtFilterByDeptComboBox</tabstop>
+  <tabstop>mtFilterByStatusComboBox</tabstop>
+  <tabstop>mtMeOnlyCheckBox</tabstop>
+  <tabstop>mtFilterByMemberComboBox</tabstop>
+  <tabstop>mtBidOperationComboBox</tabstop>
+  <tabstop>mtFilterByBidComboBox</tabstop>
+  <tabstop>mtHideDoneCheckBox</tabstop>
+  <tabstop>mtTableWidget</tabstop>
+  <tabstop>mtRefreshTasksBtn</tabstop>
+  <tabstop>loadTasksAsWidgetBtn</tabstop>
+  <tabstop>seqReferenceList</tabstop>
+  <tabstop>shotReferenceList</tabstop>
+  <tabstop>referenceWebLineEdit</tabstop>
+  <tabstop>showUrlImageBtn</tabstop>
+  <tabstop>createReferenceFromWebBtn</tabstop>
+  <tabstop>createReferencesFromFilesBtn</tabstop>
+  <tabstop>createReferencesFromScreenshotBtn</tabstop>
+  <tabstop>keepSizeCheckBox</tabstop>
+  <tabstop>keepQualityCheckBox</tabstop>
+  <tabstop>filterByNameLineEdit</tabstop>
+  <tabstop>filterByNoTagsCheckBox</tabstop>
+  <tabstop>clearFilterByTagsSelectionBtn</tabstop>
+  <tabstop>reloadFilterByTagsBtn</tabstop>
+  <tabstop>filterByCommentsCheckBox</tabstop>
+  <tabstop>filterByTagsListWidget</tabstop>
+  <tabstop>allTagsTreeWidget</tabstop>
+  <tabstop>addTagsBtn</tabstop>
+  <tabstop>removeTagsBtn</tabstop>
+  <tabstop>existingTagsListWidget</tabstop>
+  <tabstop>openRefInPhotoshopBtn</tabstop>
+  <tabstop>openRefInKuadroBtn</tabstop>
+  <tabstop>hideReferenceOptionsFrameBtn</tabstop>
+  <tabstop>refShowNamesCheckBox</tabstop>
+  <tabstop>refShowSequencesCheckBox</tabstop>
+  <tabstop>biggerRefPushButton_01</tabstop>
+  <tabstop>biggerRefPushButton_02</tabstop>
+  <tabstop>biggerRefPushButton_03</tabstop>
+  <tabstop>biggerRefPushButton_04</tabstop>
+  <tabstop>referenceThumbListWidget</tabstop>
+  <tabstop>changeRefSeqShotBtn</tabstop>
+  <tabstop>createMoodboardFromImagesBtn</tabstop>
+  <tabstop>prefBckGroundColorSlider</tabstop>
+  <tabstop>tagsTreeWidget</tabstop>
+  <tabstop>addTagLineEdit</tabstop>
+  <tabstop>addTagBtn</tabstop>
+  <tabstop>removeSelectedTagsBtn</tabstop>
+  <tabstop>themePrefComboBox</tabstop>
+  <tabstop>receiveDailyMailCheckBox</tabstop>
+  <tabstop>receiveMailOnNewTaskCheckBox</tabstop>
+  <tabstop>usernameAdminComboBox</tabstop>
+  <tabstop>rtremblayProfilCheckBox</tabstop>
+  <tabstop>erodrigueProfilCheckBox</tabstop>
+  <tabstop>achaputProfilCheckBox</tabstop>
+  <tabstop>cgonnordProfilCheckBox</tabstop>
+  <tabstop>dcayerdesforgesProfilCheckBox</tabstop>
+  <tabstop>earismendezProfilCheckBox</tabstop>
+  <tabstop>costiguyProfilCheckBox</tabstop>
+  <tabstop>jbergerProfilCheckBox</tabstop>
+  <tabstop>lgregoireProfilCheckBox</tabstop>
+  <tabstop>mchretienProfilCheckBox</tabstop>
+  <tabstop>mbeaudoinProfilCheckBox</tabstop>
+  <tabstop>lclavetProfilCheckBox</tabstop>
+  <tabstop>mrozProfilCheckBox</tabstop>
+  <tabstop>yjobinProfilCheckBox</tabstop>
+  <tabstop>yshanProfilCheckBox</tabstop>
+  <tabstop>thoudonProfilCheckBox</tabstop>
+  <tabstop>slachapelleProfilCheckBox</tabstop>
+  <tabstop>vdelbroucqProfilCheckBox</tabstop>
+  <tabstop>obolducProfilCheckBox</tabstop>
+  <tabstop>emailObjectLineEdit</tabstop>
+  <tabstop>emailMessageTextEdit</tabstop>
+  <tabstop>sendEmailBtn</tabstop>
+  <tabstop>showOnlyMeWhatsNew</tabstop>
+  <tabstop>showNewPublishesCheckBox</tabstop>
+  <tabstop>showNewAssetsCheckBox</tabstop>
+  <tabstop>showNewTasksCheckBox</tabstop>
+  <tabstop>showNewImagesCheckBox</tabstop>
+  <tabstop>showNewCommentsCheckBox</tabstop>
+  <tabstop>newsFeedScrollArea</tabstop>
+  <tabstop>markAllNewsAsReadBtn</tabstop>
+  <tabstop>addNewBlogPostTextEdit</tabstop>
+  <tabstop>addNewBlogPostBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

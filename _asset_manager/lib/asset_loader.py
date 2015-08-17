@@ -11,6 +11,7 @@ from threading import Thread
 from datetime import datetime
 import time
 from glob import glob
+import re
 
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
@@ -67,7 +68,7 @@ class AssetLoader(object):
 
         self.selected_project_name = str(self.projectList.selectedItems()[0].text())
         self.selected_department_name = "mod"
-        self.selected_sequence_name = "xxx"
+        self.selected_sequence_name = "All"
         self.selected_shot_number = "xxxx"
 
         qpixmap = QtGui.QPixmap(self.no_img_found)
@@ -78,8 +79,7 @@ class AssetLoader(object):
         self.meOnlyCheckBox.stateChanged.connect(self.filter_assets_for_me)
 
         # Connect the filter textboxes
-        self.seqFilter.textChanged.connect(partial(self.filterList_textChanged, "sequence"))
-        self.assetFilter.textChanged.connect(partial(self.filterList_textChanged, "asset"))
+        self.assetFilter.textChanged.connect(self.filterList_textChanged)
 
         # Connect the lists
         self.projectList.itemClicked.connect(self.projectList_Clicked)
@@ -91,9 +91,16 @@ class AssetLoader(object):
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
-        self.connect(self.versionList, QtCore.SIGNAL('arrow_key_pressed'), self.versionList_Clicked)
+        self.connect(self.versionList, QtCore.SIGNAL('version_arrow_key_pressed'), self.versionList_Clicked)
         self.connect(self.versionList, QtCore.SIGNAL('delete_selected_asset_version'), self.remove_version)
 
+        self.connect(self.assetList, QtCore.SIGNAL('asset_arrow_key_pressed'), self.assetList_Clicked)
+
+        self.connect(self.departmentList, QtCore.SIGNAL('department_arrow_key_pressed'), self.departmentList_Clicked)
+
+        self.connect(self.seqList, QtCore.SIGNAL('seq_arrow_key_pressed'), self.seqList_Clicked)
+
+        self.connect(self.shotList, QtCore.SIGNAL('shot_arrow_key_pressed'), self.shotList_Clicked)
 
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
@@ -116,7 +123,6 @@ class AssetLoader(object):
         self.showGeoTurnBtn.clicked.connect(partial(self.show_shd_turn, "geo"))
         self.showHdrTurnBtn.clicked.connect(partial(self.show_shd_turn, "hdr"))
 
-        self.seqFilterClearBtn.clicked.connect(partial(self.clear_filter, "seq"))
         self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
@@ -357,6 +363,7 @@ class AssetLoader(object):
 
         # Populate the sequences and shots lists
         self.seqList.clear()
+        self.seqList.addItem("All")
         self.seqList.addItem("None")
         self.seqReferenceList.clear()
         self.seqReferenceList.addItem("All")
@@ -396,7 +403,7 @@ class AssetLoader(object):
             self.selected_sequence_name = "xxx"
 
         # Add shots to shot list and reference tool shot list
-        if self.selected_sequence_name == "xxx":
+        if self.selected_sequence_name == "xxx" or self.selected_sequence_name == "All":
             self.shotList.clear()
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
@@ -424,7 +431,10 @@ class AssetLoader(object):
         self.hasUvToggleBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
 
-        self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
+        try:
+            self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
+        except:
+            return
         if self.selected_shot_number == "None" or self.selected_shot_number == "All":
             self.selected_shot_number = "xxxx"
 
@@ -492,6 +502,7 @@ class AssetLoader(object):
 
     def departmentList_Clicked(self):
 
+
         # Disable all buttons
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
@@ -508,7 +519,10 @@ class AssetLoader(object):
         self.lastPublishedLbl.setText("Last published by: ...")
 
         self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
-        self.selected_department_name = self.departments_shortname[self.selected_department_name]
+        if self.selected_department_name == "All":
+            self.selected_department_name = "xxx"
+        else:
+            self.selected_department_name = self.departments_shortname[self.selected_department_name]
 
         qpixmap = QtGui.QPixmap(self.no_img_found)
         qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
@@ -517,15 +531,7 @@ class AssetLoader(object):
 
         self.updateThumbBtn.hide()
 
-        if self.selected_department_name == "ref":
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "mod":
+        if self.selected_department_name == "mod":
             self.createAssetFromScratchAssetBtn.show()
             self.hasUvToggleBtn.show()
             self.hasUvSeparator.show()
@@ -653,13 +659,13 @@ class AssetLoader(object):
         selected_asset = self.assetList.selectedItems()[0]
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
 
-        for version in self.versions:
-            asset = version.data(QtCore.Qt.UserRole).toPyObject()
-            if selected_asset.name == asset.name and asset.type == self.selected_department_name:
-                version.setHidden(False)
-                version.setSelected(True)
+        for version_item in self.versions:
+            version_asset = version_item.data(QtCore.Qt.UserRole).toPyObject()
+            if selected_asset.name == version_asset.name and selected_asset.type == version_asset.type:
+                version_item.setHidden(False)
+                version_item.setSelected(True)
             else:
-                version.setHidden(True)
+                version_item.setHidden(True)
 
         self.updateThumbBtn.show()
         self.versionList_Clicked()
@@ -671,7 +677,10 @@ class AssetLoader(object):
         if current_tab_text != "Asset Loader":
             return
 
-        selected_version = self.versionList.selectedItems()[0]
+        try:
+            selected_version = self.versionList.selectedItems()[0]
+        except:
+            return
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
         # Set pixmap
@@ -855,41 +864,81 @@ class AssetLoader(object):
         # Unhide all assets
         [asset.setHidden(False) for asset in self.assets.values()]
 
+        # Set all assets text to name of the asset
         for asset, asset_item in self.assets.items():
-            if asset.sequence != self.selected_sequence_name:
-                asset_item.setHidden(True)
+            asset_item.setText(asset.name)
 
-            if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
-                asset_item.setHidden(True)
+        for asset, asset_item in self.assets.items():
 
-            if asset.type != self.selected_department_name:
-                asset_item.setHidden(True)
-
-            # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
-            if self.selected_department_name == "mod" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+            if self.selected_sequence_name == "All" and self.selected_department_name == "xxx":
                 asset_item.setHidden(False)
-            elif self.selected_department_name == "lay" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
-                asset_item.setHidden(True)
+                asset_item.setText(asset.type + " | " + asset.name)
 
-    def filterList_textChanged(self, list_type):
-        if list_type == "sequence":
-            seq_filter_str = str(self.seqFilter.text())
-            if seq_filter_str > 0:
-                for i in xrange(0, self.seqList.count()):
-                    if seq_filter_str.lower() in self.seqList.item(i).text():
-                        self.seqList.setItemHidden(self.seqList.item(i), False)
-                    else:
-                        self.seqList.setItemHidden(self.seqList.item(i), True)
+            elif self.selected_sequence_name == "All" and self.selected_department_name != "xxx":
+
+                if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
+                    asset_item.setHidden(True)
+
+                if asset.type != self.selected_department_name:
+                    asset_item.setHidden(True)
+
+                # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
+                if self.selected_department_name == "mod" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                    asset_item.setHidden(False)
+                elif self.selected_department_name == "lay" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                    asset_item.setHidden(True)
 
 
-        elif list_type == "asset":
-            asset_filter_str = str(self.assetFilter.text())
-            if asset_filter_str > 0:
-                for i in xrange(0, self.assetList.count()):
-                    if asset_filter_str.lower() in self.assetList.item(i).text():
-                        self.assetList.setItemHidden(self.assetList.item(i), False)
-                    else:
+            elif self.selected_sequence_name != "All" and self.selected_department_name == "xxx":
+                asset_item.setText(asset.type + " | " + asset.name)
+
+                if asset.sequence != self.selected_sequence_name:
+                    asset_item.setHidden(True)
+
+                if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
+                    asset_item.setHidden(True)
+
+                # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
+                if self.selected_department_name == "mod" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                    asset_item.setHidden(False)
+                elif self.selected_department_name == "lay" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                    asset_item.setHidden(True)
+
+            elif self.selected_sequence_name != "All" and self.selected_department_name != "xxx":
+
+                if asset.sequence != self.selected_sequence_name:
+                    asset_item.setHidden(True)
+
+                if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
+                    asset_item.setHidden(True)
+
+                if asset.type != self.selected_department_name:
+                    asset_item.setHidden(True)
+
+
+                # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
+                if self.selected_department_name == "mod" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                    asset_item.setHidden(False)
+                elif self.selected_department_name == "lay" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
+                    asset_item.setHidden(True)
+
+    def filterList_textChanged(self):
+        asset_filter_str = str(self.assetFilter.text())
+        if asset_filter_str > 0:
+            for i in xrange(0, self.assetList.count()):
+
+                if "*" in asset_filter_str:
+                    asset_filter_str = asset_filter_str.replace("*", ".*")
+                    r = re.compile(asset_filter_str)
+                    if not r.match(self.assetList.item(i).text()):
                         self.assetList.setItemHidden(self.assetList.item(i), True)
+                    else:
+                        self.assetList.setItemHidden(self.assetList.item(i), False)
+                else:
+                    if not asset_filter_str in self.assetList.item(i).text():
+                        self.assetList.setItemHidden(self.assetList.item(i), True)
+                    else:
+                        self.assetList.setItemHidden(self.assetList.item(i), False)
 
     def create_new_version(self):
 

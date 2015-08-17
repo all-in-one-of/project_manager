@@ -26,13 +26,13 @@ class ThibListWidget(QtGui.QListWidget):
 
         if key == QtCore.Qt.Key_Delete:
             self.emit(QtCore.SIGNAL('delete_selected_asset_version'))
+            return
 
         if key == QtCore.Qt.Key_Up:
             while True:
                 try:
                     self.setCurrentRow(self.currentRow() - 1)
                     item = self.selectedItems()[0]
-                    self.emit(QtCore.SIGNAL('arrow_key_pressed'))
                 except:
                     break
                 if not item.isHidden():
@@ -42,11 +42,23 @@ class ThibListWidget(QtGui.QListWidget):
                 try:
                     self.setCurrentRow(self.currentRow() + 1)
                     item = self.selectedItems()[0]
-                    self.emit(QtCore.SIGNAL('arrow_key_pressed'))
                 except:
                     break
                 if not item.isHidden():
                     break
+
+        if self.objectName() == "versionList":
+            self.emit(QtCore.SIGNAL('version_arrow_key_pressed'))
+        elif self.objectName() == "assetList":
+            self.emit(QtCore.SIGNAL('asset_arrow_key_pressed'))
+        elif self.objectName() == "departmentList":
+            self.emit(QtCore.SIGNAL('department_arrow_key_pressed'))
+        elif self.objectName() == "seqList":
+            self.emit(QtCore.SIGNAL('seq_arrow_key_pressed'))
+        elif self.objectName() == "shotList":
+            self.emit(QtCore.SIGNAL('shot_arrow_key_pressed'))
+
+        return
 
 
 class ThibQLabel(QtGui.QLabel):
