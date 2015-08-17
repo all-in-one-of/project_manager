@@ -777,6 +777,23 @@ class AssetLoader(object):
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
+        # Set Is In Layout label
+        self.isInLayoutLbl.setText("Asset is not in any layout scene.")
+        if "-lowres" in self.selected_asset.name:
+            asset_name = self.selected_asset.name.replace("-lowres", "")
+        else:
+            asset_name = self.selected_asset.name
+        layout_asset = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_type="lay" AND asset_extension="hda" AND asset_version="out"''', (asset_name,)).fetchone()
+        if layout_asset != None:
+            layout_asset_id = layout_asset[0]
+            is_asset_in_layout = self.cursor.execute('''SELECT layout_id FROM assets_in_layout WHERE asset_id=?''', (layout_asset_id,)).fetchone()
+            if is_asset_in_layout != None:
+                asset_layout_id = is_asset_in_layout[0]
+                layout_asset = self.Asset(self, asset_layout_id)
+                layout_asset.get_infos_from_id()
+                self.isInLayoutLbl.setText("Asset is in layout: {0} ({1})".format(layout_asset.name, layout_asset.sequence))
+
+
         # Set favorite button state
         selected_asset_publish = self.cursor.execute('''SELECT asset_id FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_type=? AND asset_version="out"''', (self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, self.selected_asset.type,)).fetchone()
         if not selected_asset_publish == None:
@@ -2129,6 +2146,8 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def finished(self):
         # Remove whitespace, new line, and other special characters from assets paths.
         self.assets_in_layout = [i.strip(' \t\n\r') for i in self.assets_in_layout]
+        self.assets_in_layout = [i for i in self.assets_in_layout if not "lgt" in i]
+        self.assets_in_layout = [i for i in self.assets_in_layout if not "cam" in i]
 
         # Get only last three / of all paths (ex: H:/01-NAD/_pipeline/test_project_files/assets/lay/nat_xxx_xxxx_lay_colonne_out.hda = \assets\lay\nat_xxx_xxxx_lay_colonne_out.hda)
         self.assets_in_layout = ["\\" + "\\".join(i.split("/")[-3:len(i.split("/"))]) for i in self.assets_in_layout]
@@ -2218,7 +2237,6 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for i in xrange(self.assetsToAddListWidget.count()):
             list_item = self.assetsToAddListWidget.item(i)
             asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
-            asset.print_asset()
             assets_list.append(asset.full_path.replace("\\", "/"))
             self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
             self.main.db.commit()

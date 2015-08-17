@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Aug 16 19:45:57 2015
+# Created: Sun Aug 16 20:27:42 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1944,7 +1944,7 @@ class Ui_Form(object):
         self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
-
+        return Form
         Form.setTabOrder(self.projectList, self.seqList)
         Form.setTabOrder(self.seqList, self.shotList)
         Form.setTabOrder(self.shotList, self.departmentList)
@@ -2083,7 +2083,6 @@ class Ui_Form(object):
         Form.setTabOrder(self.newsFeedScrollArea, self.markAllNewsAsReadBtn)
         Form.setTabOrder(self.markAllNewsAsReadBtn, self.addNewBlogPostTextEdit)
         Form.setTabOrder(self.addNewBlogPostTextEdit, self.addNewBlogPostBtn)
-        return Form
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Manager", None))
@@ -2171,7 +2170,7 @@ class Ui_Form(object):
         self.updateThumbBtn.setText(_translate("Form", "Update Thumbnail", None))
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
         self.lastPublishedLbl.setText(_translate("Form", "Last published by: ", None))
-        self.isInLayoutLbl.setText(_translate("Form", "Is in layout? No", None))
+        self.isInLayoutLbl.setText(_translate("Form", "Asset is not in any layout scene.", None))
         self.loadAssetBtn.setToolTip(_translate("Form", "<html><head/><body><p>Load</p></body></html>", None))
         self.importIntoSceneBtn.setToolTip(_translate("Form", "<html><head/><body><p>Import high-resolution published obj into low-resolution modeling scene file</p></body></html>", None))
         self.createVersionBtn.setToolTip(_translate("Form", "<html><head/><body><p>Create new version</p></body></html>", None))
