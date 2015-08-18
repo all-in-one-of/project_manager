@@ -68,6 +68,7 @@ class ReferenceTab(object):
         self.refShowNamesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.createMoodboardFromImagesBtn.clicked.connect(self.create_moodboard_from_images)
+        self.connect(self.referenceThumbListWidget, QtCore.SIGNAL('delete_selected_reference'), self.remove_selected_references)
 
         resize_icon = QtGui.QIcon(self.cur_path + "\\media\\thumbnail.png")
         self.biggerRefPushButton_01.setIcon(resize_icon)

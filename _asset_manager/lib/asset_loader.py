@@ -1221,24 +1221,25 @@ class AssetLoader(object):
             self.thumbnailProgressBar.show()
             self.thumbnailProgressBar.setMaximum(242)
             self.thumbnailProgressBar.setValue(0)
+            asset = self.selected_asset
 
             self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(self.create_mov_from_turn)
+            self.playblast_process.finished.connect(partial(self.create_mov_from_turn, asset))
             self.playblast_process.readyRead.connect(self.playblast_ready_read)
             self.playblast_process.waitForFinished()
-            self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.selected_asset.full_path, self.selected_asset.name])
+            self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", asset.full_path, asset.name])
 
         elif self.selected_asset.type == "rig":
             self.Lib.take_screenshot(self, path=self.selected_asset.rig_out_path.replace(".ma", ".jpg"))
 
-    def create_mov_from_turn(self):
+    def create_mov_from_turn(self, asset):
         all_files = glob("C:\\Temp\\*")
         all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
 
-        turn_folder = os.path.split(self.selected_asset.full_path)[0] + "\\.turn\\" # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
-        filename_path = self.selected_asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4") # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
-        filename_path_geo = filename_path.replace(self.selected_asset.name + "_" + self.selected_asset.version, self.selected_asset.name + "_" + self.selected_asset.version + "_turngeo")
-        filename_path_hdr = filename_path.replace(self.selected_asset.name + "_" + self.selected_asset.version, self.selected_asset.name + "_" + self.selected_asset.version + "_turnhdr")
+        turn_folder = os.path.split(asset.full_path)[0].replace("\\", "/") + "/.turn/" # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
+        filename_path = asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4") # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
+        filename_path_geo = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_turngeo")
+        filename_path_hdr = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_turnhdr")
         movie_path_geo =  (turn_folder + filename_path_geo).replace("\\", "/")
         movie_path_hdr =  (turn_folder + filename_path_hdr).replace("\\", "/")
 

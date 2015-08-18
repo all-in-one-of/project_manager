@@ -25,8 +25,12 @@ class ThibListWidget(QtGui.QListWidget):
         key = QKeyEvent.key()
 
         if key == QtCore.Qt.Key_Delete:
-            self.emit(QtCore.SIGNAL('delete_selected_asset_version'))
-            return
+            if self.objectName() == "versionList":
+                self.emit(QtCore.SIGNAL('delete_selected_asset_version'))
+                return
+            elif self.objectName() == "referenceThumbListWidget":
+                self.emit(QtCore.SIGNAL('delete_selected_reference'))
+                return
 
         if key == QtCore.Qt.Key_Up:
             while True:
