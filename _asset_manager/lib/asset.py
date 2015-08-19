@@ -18,6 +18,9 @@ class Asset(object):
             self.project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
         except:
             self.project_path = ""
+
+        if sequence_name == "All":
+            sequence_name = "xxx"
         self.sequence = sequence_name
         self.shot = shot_number
         self.name = asset_name
@@ -244,6 +247,8 @@ class Asset(object):
         self.project = project_name
         self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
         self.project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
+        if sequence_name == "All":
+            sequence_name = "xxx"
         self.sequence = sequence_name
         self.shot = shot_number
         self.name = asset_name

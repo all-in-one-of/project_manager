@@ -840,7 +840,7 @@ class AssetLoader(object):
         self.CommentWidget.load_comments(self)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type:
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type != "sim" and self.selected_asset.type:
 
             asset_published = self.Asset(self, self.selected_asset.dependency)
             asset_published.get_infos_from_id()
@@ -1191,9 +1191,10 @@ class AssetLoader(object):
             self.thumbnailProgressBar.show()
             self.thumbnailProgressBar.setMaximum(int(end_frame) - int(start_frame))
             self.thumbnailProgressBar.setValue(0)
+            asset = self.selected_asset
 
             self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame))
+            self.playblast_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset))
             self.playblast_process.readyRead.connect(self.playblast_ready_read)
             self.playblast_process.waitForFinished()
             self.playblast_process.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
@@ -1209,9 +1210,10 @@ class AssetLoader(object):
             self.thumbnailProgressBar.show()
             self.thumbnailProgressBar.setMaximum(20)
             self.thumbnailProgressBar.setValue(0)
+            asset = self.selected_asset
 
             self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame))
+            self.playblast_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame, asset))
             self.playblast_process.readyRead.connect(self.playblast_ready_read)
             self.playblast_process.waitForFinished()
             self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", associated_hip_scene, self.selected_asset.name, start_frame, end_frame])
@@ -1232,16 +1234,55 @@ class AssetLoader(object):
         elif self.selected_asset.type == "rig":
             self.Lib.take_screenshot(self, path=self.selected_asset.rig_out_path.replace(".ma", ".jpg"))
 
+    def create_mov_from_playblast(self, start_frame, end_frame, asset):
+        file_sequence = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
+        movie_path = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_playblast.mp4"
+
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
+
+        thumb_filename = os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".mp4"
+        shutil.copy(movie_path, thumb_filename)
+
+        os.remove(movie_path)
+        for i in range(int(start_frame), int(end_frame) + 1):
+            if i == int(start_frame):
+                shutil.copy("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".jpg")
+            os.remove("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
+
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.thumbnailProgressBar.hide()
+        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
+    def create_mov_from_flipbook(self, start_frame, end_frame, asset):
+        file_sequence = "C:/Temp/playblast.%04d.jpg"
+        movie_path = "C:/Temp/" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_playblast.mp4"
+
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
+
+        movie_output_path = os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".mp4"
+        shutil.copy(movie_path, movie_output_path)
+
+        os.remove(movie_path)
+        for i in range(int(start_frame), int(end_frame) + 1):
+            if i == int(start_frame):
+                shutil.copy("C:/Temp/playblast." + str(i).zfill(4) + ".jpg",
+                            os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".jpg")
+            os.remove("C:/Temp/playblast." + str(i).zfill(4) + ".jpg")
+
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.thumbnailProgressBar.hide()
+        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
     def create_mov_from_turn(self, asset):
         all_files = glob("C:\\Temp\\*")
         all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
 
-        turn_folder = os.path.split(asset.full_path)[0].replace("\\", "/") + "/.turn/" # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
-        filename_path = asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4") # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
+        turn_folder = os.path.split(asset.full_path)[0].replace("\\", "/") + "/.turn/"  # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
+        filename_path = asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4")  # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
         filename_path_geo = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_turngeo")
         filename_path_hdr = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_turnhdr")
-        movie_path_geo =  (turn_folder + filename_path_geo).replace("\\", "/")
-        movie_path_hdr =  (turn_folder + filename_path_hdr).replace("\\", "/")
+        movie_path_geo = (turn_folder + filename_path_geo).replace("\\", "/")
+        movie_path_hdr = (turn_folder + filename_path_hdr).replace("\\", "/")
 
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "C:/Temp/turn_geo.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_geo])
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "C:/Temp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
@@ -1251,45 +1292,6 @@ class AssetLoader(object):
                 shutil.move(each_file, movie_path_geo.replace("_turngeo.mp4", ".jpg"))
             else:
                 os.remove(each_file)
-
-        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
-        self.thumbnailProgressBar.hide()
-        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
-
-    def create_mov_from_playblast(self, start_frame, end_frame):
-        file_sequence = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
-        movie_path = "H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_playblast.mp4"
-
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
-
-        thumb_filename = os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".mp4"
-        shutil.copy(movie_path, thumb_filename)
-
-        os.remove(movie_path)
-        for i in range(int(start_frame), int(end_frame) + 1):
-            if i == int(start_frame):
-                shutil.copy("H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".jpg")
-            os.remove("H:/" + self.selected_asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
-
-        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
-        self.thumbnailProgressBar.hide()
-        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
-
-    def create_mov_from_flipbook(self, start_frame, end_frame):
-        file_sequence = "C:/Temp/playblast.%04d.jpg"
-        movie_path = "C:/Temp/" + self.selected_asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_playblast.mp4"
-
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
-
-        movie_output_path = os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".mp4"
-        shutil.copy(movie_path, movie_output_path)
-
-        os.remove(movie_path)
-        for i in range(int(start_frame), int(end_frame) + 1):
-            if i == int(start_frame):
-                shutil.copy("C:/Temp/playblast." + str(i).zfill(4) + ".jpg",
-                            os.path.split(self.selected_asset.full_path)[0] + "\\.playblast\\" + self.selected_asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".jpg")
-            os.remove("C:/Temp/playblast." + str(i).zfill(4) + ".jpg")
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
@@ -1414,6 +1416,10 @@ class AssetLoader(object):
                 process.start(self.houdini_path, [self.selected_asset.full_path])
 
         elif self.selected_asset.type == "shd":
+            process = QtCore.QProcess(self)
+            process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
+
+        elif self.selected_asset.type == "sim":
             process = QtCore.QProcess(self)
             process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
 
@@ -1678,6 +1684,8 @@ class AssetLoader(object):
             self.create_mod_asset_from_scratch(asset_name, extension, selected_software)
         elif self.selected_department_name == "lay":
             self.create_lay_asset_from_scratch(asset_name)
+        elif self.selected_department_name == "sim":
+            self.create_sim_asset_from_scratch(asset_name)
 
     def create_asset_from_asset(self):
         if self.selected_department_name == "mod" or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
@@ -1976,11 +1984,6 @@ class AssetLoader(object):
             self.houdini_hda_process.waitForFinished()
             self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
-    def readdata(self):
-        while self.houdini_hda_process.canReadLine():
-            out = self.houdini_hda_process.readLine()
-            print(out)
-
     def create_lay_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
@@ -1992,6 +1995,21 @@ class AssetLoader(object):
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_glob_lgt_into_lay.py", asset.full_path.replace("lay", "lgt").replace(".hipnc", ".hda"), asset.full_path])
+
+    def create_sim_asset_from_scratch(self, asset_name):
+        sim_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "sim", "01", [], "", "", "", self.username)
+        sim_asset.add_asset_to_db()
+
+        # Create HDA for sim asset
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, sim_asset))
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_sim_from_scratch.py", sim_asset.full_path])
+
+    def readdata(self):
+        while self.houdini_hda_process.canReadLine():
+            out = self.houdini_hda_process.readLine()
+            print(out)
 
     def asset_creation_finished(self, asset):
 
