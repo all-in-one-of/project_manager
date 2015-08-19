@@ -34,9 +34,6 @@ part_number = file_size / max_bytes
 if (file_size % max_bytes) > 0 :
   part_number = part_number + 1
 
-
-
-
 values = {"mid":user_id,"t":token,"aid":project_id,"file_references":{ "0":{
                             "name":"test.mp4",
                             "filetype": "application/octet-stream",
@@ -45,8 +42,6 @@ values = {"mid":user_id,"t":token,"aid":project_id,"file_references":{ "0":{
                             "frontend_id":"test",
                             "is_multipart":"true",
                             "parts":str(part_number)}}}
-
-
 
 request = requests.post('https://api.frame.io/folders/' + root_folder_key + '/file_references', json=values)
 request = request.json()

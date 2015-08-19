@@ -68,7 +68,7 @@ class AssetLoader(object):
 
         self.selected_project_name = str(self.projectList.selectedItems()[0].text())
         self.selected_department_name = "mod"
-        self.selected_sequence_name = "All"
+        self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
 
         qpixmap = QtGui.QPixmap(self.no_img_found)
@@ -403,7 +403,7 @@ class AssetLoader(object):
             self.selected_sequence_name = "xxx"
 
         # Add shots to shot list and reference tool shot list
-        if self.selected_sequence_name == "xxx" or self.selected_sequence_name == "All":
+        if self.selected_sequence_name == "xxx":
             self.shotList.clear()
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
@@ -502,7 +502,6 @@ class AssetLoader(object):
 
     def departmentList_Clicked(self):
 
-
         # Disable all buttons
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
@@ -595,7 +594,7 @@ class AssetLoader(object):
             self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "lay":
-            self.createAssetFromScratchAssetBtn.hide()
+            self.createAssetFromScratchAssetBtn.show()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.thumbDisplayShdFrame.hide()
@@ -887,11 +886,11 @@ class AssetLoader(object):
 
         for asset, asset_item in self.assets.items():
 
-            if self.selected_sequence_name == "All" and self.selected_department_name == "xxx":
+            if self.selected_sequence_name == "xxx" and self.selected_department_name == "xxx":
                 asset_item.setHidden(False)
                 asset_item.setText(asset.type + " | " + asset.name)
 
-            elif self.selected_sequence_name == "All" and self.selected_department_name != "xxx":
+            elif self.selected_sequence_name == "xxx" and self.selected_department_name != "xxx":
 
                 if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
                     asset_item.setHidden(True)
@@ -906,7 +905,7 @@ class AssetLoader(object):
                     asset_item.setHidden(True)
 
 
-            elif self.selected_sequence_name != "All" and self.selected_department_name == "xxx":
+            elif self.selected_sequence_name != "xxx" and self.selected_department_name == "xxx":
                 asset_item.setText(asset.type + " | " + asset.name)
 
                 if asset.sequence != self.selected_sequence_name:
@@ -921,7 +920,7 @@ class AssetLoader(object):
                 elif self.selected_department_name == "lay" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
                     asset_item.setHidden(True)
 
-            elif self.selected_sequence_name != "All" and self.selected_department_name != "xxx":
+            elif self.selected_sequence_name != "xxx" and self.selected_department_name != "xxx":
 
                 if asset.sequence != self.selected_sequence_name:
                     asset_item.setHidden(True)
@@ -1784,7 +1783,7 @@ class AssetLoader(object):
         self.create_from_asset_dialog.close()
 
         # if selected sequence has no shots, abort
-        shots = self.shots[self.selected_sequence_name]
+        shots = self.shots[self.selected_asset.sequence]
         if len(shots) == 0:
             self.Lib.message_box(self, type="error", text="You can't create a camera for a sequence without any shot")
             return
@@ -1801,12 +1800,12 @@ class AssetLoader(object):
         createCamBtn = QtGui.QPushButton("Create asset", self)
         createCamBtn.clicked.connect(dialog.accept)
 
-        existing_cam_shots = self.cursor.execute('''SELECT shot_number FROM assets WHERE asset_type="cam" AND sequence_name=?''', (self.selected_sequence_name,)).fetchall()
+        existing_cam_shots = self.cursor.execute('''SELECT shot_number FROM assets WHERE asset_type="cam" AND sequence_name=?''', (self.selected_asset.sequence,)).fetchall()
         if len(existing_cam_shots) > 0:
             existing_cam_shots = [str(i[0]) for i in existing_cam_shots]
 
-        shots = self.shots[self.selected_sequence_name]
-        shots_with_no_cam = list(set(shots) - set(existing_cam_shots))
+        shots = self.shots[self.selected_asset.sequence]
+        shots_with_no_cam = sorted(list(set(shots) - set(existing_cam_shots)))
 
         if len(shots_with_no_cam) == 0:
             self.Lib.message_box(self, type="warning", text="There's already a camera for every shot in this sequence")
@@ -1829,10 +1828,10 @@ class AssetLoader(object):
         selected_shot = shotListWidget.selectedItems()[0]
         selected_shot = str(selected_shot.text())
 
-        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "cam-" + selected_shot, "", "hda", "cam", "01", [], self.selected_asset.id, "", "", self.username)
+        camera_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, selected_shot, "cam-" + selected_shot, "", "hda", "cam", "01", [], self.selected_asset.id, "", "", self.username)
         camera_asset.add_asset_to_db()
 
-        camera_asset_publish = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "cam-" + selected_shot, "", "abc", "cam", "out", [], camera_asset.id, "", "", self.username)
+        camera_asset_publish = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, selected_shot, "cam-" + selected_shot, "", "abc", "cam", "out", [], camera_asset.id, "", "", self.username)
         camera_asset_publish.add_asset_to_db()
 
         shutil.copy(self.NEF_folder + "\\camera.abc", camera_asset_publish.full_path)
@@ -1848,7 +1847,7 @@ class AssetLoader(object):
         self.create_from_asset_dialog.close()
 
         # if selected sequence has no shots, abort
-        shots = self.shots[self.selected_sequence_name]
+        shots = self.shots[self.selected_asset.sequence]
         if len(shots) == 0:
             self.Lib.message_box(self, type="error", text="You can't create a light for a sequence without any shot")
             return
@@ -1865,12 +1864,12 @@ class AssetLoader(object):
         createLgtBtn = QtGui.QPushButton("Create asset", self)
         createLgtBtn.clicked.connect(dialog.accept)
 
-        existing_lights_shots = self.cursor.execute('''SELECT shot_number FROM assets WHERE asset_type="lgt" AND sequence_name=?''', (self.selected_sequence_name, )).fetchall()
+        existing_lights_shots = self.cursor.execute('''SELECT shot_number FROM assets WHERE asset_type="lgt" AND sequence_name=?''', (self.selected_asset.sequence, )).fetchall()
         if len(existing_lights_shots) > 0:
             existing_lights_shots = [str(i[0]) for i in existing_lights_shots]
 
-        shots = self.shots[self.selected_sequence_name]
-        shots_with_no_lights = list(set(shots) - set(existing_lights_shots))
+        shots = self.shots[self.selected_asset.sequence]
+        shots_with_no_lights = sorted(list(set(shots) - set(existing_lights_shots)))
 
         if len(shots_with_no_lights) == 0:
             self.Lib.message_box(self, type="warning", text="There's already a light for every shot in this sequence")
@@ -1893,7 +1892,7 @@ class AssetLoader(object):
         selected_shot = shotListWidget.selectedItems()[0]
         selected_shot = str(selected_shot.text())
 
-        light_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, selected_shot, "lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
+        light_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, selected_shot, "lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
         light_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
