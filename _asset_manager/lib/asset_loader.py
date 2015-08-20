@@ -1112,10 +1112,21 @@ class AssetLoader(object):
             hda_path = str(self.selected_asset.full_path.replace("\\", "/"))
             camera_name = str(self.selected_asset.name)
 
+            layout_asset = self.Asset(self, self.selected_asset.dependency)
+            layout_asset.get_infos_from_id()
+
+
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
+            self.publish_process.readyRead.connect(self.fafa)
             self.publish_process.waitForFinished()
-            self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_cam_from_lay.py", export_path, hda_path, camera_name, start_frame, end_frame])
+            self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_cam_from_lay.py", export_path, layout_asset.full_path, camera_name, start_frame, end_frame])
+
+
+    def fafa(self):
+        while self.publish_process.canReadLine():
+            out = self.publish_process.readLine()
+            print(out)
 
     def publish_process_finished(self):
 
