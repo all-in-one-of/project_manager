@@ -592,9 +592,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         if len(clicked_log_entry) == 0:
             return
 
-        asset = self.Asset(main=self, id=clicked_log_entry)
-        asset.get_infos_from_id()
-
+        asset = self.Asset(main=self, id=clicked_log_entry, get_infos_from_id=True)
 
         if "reference" in clicked_log_description:
             if "video" in clicked_log_description:

@@ -9,10 +9,8 @@ def generate():
 
     objFilename = objFiles
 
-
     if objFilename != None:
         bpy.ops.import_scene.obj(filepath=objFilename)
-
 
     for obj in bpy.context.selected_objects:
         obj.name = "OBJ"
@@ -62,7 +60,6 @@ def generate():
 
     bpy.context.scene.cycles.samples = int(sys.argv[-3])
     bpy.context.scene.render.resolution_percentage = int(sys.argv[-2])
-
 
     if sys.argv[-4] == "full":
         bpy.context.scene.render.filepath = "C:\\Temp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_full.jpg").split("\\")[-1]

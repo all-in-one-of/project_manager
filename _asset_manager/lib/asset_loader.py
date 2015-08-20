@@ -12,6 +12,7 @@ from datetime import datetime
 import time
 from glob import glob
 import re
+import webbrowser
 
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
@@ -32,7 +33,13 @@ class AssetLoader(object):
         self.import_high_res_obj_icon = QtGui.QIcon(self.cur_path + "/media/import_layout_asset.png")
         self.has_uv_icon = QtGui.QIcon(self.cur_path + "/media/hasuv.png")
         self.has_uv_disabled_icon = QtGui.QIcon(self.cur_path + "/media/hasuv_disabled.png")
+        self.update_thumb_icon = QtGui.QIcon(self.cur_path + "/media/update_thumb.png")
+        self.load_in_gplay_icon = QtGui.QIcon(self.cur_path + "/media/load_in_gplay.png")
 
+        self.updateThumbBtn.setIcon(self.update_thumb_icon)
+        self.updateThumbBtn.setIconSize(QtCore.QSize(24, 24))
+        self.loadObjInGplayBtn.setIcon(self.load_in_gplay_icon)
+        self.loadObjInGplayBtn.setIconSize(QtCore.QSize(24, 24))
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
@@ -51,9 +58,8 @@ class AssetLoader(object):
 
         self.assets = {}
         self.selected_asset = None
-        self.thumbDisplayTypeFrame.hide()
-        self.loadObjInGplayBtn.hide()
         self.updateThumbBtn.hide()
+        self.loadObjInGplayBtn.hide()
 
         # Get projects from database and add them to the projects list
         self.projects = self.cursor.execute('''SELECT project_name FROM projects''').fetchall()
@@ -62,18 +68,14 @@ class AssetLoader(object):
             self.projectList.addItem(project)
 
         # Select default project
-        self.projectList.setCurrentRow(0)
-        self.departmentList.setCurrentRow(0)
+        self.projectList.setCurrentIndex(0)
+        self.departmentList.setCurrentIndex(0)
         self.projectList_Clicked()
 
-        self.selected_project_name = str(self.projectList.selectedItems()[0].text())
-        self.selected_department_name = "mod"
+        #self.selected_project_name = str(self.projectList.selectedItems()[0].text())
+        self.selected_department_name = "xxx"
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
-
-        qpixmap = QtGui.QPixmap(self.no_img_found)
-        qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
-        self.assetImg.setPixmap(qpixmap)
 
         # Filtering options
         self.meOnlyCheckBox.stateChanged.connect(self.filter_assets_for_me)
@@ -82,26 +84,20 @@ class AssetLoader(object):
         self.assetFilter.textChanged.connect(self.filterList_textChanged)
 
         # Connect the lists
-        self.projectList.itemClicked.connect(self.projectList_Clicked)
-        self.projectList.itemDoubleClicked.connect(self.projectList_DoubleClicked)
-        self.departmentList.itemClicked.connect(self.departmentList_Clicked)
-        self.seqList.itemClicked.connect(self.seqList_Clicked)  # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
-        self.shotList.itemClicked.connect(self.shotList_Clicked)
-        self.shotList.itemDoubleClicked.connect(self.shotList_DoubleClicked)
+        self.projectList.currentIndexChanged .connect(self.projectList_Clicked)
+        self.departmentList.currentIndexChanged.connect(self.departmentList_Clicked)
+        self.seqList.currentIndexChanged.connect(self.seqList_Clicked)  # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
+        self.shotList.currentIndexChanged.connect(self.shotList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
-        self.versionList.itemDoubleClicked.connect(self.versionList_DoubleClicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
         self.connect(self.versionList, QtCore.SIGNAL('version_arrow_key_pressed'), self.versionList_Clicked)
         self.connect(self.versionList, QtCore.SIGNAL('delete_selected_asset_version'), self.remove_version)
-
         self.connect(self.assetList, QtCore.SIGNAL('asset_arrow_key_pressed'), self.assetList_Clicked)
-
+        self.connect(self.assetList, QtCore.SIGNAL('assetList_simple_view'), self.assetList_simple_view)
+        self.connect(self.assetList, QtCore.SIGNAL('assetList_advanced_view'), self.assetList_advanced_view)
         self.connect(self.departmentList, QtCore.SIGNAL('department_arrow_key_pressed'), self.departmentList_Clicked)
-
         self.connect(self.seqList, QtCore.SIGNAL('seq_arrow_key_pressed'), self.seqList_Clicked)
-
         self.connect(self.shotList, QtCore.SIGNAL('shot_arrow_key_pressed'), self.shotList_Clicked)
-
         self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
         # Connect the buttons
@@ -110,20 +106,21 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
 
+        self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
+
         self.hasUvToggleBtn.clicked.connect(self.change_uv_state)
 
         self.addProjectBtn.clicked.connect(self.add_project)
         self.addSequenceBtn.clicked.connect(self.add_sequence)
         self.addShotBtn.clicked.connect(self.add_shot)
 
-        self.thumbFullBtn.clicked.connect(partial(self.switch_thumbnail_display, "full"))
-        self.thumbTurnBtn.clicked.connect(partial(self.switch_thumbnail_display, "turn"))
-        self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
+        #self.thumbFullBtn.clicked.connect(partial(self.switch_thumbnail_display, "full"))
+        #self.thumbTurnBtn.clicked.connect(partial(self.switch_thumbnail_display, "turn"))
+        #self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
-        self.showGeoTurnBtn.clicked.connect(partial(self.show_shd_turn, "geo"))
-        self.showHdrTurnBtn.clicked.connect(partial(self.show_shd_turn, "hdr"))
+        #self.showGeoTurnBtn.clicked.connect(partial(self.show_shd_turn, "geo"))
+        #self.showHdrTurnBtn.clicked.connect(partial(self.show_shd_turn, "hdr"))
 
-        self.assetFilterClearBtn.clicked.connect(partial(self.clear_filter, "asset"))
         self.updateThumbBtn.clicked.connect(self.update_thumbnail)
         self.loadAssetBtn.clicked.connect(self.load_asset)
         self.importIntoSceneBtn.clicked.connect(self.import_into_scene)
@@ -135,9 +132,9 @@ class AssetLoader(object):
         self.createVersionBtn.clicked.connect(self.create_new_version)
         self.publishBtn.clicked.connect(self.publish_asset)
 
-        self.showPlayBlastBtn.clicked.connect(self.show_playblast)
-        self.showPlayBlastBtn.hide()
-        self.thumbDisplayShdFrame.hide()
+        #self.showPlayBlastBtn.clicked.connect(self.show_playblast)
+        #self.showPlayBlastBtn.hide()
+        #self.thumbDisplayShdFrame.hide()
 
     def change_favorite_state(self):
 
@@ -291,10 +288,6 @@ class AssetLoader(object):
         self.assetList.clear()
         self.versionList.clear()
 
-        self.departmentList.clearSelection()
-        self.assetList.clearSelection()
-        self.versionList.clearSelection()
-
         all_assets = self.cursor.execute('''SELECT * FROM assets WHERE project_name=?''', (self.selected_project_name,)).fetchall()
         for asset in all_assets:
             asset_id = asset[0]
@@ -314,11 +307,15 @@ class AssetLoader(object):
             number_of_publishes = asset[14]
             publish_from_version = asset[15]
 
-            # Create ListWidget Item
-            asset_item = QtGui.QListWidgetItem(asset_name)
-
             # Create asset object and attach it to the ListWidgetItem
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes, publish_from_version)
+            # Create ListWidget Item
+            asset_item = QtGui.QListWidgetItem(asset.name)
+            if os.path.isfile(asset.full_img_path):
+                asset_item.setIcon(QtGui.QIcon(asset.full_img_path))
+            else:
+                asset_item.setIcon(QtGui.QIcon(asset.default_thumb))
+
             asset_item.setData(QtCore.Qt.UserRole, asset)
 
             # Dictionary of asset objects associated with listwidget item (Exemple Class Asset -> ListWidgetItem)
@@ -333,18 +330,18 @@ class AssetLoader(object):
                 # Therefore, its first version is already in the assetList and you don't need to add the other versions too.
                 if assets_list.count((asset.sequence, asset.shot, asset.name, asset.type)) < 2:
                     self.assetList.addItem(asset_item)
-                    asset_item.setHidden(True) # Hide item by default
 
                 # Add all versions to version List.
                 version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
                 version_item.setData(QtCore.Qt.UserRole, asset)
+                version_item.setIcon(QtGui.QIcon(self.cur_path + "\\media\\default_asset_thumb\\version\\" + str(asset.version).zfill(2) + ".png"))
                 self.versions.append(version_item)
                 self.versionList.addItem(version_item)
                 version_item.setHidden(True)
 
     def projectList_Clicked(self):
         # Query the project id based on the name of the selected project
-        self.selected_project_name = str(self.projectList.selectedItems()[0].text())
+        self.selected_project_name = str(self.projectList.currentText())
         self.selected_project_path = str(self.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.selected_project_name,)).fetchone()[0])
         self.selected_project_shortname = str(self.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.selected_project_name,)).fetchone()[0])
 
@@ -374,9 +371,8 @@ class AssetLoader(object):
         [(self.seqList.addItem(sequence[0]), self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
 
         # Select "All" from sequence list and "None" from shot list
-        self.seqList.setCurrentRow(0)
-        self.shotList.setCurrentRow(0)
-
+        self.seqList.setCurrentIndex(0)
+        self.shotList.setCurrentIndex(0)
 
         # Load all assets
         if self.assetList.count() == 0:
@@ -395,11 +391,10 @@ class AssetLoader(object):
         self.hasUvToggleBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
 
-
         self.selected_shot_number = "xxxx"
 
-        self.selected_sequence_name = str(self.seqList.selectedItems()[0].text())
-        if self.selected_sequence_name == "None":
+        self.selected_sequence_name = str(self.seqList.currentText())
+        if self.selected_sequence_name == "None" or self.selected_sequence_name == "All":
             self.selected_sequence_name = "xxx"
 
         # Add shots to shot list and reference tool shot list
@@ -418,7 +413,7 @@ class AssetLoader(object):
             shots = sorted(shots)
             [(self.shotList.addItem(shot), self.shotReferenceList.addItem(shot)) for shot in shots]
 
-        self.shotList.setCurrentRow(0)
+        self.shotList.setCurrentIndex(0)
         self.load_assets_from_selected_seq_shot_dept()
 
     def shotList_Clicked(self):
@@ -517,131 +512,88 @@ class AssetLoader(object):
         self.lastAccessLbl.setText("Last accessed by: ...")
         self.lastPublishedLbl.setText("Last published by: ...")
 
-        self.selected_department_name = str(self.departmentList.selectedItems()[0].text())
+        self.selected_department_name = str(self.departmentList.currentText())
         if self.selected_department_name == "All":
             self.selected_department_name = "xxx"
         else:
             self.selected_department_name = self.departments_shortname[self.selected_department_name]
 
-        qpixmap = QtGui.QPixmap(self.no_img_found)
-        qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
-        self.assetImg.setData(self.no_img_found)
-        self.assetImg.setPixmap(qpixmap)
-
         self.updateThumbBtn.hide()
 
         if self.selected_department_name == "mod":
             self.createAssetFromScratchAssetBtn.show()
+            self.loadObjInGplayBtn.show()
             self.hasUvToggleBtn.show()
             self.hasUvSeparator.show()
-            self.loadObjInGplayBtn.show()
-            self.thumbDisplayTypeFrame.show()
-            self.thumbDisplayShdFrame.hide()
-            self.showPlayBlastBtn.hide()
 
         elif self.selected_department_name == "cam":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.showPlayBlastBtn.show()
-            self.loadObjInGplayBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "tex":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rig":
             self.createAssetFromScratchAssetBtn.show()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "anm":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.showPlayBlastBtn.show()
-            self.loadObjInGplayBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "sim":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "shd":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.show()
-            self.showPlayBlastBtn.hide()
-            self.loadObjInGplayBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "lay":
             self.createAssetFromScratchAssetBtn.show()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "dmp":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "cmp":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
         elif self.selected_department_name == "rdr":
             self.createAssetFromScratchAssetBtn.hide()
+            self.loadObjInGplayBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.thumbDisplayShdFrame.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
             self.selected_department_name = "lay"
 
         else:
             self.createAssetFromScratchAssetBtn.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
-            self.loadObjInGplayBtn.hide()
-            self.showPlayBlastBtn.hide()
-            self.thumbDisplayTypeFrame.hide()
 
 
 
-        self.verticalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
-        self.gridLayout_6.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.load_assets_from_selected_seq_shot_dept()
 
@@ -669,6 +621,12 @@ class AssetLoader(object):
         self.updateThumbBtn.show()
         self.versionList_Clicked()
 
+    def assetList_simple_view(self):
+        webbrowser.open(image_path)
+
+    def assetList_advanced_view(self):
+        print("ctrl + spacebar")
+
     def versionList_Clicked(self):
 
         # If user press arrow key in a tab other than Asset Loader, don't do anything
@@ -682,96 +640,21 @@ class AssetLoader(object):
             return
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
-        # Set pixmap
-        if self.selected_asset.type == "mod":
-            if not os.path.isfile(self.selected_asset.full_img_path):
-                img_path, width = self.no_img_found, 300
-            else:
-                img_path, width = self.selected_asset.full_img_path, 500
-
-            qpixmap = QtGui.QPixmap(img_path)
-            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(img_path)
-            self.assetImg.setPixmap(qpixmap)
-        elif self.selected_asset.type == "anm":
-            if not os.path.isfile(self.selected_asset.anim_playblast_path.replace("mp4", "jpg")):
-                img_path, width = self.no_img_found, 300
-            else:
-                if os.path.isfile(self.selected_asset.anim_playblast_path.replace("mp4", "jpg")):
-                    img_path, width = self.selected_asset.anim_playblast_path.replace("mp4", "jpg"), 500
-
-            qpixmap = QtGui.QPixmap(img_path)
-            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(img_path)
-            self.assetImg.setPixmap(qpixmap)
-
-        elif self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out":
-            if not os.path.isfile(self.selected_asset.full_img_path):
-                img_path, width = self.no_img_found, 300
-            else:
-                img_path, width = self.selected_asset.full_img_path, 500
-
-            qpixmap = QtGui.QPixmap(img_path)
-            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(img_path)
-            self.assetImg.setPixmap(qpixmap)
-
-        elif self.selected_asset.type == "cam":
-            if not os.path.isfile(self.selected_asset.cam_playblast_path.replace("mp4", "jpg")):
-                img_path, width = self.no_img_found, 300
-            else:
-                if os.path.isfile(self.selected_asset.cam_playblast_path.replace("mp4", "jpg")):
-                    img_path, width = self.selected_asset.cam_playblast_path.replace("mp4", "jpg"), 500
-
-            qpixmap = QtGui.QPixmap(img_path)
-            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(img_path)
-            self.assetImg.setPixmap(qpixmap)
-
-        elif self.selected_asset.type == "shd":
-            if not os.path.isfile(self.selected_asset.turnimg_path):
-                img_path, width = self.no_img_found, 300
-            else:
-                if os.path.isfile(self.selected_asset.turnimg_path):
-                    img_path, width = self.selected_asset.turnimg_path, 500
-
-            qpixmap = QtGui.QPixmap(img_path)
-            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(img_path)
-            self.assetImg.setPixmap(qpixmap)
-
-        elif self.selected_asset.type == "rig":
-            if not os.path.isfile(self.selected_asset.rig_out_path.replace(".ma", ".jpg")):
-                img_path, width = self.no_img_found, 300
-            else:
-                if os.path.isfile(self.selected_asset.rig_out_path.replace(".ma", ".jpg")):
-                    img_path, width = self.selected_asset.rig_out_path.replace(".ma", ".jpg"), 500
-
-            qpixmap = QtGui.QPixmap(img_path)
-            qpixmap = qpixmap.scaledToWidth(width, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(img_path)
-            self.assetImg.setPixmap(qpixmap)
-
-        else:
-            qpixmap = QtGui.QPixmap(self.no_img_found)
-            qpixmap = qpixmap.scaledToWidth(300, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(self.no_img_found)
-            self.assetImg.setPixmap(qpixmap)
-
-
         if self.selected_asset.type == "mod" or self.selected_asset.type == "anm" or self.selected_asset.type == "lay":
             self.importIntoSceneBtn.show()
         else:
             self.importIntoSceneBtn.hide()
 
-
         if self.selected_asset.type == "mod" and "lowres" in self.selected_asset.full_path:
+            self.loadObjInGplayBtn.show()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
         elif self.selected_asset.type == "mod":
+            self.loadObjInGplayBtn.show()
             self.hasUvToggleBtn.show()
             self.hasUvSeparator.show()
-
+        else:
+            self.loadObjInGplayBtn.hide()
 
         # Set labels
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
@@ -788,8 +671,7 @@ class AssetLoader(object):
             is_asset_in_layout = self.cursor.execute('''SELECT layout_id FROM assets_in_layout WHERE asset_id=?''', (layout_asset_id,)).fetchone()
             if is_asset_in_layout != None:
                 asset_layout_id = is_asset_in_layout[0]
-                layout_asset = self.Asset(self, asset_layout_id)
-                layout_asset.get_infos_from_id()
+                layout_asset = self.Asset(self, asset_layout_id, get_infos_from_id=True)
                 self.isInLayoutLbl.setText("Asset is in layout: {0} ({1})".format(layout_asset.name, layout_asset.sequence))
 
 
@@ -840,9 +722,7 @@ class AssetLoader(object):
 
         # Set last publish label
         if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type != "sim" and self.selected_asset.type:
-
-            asset_published = self.Asset(self, self.selected_asset.dependency)
-            asset_published.get_infos_from_id()
+            asset_published = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
             self.update_last_published_time_lbl(asset_published)
 
     def update_last_published_time_lbl(self, asset_published=None):
@@ -880,15 +760,10 @@ class AssetLoader(object):
         # Unhide all assets
         [asset.setHidden(False) for asset in self.assets.values()]
 
-        # Set all assets text to name of the asset
-        for asset, asset_item in self.assets.items():
-            asset_item.setText(asset.name)
-
         for asset, asset_item in self.assets.items():
 
             if self.selected_sequence_name == "xxx" and self.selected_department_name == "xxx":
                 asset_item.setHidden(False)
-                asset_item.setText(asset.type + " | " + asset.name)
 
             elif self.selected_sequence_name == "xxx" and self.selected_department_name != "xxx":
 
@@ -906,8 +781,6 @@ class AssetLoader(object):
 
 
             elif self.selected_sequence_name != "xxx" and self.selected_department_name == "xxx":
-                asset_item.setText(asset.type + " | " + asset.name)
-
                 if asset.sequence != self.selected_sequence_name:
                     asset_item.setHidden(True)
 
@@ -931,7 +804,6 @@ class AssetLoader(object):
                 if asset.type != self.selected_department_name:
                     asset_item.setHidden(True)
 
-
                 # If asset is a houdini modeling, only show it when user clicks on modeling dep and not on layout
                 if self.selected_department_name == "mod" and self.selected_sequence_name == asset.sequence and asset.extension == "hda" and asset.type == "lay" and asset.version != "out":
                     asset_item.setHidden(False)
@@ -943,15 +815,17 @@ class AssetLoader(object):
         if asset_filter_str > 0:
             for i in xrange(0, self.assetList.count()):
 
+                asset = self.assetList.item(i).data(QtCore.Qt.UserRole).toPyObject()
+
                 if "*" in asset_filter_str:
                     asset_filter_str = asset_filter_str.replace("*", ".*")
                     r = re.compile(asset_filter_str)
-                    if not r.match(self.assetList.item(i).text()):
+                    if not r.match(asset.name):
                         self.assetList.setItemHidden(self.assetList.item(i), True)
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), False)
                 else:
-                    if not asset_filter_str in self.assetList.item(i).text():
+                    if not asset_filter_str in asset.name:
                         self.assetList.setItemHidden(self.assetList.item(i), True)
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), False)
@@ -1112,16 +986,13 @@ class AssetLoader(object):
             hda_path = str(self.selected_asset.full_path.replace("\\", "/"))
             camera_name = str(self.selected_asset.name)
 
-            layout_asset = self.Asset(self, self.selected_asset.dependency)
-            layout_asset.get_infos_from_id()
-
+            layout_asset = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
 
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
             self.publish_process.readyRead.connect(self.fafa)
             self.publish_process.waitForFinished()
             self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_cam_from_lay.py", export_path, layout_asset.full_path, camera_name, start_frame, end_frame])
-
 
     def fafa(self):
         while self.publish_process.canReadLine():
@@ -1250,13 +1121,13 @@ class AssetLoader(object):
 
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
-        thumb_filename = os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".mp4"
+        thumb_filename = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".mp4"
         shutil.copy(movie_path, thumb_filename)
 
         os.remove(movie_path)
         for i in range(int(start_frame), int(end_frame) + 1):
             if i == int(start_frame):
-                shutil.copy("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".jpg")
+                shutil.copy("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".jpg")
             os.remove("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
@@ -1269,14 +1140,14 @@ class AssetLoader(object):
 
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
-        movie_output_path = os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".mp4"
+        movie_output_path = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".mp4"
         shutil.copy(movie_path, movie_output_path)
 
         os.remove(movie_path)
         for i in range(int(start_frame), int(end_frame) + 1):
             if i == int(start_frame):
                 shutil.copy("C:/Temp/playblast." + str(i).zfill(4) + ".jpg",
-                            os.path.split(asset.full_path)[0] + "\\.playblast\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".jpg")
+                            os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".jpg")
             os.remove("C:/Temp/playblast." + str(i).zfill(4) + ".jpg")
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
@@ -1366,8 +1237,7 @@ class AssetLoader(object):
 
 
         # Asset has never been published, ask for first publish.
-        publish_asset = self.Asset(self, self.selected_asset.dependency)
-        publish_asset.get_infos_from_id()
+        publish_asset = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
         if publish_asset.number_of_publishes == 0:
             result = self.Lib.message_box(self, type="warning", text="This asset has never been published. Do you want to publish it?", no_button=True)
             if result == 0:
@@ -1379,8 +1249,7 @@ class AssetLoader(object):
         # There's a new published version, ask if user wants to create a new thumbnail
         if os.path.isfile(path):
             publish_asset_id = self.selected_asset.dependency
-            publish_asset = self.Asset(self, publish_asset_id)
-            publish_asset.get_infos_from_id()
+            publish_asset = self.Asset(self, publish_asset_id, get_infos_from_id=True)
             last_publish_time = publish_asset.last_publish_as_date
             last_modified_img_time = self.Lib.modification_date(self, path)
             if last_publish_time > last_modified_img_time:
@@ -1486,8 +1355,7 @@ class AssetLoader(object):
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
         for asset_id in dependencies:
-            asset = self.Asset(self, int(asset_id[0]))
-            asset.get_infos_from_id()
+            asset = self.Asset(self, int(asset_id[0]), get_infos_from_id=True)
             asset.remove_asset_from_db()
 
         self.selected_asset.remove_asset_from_db()
@@ -1770,8 +1638,7 @@ class AssetLoader(object):
 
         self.create_from_asset_dialog.close()
 
-        obj_publish_path = self.Asset(self, self.selected_asset.dependency)
-        obj_publish_path.get_infos_from_id()
+        obj_publish_path = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
 
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "mari", "tex", "01", [], obj_publish_path.id, "", "", self.username)
         asset.add_asset_to_db()
@@ -2037,7 +1904,6 @@ class AssetLoader(object):
         asset.change_last_access()
         self.lastAccessLbl.setText("Last accessed by: " + asset.last_access)
 
-
         # Add Log Entry
         log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "asset", "{0} has created a new {1} asset ({2}).".format(self.members[self.username], self.departments_longname[asset.type], asset.name), datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
@@ -2047,6 +1913,20 @@ class AssetLoader(object):
 
     def add_assets_to_layout(self):
         AddAssetsToLayoutWindow(self)
+
+    def create_default_asset_thumbnail(self, asset):
+        self.thumb_process = QtCore.QProcess(self)
+        self.thumb_process.readyRead.connect(self.rara)
+        self.thumb_process.waitForFinished()
+        asset_filename = asset.path.replace("\\assets\\" + asset.type + "\\", "")
+        export_path = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset_filename.replace("_" + asset.version + ".", "_out.").replace("." + asset.extension, ".png")
+        export_path = asset.default_thumb
+        self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.cur_path + "\\lib\\thumb_creator.py", asset.name, self.cur_path + "\\media\\default_asset_thumb\\" + asset.type + ".png", export_path, self.cur_path + "\\media\\ProximaNova-Regular.otf"])
+
+    def rara(self):
+        while self.thumb_process.canReadLine():
+            out = self.thumb_process.readLine()
+            print(out)
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):
@@ -2184,8 +2064,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for asset_path in self.assets_in_layout: # Get database entries from assets path
             asset_from_db = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_path=?''', (asset_path,)).fetchone()
             asset_id = asset_from_db[0]
-            asset = self.main.Asset(self.main, asset_id)
-            asset.get_infos_from_id()
+            asset = self.main.Asset(self.main, asset_id, get_infos_from_id=True)
             self.assets_in_layout_db.append(asset)
 
         # Get IDs of all assets in layout
@@ -2197,24 +2076,20 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for asset in self.all_layout_assets:
             asset_id = asset[0]
             if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
-                asset_object = self.main.Asset(self.main, asset_id) # Get layout hda digital asset
-                asset_object.get_infos_from_id()
+                asset_object = self.main.Asset(self.main, asset_id, get_infos_from_id=True) # Get layout hda digital asset
 
                 # Get first modeling scene (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
-                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency)
-                first_modeling_scene_asset.get_infos_from_id()
+                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency, get_infos_from_id=True)
 
                 # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
-                out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency)
-                out_obj_asset.get_infos_from_id()
+                out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency, get_infos_from_id=True)
 
                 # If asset has never been published, skip
                 if out_obj_asset.number_of_publishes == 0:
                     continue
 
                 # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
-                last_published_asset = self.main.Asset(self.main, out_obj_asset.publish_from_version)
-                last_published_asset.get_infos_from_id()
+                last_published_asset = self.main.Asset(self.main, out_obj_asset.publish_from_version, get_infos_from_id=True)
 
                 item = QtGui.QListWidgetItem(asset_object.name)
                 # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
@@ -2329,8 +2204,7 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         layout_assets = []
         for id in assets_id_from_db:
             try:
-                asset = self.main.Asset(self.main, id)
-                asset.get_infos_from_id()
+                asset = self.main.Asset(self.main, id, get_infos_from_id=True)
                 layout_assets.append(asset)
             except:
                 pass
@@ -2350,16 +2224,14 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             # Get version from which the modeling asset was published
             obj_asset_path = asset.full_path.replace("lay", "mod").replace("hda", "obj") # Get path of obj from modeling (Ex: \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj)
             obj_asset_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_path=?''', (obj_asset_path.replace(self.main.selected_project_path, ""), )).fetchone()
-            obj_asset = self.main.Asset(self.main, obj_asset_id[0])
-            obj_asset.get_infos_from_id()
+            obj_asset = self.main.Asset(self.main, obj_asset_id[0], get_infos_from_id=True)
 
             # If asset has never been published, skip
             if obj_asset.number_of_publishes == 0:
                 continue
 
             published_from_version = obj_asset.publish_from_version # Published_from_version = id of asset from which the modeling was published
-            last_published_asset = self.main.Asset(self.main, published_from_version)
-            last_published_asset.get_infos_from_id()
+            last_published_asset = self.main.Asset(self.main, published_from_version, get_infos_from_id=True)
 
             item = QtGui.QListWidgetItem(asset.name)
             # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
@@ -2375,16 +2247,14 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             # Get version from which the modeling asset was published
             obj_asset_path = asset.full_path.replace("lay", "mod").replace("hda", "obj")  # Get path of obj from modeling (Ex: \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj)
             obj_asset_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_path=?''', (obj_asset_path.replace(self.main.selected_project_path, ""),)).fetchone()
-            obj_asset = self.main.Asset(self.main, obj_asset_id[0])
-            obj_asset.get_infos_from_id()
+            obj_asset = self.main.Asset(self.main, obj_asset_id[0], get_infos_from_id=True)
 
             # If asset has never been published, skip
             if obj_asset.number_of_publishes == 0:
                 continue
 
             published_from_version = obj_asset.publish_from_version  # Published_from_version = id of asset from which the modeling was published
-            last_published_asset = self.main.Asset(self.main, published_from_version)
-            last_published_asset.get_infos_from_id()
+            last_published_asset = self.main.Asset(self.main, published_from_version, get_infos_from_id=True)
 
             item = QtGui.QListWidgetItem(asset.name)
             # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
@@ -2469,5 +2339,4 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         while self.maya_ref_process.canReadLine():
             out = self.maya_ref_process.readLine()
             print(out)
-
 

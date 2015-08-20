@@ -10,6 +10,7 @@ import os
 class ThibListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
         super(ThibListWidget, self).__init__()
+        self.keylist = []
 
     def wheelEvent(self, event):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
@@ -23,6 +24,9 @@ class ThibListWidget(QtGui.QListWidget):
 
     def keyPressEvent(self, QKeyEvent):
         key = QKeyEvent.key()
+
+        self.firstrelease = True
+        self.keylist.append(key)
 
         if key == QtCore.Qt.Key_Delete:
             if self.objectName() == "versionList":
@@ -64,6 +68,17 @@ class ThibListWidget(QtGui.QListWidget):
 
         return
 
+    def keyReleaseEvent(self, QKeyEvent):
+        self.firstrelease = False
+
+        if (QtCore.Qt.Key_Space and QtCore.Qt.Key_Control) in self.keylist:
+            if self.objectName() == "assetList":
+                self.emit(QtCore.SIGNAL('assetList_advanced_view'))
+        elif QtCore.Qt.Key_Space in self.keylist:
+            if self.objectName() == "assetList":
+                self.emit(QtCore.SIGNAL('assetList_simple_view'))
+
+        self.keylist = []
 
 class ThibQLabel(QtGui.QLabel):
 

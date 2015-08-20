@@ -4,10 +4,32 @@
 import os
 import time
 from datetime import datetime
+import subprocess
+from PyQt4 import QtGui, QtCore
 
 class Asset(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator="", number_of_publishes=0, publish_from_version=""):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator="", number_of_publishes=0, publish_from_version="", get_infos_from_id=False):
+
         self.main = main
+
+        if get_infos_from_id == True:
+            asset = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_id=?''', (id,)).fetchone()
+            project_name = asset[1]
+            sequence_name = asset[2]
+            shot_number = asset[3]
+            asset_name = asset[4]
+            asset_extension = asset[6]
+            asset_type = asset[7]
+            asset_version = asset[8]
+            asset_tags = asset[9]
+            asset_dependency = asset[10]
+            last_access = asset[11]
+            last_publish = asset[12]
+            creator = asset[13]
+            number_of_publishes = asset[14]
+            publish_from_version = asset[15]
+
+
         self.id = id
         self.project = project_name
         try:
@@ -56,6 +78,9 @@ class Asset(object):
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
+
+        self.default_thumb = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, "out", "png")
+
         if self.type == "lay" and self.extension == "hda":
             self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
             self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
@@ -68,20 +93,19 @@ class Asset(object):
             self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
 
         if self.type == "anm":
-            self.anim_playblast_path = self.project_path + "\\assets\\{0}\\.playblast\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.anim_playblast_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
             self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("anm", self.project_shortname, self.sequence, self.shot, self.name, "out", "abc")
 
         if self.type == "cam":
-            self.cam_playblast_path = self.project_path + "\\assets\\cam\\.playblast\\{0}_{1}_{2}_{3}_{4}_{5}.{6}".format(self.project_shortname, self.sequence, self.shot, "cam", self.name, self.version, "mp4")
+            self.cam_playblast_path = self.project_path + "\\assets\\cam\\.thumb\\{0}_{1}_{2}_{3}_{4}_{5}.{6}".format(self.project_shortname, self.sequence, self.shot, "cam", self.name, self.version, "mp4")
 
         if self.type == "shd":
-            self.turngeo_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turngeo.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
-            self.turnhdr_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turnhdr.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
-            self.turnimg_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "jpg")
+            self.turngeo_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_turngeo.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.turnhdr_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_turnhdr.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.turnimg_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "jpg")
             self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
 
         self.publish_from_version = publish_from_version
-
 
     def print_asset(self):
         print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes)
@@ -115,6 +139,22 @@ class Asset(object):
         self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
+
+        if self.extension == "obj" and self.version == "out" and self.type == "mod":
+            pass
+        else:
+            export_path = self.default_thumb
+            self.thumb_process = QtCore.QProcess(self.main)
+            self.thumb_process.waitForFinished()
+            self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.main.cur_path + "\\lib\\thumb_creator.py", self.name, self.main.cur_path + "\\media\\default_asset_thumb\\" + self.type + ".png", export_path, self.main.cur_path + "\\media\\ProximaNova-Regular.otf"])
+
+            #proc = subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", self.main.cur_path + "\\lib\\thumb_creator.py", self.name, self.main.cur_path + "\\media\\default_asset_thumb\\" + self.type + ".png", export_path, self.main.cur_path + "\\media\\ProximaNova-Regular.otf"])
+            #proc.wait()
+
+    def rara(self):
+        while self.thumb_process.canReadLine():
+            out = self.thumb_process.readLine()
+            print(out)
 
     def remove_asset_from_db(self):
         try:
@@ -226,91 +266,6 @@ class Asset(object):
         self.main.cursor.execute('''UPDATE assets SET last_publish=? WHERE asset_id=?''', (last_publish, self.dependency,))
         self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.dependency,))
         self.main.db.commit()
-
-    def get_infos_from_id(self):
-        asset = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_id=?''', (self.id,)).fetchone()
-        project_name = asset[1]
-        sequence_name = asset[2]
-        shot_number = asset[3]
-        asset_name = asset[4]
-        asset_extension = asset[6]
-        asset_type = asset[7]
-        asset_version = asset[8]
-        asset_tags = asset[9]
-        asset_dependency = asset[10]
-        last_access = asset[11]
-        last_publish = asset[12]
-        creator = asset[13]
-        number_of_publishes = asset[14]
-        publish_from_version = asset[15]
-
-        self.project = project_name
-        self.project_shortname = self.main.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
-        self.project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()[0]
-        if sequence_name == "All":
-            sequence_name = "xxx"
-        self.sequence = sequence_name
-        self.shot = shot_number
-        self.name = asset_name
-        self.type = asset_type
-        self.extension = asset_extension
-        self.version = asset_version
-        if asset_tags != None:
-            self.tags = asset_tags.split(",")
-        else:
-            self.tags = []
-        self.dependency = asset_dependency
-        self.last_access = last_access
-        if self.version == "out":
-            if last_publish == "" or last_publish == None:
-                self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
-                self.last_publish_as_date = datetime.now()
-            else:
-                self.last_publish = last_publish
-                date = last_publish.split(" ")[2]
-                day = date.split("/")[0]
-                month = date.split("/")[1]
-                year = date.split("/")[2]
-                time = last_publish.split(" ")[-1]
-                hour = time.split(":")[0]
-                minutes = time.split(":")[1]
-                self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
-        else:
-            self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
-            self.last_publish_as_date = self.last_publish_as_date = datetime.now()
-
-        self.number_of_publishes = number_of_publishes
-        self.creator = creator
-        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname,
-                                                                        self.sequence,
-                                                                        self.shot, self.name, self.version,
-                                                                        self.extension)
-        self.full_path = self.project_path + self.path
-        if self.type == "lay" and self.extension == "hda":
-            self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
-        else:
-            self.full_img_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_full", "jpg")
-        self.turn_vid_path = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version + "_turn", "mp4")
-        self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
-
-        if self.type == "rig":
-            self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
-
-
-        if self.type == "anm":
-            self.anim_playblast_path = self.project_path + "\\assets\\anm\\.playblast\\{0}".format(self.name)
-            self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("anm", self.project_shortname, self.sequence, self.shot, self.name, "out", "abc")
-
-        if self.type == "cam":
-            self.cam_playblast_path = self.project_path + "\\assets\\cam\\.playblast\\{0}".format(self.name)
-
-        if self.type == "shd":
-            self.turngeo_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turngeo.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
-            self.turnhdr_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}_turnhdr.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
-            self.turnimg_path = self.project_path + "\\assets\\{0}\\.turn\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "jpg")
-            self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
-
-        self.publish_from_version = publish_from_version
 
 
 

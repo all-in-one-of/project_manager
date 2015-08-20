@@ -40,7 +40,7 @@ class Lib(object):
         if "full" in self.thumbs_to_create:
             self.type = "full"
             self.sampling = 100
-            self.resolution = 30
+            self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
@@ -79,7 +79,7 @@ class Lib(object):
 
         if self.type == "full":
             filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
-            self.compress_image(filename, int(1920 * float(self.resolution) / 100), 90)
+            self.compress_image(filename, int(500 * float(self.resolution) / 100), 90)
             thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
@@ -103,10 +103,6 @@ class Lib(object):
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
         else:
             thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
-            qpixmap = QtGui.QPixmap(thumb_filename)
-            qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-            self.assetImg.setData(thumb_filename)
-            self.assetImg.setPixmap(qpixmap)
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
 
