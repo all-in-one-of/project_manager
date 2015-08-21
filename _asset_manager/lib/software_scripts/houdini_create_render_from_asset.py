@@ -1,9 +1,10 @@
 import sys
 
+file_path = sys.argv[-3]
 hda_path = sys.argv[-2]
 hda_name = sys.argv[-1]
 
-hou.hipFile.load("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_asset_manager/lib/software_scripts/houdini_turn_render/turn_render.hipnc")
+hou.hipFile.load(file_path)
 
 hou.hda.installFile(hda_path)
 hda_node = hou.node("/obj").createNode(hda_name, hda_name)

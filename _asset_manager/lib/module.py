@@ -18,12 +18,12 @@ from datetime import datetime
 import smtplib
 from dateutil import relativedelta
 from glob import glob
+from functools import partial
 
 
 class Lib(object):
 
-    def create_thumbnails(self, obj_path="", thumbs_to_create="", version=""):
-
+    def create_thumbnails(self, obj_path="", thumbs_to_create="", version="", selected_version_item="", selected_asset_item=""):
         self.updateThumbBtn.setEnabled(False)
         self.full_obj_path = obj_path
         self.obj_name = obj_path[obj_path.find("_mod_")+len("_mod_"):obj_path.rfind("_out")]
@@ -45,7 +45,7 @@ class Lib(object):
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
             self.sampling = 25
-            self.resolution = 50
+            self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
         if self.type == "full":
@@ -61,7 +61,7 @@ class Lib(object):
         self.create_thumbnail_process = QtCore.QProcess(self)
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
         self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
-        self.create_thumbnail_process.finished.connect(self.create_thumbnail_finished)
+        self.create_thumbnail_process.finished.connect(partial(self.create_thumbnail_finished, selected_version_item, selected_asset_item, version))
         self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b",self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
                                                                                                                                         "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
                                                                                                                                         str(self.resolution), self.version
@@ -75,23 +75,24 @@ class Lib(object):
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
-    def create_thumbnail_finished(self):
+    def create_thumbnail_finished(self, selected_version_item, selected_asset_item, version):
+        thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
 
         if self.type == "full":
             filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
             self.compress_image(filename, int(500 * float(self.resolution) / 100), 90)
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
+
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
 
         elif self.type == "turn":
             file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")
-            movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4")
+            movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4")
             subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_turn.mp4")
-            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"), thumb_filename)
-            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_turn.mp4"))
+            turn_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_advanced.mp4")
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4"), turn_filename)
+            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4"))
             for i in range(24):
                 os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(2) + ".jpg"))
 
@@ -100,11 +101,29 @@ class Lib(object):
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
 
         if len(self.thumbs_to_create) > 0:
-            self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
+            self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version, selected_asset_item, selected_version_item)
         else:
-            thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
+            if version != "01":
+                selected_asset_item.setIcon(QtGui.QIcon(thumb_filename))
+            selected_version_item.setIcon(QtGui.QIcon(thumb_filename))
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
+            self.message_box(type="info", text="Successfully created thumbnails")
+
+    def get_asset_item_from_version_asset(self, version_asset):
+        """
+        Get assetList QListWidgetItem from selected version asset
+        (Ex: selected QListWidgetItem from versionList is modeling Flippy v03, asset_item will be assetList QListWidgetItem corresponding to modeling Flippy v01
+        :param version_asset: versionList selected item as an Asset object
+        :return: asset_item as a QListWidgetItem
+        """
+
+        # Get asset id from database which corresponds to selected version asset
+        selected_asset_id = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_extension=? AND asset_type=? AND asset_version="01"''', (version_asset.name, version_asset.extension, version_asset.type,)).fetchone()[0]
+        selected_asset = self.Asset(self, selected_asset_id, get_infos_from_id=True)
+        for asset, asset_item in self.assets.items():
+            if selected_asset.name == asset.name and selected_asset.extension == asset.extension and selected_asset.type == asset.type and selected_asset.version == asset.version and selected_asset.sequence == asset.sequence and selected_asset.path == asset.path:
+                return asset_item
 
     def setup_user_session(self):
         if not os.path.isdir("H:/plugins"):
@@ -128,23 +147,27 @@ class Lib(object):
         self.cursor.execute('''UPDATE preferences SET mari_cache_path=? WHERE username=?''', (mari_cache_path, self.username,))
         self.db.commit()
 
-    def message_box(self, type="Warning", text="warning", no_button=False, exec_now=True):
+    def message_box(self, type="Warning", text="warning", yes_button_text="", no_button=False, no_button_text="", exec_now=True, window_title="Manager"):
 
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
 
         self.Lib.apply_style(self, self.msgBox)
 
-        self.msgBox.setWindowTitle("Manager")
+        self.msgBox.setWindowTitle(window_title)
         self.msgBox.setText(text)
 
         self.msgBox_okBtn = self.msgBox.addButton(QtGui.QMessageBox.Ok)
+        if len(yes_button_text) > 0:
+            self.msgBox_okBtn.setText(yes_button_text)
         self.msgBox_okBtn.setStyleSheet("width: 64px;")
         self.msgBox.setDefaultButton(self.msgBox_okBtn)
         self.msgBox_okBtn.clicked.connect(self.msgBox.accept)
 
         if no_button == True:
             self.msgBox_noBtn = self.msgBox.addButton(QtGui.QMessageBox.No)
+            if len(no_button_text) > 0:
+                self.msgBox_noBtn.setText(no_button_text)
             self.msgBox_noBtn.setStyleSheet("width: 64px;")
             self.msgBox_noBtn.clicked.connect(self.msgBox.reject)
 
@@ -268,10 +291,12 @@ class Lib(object):
 
     def take_screenshot(self, path):
 
+
         self.hide()
+        time.sleep(0.5)
 
         # constants
-        SCREEN_GRABBER = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\MiniCap.exe"
+        SCREEN_GRABBER = self.cur_path_one_folder_up + "\\_soft\\screenshot_grabber\\MiniCap.exe"
 
         # filename
         file_name = path

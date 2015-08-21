@@ -72,32 +72,15 @@ class ThibListWidget(QtGui.QListWidget):
         self.firstrelease = False
 
         if (QtCore.Qt.Key_Space and QtCore.Qt.Key_Control) in self.keylist:
-            if self.objectName() == "assetList":
-                self.emit(QtCore.SIGNAL('assetList_advanced_view'))
+            if self.objectName() == "versionList":
+                self.emit(QtCore.SIGNAL('versionList_advanced_view'))
         elif QtCore.Qt.Key_Space in self.keylist:
-            if self.objectName() == "assetList":
-                self.emit(QtCore.SIGNAL('assetList_simple_view'))
+            if self.objectName() == "versionList":
+                self.emit(QtCore.SIGNAL('versionList_simple_view'))
 
         self.keylist = []
 
-class ThibQLabel(QtGui.QLabel):
 
-    def __init(self, parent, *args, **kwargs):
-        QtGui.QLabel.__init__(self, parent, *args, **kwargs)
-        self._data = None
-
-    def mouseDoubleClickEvent(self, ev):
-        try:
-            image_path = self._data
-        except:
-            return
-        webbrowser.open(image_path)
-
-    def data(self):
-        return self._data
-
-    def setData(self, data):
-        self._data = data
 
 class profilPicLabel(QtGui.QLabel):
     def __init__(self, parent, *args, **kwargs):
