@@ -90,7 +90,7 @@ class Asset(object):
         # If asset is the first version, get the thumbnail of the last version for the asset list.
         # If asset is not the first version, get thumbnail of current version for the version list.
 
-        if self.type == "anm":
+        if self.type in ["anm", "cam"]:
             extension = "png"
         else:
             extension = "jpg"
@@ -101,7 +101,6 @@ class Asset(object):
             self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.last_version, extension)
         else:
             self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, extension)
-
 
         # Create full media variable to use when user press spacebar.
         # If asset is of type mod, tex or rig, it's the same as the default media user

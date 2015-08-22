@@ -830,6 +830,7 @@ class ReferenceTab(object):
 
     def load_ref_in_kuadro(self):
 
+
         os.system("taskkill /im kuadro.exe /f")
 
         references_to_load = []

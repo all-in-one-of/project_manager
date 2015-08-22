@@ -62,7 +62,7 @@ class Lib(object):
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
         self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
         self.create_thumbnail_process.finished.connect(partial(self.create_thumbnail_finished, selected_version_item, selected_asset_item, version))
-        self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b",self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+        self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
                                                                                                                                         "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
                                                                                                                                         str(self.resolution), self.version
                                                                                                                                         ])
@@ -126,6 +126,9 @@ class Lib(object):
                 return asset_item
 
     def setup_user_session(self):
+        if not os.path.isdir("H:/tmp"):
+            os.makedirs("H:/tmp")
+
         if not os.path.isdir("H:/plugins"):
             distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:/plugins")
 

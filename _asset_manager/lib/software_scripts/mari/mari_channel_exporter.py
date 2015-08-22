@@ -171,6 +171,31 @@ class MariExportManager(gui.QDialog):
                 proc.wait()
                 os.remove(self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()))
 
+        canvas = mari.canvases.current()
+        camera_front = mari.actions.find('/Mari/Canvas/Camera/Camera Front')
+        camera_side = mari.actions.find('/Mari/Canvas/Camera/Camera Left')
+        camera_top = mari.actions.find('/Mari/Canvas/Camera/Camera Top')
+        camera_list = [camera_front, camera_side, camera_top]
+        print("2")
+        for cameras in camera_list:
+            # Se promener a travers les cameras
+            cameras.trigger()
+            # Refresh le canvas
+            canvas.repaint()
+            # Frame All
+            frame_all = mari.actions.find('/Mari/Canvas/Camera/View All')
+            frame_all.trigger()
+            # Disable le HUD
+            """Ne semble pas fonctionner avec le captureImage"""
+            hud_enabled = canvas.getDisplayProperty("HUD/RenderHud")
+            if hud_enabled == 1:
+                canvas.setDisplayProperty("HUD/RenderHud", False)
+            # Prendre Screenshot
+            snapAction = mari.actions.find('/Mari/Canvas/Take Screenshot')
+            snapAction.trigger()
+            # Reenable le HUD
+            canvas.setDisplayProperty("HUD/RenderHud", True)
+
         print "Exporting finished."
 
     def export_selected_fc(self):
@@ -186,6 +211,31 @@ class MariExportManager(gui.QDialog):
                 proc = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/icp.exe", self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()), self.path_export + self.nomenclature.replace(".png", ".jpg").replace("$CHANNEL", chan.name())])
                 proc.wait()
                 os.remove(self.path_export + self.nomenclature.replace("$CHANNEL", chan.name()))
+
+        canvas = mari.canvases.current()
+        camera_front = mari.actions.find('/Mari/Canvas/Camera/Camera Front')
+        camera_side = mari.actions.find('/Mari/Canvas/Camera/Camera Left')
+        camera_top = mari.actions.find('/Mari/Canvas/Camera/Camera Top')
+        camera_list = [camera_front, camera_side, camera_top]
+        print("2")
+        for cameras in camera_list:
+            # Se promener a travers les cameras
+            cameras.trigger()
+            # Refresh le canvas
+            canvas.repaint()
+            # Frame All
+            frame_all = mari.actions.find('/Mari/Canvas/Camera/View All')
+            frame_all.trigger()
+            # Disable le HUD
+            """Ne semble pas fonctionner avec le captureImage"""
+            hud_enabled = canvas.getDisplayProperty("HUD/RenderHud")
+            if hud_enabled == 1:
+                canvas.setDisplayProperty("HUD/RenderHud", False)
+            # Prendre Screenshot
+            snapAction = mari.actions.find('/Mari/Canvas/Take Screenshot')
+            snapAction.trigger()
+            # Reenable le HUD
+            canvas.setDisplayProperty("HUD/RenderHud", True)
 
         print "Exporting finished."
 

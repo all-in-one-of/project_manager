@@ -11,7 +11,7 @@ camera_animation = mc.listCameras()[0]
 
 mc.file(file_path, o=True)
 
-mc.workspace("C:/Temp", o=True)
+mc.workspace("H:/tmp", o=True)
 mc.setAttr('defaultRenderGlobals.currentRenderer', 'mayaHardware2', type='string')
 
 mc.setAttr("defaultResolution.width", 1920)

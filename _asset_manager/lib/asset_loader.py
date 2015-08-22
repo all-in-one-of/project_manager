@@ -17,7 +17,6 @@ import webbrowser
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
 class AssetLoader(object):
-
     def __init__(self):
 
         self.favorite_icon = QtGui.QIcon(self.cur_path + "/media/favorite.png")
@@ -620,7 +619,7 @@ class AssetLoader(object):
         self.lblStatus.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.lblStatus.setText("Status: Idle..."))
-        if self.selected_asset.type in ["mod", "rig"]:
+        if self.selected_asset.type in ["mod", "rig", "tex"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
@@ -629,17 +628,15 @@ class AssetLoader(object):
         elif self.selected_asset.type == "shd":
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.full_media])
 
-        elif self.selected_asset.type == "anm":
+        elif self.selected_asset.type in ["anm", "cam"]:
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
-
-
 
     def versionList_advanced_view(self):
         self.lblStatus.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.lblStatus.setText("Status: Idle..."))
 
-        if self.selected_asset.type in ["mod", "rig"]:
+        if self.selected_asset.type in ["mod", "rig", "tex"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
@@ -647,8 +644,6 @@ class AssetLoader(object):
             self.lblStatus.setText("Status: Idle...")
         else:
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
-
-
 
     def versionList_Clicked(self):
         # If user press arrow key in a tab other than Asset Loader, don't do anything
@@ -1074,11 +1069,14 @@ class AssetLoader(object):
         log_entry.add_log_to_database()
 
         if self.selected_asset.type == "mod":
-            time.sleep(1) # Sleep 1 second, otherwise sometimes obj model is not finished being normalized and generated thumbnail is empty
+            time.sleep(5) # Sleep 1 second, otherwise sometimes obj model is not finished being normalized and generated thumbnail is empty
 
         self.update_thumbnail(ask_window=False)
 
     def update_thumbnail(self, ask_window=True):
+        selected_version_item = self.versionList.selectedItems()[0]
+        selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
+
         if self.selected_asset.type == "mod":
             if ask_window:
                 dialog = QtGui.QDialog(self)
@@ -1127,14 +1125,11 @@ class AssetLoader(object):
             self.thumbnailProgressBar.setValue(0)
             asset = self.selected_asset
 
-            selected_version_item = self.versionList.selectedItems()[0]
-            selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
-
-            self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset, selected_version_item, selected_asset_item))
-            self.playblast_process.readyRead.connect(self.playblast_ready_read)
-            self.playblast_process.waitForFinished()
-            self.playblast_process.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
+            self.update_thumb_process = QtCore.QProcess(self)
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
+            self.update_thumb_process.waitForFinished()
+            self.update_thumb_process.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
 
         elif self.selected_asset.type == "cam":
             associated_hip_scene = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_id=?''', (self.selected_asset.dependency,)).fetchone()[0]
@@ -1149,11 +1144,11 @@ class AssetLoader(object):
             self.thumbnailProgressBar.setValue(0)
             asset = self.selected_asset
 
-            self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame, asset))
-            self.playblast_process.readyRead.connect(self.playblast_ready_read)
-            self.playblast_process.waitForFinished()
-            self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", associated_hip_scene, self.selected_asset.name, start_frame, end_frame])
+            self.update_thumb_process = QtCore.QProcess(self)
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
+            self.update_thumb_process.waitForFinished()
+            self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", associated_hip_scene, self.selected_asset.name, start_frame, end_frame])
 
         elif self.selected_asset.type == "shd":
             self.i = 0
@@ -1162,14 +1157,11 @@ class AssetLoader(object):
             self.thumbnailProgressBar.setValue(0)
             asset = self.selected_asset
 
-            selected_version_item = self.versionList.selectedItems()[0]
-            selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
-
-            self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(partial(self.create_mov_from_turn, asset, selected_version_item, selected_asset_item))
-            self.playblast_process.readyRead.connect(self.playblast_ready_read)
-            self.playblast_process.waitForFinished()
-            self.playblast_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
+            self.update_thumb_process = QtCore.QProcess(self)
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_turn, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
+            self.update_thumb_process.waitForFinished()
+            self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
 
         elif self.selected_asset.type == "rig":
 
@@ -1179,6 +1171,24 @@ class AssetLoader(object):
             if self.selected_asset.version == "01":
                 self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
             self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
+
+        elif self.selected_asset.type == "tex":
+            self.i = 0
+            self.thumbnailProgressBar.show()
+            self.thumbnailProgressBar.setMaximum(170)
+            self.thumbnailProgressBar.setValue(0)
+            asset = self.selected_asset
+
+            self.update_thumb_process = QtCore.QProcess(self)
+            self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
+            self.update_thumb_process.finished.connect(partial(self.create_img_from_tex, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
+
+            selected_dependency = self.selected_asset.dependency
+            obj_asset = self.Asset(self, selected_dependency, get_infos_from_id=True)
+            texture_path = self.selected_project_path + "\\assets\\tex\\" + self.selected_asset.name + "-diff.jpg"
+            self.update_thumb_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+                                                                                                            "TexScript", self.selected_asset.default_media_user, obj_asset.obj_path, texture_path])
 
     def create_mov_from_playblast(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
         file_sequence = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
@@ -1204,21 +1214,25 @@ class AssetLoader(object):
         self.thumbnailProgressBar.hide()
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
-    def create_mov_from_flipbook(self, start_frame, end_frame, asset):
-        file_sequence = "C:/Temp/playblast.%04d.jpg"
-        movie_path = "C:/Temp/" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_full.mp4"
+    def create_mov_from_flipbook(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
+        file_sequence = "H:/tmp/playblast.%04d.jpg"
+        movie_path = "H:/tmp/" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_full.mp4"
 
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
-        movie_output_path = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".mp4"
+        movie_output_path = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_advanced.mp4"
         shutil.copy(movie_path, movie_output_path)
 
         os.remove(movie_path)
         for i in range(int(start_frame), int(end_frame) + 1):
             if i == int(start_frame):
-                shutil.copy("C:/Temp/full." + str(i).zfill(4) + ".jpg",
-                            os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + ".jpg")
-            os.remove("C:/Temp/full." + str(i).zfill(4) + ".jpg")
+                thumb_first_frame = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_full.jpg"
+                shutil.copy("H:/tmp/playblast." + str(i).zfill(4) + ".jpg", thumb_first_frame)
+                self.Lib.squarify_image(self, image_path=thumb_first_frame)
+            os.remove("H:/tmp/playblast." + str(i).zfill(4) + ".jpg")
+
+        selected_version_item.setIcon(QtGui.QIcon(thumb_first_frame.replace(".jpg", ".png")))
+        selected_asset_item.setIcon(QtGui.QIcon(thumb_first_frame.replace(".jpg", ".png")))
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
@@ -1235,8 +1249,8 @@ class AssetLoader(object):
         movie_path_geo = (turn_folder + filename_path_geo).replace("\\", "/")
         movie_path_hdr = (turn_folder + filename_path_hdr).replace("\\", "/")
 
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "C:/Temp/turn_geo.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_geo])
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "C:/Temp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_geo.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_geo])
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
 
         for i, each_file in enumerate(all_files):
             if i == 0:
@@ -1252,13 +1266,22 @@ class AssetLoader(object):
 
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
-    def playblast_ready_read(self):
-        while self.playblast_process.canReadLine():
+    def create_img_from_tex(self, asset, selected_version_item, selected_asset_item):
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+        self.thumbnailProgressBar.hide()
+
+        selected_version_item.setIcon(QtGui.QIcon(asset.default_media_user))
+        selected_asset_item.setIcon(QtGui.QIcon(asset.default_media_user))
+
+        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
+    def update_thumb_ready_read(self):
+        while self.update_thumb_process.canReadLine():
             self.i += 1
             self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
-            out = self.playblast_process.readLine()
+            out = self.update_thumb_process.readLine()
 
     def show_playblast(self):
         if self.selected_asset == None:
@@ -1347,6 +1370,7 @@ class AssetLoader(object):
         subprocess.Popen(["Z:\\RFRENC~1\\Outils\\SPCIFI~1\\Houdini\\HOUDIN~1.13\\bin\\gplay.exe", self.selected_asset.obj_path], shell=True)
 
     def load_asset(self):
+
         self.selected_asset.change_last_access()
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
@@ -1419,11 +1443,16 @@ class AssetLoader(object):
 
     def mari_finished(self, texture_project_path):
         self.mari_open_asset_process.kill()
-        time.sleep(2)
+        time.sleep(1)
         self.Lib.switch_mari_cache(self, "perso")
 
         shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
         shutil.move("H:/mari_cache_tmp_synthese/" + texture_project_path, "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
+
+        self.show()
+        self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+        self.activateWindow()
+
 
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
@@ -1667,7 +1696,7 @@ class AssetLoader(object):
         elif self.selected_asset.type == "rig":
             AnimSceneChooser(self)
 
-        elif self.selected_department_name == "lay":
+        elif self.selected_asset.type == "lay":
             if self.selected_asset == None: return
             self.create_from_asset_dialog = QtGui.QDialog(self)
             self.Lib.apply_style(self, self.create_from_asset_dialog)
@@ -1706,6 +1735,10 @@ class AssetLoader(object):
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
 
     def create_tex_asset_from_mod(self):
+        is_uved = self.cursor.execute('''SELECT * FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
+        if is_uved == None:
+            self.Lib.message_box(self, type="error", text="Selected model has no UV. You can't create a texture asset for an asset without UV.")
+            return
 
         is_asset_tex_already_existing = self.cursor.execute('''SELECT * FROM assets WHERE asset_type="tex" AND asset_name=?''', (self.selected_asset.name,)).fetchone()
         if is_asset_tex_already_existing != None:

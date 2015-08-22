@@ -12,7 +12,7 @@ namespace_var = os.path.splitext(namespace_var)[0]
 
 mc.file(rig_path, r=True, type="mayaAscii", ignoreVersion=True, gl=True, mergeNamespacesOnClash=False, namespace=namespace_var, options="mo=1;")
 
-mc.workspace("C:/Temp", o=True)
+mc.workspace("H:/tmp", o=True)
 mc.setAttr('defaultRenderGlobals.currentRenderer', 'mayaHardware2', type='string')
 mc.setAttr("defaultRenderGlobals.imageFormat", 8)
 mc.setAttr("defaultRenderGlobals.outFormatControl", 0)

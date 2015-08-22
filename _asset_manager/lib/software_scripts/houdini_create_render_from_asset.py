@@ -27,7 +27,7 @@ for i in range(24):
 
 mantra_node.render()
 
-mantra_node.parm("vm_picture").set("C:/Temp/turn_hdr.$F4.jpg")
+mantra_node.parm("vm_picture").set("H:/tmp/turn_hdr.$F4.jpg")
 geo_node.parm("ry").deleteAllKeyframes()
 geo_node.parm("ry").set(30)
 
