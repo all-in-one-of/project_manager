@@ -617,22 +617,38 @@ class AssetLoader(object):
         self.versionList_Clicked()
 
     def versionList_simple_view(self):
+        self.lblStatus.setText("Status: Loading Media")
+        media_process = QtCore.QProcess(self)
+        media_process.finished.connect(lambda: self.lblStatus.setText("Status: Idle..."))
         if self.selected_asset.type in ["mod", "rig"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
                 webbrowser.open(self.selected_asset.full_media)
+            self.lblStatus.setText("Status: Idle...")
         elif self.selected_asset.type == "shd":
-            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.full_media])
+            media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.full_media])
+
+        elif self.selected_asset.type == "anm":
+            media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
+
+
 
     def versionList_advanced_view(self):
+        self.lblStatus.setText("Status: Loading Media")
+        media_process = QtCore.QProcess(self)
+        media_process.finished.connect(lambda: self.lblStatus.setText("Status: Idle..."))
+
         if self.selected_asset.type in ["mod", "rig"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
                 webbrowser.open(self.selected_asset.full_media)
+            self.lblStatus.setText("Status: Idle...")
         else:
-            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.advanced_media])
+            media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
+
+
 
     def versionList_Clicked(self):
         # If user press arrow key in a tab other than Asset Loader, don't do anything
@@ -1178,6 +1194,7 @@ class AssetLoader(object):
             if i == int(start_frame):
                 thumbnail_first_frame = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_full.jpg"
                 shutil.copy("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", thumbnail_first_frame)
+                self.Lib.squarify_image(self, image_path=thumbnail_first_frame)
             os.remove("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
 
         selected_version_item.setIcon(QtGui.QIcon(thumbnail_first_frame))

@@ -289,6 +289,15 @@ class Lib(object):
         img = img.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
         img.save(image_path, 'JPEG', quality=quality)
 
+    def squarify_image(self, image_path):
+        img = Image.open(image_path)
+        w, h = img.size
+        background = Image.new('RGBA', (w, w), (255, 255, 255, 0))
+        background_w, background_h = background.size
+        background.paste(img, ((background_w - w) / 2, (background_h - h) / 2))
+        background.save(image_path.replace(".jpg", ".png"))
+        os.remove(image_path)
+
     def take_screenshot(self, path):
 
 
