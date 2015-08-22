@@ -296,13 +296,13 @@ class Lib(object):
         time.sleep(0.5)
 
         # constants
-        SCREEN_GRABBER = self.cur_path_one_folder_up + "\\_soft\\screenshot_grabber\\MiniCap.exe"
+        SCREEN_GRABBER = self.cur_path_one_folder_up + "\\_soft\\screenshot.exe"
 
         # filename
         file_name = path
 
         # run the screen grabber
-        subprocess.call([SCREEN_GRABBER, '-captureregselect', '-exit', '-save', file_name])
+        subprocess.call([SCREEN_GRABBER, '-rc', '506', '87', '1450', '1031', '-o', file_name])
         #winsound.PlaySound("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
 
         self.show()

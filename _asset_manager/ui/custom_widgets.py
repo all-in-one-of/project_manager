@@ -70,12 +70,11 @@ class ThibListWidget(QtGui.QListWidget):
 
     def keyReleaseEvent(self, QKeyEvent):
         self.firstrelease = False
-
         if (QtCore.Qt.Key_Space and QtCore.Qt.Key_Control) in self.keylist:
-            if self.objectName() == "versionList":
+            if self.objectName() in ["versionList", "assetList"]:
                 self.emit(QtCore.SIGNAL('versionList_advanced_view'))
         elif QtCore.Qt.Key_Space in self.keylist:
-            if self.objectName() == "versionList":
+            if self.objectName() in ["versionList", "assetList"]:
                 self.emit(QtCore.SIGNAL('versionList_simple_view'))
 
         self.keylist = []

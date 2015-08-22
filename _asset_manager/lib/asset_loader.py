@@ -96,6 +96,8 @@ class AssetLoader(object):
         self.connect(self.assetList, QtCore.SIGNAL('asset_arrow_key_pressed'), self.assetList_Clicked)
         self.connect(self.versionList, QtCore.SIGNAL('versionList_simple_view'), self.versionList_simple_view)
         self.connect(self.versionList, QtCore.SIGNAL('versionList_advanced_view'), self.versionList_advanced_view)
+        self.connect(self.assetList, QtCore.SIGNAL('versionList_simple_view'), self.versionList_simple_view)
+        self.connect(self.assetList, QtCore.SIGNAL('versionList_advanced_view'), self.versionList_advanced_view)
         self.connect(self.departmentList, QtCore.SIGNAL('department_arrow_key_pressed'), self.departmentList_Clicked)
         self.connect(self.seqList, QtCore.SIGNAL('seq_arrow_key_pressed'), self.seqList_Clicked)
         self.connect(self.shotList, QtCore.SIGNAL('shot_arrow_key_pressed'), self.shotList_Clicked)
@@ -624,7 +626,13 @@ class AssetLoader(object):
             subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.full_media])
 
     def versionList_advanced_view(self):
-        subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.advanced_media])
+        if self.selected_asset.type in ["mod", "rig"]:
+            if self.selected_asset.version == "01":
+                webbrowser.open(self.selected_asset.first_media)
+            else:
+                webbrowser.open(self.selected_asset.full_media)
+        else:
+            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.advanced_media])
 
     def versionList_Clicked(self):
         # If user press arrow key in a tab other than Asset Loader, don't do anything
@@ -663,6 +671,9 @@ class AssetLoader(object):
         elif self.selected_asset.type == "lay":
             self.createAssetFromAssetBtn.show()
             self.createAssetFromAssetBtn.setText("Create Camera or Lighting from Layout")
+        elif self.selected_asset.type == "rig":
+            self.createAssetFromAssetBtn.show()
+            self.createAssetFromAssetBtn.setText("Create Animation from Rig")
         else:
             self.createAssetFromAssetBtn.hide()
 
@@ -1086,7 +1097,6 @@ class AssetLoader(object):
                 thumbs_to_create = "fullturn"
 
             selected_version_item = self.versionList.selectedItems()[0]
-            print(selected_version_item.text())
             selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
             self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version, selected_version_item, selected_asset_item)
 
@@ -1101,8 +1111,11 @@ class AssetLoader(object):
             self.thumbnailProgressBar.setValue(0)
             asset = self.selected_asset
 
+            selected_version_item = self.versionList.selectedItems()[0]
+            selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
+
             self.playblast_process = QtCore.QProcess(self)
-            self.playblast_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset))
+            self.playblast_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset, selected_version_item, selected_asset_item))
             self.playblast_process.readyRead.connect(self.playblast_ready_read)
             self.playblast_process.waitForFinished()
             self.playblast_process.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
@@ -1145,27 +1158,30 @@ class AssetLoader(object):
         elif self.selected_asset.type == "rig":
 
             self.Lib.take_screenshot(self, path=self.selected_asset.default_media_user)
-            self.Lib.compress_image(self, image_path=self.selected_asset.default_media_user, width=1000, quality=100)
+            self.Lib.compress_image(self, image_path=self.selected_asset.default_media_user, width=700, quality=100)
 
             if self.selected_asset.version == "01":
                 self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
             self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
 
-
-    def create_mov_from_playblast(self, start_frame, end_frame, asset):
+    def create_mov_from_playblast(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
         file_sequence = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
         movie_path = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_full.mp4"
 
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
-        thumb_filename = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".mp4"
+        thumb_filename = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_advanced.mp4"
         shutil.copy(movie_path, thumb_filename)
 
         os.remove(movie_path)
         for i in range(int(start_frame), int(end_frame) + 1):
             if i == int(start_frame):
-                shutil.copy("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".jpg")
+                thumbnail_first_frame = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_full.jpg"
+                shutil.copy("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg", thumbnail_first_frame)
             os.remove("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
+
+        selected_version_item.setIcon(QtGui.QIcon(thumbnail_first_frame))
+        selected_asset_item.setIcon(QtGui.QIcon(thumbnail_first_frame))
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
@@ -1511,6 +1527,9 @@ class AssetLoader(object):
         self.import_cam_process.waitForFinished()
         self.import_cam_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_cam_into_anm.py", self.selected_asset.full_path, self.selected_camera_asset.full_path])
 
+        self.cursor.execute('''INSERT INTO camera_in_anim(asset_id, has_camera) VALUES(?,?)''', (self.selected_asset.id, 1,))
+        self.db.commit()
+
     def import_obj_into_scene(self):
         if "lowres" in self.selected_asset.name:
             obj_file = self.selected_asset.obj_path.replace("-lowres", "")
@@ -1628,7 +1647,7 @@ class AssetLoader(object):
 
             self.create_from_asset_dialog.exec_()
 
-        elif self.selected_department_name == "rig":
+        elif self.selected_asset.type == "rig":
             AnimSceneChooser(self)
 
         elif self.selected_department_name == "lay":
@@ -2133,11 +2152,11 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
                 item = QtGui.QListWidgetItem(asset_object.name)
                 # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
-                if not os.path.isfile(last_published_asset.full_img_path):
+                if not os.path.isfile(last_published_asset.default_media_user):
                     item.setIcon(QtGui.QIcon(self.main.no_img_found))
                 else:
-                    item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
-                item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.full_img_path))
+                    item.setIcon(QtGui.QIcon(last_published_asset.default_media_user))
+                item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.default_media_user))
                 self.availableAssetsListWidget.addItem(item)
 
         self.exec_()
@@ -2275,11 +2294,11 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
             item = QtGui.QListWidgetItem(asset.name)
             # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
-            if not os.path.isfile(last_published_asset.full_img_path):
+            if not os.path.isfile(last_published_asset.default_media_user):
                 item.setIcon(QtGui.QIcon(self.main.no_img_found))
             else:
-                item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
-            item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.full_img_path))
+                item.setIcon(QtGui.QIcon(last_published_asset.default_media_user))
+            item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.default_media_user))
             self.availableAssetsListWidget.addItem(item)
 
 
@@ -2298,12 +2317,12 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
             item = QtGui.QListWidgetItem(asset.name)
             # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
-            if not os.path.isfile(last_published_asset.full_img_path):
+            if not os.path.isfile(last_published_asset.default_media_user):
                 item.setIcon(QtGui.QIcon(self.main.no_img_found))
                 item.setData(QtCore.Qt.UserRole, (asset, self.main.no_img_found))
             else:
-                item.setIcon(QtGui.QIcon(last_published_asset.full_img_path))
-                item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.full_img_path))
+                item.setIcon(QtGui.QIcon(last_published_asset.default_media_user))
+                item.setData(QtCore.Qt.UserRole, (asset, last_published_asset.default_media_user))
             self.assetsToAddListWidget.addItem(item)
 
         self.exec_()
@@ -2368,12 +2387,10 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.maya_ref_process.waitForFinished()
         self.maya_ref_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_import_obj_from_lay_as_ref.py", self.main.selected_asset.full_path, "|".join(self.assets_to_remove), "|".join(self.assets_to_add)])
 
-
     def maya_process_finished(self):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
         #self.houdini_hda_process.kill()
         #self.maya_ref_process.kill()
-
 
     def readydata(self):
         while self.maya_ref_process.canReadLine():
