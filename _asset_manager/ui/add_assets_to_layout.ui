@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Layout Asset Manager</string>
+   <string>Add/remove assets from layout</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -60,7 +60,7 @@
          <item>
           <widget class="QListWidget" name="availableAssetsListWidget">
            <property name="dragDropMode">
-            <enum>QAbstractItemView::NoDragDrop</enum>
+            <enum>QAbstractItemView::DragDrop</enum>
            </property>
            <property name="selectionMode">
             <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -179,7 +179,7 @@
    <item>
     <widget class="QPushButton" name="addAssetsToLayoutBtn">
      <property name="text">
-      <string>Add Assets to Layout</string>
+      <string>Add/remove Assets to/from Layout</string>
      </property>
     </widget>
    </item>

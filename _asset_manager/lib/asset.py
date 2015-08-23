@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 import subprocess
 from PyQt4 import QtGui, QtCore
+from glob import glob
 
 class Asset(object):
     def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_name="", asset_path="", asset_extension="", asset_type="", asset_version="", asset_tags=[], asset_dependency="", last_access="", last_publish="", creator="", number_of_publishes=0, publish_from_version="", get_infos_from_id=False):
@@ -120,10 +121,10 @@ class Asset(object):
         self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
         self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
 
-
-        #print(self.name, self.type, self.version)
-        #print(self.default_media_user)
-        #print(self.advanced_media)
+        print(self.name, self.type, self.version)
+        print(self.default_media_user)
+        print(self.advanced_media)
+        print("####################################")
 
         self.publish_from_version = publish_from_version
 
@@ -191,9 +192,27 @@ class Asset(object):
                 os.remove(self.full_path.replace("\\mod\\", "\\shd\\").replace("_mod_", "_shd_").replace(self.extension, "hda"))
             except:
                 pass
+
+            files = glob(self.main.selected_project_path + "\\lay\\*")
+            layout_assets_names = {}
+            for i in files:
+                file_name = os.path.split(i)[-1]
+                file_parts = file_name.split("_")
+                if len(file_parts) == 6:
+                    name = file_parts[4]
+                    layout_assets_names[name] = i
+
+            for asset_name, asset_path in layout_assets_names.items():
+                if self.name in asset_name:
+                    os.remove(asset_path)
+
         self.main.cursor.execute('''DELETE FROM favorited_assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM log WHERE log_dependancy=?''', (self.id,))
+        self.main.cursor.execute('''DELETE FROM assets_in_layout WHERE asset_id=?''', (self.id,))
+        self.main.cursor.execute('''DELETE FROM uved_assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
+        self.main.cursor.execute('''DELETE FROM comments WHERE comment_id=?''', (self.id,))
+
         self.main.db.commit()
 
     def change_version_if_asset_already_exists(self, new_version):

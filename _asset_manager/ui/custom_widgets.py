@@ -7,6 +7,7 @@ import webbrowser
 from PyQt4 import phonon
 import os
 
+
 class ThibListWidget(QtGui.QListWidget):
     def __init__(self, parent=None):
         super(ThibListWidget, self).__init__()
@@ -23,10 +24,20 @@ class ThibListWidget(QtGui.QListWidget):
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta())))
 
     def keyPressEvent(self, QKeyEvent):
+
+        main = self.parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget()
         key = QKeyEvent.key()
 
         self.firstrelease = True
         self.keylist.append(key)
+
+        if key == QtCore.Qt.Key_F11:
+
+            if main.isFullScreen():
+                main.showNormal()
+            else:
+                main.showFullScreen()
+            return
 
         if key == QtCore.Qt.Key_Delete:
             if self.objectName() == "versionList":

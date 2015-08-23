@@ -35,6 +35,7 @@ class AssetLoader(object):
         self.update_thumb_icon = QtGui.QIcon(self.cur_path + "/media/update_thumb.png")
         self.load_in_gplay_icon = QtGui.QIcon(self.cur_path + "/media/load_in_gplay.png")
         self.delete_asset_icon = QtGui.QIcon(self.cur_path + "/media/delete_asset.png")
+        self.open_real_layout_scene_icon = QtGui.QIcon(self.cur_path + "/media/open_real_layout_scene.png")
 
         self.updateThumbBtn.setIcon(self.update_thumb_icon)
         self.updateThumbBtn.setIconSize(QtCore.QSize(24, 24))
@@ -43,17 +44,20 @@ class AssetLoader(object):
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
+        self.loadAssociatedLayoutSceneBtn.setIcon(self.load_asset_icon)
+        self.loadAssociatedLayoutSceneBtn.setIconSize(QtCore.QSize(16, 16))
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
         self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
         self.deleteAssetBtn.setIcon(self.delete_asset_icon)
+        self.openRealLayoutScene.setIcon(self.open_real_layout_scene_icon)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
         self.importIntoSceneBtn.setDisabled(True)
-        self.hasUvToggleBtn.setIconSize(QtCore.QSize(24, 24))
         self.hasUvToggleBtn.setDisabled(True)
         self.loadObjInGplayBtn.setDisabled(True)
         self.deleteAssetBtn.setDisabled(True)
+        self.openRealLayoutScene.setDisabled(True)
 
         if self.username in ["thoudon", "lclavet"]:
             self.deleteAssetBtn.show()
@@ -65,6 +69,9 @@ class AssetLoader(object):
         self.hasUvToggleBtn.hide()
         self.hasUvSeparator.hide()
         self.importIntoSceneBtn.hide()
+        self.renderLine.hide()
+        self.openRealLayoutScene.hide()
+        self.loadAssociatedLayoutSceneBtn.hide()
 
         self.assets = {}
         self.selected_asset = None
@@ -96,7 +103,7 @@ class AssetLoader(object):
         # Connect the lists
         self.projectList.currentIndexChanged .connect(self.projectList_Clicked)
         self.departmentList.currentIndexChanged.connect(self.departmentList_Clicked)
-        self.seqList.currentIndexChanged.connect(self.seqList_Clicked)  # seqList is not calling load_asset_from_selected_proj_seq_shot_dept because it needs to set the shot list
+        self.seqList.currentIndexChanged.connect(self.seqList_Clicked)
         self.shotList.currentIndexChanged.connect(self.shotList_Clicked)
         self.assetList.itemClicked.connect(self.assetList_Clicked)
         self.versionList.itemClicked.connect(self.versionList_Clicked)
@@ -117,6 +124,8 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+        self.openRealLayoutScene.clicked.connect(self.open_real_layout_scene)
+        self.loadAssociatedLayoutSceneBtn.clicked.connect(self.open_associated_layout_scene)
 
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
@@ -405,6 +414,8 @@ class AssetLoader(object):
         self.importIntoSceneBtn.setDisabled(True)
         self.hasUvToggleBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+        self.openRealLayoutScene.setDisabled(True)
+        self.deleteAssetBtn.setDisabled(True)
 
         self.selected_shot_number = "xxxx"
 
@@ -440,23 +451,21 @@ class AssetLoader(object):
         self.importIntoSceneBtn.setDisabled(True)
         self.hasUvToggleBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+        self.openRealLayoutScene.setDisabled(True)
+        self.deleteAssetBtn.setDisabled(True)
 
         try:
-            self.selected_shot_number = str(self.shotList.selectedItems()[0].text())
+            self.selected_shot_number = str(self.shotList.currentText())
         except:
             return
         if self.selected_shot_number == "None" or self.selected_shot_number == "All":
             self.selected_shot_number = "xxxx"
 
-        if os.path.isfile("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/" + self.selected_sequence_name + "_" + self.selected_shot_number + ".jpg"):
-            img_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/" + self.selected_sequence_name + "_" + self.selected_shot_number + ".jpg"
-        else:
-            img_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/default_stb_img.png"
+        # if os.path.isfile("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/" + self.selected_sequence_name + "_" + self.selected_shot_number + ".jpg"):
+        #     img_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/" + self.selected_sequence_name + "_" + self.selected_shot_number + ".jpg"
+        # else:
+        #     img_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/stb/default_stb_img.png"
 
-        qpixmap = QtGui.QPixmap(img_path)
-        qpixmap = qpixmap.scaledToWidth(500, QtCore.Qt.SmoothTransformation)
-        self.assetImg.setData(img_path)
-        self.assetImg.setPixmap(qpixmap)
 
         self.load_assets_from_selected_seq_shot_dept()
 
@@ -521,6 +530,8 @@ class AssetLoader(object):
         self.hasUvToggleBtn.setDisabled(True)
         self.updateThumbBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+        self.openRealLayoutScene.setDisabled(True)
+        self.deleteAssetBtn.setDisabled(True)
 
         # Hide load obj buttons
         self.importIntoSceneBtn.hide()
@@ -550,6 +561,7 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setDisabled(False)
         self.updateThumbBtn.setDisabled(False)
         self.deleteAssetBtn.setDisabled(False)
+        self.openRealLayoutScene.setDisabled(False)
 
         selected_asset = self.assetList.selectedItems()[0]
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
@@ -566,15 +578,15 @@ class AssetLoader(object):
         self.versionList_Clicked()
 
     def versionList_simple_view(self):
-        self.lblStatus.setText("Status: Loading Media")
+        self.statusLbl.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
-        media_process.finished.connect(lambda: self.lblStatus.setText("Status: Idle..."))
+        media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
         if self.selected_asset.type in ["mod", "rig", "tex"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
                 webbrowser.open(self.selected_asset.full_media)
-            self.lblStatus.setText("Status: Idle...")
+            self.statusLbl.setText("Status: Idle...")
         elif self.selected_asset.type == "shd":
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.full_media])
 
@@ -582,16 +594,16 @@ class AssetLoader(object):
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
 
     def versionList_advanced_view(self):
-        self.lblStatus.setText("Status: Loading Media")
+        self.statusLbl.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
-        media_process.finished.connect(lambda: self.lblStatus.setText("Status: Idle..."))
+        media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
 
         if self.selected_asset.type in ["mod", "rig", "tex"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
                 webbrowser.open(self.selected_asset.full_media)
-            self.lblStatus.setText("Status: Idle...")
+            self.statusLbl.setText("Status: Idle...")
         else:
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
 
@@ -607,8 +619,9 @@ class AssetLoader(object):
             return
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
-
         if self.selected_asset.type == "mod":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.importIntoSceneBtn.show()
             self.loadObjInGplayBtn.show()
             if "lowres" in self.selected_asset.name:
@@ -622,6 +635,8 @@ class AssetLoader(object):
             self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
 
         elif self.selected_asset.type == "cam":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -630,6 +645,8 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "tex":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -638,6 +655,8 @@ class AssetLoader(object):
 
 
         elif self.selected_asset.type == "rig":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.importIntoSceneBtn.hide()
@@ -647,6 +666,8 @@ class AssetLoader(object):
             self.createAssetFromAssetBtn.setText("Create Animation from Rig")
 
         elif self.selected_asset.type == "anm":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -655,6 +676,8 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "sim":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -663,6 +686,8 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "shd":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.importIntoSceneBtn.hide()
@@ -675,8 +700,12 @@ class AssetLoader(object):
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             if self.username in ["thoudon", "lclavet"]:
+                self.renderLine.show()
+                self.openRealLayoutScene.show()
                 self.createVersionBtn.show()
             else:
+                self.renderLine.hide()
+                self.openRealLayoutScene.hide()
                 self.createVersionBtn.hide()
             self.publishBtn.hide()
             self.importIntoSceneBtn.show()
@@ -685,6 +714,8 @@ class AssetLoader(object):
             self.createAssetFromAssetBtn.setText("Create Camera or Lighting from Layout")
 
         elif self.selected_asset.type == "dmp":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -693,6 +724,8 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "cmp":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -701,6 +734,8 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "rdr":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
@@ -729,6 +764,10 @@ class AssetLoader(object):
                 asset_layout_id = is_asset_in_layout[0]
                 layout_asset = self.Asset(self, asset_layout_id, get_infos_from_id=True)
                 self.isInLayoutLbl.setText("Asset is in layout: {0} ({1})".format(layout_asset.name, layout_asset.sequence))
+                self.loadAssociatedLayoutSceneBtn.show()
+                self.associated_layout_scene = layout_asset.full_path
+            else:
+                self.loadAssociatedLayoutSceneBtn.hide()
 
 
         # Set favorite button state
@@ -819,14 +858,11 @@ class AssetLoader(object):
 
         # Unhide all assets
         [asset.setHidden(False) for asset in self.assets.values()]
-
         for asset, asset_item in self.assets.items():
-
             if self.selected_sequence_name == "xxx" and self.selected_department_name == "xxx":
                 asset_item.setHidden(False)
 
             elif self.selected_sequence_name == "xxx" and self.selected_department_name != "xxx":
-
                 if asset.shot != self.selected_shot_number and self.selected_shot_number != "xxxx":
                     asset_item.setHidden(True)
 
@@ -854,7 +890,6 @@ class AssetLoader(object):
                     asset_item.setHidden(True)
 
             elif self.selected_sequence_name != "xxx" and self.selected_department_name != "xxx":
-
                 if asset.sequence != self.selected_sequence_name:
                     asset_item.setHidden(True)
 
@@ -1138,7 +1173,6 @@ class AssetLoader(object):
             self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version, selected_version_item, selected_asset_item)
 
         elif self.selected_asset.type == "anm":
-
             shots = (self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, ))).fetchall()
             start_frame = str(shots[0][0])
             end_frame = str(shots[0][1])
@@ -1394,6 +1428,8 @@ class AssetLoader(object):
 
     def load_asset(self):
 
+        self.statusLbl.setText("Status: Loading asset {0}".format(self.selected_asset.name))
+
         self.selected_asset.change_last_access()
         self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
@@ -1423,18 +1459,11 @@ class AssetLoader(object):
             process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "lay":
-            try:
-                selected_dep = str(self.departmentList.selectedItems()[0].text())
-            except:
-                selected_dep = ""
-            if selected_dep != "Rendering":
-                shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
-                process = QtCore.QProcess(self)
-                process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
-                process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
-            else:
-                process = QtCore.QProcess(self)
-                process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/")])
+            shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
+            process = QtCore.QProcess(self)
+            process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
+            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
+
 
         elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
             process = QtCore.QProcess(self)
@@ -1448,6 +1477,15 @@ class AssetLoader(object):
             process.finished.connect(partial(self.load_asset_finished, associated_hip_scene.replace(".hipnc", "_" + self.username + "_camtmp.hipnc")))
             process.start(self.houdini_path, [associated_hip_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_camtmp.hipnc")])
 
+        elif self.selected_asset.type == "lgt":
+            associated_hip_scene = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_id=?''', (self.selected_asset.dependency, )).fetchone()[0]
+            associated_hip_scene = self.selected_project_path + associated_hip_scene
+            shutil.copy2(associated_hip_scene, associated_hip_scene.replace(".hipnc", "_" + self.username + "_lgttmp.hipnc"))
+            process = QtCore.QProcess(self)
+            process.finished.connect(partial(self.load_asset_finished, associated_hip_scene.replace(".hipnc", "_" + self.username + "_lgttmp.hipnc")))
+            process.start(self.houdini_path, [associated_hip_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_lgttmp.hipnc")])
+
+
         elif self.selected_asset.type == "tex":
             texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
             self.Lib.switch_mari_cache(self, "home")
@@ -1458,6 +1496,8 @@ class AssetLoader(object):
             self.mari_open_asset_process = QtCore.QProcess(self)
             self.mari_open_asset_process.finished.connect(partial(self.mari_finished, texture_project_path))
             self.mari_open_asset_process.start(self.mari_path, [])
+
+        self.statusLbl.setText("Status: Idle...")
 
     def load_asset_finished(self, file_to_remove=None):
         if file_to_remove != None:
@@ -1476,17 +1516,33 @@ class AssetLoader(object):
         self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
         self.activateWindow()
 
+    def open_real_layout_scene(self):
+        process = QtCore.QProcess(self)
+        process.start(self.houdini_path, [self.selected_asset.full_path])
+
+    def open_associated_layout_scene(self):
+        shutil.copy2(self.associated_layout_scene, self.associated_layout_scene.replace(".hipnc", "_" + self.username + "_layplacementtmp.hipnc"))
+        process = QtCore.QProcess(self)
+        process.finished.connect(partial(self.load_asset_finished, self.associated_layout_scene.replace(".hipnc", "_" + self.username + "_layplacementtmp.hipnc")))
+        process.start(self.houdini_path, [self.associated_layout_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_layplacementtmp.hipnc")])
+
     def delete_asset(self):
-        dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
-        for asset_id in dependencies:
-            asset = self.Asset(self, int(asset_id[0]), get_infos_from_id=True)
+
+        result = self.Lib.message_box(self, type="warning", text="You're about to delete an asset. This action is not undoable. Are you sure you want to continue?", window_title="Delete asset?")
+        if result == 1024:
+            return
+
+        asset_name = self.selected_asset.name
+        asset_name_lowres = asset_name + "-lowres"
+
+        assets = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (asset_name,)).fetchall()
+        assets_lowres = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (asset_name_lowres,)).fetchall()
+
+        assets_to_delete = assets + assets_lowres
+        assets_to_delete = [self.Asset(self, asset_id[0], get_infos_from_id=True) for asset_id in assets_to_delete]
+
+        for asset in assets_to_delete:
             asset.remove_asset_from_db()
-
-        self.selected_asset.remove_asset_from_db()
-
-        # Remove item from asset widget list
-        for item in self.assetList.selectedItems():
-            self.assetList.takeItem(self.assetList.row(item))
 
         self.load_all_assets_for_first_time()
 
@@ -2173,6 +2229,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.assets_in_layout = []
         self.assets_in_layout_db = []
 
+        self.main.statusLbl.setText("Status: fetching layout informations...")
         self.get_assets_from_layout = QtCore.QProcess(self)
         self.get_assets_from_layout.readyRead.connect(self.get_assets_from_process_output)
         self.get_assets_from_layout.finished.connect(self.finished)
@@ -2231,6 +2288,32 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.default_media_user))
                 self.availableAssetsListWidget.addItem(item)
 
+            else:
+                asset_object = self.main.Asset(self.main, asset_id, get_infos_from_id=True)  # Get layout hda digital asset
+
+                # Get first modeling scene (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
+                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency, get_infos_from_id=True)
+
+                # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
+                out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency, get_infos_from_id=True)
+
+                # If asset has never been published, skip
+                if out_obj_asset.number_of_publishes == 0:
+                    continue
+
+                # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
+                last_published_asset = self.main.Asset(self.main, out_obj_asset.publish_from_version, get_infos_from_id=True)
+
+                item = QtGui.QListWidgetItem(asset_object.name)
+                # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
+                if not os.path.isfile(last_published_asset.default_media_user):
+                    item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                else:
+                    item.setIcon(QtGui.QIcon(last_published_asset.default_media_user))
+                item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.default_media_user))
+                self.assetsToAddListWidget.addItem(item)
+
+        self.main.statusLbl.setText("Status: Idle...")
         self.exec_()
 
     def add_asset_to_list(self):
@@ -2268,23 +2351,41 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(asset))
 
     def add_assets_to_layout(self):
-        assets_list = []
+        self.main.statusLbl.setText("Status: Adding/Removing asset to/from layout")
+
+        assets_to_add = []
         for i in xrange(self.assetsToAddListWidget.count()):
             list_item = self.assetsToAddListWidget.item(i)
             asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
-            assets_list.append(asset.full_path.replace("\\", "/"))
-            self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
-            self.main.db.commit()
+            is_asset_in_layout = self.main.cursor.execute('''SELECT * FROM assets_in_layout WHERE asset_id=?''', (asset.id,)).fetchone()
+            if is_asset_in_layout != None:
+                assets_to_add.append(asset.full_path.replace("\\", "/"))
+                self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
+                self.main.db.commit()
+
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.finished.connect(self.remove_assets_from_layout)
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_import_multiple_hdas_into_layout.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_to_add)])
+
+    def remove_assets_from_layout(self):
+        assets_to_remove = []
+        for i in xrange(self.availableAssetsListWidget.count()):
+            list_item = self.availableAssetsListWidget.item(i)
+            asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            is_asset_in_layout = self.main.cursor.execute('''SELECT * FROM assets_in_layout WHERE asset_id=?''', (asset.id,)).fetchone()
+            if is_asset_in_layout != None:
+                assets_to_remove.append(asset.full_path)
 
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(self.process_finished)
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_import_multiple_hdas_into_layout.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_list)])
+        self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_delete_multiple_hda_from_lay.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_to_remove)])
 
     def process_finished(self):
-        self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported into layout scene!")
+        self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
         self.houdini_hda_process.kill()
-        self.assetsToAddListWidget.clear()
+        self.main.statusLbl.setText("Status: Idle...")
 
 class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):
@@ -2448,7 +2549,6 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(self.houdini_process_finished)
-        #self.houdini_hda_process.readyRead.connect(self.readydata)
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_export_mod_in_place_from_lay.py", self.main.selected_layout_asset.full_path, "|".join(self.assets_to_add)])
 

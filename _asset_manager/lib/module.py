@@ -96,7 +96,6 @@ class Lib(object):
             for i in range(24):
                 os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(2) + ".jpg"))
 
-
         self.create_thumbnail_process.kill()
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
 
@@ -153,7 +152,7 @@ class Lib(object):
         self.cursor.execute('''UPDATE preferences SET mari_cache_path=? WHERE username=?''', (mari_cache_path, self.username,))
         self.db.commit()
 
-    def message_box(self, type="Warning", text="warning", yes_button_text="", no_button=False, no_button_text="", exec_now=True, window_title="Manager"):
+    def message_box(self, type="warning", text="warning", yes_button_text="", no_button=False, no_button_text="", exec_now=True, window_title="Manager"):
 
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowIcon(self.app_icon)
@@ -177,11 +176,11 @@ class Lib(object):
             self.msgBox_noBtn.setStyleSheet("width: 64px;")
             self.msgBox_noBtn.clicked.connect(self.msgBox.reject)
 
-        if type == "warning":
+        if type.lower() == "warning":
             self.msgBox.setIcon(QtGui.QMessageBox.Warning)
-        elif type == "error":
+        elif type.lower() == "error":
             self.msgBox.setIcon(QtGui.QMessageBox.Critical)
-        elif type == "info":
+        elif type.lower() == "info":
             self.msgBox.setIcon(QtGui.QMessageBox.Information)
 
         if exec_now == True:

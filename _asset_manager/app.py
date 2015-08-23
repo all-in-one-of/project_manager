@@ -170,7 +170,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
         # Setup disk usage progress bar
-        disk_usage = Lib.get_folder_space(self)
+        disk_usage = self.Lib.get_folder_space(self)
         disk_usage = int(float(disk_usage) * 1000) # Multiply disk usage by 1000. Ex: 1.819 to 1819
         disk_usage = (2000 * int(disk_usage)) / 1862 # 2TO in theory = 1.862GB in reality. Remapping real disk usage to the theoric one
         self.diskUsageProgressBar.setFormat('{0}/2000 GB'.format(str(disk_usage)))
@@ -544,6 +544,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
 
     def refresh_all(self):
+
+        self.AssetLoader.load_all_assets_for_first_time(self)
+
         if self.refresh_iteration % 3 == 0:
             self.Lib.check_last_active(self)
             self.PeopleTab.get_online_status(self)
@@ -637,8 +640,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                 self.showNormal()
             else:
                 self.showFullScreen()
-        elif key == QtCore.Qt.Key_Escape:
-            sys.exit()
         elif key == QtCore.Qt.Key_Delete:
             current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
             if current_tab_text == "Images Manager":
@@ -675,10 +676,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         elif "maya" in tasks.lower():
             self.Lib.message_box(self, type="error", text="Please save your work and close Maya before closing the Manager!")
             return
-        elif "houdini" in tasks.lower():
+        elif "houdin" in tasks.lower():
             self.Lib.message_box(self, type="error", text="Please save your work and close Houdini before closing the Manager!")
             return
-
 
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))

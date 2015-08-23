@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\add_assets_to_layout.ui'
 #
-# Created: Sat Aug 01 14:10:05 2015
+# Created: Sun Aug 23 15:46:12 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -49,7 +49,7 @@ class Ui_addAssetsToLayoutWidget(object):
         self.availableAssetsLbl.setObjectName(_fromUtf8("availableAssetsLbl"))
         self.verticalLayout_2.addWidget(self.availableAssetsLbl)
         self.availableAssetsListWidget = QtGui.QListWidget(self.addAssetsListFrame)
-        self.availableAssetsListWidget.setDragDropMode(QtGui.QAbstractItemView.NoDragDrop)
+        self.availableAssetsListWidget.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         self.availableAssetsListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.availableAssetsListWidget.setIconSize(QtCore.QSize(256, 256))
         self.availableAssetsListWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
@@ -105,12 +105,12 @@ class Ui_addAssetsToLayoutWidget(object):
         return self
 
     def retranslateUi(self, addAssetsToLayoutWidget):
-        addAssetsToLayoutWidget.setWindowTitle(_translate("addAssetsToLayoutWidget", "Layout Asset Manager", None))
+        addAssetsToLayoutWidget.setWindowTitle(_translate("addAssetsToLayoutWidget", "Add/remove assets from layout", None))
         self.availableAssetsLbl.setText(_translate("addAssetsToLayoutWidget", "Available assets", None))
         self.addAssetBtn.setText(_translate("addAssetsToLayoutWidget", ">>", None))
         self.removeAssetBtn.setText(_translate("addAssetsToLayoutWidget", "<<", None))
         self.assetsToAddLbl.setText(_translate("addAssetsToLayoutWidget", "Assets to add", None))
-        self.addAssetsToLayoutBtn.setText(_translate("addAssetsToLayoutWidget", "Add Assets to Layout", None))
+        self.addAssetsToLayoutBtn.setText(_translate("addAssetsToLayoutWidget", "Add/remove Assets to/from Layout", None))
 
 
 if __name__ == "__main__":

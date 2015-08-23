@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# coding=utf-8
 import sys
-
 
 hip_file = sys.argv[-2]
 hdas_to_import = sys.argv[-1]
