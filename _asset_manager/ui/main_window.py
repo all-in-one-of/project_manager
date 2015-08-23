@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sat Aug 22 08:31:48 2015
+# Created: Sun Aug 23 10:48:16 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -212,7 +212,7 @@ class Ui_Form(object):
         self.assetList = ThibListWidget(self.assetAndVersionFrame)
         self.assetList.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.assetList.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.assetList.setDragDropMode(QtGui.QAbstractItemView.DropOnly)
+        self.assetList.setDragDropMode(QtGui.QAbstractItemView.NoDragDrop)
         self.assetList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.assetList.setIconSize(QtCore.QSize(164, 164))
         self.assetList.setMovement(QtGui.QListView.Static)
@@ -227,7 +227,7 @@ class Ui_Form(object):
         self.versionList = ThibListWidget(self.assetAndVersionFrame)
         self.versionList.setMaximumSize(QtCore.QSize(200, 16777215))
         self.versionList.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.versionList.setDragDropMode(QtGui.QAbstractItemView.DropOnly)
+        self.versionList.setDragDropMode(QtGui.QAbstractItemView.NoDragDrop)
         self.versionList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.versionList.setIconSize(QtCore.QSize(164, 164))
         self.versionList.setMovement(QtGui.QListView.Static)
@@ -335,9 +335,15 @@ class Ui_Form(object):
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(32, 32))
         self.addRemoveAssetAsFavoriteBtn.setObjectName(_fromUtf8("addRemoveAssetAsFavoriteBtn"))
         self.horizontalLayout_2.addWidget(self.addRemoveAssetAsFavoriteBtn)
+        self.deleteAssetLine = QtGui.QFrame(self.smallActionIconFrame)
+        self.deleteAssetLine.setFrameShape(QtGui.QFrame.VLine)
+        self.deleteAssetLine.setFrameShadow(QtGui.QFrame.Sunken)
+        self.deleteAssetLine.setObjectName(_fromUtf8("deleteAssetLine"))
+        self.horizontalLayout_2.addWidget(self.deleteAssetLine)
         self.deleteAssetBtn = QtGui.QPushButton(self.smallActionIconFrame)
         self.deleteAssetBtn.setMinimumSize(QtCore.QSize(0, 0))
         self.deleteAssetBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.deleteAssetBtn.setText(_fromUtf8(""))
         self.deleteAssetBtn.setObjectName(_fromUtf8("deleteAssetBtn"))
         self.horizontalLayout_2.addWidget(self.deleteAssetBtn)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -1940,7 +1946,6 @@ class Ui_Form(object):
         self.createVersionBtn.setToolTip(_translate("Form", "<html><head/><body><p>Create new version</p></body></html>", None))
         self.publishBtn.setToolTip(_translate("Form", "<html><head/><body><p>Publish</p></body></html>", None))
         self.addRemoveAssetAsFavoriteBtn.setToolTip(_translate("Form", "<html><head/><body><p>Add asset to favorite</p></body></html>", None))
-        self.deleteAssetBtn.setText(_translate("Form", "x", None))
         self.isInLayoutLbl.setText(_translate("Form", "Asset is not in any layout scene.", None))
         self.lastAccessLbl.setText(_translate("Form", "Last accessed by:", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))

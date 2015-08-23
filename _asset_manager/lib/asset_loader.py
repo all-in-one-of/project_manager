@@ -34,6 +34,7 @@ class AssetLoader(object):
         self.has_uv_disabled_icon = QtGui.QIcon(self.cur_path + "/media/hasuv_disabled.png")
         self.update_thumb_icon = QtGui.QIcon(self.cur_path + "/media/update_thumb.png")
         self.load_in_gplay_icon = QtGui.QIcon(self.cur_path + "/media/load_in_gplay.png")
+        self.delete_asset_icon = QtGui.QIcon(self.cur_path + "/media/delete_asset.png")
 
         self.updateThumbBtn.setIcon(self.update_thumb_icon)
         self.updateThumbBtn.setIconSize(QtCore.QSize(24, 24))
@@ -44,6 +45,7 @@ class AssetLoader(object):
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
         self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
+        self.deleteAssetBtn.setIcon(self.delete_asset_icon)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
@@ -51,6 +53,14 @@ class AssetLoader(object):
         self.hasUvToggleBtn.setIconSize(QtCore.QSize(24, 24))
         self.hasUvToggleBtn.setDisabled(True)
         self.loadObjInGplayBtn.setDisabled(True)
+        self.deleteAssetBtn.setDisabled(True)
+
+        if self.username in ["thoudon", "lclavet"]:
+            self.deleteAssetBtn.show()
+            self.deleteAssetLine.show()
+        else:
+            self.deleteAssetLine.hide()
+            self.deleteAssetBtn.hide()
 
         self.hasUvToggleBtn.hide()
         self.hasUvSeparator.hide()
@@ -503,13 +513,14 @@ class AssetLoader(object):
     def departmentList_Clicked(self):
 
         # Disable all buttons
-        self.publishBtn.setDisabled(True)
-        self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
         self.importIntoSceneBtn.setDisabled(True)
-        self.hasUvToggleBtn.setDisabled(True)
-        self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
+        self.createVersionBtn.setDisabled(True)
+        self.publishBtn.setDisabled(True)
         self.loadObjInGplayBtn.setDisabled(True)
+        self.hasUvToggleBtn.setDisabled(True)
+        self.updateThumbBtn.setDisabled(True)
+        self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
 
         # Hide load obj buttons
         self.importIntoSceneBtn.hide()
@@ -526,73 +537,10 @@ class AssetLoader(object):
 
         self.updateThumbBtn.hide()
 
-        if self.selected_department_name == "mod":
-            self.loadObjInGplayBtn.show()
-            self.hasUvToggleBtn.show()
-            self.hasUvSeparator.show()
-
-        elif self.selected_department_name == "cam":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "tex":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "rig":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "anm":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "sim":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "shd":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "lay":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "dmp":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "cmp":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-        elif self.selected_department_name == "rdr":
-            self.loadObjInGplayBtn.hide()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-            self.selected_department_name = "lay"
-
-        else:
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-
-
-
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.load_assets_from_selected_seq_shot_dept()
 
     def assetList_Clicked(self):
-
         # Enable buttons
         self.publishBtn.setDisabled(False)
         self.createVersionBtn.setDisabled(False)
@@ -600,6 +548,8 @@ class AssetLoader(object):
         self.importIntoSceneBtn.setDisabled(False)
         self.hasUvToggleBtn.setDisabled(False)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(False)
+        self.updateThumbBtn.setDisabled(False)
+        self.deleteAssetBtn.setDisabled(False)
 
         selected_asset = self.assetList.selectedItems()[0]
         selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
@@ -657,36 +607,109 @@ class AssetLoader(object):
             return
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
-        if self.selected_asset.type == "mod" or self.selected_asset.type == "anm" or self.selected_asset.type == "lay":
-            self.importIntoSceneBtn.show()
-        else:
-            self.importIntoSceneBtn.hide()
 
-        # Hide / show load in gplay and UV buttons
-        if self.selected_asset.type == "mod" and "lowres" in self.selected_asset.full_path:
-            self.loadObjInGplayBtn.show()
-            self.hasUvToggleBtn.hide()
-            self.hasUvSeparator.hide()
-        elif self.selected_asset.type == "mod":
-            self.loadObjInGplayBtn.show()
-            self.hasUvToggleBtn.show()
-            self.hasUvSeparator.show()
-        else:
-            self.loadObjInGplayBtn.hide()
-
-        # Hide / Show create new asset from asset button
         if self.selected_asset.type == "mod":
+            self.importIntoSceneBtn.show()
+            self.loadObjInGplayBtn.show()
+            if "lowres" in self.selected_asset.name:
+                self.hasUvToggleBtn.hide()
+            else:
+                self.hasUvSeparator.show()
+                self.hasUvToggleBtn.show()
+            self.publishBtn.show()
             self.loadObjInGplayBtn.setDisabled(False)
             self.createAssetFromAssetBtn.show()
             self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
-        elif self.selected_asset.type == "lay":
-            self.createAssetFromAssetBtn.show()
-            self.createAssetFromAssetBtn.setText("Create Camera or Lighting from Layout")
+
+        elif self.selected_asset.type == "cam":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.show()
+
+        elif self.selected_asset.type == "tex":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+
+
         elif self.selected_asset.type == "rig":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.show()
             self.createAssetFromAssetBtn.show()
             self.createAssetFromAssetBtn.setText("Create Animation from Rig")
-        else:
+
+        elif self.selected_asset.type == "anm":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.show()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.show()
+
+        elif self.selected_asset.type == "sim":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.show()
+
+        elif self.selected_asset.type == "shd":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.hide()
+            self.createAssetFromAssetBtn.hide()
+
+
+        elif self.selected_asset.type == "lay":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            if self.username in ["thoudon", "lclavet"]:
+                self.createVersionBtn.show()
+            else:
+                self.createVersionBtn.hide()
+            self.publishBtn.hide()
+            self.importIntoSceneBtn.show()
+            self.loadObjInGplayBtn.hide()
+            self.createAssetFromAssetBtn.show()
+            self.createAssetFromAssetBtn.setText("Create Camera or Lighting from Layout")
+
+        elif self.selected_asset.type == "dmp":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.show()
+
+        elif self.selected_asset.type == "cmp":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.show()
+
+        elif self.selected_asset.type == "rdr":
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.selected_department_name = "lay"
+
+        else:
+            pass
 
 
         # Set labels
@@ -1452,7 +1475,6 @@ class AssetLoader(object):
         self.show()
         self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
         self.activateWindow()
-
 
     def delete_asset(self):
         dependencies = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_dependency=?''', (str(self.selected_asset.id),)).fetchall()
