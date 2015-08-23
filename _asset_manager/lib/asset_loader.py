@@ -581,7 +581,7 @@ class AssetLoader(object):
         self.statusLbl.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
-        if self.selected_asset.type in ["mod", "rig", "tex"]:
+        if self.selected_asset.type in ["mod", "rig", "tex", "lay"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
@@ -598,7 +598,7 @@ class AssetLoader(object):
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
 
-        if self.selected_asset.type in ["mod", "rig", "tex"]:
+        if self.selected_asset.type in ["rig", "tex", "lay"]:
             if self.selected_asset.version == "01":
                 webbrowser.open(self.selected_asset.first_media)
             else:
@@ -643,6 +643,16 @@ class AssetLoader(object):
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
             self.publishBtn.show()
+
+        elif self.selected_asset.type == "lgt":
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
+            self.hasUvToggleBtn.hide()
+            self.hasUvSeparator.hide()
+            self.createAssetFromAssetBtn.hide()
+            self.importIntoSceneBtn.hide()
+            self.loadObjInGplayBtn.hide()
+            self.publishBtn.hide()
 
         elif self.selected_asset.type == "tex":
             self.renderLine.hide()
@@ -848,8 +858,6 @@ class AssetLoader(object):
         self.lastPublishedLbl.setText("Last published by: {0} ({1}) from version {2}".format(asset_published.last_publish, number_of_days_since_last_publish, publish_from_version, ))
 
     def versionList_DoubleClicked(self):
-        selected_version = self.versionList.selectedItems()[0]
-        self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
         subprocess.Popen(r'explorer /select,' + str(self.selected_asset.full_path))
 
     def load_assets_from_selected_seq_shot_dept(self):
@@ -1061,6 +1069,7 @@ class AssetLoader(object):
         self.selected_asset.change_last_publish()
         if self.selected_asset.type == "mod":
             self.publish_process = QtCore.QProcess(self)
+            self.publish_process.finished.connect(self.publish_process_finished)
             if self.selected_asset.extension == "blend":
                 self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
             elif self.selected_asset.extension == "ma":
@@ -1072,12 +1081,6 @@ class AssetLoader(object):
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
             self.db.commit()
-
-            # Normalize modeling scale
-            self.normalize_mod_scale_process = QtCore.QProcess(self)
-            self.normalize_mod_scale_process.finished.connect(self.publish_process_finished)
-            self.normalize_mod_scale_process.waitForFinished()
-            self.normalize_mod_scale_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_normalize_mod_scale.py", "--", self.selected_asset.obj_path])
 
         elif self.selected_asset.type == "rig":
             shutil.copy2(self.selected_asset.full_path, self.selected_asset.rig_out_path)
@@ -1127,11 +1130,17 @@ class AssetLoader(object):
         log_entry.add_log_to_database()
 
         if self.selected_asset.type == "mod":
-            time.sleep(5) # Sleep 1 second, otherwise sometimes obj model is not finished being normalized and generated thumbnail is empty
-
-        self.update_thumbnail(ask_window=False)
+            # Normalize modeling scale
+            self.normalize_mod_scale_process = QtCore.QProcess(self)
+            self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
+            self.normalize_mod_scale_process.waitForFinished()
+            self.normalize_mod_scale_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_normalize_mod_scale.py", "--", self.selected_asset.obj_path])
 
     def update_thumbnail(self, ask_window=True):
+
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            return
+
         selected_version_item = self.versionList.selectedItems()[0]
         selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
 
@@ -1166,8 +1175,10 @@ class AssetLoader(object):
                 if checkbox_turn.isChecked():
                     thumbs_to_create += "turn"
             else:
-                thumbs_to_create = "fullturn"
-
+                if "-lowres" in self.selected_asset.name:
+                    thumbs_to_create = "fullturn"
+                else:
+                    thumbs_to_create = "full"
             selected_version_item = self.versionList.selectedItems()[0]
             selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
             self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version, selected_version_item, selected_asset_item)
@@ -1246,6 +1257,14 @@ class AssetLoader(object):
             texture_path = self.selected_project_path + "\\assets\\tex\\" + self.selected_asset.name + "-diff.jpg"
             self.update_thumb_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
                                                                                                             "TexScript", self.selected_asset.default_media_user, obj_asset.obj_path, texture_path])
+
+        elif self.selected_asset.type == "lay":
+            self.Lib.take_screenshot(self, path=self.selected_asset.default_media_user)
+            self.Lib.compress_image(self, image_path=self.selected_asset.default_media_user, width=700, quality=100)
+
+            if self.selected_asset.version == "01":
+                self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
+            self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
 
     def create_mov_from_playblast(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
         file_sequence = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
@@ -2226,94 +2245,59 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
         self.addAssetsToLayoutBtn.clicked.connect(self.add_assets_to_layout)
 
-        self.assets_in_layout = []
-        self.assets_in_layout_db = []
+        # GET ALL LAYOUT ASSETS
+        self.all_layout_assets_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_type="lay" AND asset_extension="hda"''').fetchall() # Get IDs of all layout assets
 
-        self.main.statusLbl.setText("Status: fetching layout informations...")
-        self.get_assets_from_layout = QtCore.QProcess(self)
-        self.get_assets_from_layout.readyRead.connect(self.get_assets_from_process_output)
-        self.get_assets_from_layout.finished.connect(self.finished)
-        self.get_assets_from_layout.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_get_assets_in_layout.py", self.main.selected_asset.full_path])
+        # GET ALL LAYOUT ASSETS WHICH ARE IN LAYOUT
+        self.assets_in_layout_id = self.main.cursor.execute('''SELECT asset_id FROM assets_in_layout''').fetchall() # Get IDs of layout assets in layout
 
-    def get_assets_from_process_output(self):
-        while self.get_assets_from_layout.canReadLine():
-            out = str(self.get_assets_from_layout.readLine())
-            self.assets_in_layout.append(out)
+        # Convert [(1,), (2,), (3)] to [1, 2, 3]
+        if len(self.all_layout_assets_id) > 0:
+            self.all_layout_assets_id = [i[0] for i in self.all_layout_assets_id]
 
-    def finished(self):
-        # Remove whitespace, new line, and other special characters from assets paths.
-        self.assets_in_layout = [i.strip(' \t\n\r') for i in self.assets_in_layout]
-        self.assets_in_layout = [i for i in self.assets_in_layout if not "lgt" in i]
-        self.assets_in_layout = [i for i in self.assets_in_layout if not "cam" in i]
+        # Convert [(1,), (2,), (3)] to [1, 2, 3]
+        if len(self.assets_in_layout_id) > 0:
+            self.assets_in_layout_id = [i[0] for i in self.assets_in_layout_id]
 
-        # Get only last three / of all paths (ex: H:/01-NAD/_pipeline/test_project_files/assets/lay/nat_xxx_xxxx_lay_colonne_out.hda = \assets\lay\nat_xxx_xxxx_lay_colonne_out.hda)
-        self.assets_in_layout = ["\\" + "\\".join(i.split("/")[-3:len(i.split("/"))]) for i in self.assets_in_layout]
-        self.assets_in_layout_db = []
-        for asset_path in self.assets_in_layout: # Get database entries from assets path
-            asset_from_db = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_path=?''', (asset_path,)).fetchone()
-            asset_id = asset_from_db[0]
-            asset = self.main.Asset(self.main, asset_id, get_infos_from_id=True)
-            self.assets_in_layout_db.append(asset)
+        # Get assets not in layout by substracting assets in layout from all layout assets
+        self.assets_not_in_layout_id = list(set(self.all_layout_assets_id) - set(self.assets_in_layout_id))
 
-        # Get IDs of all assets in layout
-        self.assets_in_layout_db_id = [i.id for i in self.assets_in_layout_db]
-        # Get all layout assets
-        self.all_layout_assets = self.main.cursor.execute('''SELECT * FROM assets WHERE asset_type="lay" AND asset_extension="hda"''').fetchall()
+        # Get assets from IDs
+        self.assets_in_layout = [self.main.Asset(self.main, i, get_infos_from_id=True) for i in self.assets_in_layout_id]
+        self.assets_not_in_layout = [self.main.Asset(self.main, i, get_infos_from_id=True) for i in self.assets_not_in_layout_id]
 
-        # Add available assets to left list if they're not already in layout scene
-        for asset in self.all_layout_assets:
-            asset_id = asset[0]
-            if not asset_id in self.assets_in_layout_db_id: # if asset is not already in layout scene, add it
-                asset_object = self.main.Asset(self.main, asset_id, get_infos_from_id=True) # Get layout hda digital asset
+        for asset in self.assets_not_in_layout:
+            last_modeling_version_id = self.main.cursor.execute('''SELECT MAX(asset_id) FROM assets WHERE asset_name=? AND asset_type="mod" AND asset_version!="out"''', (asset.name,)).fetchone()
+            last_modeling_asset = self.main.Asset(self.main, last_modeling_version_id[0], get_infos_from_id=True)
+            img = last_modeling_asset.default_media_user
 
-                # Get first modeling scene (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
-                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency, get_infos_from_id=True)
+            item = QtGui.QListWidgetItem(asset.name)
 
-                # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
-                out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency, get_infos_from_id=True)
-
-                # If asset has never been published, skip
-                if out_obj_asset.number_of_publishes == 0:
-                    continue
-
-                # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
-                last_published_asset = self.main.Asset(self.main, out_obj_asset.publish_from_version, get_infos_from_id=True)
-
-                item = QtGui.QListWidgetItem(asset_object.name)
-                # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
-                if not os.path.isfile(last_published_asset.default_media_user):
-                    item.setIcon(QtGui.QIcon(self.main.no_img_found))
-                else:
-                    item.setIcon(QtGui.QIcon(last_published_asset.default_media_user))
-                item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.default_media_user))
-                self.availableAssetsListWidget.addItem(item)
-
+            if os.path.isfile(img):
+                item.setIcon(QtGui.QIcon(img))
             else:
-                asset_object = self.main.Asset(self.main, asset_id, get_infos_from_id=True)  # Get layout hda digital asset
+                item.setIcon(QtGui.QIcon(self.main.no_img_found))
 
-                # Get first modeling scene (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_blend_01.blend)
-                first_modeling_scene_asset = self.main.Asset(self.main, asset_object.dependency, get_infos_from_id=True)
+            item.setData(QtCore.Qt.UserRole, (asset, img))
 
-                # Get associated publish obj asset (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_out.obj)
-                out_obj_asset = self.main.Asset(self.main, first_modeling_scene_asset.dependency, get_infos_from_id=True)
+            self.availableAssetsListWidget.addItem(item)
 
-                # If asset has never been published, skip
-                if out_obj_asset.number_of_publishes == 0:
-                    continue
+        for asset in self.assets_in_layout:
+            last_modeling_version_id = self.main.cursor.execute('''SELECT MAX(asset_id) FROM assets WHERE asset_name=? AND asset_type="mod" AND asset_version!="out"''', (asset.name,)).fetchone()
+            last_modeling_asset = self.main.Asset(self.main, last_modeling_version_id[0], get_infos_from_id=True)
+            img = last_modeling_asset.default_media_user
 
-                # Get version from which the last publish was made (Ex: \assets\mod\nat_xxx_xxxx_mod_boubou_05.blend)
-                last_published_asset = self.main.Asset(self.main, out_obj_asset.publish_from_version, get_infos_from_id=True)
+            item = QtGui.QListWidgetItem(asset.name)
 
-                item = QtGui.QListWidgetItem(asset_object.name)
-                # Get thumbnail from last published scene (Full thumbnail of version 05 (which is the version from which the last publish was made for example))
-                if not os.path.isfile(last_published_asset.default_media_user):
-                    item.setIcon(QtGui.QIcon(self.main.no_img_found))
-                else:
-                    item.setIcon(QtGui.QIcon(last_published_asset.default_media_user))
-                item.setData(QtCore.Qt.UserRole, (asset_object, last_published_asset.default_media_user))
-                self.assetsToAddListWidget.addItem(item)
+            if os.path.isfile(img):
+                item.setIcon(QtGui.QIcon(img))
+            else:
+                item.setIcon(QtGui.QIcon(self.main.no_img_found))
 
-        self.main.statusLbl.setText("Status: Idle...")
+            item.setData(QtCore.Qt.UserRole, (asset, img))
+
+            self.assetsToAddListWidget.addItem(item)
+
         self.exec_()
 
     def add_asset_to_list(self):
@@ -2358,7 +2342,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             list_item = self.assetsToAddListWidget.item(i)
             asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
             is_asset_in_layout = self.main.cursor.execute('''SELECT * FROM assets_in_layout WHERE asset_id=?''', (asset.id,)).fetchone()
-            if is_asset_in_layout != None:
+            if is_asset_in_layout == None:
                 assets_to_add.append(asset.full_path.replace("\\", "/"))
                 self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
                 self.main.db.commit()
