@@ -71,7 +71,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         super(Main, self).__init__()
 
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMaximizeButtonHint)
 
         self.ReferenceTab = ReferenceTab
         self.Lib = Lib
@@ -206,12 +205,25 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.prefBckGroundColorSlider.sliderMoved.connect(self.change_pref_background_color_pixmap)
         self.prefBckGroundColorSlider.setStyleSheet("background-color; red;")
 
+        # Set systray actions
+        self.quitAction = QtGui.QAction("Quit", self, triggered=self.terminate_program)
+
         # Systray icon
+        self.trayIconMenu = QtGui.QMenu(self)
+        self.trayIconMenu.addAction(self.quitAction)
+
+        self.tray_icon = QtGui.QIcon(self.cur_path + "\\media\\favicon_cube.png")
+        self.trayIcon = QtGui.QSystemTrayIcon(self)
+        self.trayIcon.setContextMenu(self.trayIconMenu)
+        self.trayIcon.setIcon(self.tray_icon)
+
         self.tray_icon_log_id = ""
-        self.tray_icon = QtGui.QSystemTrayIcon(QtGui.QIcon(self.cur_path + "\\media\\favicon_cube.png"), app)
-        self.tray_icon.messageClicked.connect(self.tray_icon_message_clicked)
-        self.tray_icon.activated.connect(self.tray_icon_clicked)
         self.tray_message = ""
+
+        self.trayIcon.hide()
+
+        #self.tray_icon.messageClicked.connect(self.tray_icon_message_clicked)
+        self.trayIcon.activated.connect(self.tray_icon_clicked)
 
         # Initialize modules and connections
         AssetLoader.__init__(self)
@@ -228,8 +240,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.check_news_thread.daemon = True
         #self.check_news_thread.start()
 
-        # Set soft preferences environment variables
-        os.environ["HOUDINI_USER_PREF_DIR"] = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/houdini/houdini__HVER__"
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -611,10 +621,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                 self.setWindowFlags(QtCore.Qt.Widget)
                 self.show()
                 self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-                self.tray_icon.hide()
+                self.trayIcon.hide()
             else:
                 self.hide()
-                self.tray_icon.show()
+                self.trayIcon.show()
 
     def keyPressEvent(self, event):
 
@@ -646,6 +656,30 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", "file:///Z:/Groupes-cours/NAND999-A15-N01/Nature/_info/wiki/wiki.html#Modeling"])
 
     def closeEvent(self, event):
+        if not self.trayIcon.isVisible():
+            self.setWindowFlags(QtCore.Qt.Tool)
+            self.hide()
+            self.trayIcon.show()
+            self.tray_message = "Manager is in background mode."
+            self.trayIcon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
+            self.hide()
+            event.ignore()
+            self.trayIcon.show()
+
+    def terminate_program(self):
+        # Check if a software is still open and ask user to close it before closing the manager
+        tasks = subprocess.check_output(['tasklist'])
+        if "mari" in tasks.lower():
+            self.Lib.message_box(self, type="error", text="Please save your work and close Mari before closing the Manager!")
+            return
+        elif "maya" in tasks.lower():
+            self.Lib.message_box(self, type="error", text="Please save your work and close Maya before closing the Manager!")
+            return
+        elif "houdini" in tasks.lower():
+            self.Lib.message_box(self, type="error", text="Please save your work and close Houdini before closing the Manager!")
+            return
+
+
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
         self.db.commit()
@@ -669,9 +703,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             if self.windowState() & QtCore.Qt.WindowMinimized:
                 self.setWindowFlags(QtCore.Qt.Tool)
                 self.hide()
-                self.tray_icon.show()
+                self.trayIcon.show()
                 self.tray_message = "Manager is in background mode."
-                self.tray_icon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
+                self.trayIcon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
 
 if __name__ == "__main__":
 

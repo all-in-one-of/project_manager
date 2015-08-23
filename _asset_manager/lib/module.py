@@ -126,6 +126,9 @@ class Lib(object):
                 return asset_item
 
     def setup_user_session(self):
+        # Set soft preferences environment variables
+        os.environ["HOUDINI_USER_PREF_DIR"] = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/houdini/houdini__HVER__"
+
         if not os.path.isdir("H:/tmp"):
             os.makedirs("H:/tmp")
 
@@ -302,7 +305,6 @@ class Lib(object):
         os.remove(image_path)
 
     def take_screenshot(self, path):
-
 
         self.hide()
         time.sleep(0.5)

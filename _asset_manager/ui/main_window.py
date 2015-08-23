@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Aug 23 10:48:16 2015
+# Created: Sun Aug 23 10:52:15 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -217,7 +217,7 @@ class Ui_Form(object):
         self.assetList.setIconSize(QtCore.QSize(164, 164))
         self.assetList.setMovement(QtGui.QListView.Static)
         self.assetList.setProperty("isWrapping", True)
-        self.assetList.setResizeMode(QtGui.QListView.Fixed)
+        self.assetList.setResizeMode(QtGui.QListView.Adjust)
         self.assetList.setSpacing(5)
         self.assetList.setViewMode(QtGui.QListView.IconMode)
         self.assetList.setUniformItemSizes(True)
@@ -1751,7 +1751,7 @@ class Ui_Form(object):
         self.CommentsFrame = QtGui.QFrame(self.assetManagerFrame)
         self.CommentsFrame.setEnabled(True)
         self.CommentsFrame.setMinimumSize(QtCore.QSize(400, 0))
-        self.CommentsFrame.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.CommentsFrame.setMaximumSize(QtCore.QSize(400, 16777215))
         self.CommentsFrame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.CommentsFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.CommentsFrame.setObjectName(_fromUtf8("CommentsFrame"))

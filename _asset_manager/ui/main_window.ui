@@ -570,7 +570,7 @@
                    <bool>true</bool>
                   </property>
                   <property name="resizeMode">
-                   <enum>QListView::Fixed</enum>
+                   <enum>QListView::Adjust</enum>
                   </property>
                   <property name="spacing">
                    <number>5</number>
@@ -4559,7 +4559,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
