@@ -241,21 +241,11 @@ class TaskManager(object):
             self.widgets[str(inversed_index) + ":10"] = combo_box
 
             # Adding assets
-            all_assets = self.cursor.execute('''SELECT asset_name FROM assets WHERE sequence_name=? AND shot_number=?''', (task.sequence, task.shot,)).fetchall()
-            all_assets = [str(i[0]) for i in all_assets]
-            all_assets.insert(0, "xxxxx")
-            combo_box = QtGui.QComboBox()
-            combo_box.addItems(all_assets)
-            if task.asset_id != 0:
-                try:
-                   asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
-                   index = combo_box.findText(asset_name_from_id, QtCore.Qt.MatchFixedString)
-                   combo_box.setCurrentIndex(index)
-                except:
-                    pass
-            combo_box.currentIndexChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 11, combo_box)
-            self.widgets[str(inversed_index) + ":11"] = combo_box
+            line_edit = QtGui.QLineEdit()
+            line_edit.setText(str(task.asset_id))
+            line_edit.textChanged.connect(self.update_tasks)
+            self.tmTableWidget.setCellWidget(0, 11, line_edit)
+            self.widgets[str(inversed_index) + ":11"] = line_edit
 
             # Add confirm task button
             if task.confirmation == "0":
@@ -336,7 +326,7 @@ class TaskManager(object):
         task_shot = str(task_shot_widget.currentText())
 
         task_asset_widget = self.widgets[str(widget_row_index) + ":11"]
-        task_asset_name = str(task_asset_widget.currentText())
+        task_asset_name = str(task_asset_widget.text())
 
         task = self.Task(self, task_id)
         task.get_infos_from_id()
@@ -382,24 +372,6 @@ class TaskManager(object):
             shot_combobox.clear()
             shot_combobox.addItems(shots_from_sequence)
 
-            # Get assets from current sequence and shot
-            assets_from_sequence = self.cursor.execute('''SELECT asset_name, asset_version FROM assets WHERE project_name=? AND sequence_name=? AND asset_type=?''', (task.project, task_sequence, self.tm_departments_shortname[task.department],)).fetchall()
-            assets_from_sequence = [str(i[0] + "-" + i[1]) for i in assets_from_sequence]
-            assets_from_sequence.insert(0, "xxxxx")
-            # Add assets to asset combo box
-            shot_combobox = self.widgets[str(widget_row_index) + ":11"]
-            shot_combobox.clear()
-            shot_combobox.addItems(assets_from_sequence)
-
-        # Shot was changed -> Filter assets from sequence, shots and department
-        elif widget_row_column == 10 or widget_row_column == 2:
-            assets_from_shots = self.cursor.execute('''SELECT asset_name FROM assets WHERE project_name=? AND sequence_name=? AND shot_number=? AND asset_type=?''', (task.project, task_sequence, task.shot, self.tm_departments_shortname[task_department])).fetchall()
-            assets_from_shots = [str(i[0]) for i in assets_from_shots]
-            assets_from_shots.insert(0, "xxxxx")
-            shot_combobox = self.widgets[str(widget_row_index) + ":11"]
-            shot_combobox.clear()
-            shot_combobox.addItems(assets_from_shots)
-
         task_sequence_widget = self.widgets[str(widget_row_index) + ":9"]
         task_sequence = str(task_sequence_widget.currentText())
 
@@ -407,15 +379,16 @@ class TaskManager(object):
         task_shot = str(task_shot_widget.currentText())
 
         task_asset_widget = self.widgets[str(widget_row_index) + ":11"]
-        task_asset_name = str(task_asset_widget.currentText())
+        task_asset_id = str(task_asset_widget.text())
 
         if task_sequence != task.sequence: task.change_sequence(task_sequence)
         if task_shot != task.shot: task.change_shot(task_shot)
+        if task_asset_id != task.asset_id: task.change_asset_id(task_asset_id)
 
         self.calculate_days_left(task_start_widget, task_end_widget, task_time_left_widget)
         self.change_cell_status_color(task_status_widget, task.status)
 
-    def add_task(self, item_added):
+    def add_task(self, item_added=None, asset_id=0):
 
         # Check if a project is selected
         if len(self.projectList.currentText()) == 0:
@@ -427,7 +400,7 @@ class TaskManager(object):
         number_of_rows_to_add = self.tmNbrOfRowsToAddSpinBox.value()
 
         for i in xrange(number_of_rows_to_add):
-            task = self.Task(self, 0, self.selected_project_name, "xxx", "xxxx", 0, "", "Script", "Ready to Start", u"achaput", self.today, self.today, "0", "0")
+            task = self.Task(self, 0, self.selected_project_name, "xxx", "xxxx", asset_id, "", "Script", "Ready to Start", u"achaput", self.today, self.today, "0", "0")
             task.add_task_to_db()
 
         self.add_tasks_from_database()

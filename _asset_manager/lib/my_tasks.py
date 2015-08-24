@@ -23,6 +23,8 @@ class MyTasks(object):
         self.mt_item_added = False
         self.mtTableWidget.setStyleSheet("color: black;")
 
+        self.mtTableWidget.itemDoubleClicked.connect(self.go_to_asset_id_in_asset_loader)
+
         self.mtFilterByProjectComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByShotComboBox.currentIndexChanged.connect(self.mt_filter)
@@ -209,11 +211,7 @@ class MyTasks(object):
             asset_item = QtGui.QTableWidgetItem()
             asset_item.setTextAlignment(QtCore.Qt.AlignCenter)
             asset_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            if task.asset_id != 0:
-                asset_name_from_id = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (task.asset_id,)).fetchone()[0]
-                asset_item.setText(asset_name_from_id)
-            else:
-                asset_item.setText("xxxxx")
+            asset_item.setText(str(task.asset_id))
             self.mtTableWidget.setItem(0, 11, asset_item)
             self.mt_widgets[str(inversed_index) + ":11"] = asset_item
 
@@ -242,6 +240,8 @@ class MyTasks(object):
         # Get which item was clicked and its value
         clicked_widget = self.sender()
         clicked_widget_value = value
+
+        print(clicked_widget)
 
         # Get index from clicked_widget position
         if type(clicked_widget) == QtGui.QTableWidget:
@@ -369,3 +369,8 @@ class MyTasks(object):
 
             self.tasks[task].move(10, 10 + (i * 60))
 
+    def go_to_asset_id_in_asset_loader(self, value):
+        row = value.row()
+        asset_id_line_edit = self.widgets[str(row) + ":11"]
+        self.filterAssetsById.setText(asset_id_line_edit.text())
+        self.Tabs.setCurrentWidget(self.Tabs.widget(0))

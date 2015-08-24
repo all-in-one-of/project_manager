@@ -170,7 +170,7 @@ class AssetLoader(object):
         change_icon_display_action.triggered.connect(self.change_icon_display)
 
         if self.username in ["thoudon", "lclavet"]:
-            get_asset_id = menu.addAction("Copy asset's ID to clipboard")
+            get_asset_id = menu.addAction("Add task")
             get_asset_id.setIcon(QtGui.QIcon(self.cur_path + "/media/copy_asset_id.png"))
             get_asset_id.triggered.connect(self.get_asset_id)
 
@@ -191,11 +191,9 @@ class AssetLoader(object):
             self.icon_display_type = "user"
 
     def get_asset_id(self):
-
-        pos = self.assetList.mapFromGlobal(QtGui.QCursor.pos())
-        asset_item = self.assetList.itemAt(pos)
-        asset = asset_item.data(QtCore.Qt.UserRole).toPyObject()
-        clipboard.copy(str(asset.id))
+        self.tmNbrOfRowsToAddSpinBox.setValue(1)
+        self.TaskManager.add_task(self, asset_id=self.selected_asset.id)
+        self.Tabs.setCurrentWidget(self.Tabs.widget(1))
 
     def change_favorite_state(self):
 
@@ -1022,6 +1020,8 @@ class AssetLoader(object):
             for asset, asset_item in self.assets.items():
                 if str(asset.id) == str(self.filterAssetsById.text()):
                     asset_item.setHidden(False)
+                    asset_item.setSelected(True)
+                    self.assetList_Clicked()
                 else:
                     asset_item.setHidden(True)
         else:

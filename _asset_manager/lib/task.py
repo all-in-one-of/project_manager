@@ -96,6 +96,12 @@ class Task(object):
         self.main.db.commit()
         self.bid = new_bid
 
+    def change_asset_id(self, new_id):
+        if self.asset_id == new_id: return
+        self.main.cursor.execute('''UPDATE tasks SET asset_id=? WHERE task_id=?''', (new_id, self.id,))
+        self.main.db.commit()
+        self.asset_id = new_id
+
     def change_confirmation(self, new_confirmation):
         if self.confirmation == new_confirmation: return
         self.main.cursor.execute('''UPDATE tasks SET task_confirmation=? WHERE task_id=?''', (new_confirmation, self.id,))
