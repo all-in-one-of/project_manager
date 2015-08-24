@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Aug 23 15:59:36 2015
+# Created: Mon Aug 24 13:12:01 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -135,6 +135,13 @@ class Ui_Form(object):
         self.assetFilter = QtGui.QLineEdit(self.filterByNameFrame)
         self.assetFilter.setObjectName(_fromUtf8("assetFilter"))
         self.horizontalLayout_5.addWidget(self.assetFilter)
+        self.assignedToFilterLbl_4 = QtGui.QLabel(self.filterByNameFrame)
+        self.assignedToFilterLbl_4.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.assignedToFilterLbl_4.setObjectName(_fromUtf8("assignedToFilterLbl_4"))
+        self.horizontalLayout_5.addWidget(self.assignedToFilterLbl_4)
+        self.filterAssetsById = QtGui.QLineEdit(self.filterByNameFrame)
+        self.filterAssetsById.setObjectName(_fromUtf8("filterAssetsById"))
+        self.horizontalLayout_5.addWidget(self.filterAssetsById)
         self.verticalLayout_2.addWidget(self.filterByNameFrame)
         self.filterByProjSeqShotDepFrame = QtGui.QFrame(self.assetLoaderTab)
         self.filterByProjSeqShotDepFrame.setFrameShape(QtGui.QFrame.NoFrame)
@@ -196,11 +203,11 @@ class Ui_Form(object):
         self.departmentList.addItem(_fromUtf8(""))
         self.departmentList.addItem(_fromUtf8(""))
         self.horizontalLayout_7.addWidget(self.departmentList)
-        self.createAssetFromScratchBtn = QtGui.QPushButton(self.filterByProjSeqShotDepFrame)
+        self.verticalLayout_2.addWidget(self.filterByProjSeqShotDepFrame)
+        self.createAssetFromScratchBtn = QtGui.QPushButton(self.assetLoaderTab)
         self.createAssetFromScratchBtn.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.createAssetFromScratchBtn.setObjectName(_fromUtf8("createAssetFromScratchBtn"))
-        self.horizontalLayout_7.addWidget(self.createAssetFromScratchBtn)
-        self.verticalLayout_2.addWidget(self.filterByProjSeqShotDepFrame)
+        self.verticalLayout_2.addWidget(self.createAssetFromScratchBtn)
         self.assetAndVersionFrame = QtGui.QFrame(self.assetLoaderTab)
         self.assetAndVersionFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.assetAndVersionFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -1944,7 +1951,9 @@ class Ui_Form(object):
         self.assignedToFilterComboBox.setItemText(17, _translate("Form", "Yi", None))
         self.assignedToFilterComboBox.setItemText(18, _translate("Form", "Valentin", None))
         self.assignedToFilterLbl_2.setText(_translate("Form", "Filter by name:", None))
-        self.assetFilter.setPlaceholderText(_translate("Form", "filter", None))
+        self.assetFilter.setPlaceholderText(_translate("Form", "asset name", None))
+        self.assignedToFilterLbl_4.setText(_translate("Form", "Filter by id:", None))
+        self.filterAssetsById.setPlaceholderText(_translate("Form", "id number", None))
         self.label.setText(_translate("Form", "Project:", None))
         self.addProjectBtn.setText(_translate("Form", "+", None))
         self.label_2.setText(_translate("Form", "Sequence:", None))

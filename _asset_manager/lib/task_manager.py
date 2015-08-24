@@ -418,7 +418,7 @@ class TaskManager(object):
     def add_task(self, item_added):
 
         # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
+        if len(self.projectList.currentText()) == 0:
             self.Lib.message_box(self, text="Please select a project first")
             return
 

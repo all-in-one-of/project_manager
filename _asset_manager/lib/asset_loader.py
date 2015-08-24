@@ -13,6 +13,7 @@ import time
 from glob import glob
 import re
 import webbrowser
+import pyperclip as clipboard
 
 from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
@@ -72,6 +73,7 @@ class AssetLoader(object):
         self.renderLine.hide()
         self.openRealLayoutScene.hide()
         self.loadAssociatedLayoutSceneBtn.hide()
+        self.createAssetFromScratchBtn.hide()
 
         self.assets = {}
         self.selected_asset = None
@@ -99,6 +101,7 @@ class AssetLoader(object):
 
         # Connect the filter textboxes
         self.assetFilter.textChanged.connect(self.filterList_textChanged)
+        self.filterAssetsById.textChanged.connect(self.filter_assets_by_id)
 
         # Connect the lists
         self.projectList.currentIndexChanged .connect(self.projectList_Clicked)
@@ -147,6 +150,52 @@ class AssetLoader(object):
         self.publishBtn.clicked.connect(self.publish_asset)
 
         self.createAssetFromAssetBtn.hide()
+
+
+        # Create right click menu on asset list
+        self.assetList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.assetList.connect(self.assetList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_right_click_menu)
+
+        self.icon_display_type = "user"
+
+    def show_right_click_menu(self, QPos):
+        # Create a menu
+        menu = QtGui.QMenu("Menu", self)
+        if self.icon_display_type == "user":
+            change_icon_display_action = menu.addAction("Change icon to asset type")
+            change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
+        elif self.icon_display_type == "manager":
+            change_icon_display_action = menu.addAction("Change icon to custom media")
+            change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
+        change_icon_display_action.triggered.connect(self.change_icon_display)
+
+        if self.username in ["thoudon", "lclavet"]:
+            get_asset_id = menu.addAction("Copy asset's ID to clipboard")
+            get_asset_id.setIcon(QtGui.QIcon(self.cur_path + "/media/copy_asset_id.png"))
+            get_asset_id.triggered.connect(self.get_asset_id)
+
+        # Show the context menu.
+        menu.exec_(self.assetList.mapToGlobal(QPos))
+
+    def change_icon_display(self):
+        if self.icon_display_type == "user":
+            for asset, asset_item in self.assets.items():
+                asset_item.setIcon(QtGui.QIcon(asset.default_media_manager))
+            self.icon_display_type = "manager"
+        elif self.icon_display_type == "manager":
+            for asset, asset_item in self.assets.items():
+                if os.path.isfile(asset.default_media_user):
+                    asset_item.setIcon(QtGui.QIcon(asset.default_media_user))
+                else:
+                    asset_item.setIcon(QtGui.QIcon(asset.default_media_manager))
+            self.icon_display_type = "user"
+
+    def get_asset_id(self):
+
+        pos = self.assetList.mapFromGlobal(QtGui.QCursor.pos())
+        asset_item = self.assetList.itemAt(pos)
+        asset = asset_item.data(QtCore.Qt.UserRole).toPyObject()
+        clipboard.copy(str(asset.id))
 
     def change_favorite_state(self):
 
@@ -533,18 +582,49 @@ class AssetLoader(object):
         self.openRealLayoutScene.setDisabled(True)
         self.deleteAssetBtn.setDisabled(True)
 
+        self.selected_department_name = str(self.departmentList.currentText())
+        if self.selected_department_name == "All":
+            self.selected_department_name = "xxx"
+        else:
+            self.selected_department_name = self.departments_shortname[self.selected_department_name]
+
+        if self.username in ["thoudon", "lclavet"]:
+            # Change display of create asset from scratch
+            if self.selected_department_name == "mod":
+                self.createAssetFromScratchBtn.show()
+                self.createAssetFromScratchBtn.setText("Create Modeling Asset")
+            elif self.selected_department_name == "tex":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "rig":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "anm":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "lay":
+                self.createAssetFromScratchBtn.show()
+                self.createAssetFromScratchBtn.setText("Create Layout Scene")
+            elif self.selected_department_name == "cam":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "shd":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "lgt":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "sim":
+                self.createAssetFromScratchBtn.show()
+                self.createAssetFromScratchBtn.setText("Create Simulation Asset")
+            elif self.selected_department_name == "dmp":
+                self.createAssetFromScratchBtn.show()
+                self.createAssetFromScratchBtn.setText("Create DMP Asset")
+            elif self.selected_department_name == "cmp":
+                self.createAssetFromScratchBtn.hide()
+            elif self.selected_department_name == "xxx":
+                self.createAssetFromScratchBtn.hide()
+
         # Hide load obj buttons
         self.importIntoSceneBtn.hide()
 
         # Reset last publish and last access text
         self.lastAccessLbl.setText("Last accessed by: ...")
         self.lastPublishedLbl.setText("Last published by: ...")
-
-        self.selected_department_name = str(self.departmentList.currentText())
-        if self.selected_department_name == "All":
-            self.selected_department_name = "xxx"
-        else:
-            self.selected_department_name = self.departments_shortname[self.selected_department_name]
 
         self.updateThumbBtn.hide()
 
@@ -631,8 +711,9 @@ class AssetLoader(object):
                 self.hasUvToggleBtn.show()
             self.publishBtn.show()
             self.loadObjInGplayBtn.setDisabled(False)
-            self.createAssetFromAssetBtn.show()
-            self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
+            if self.username in ["thoudon", "lclavet"]:
+                self.createAssetFromAssetBtn.show()
+                self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
 
         elif self.selected_asset.type == "cam":
             self.renderLine.hide()
@@ -672,8 +753,9 @@ class AssetLoader(object):
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
             self.publishBtn.show()
-            self.createAssetFromAssetBtn.show()
-            self.createAssetFromAssetBtn.setText("Create Animation from Rig")
+            if self.username in ["thoudon", "lclavet"]:
+                self.createAssetFromAssetBtn.show()
+                self.createAssetFromAssetBtn.setText("Create Animation from Rig")
 
         elif self.selected_asset.type == "anm":
             self.renderLine.hide()
@@ -710,6 +792,8 @@ class AssetLoader(object):
             self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             if self.username in ["thoudon", "lclavet"]:
+                self.createAssetFromAssetBtn.show()
+                self.createAssetFromAssetBtn.setText("Create Camera or Lighting from Layout")
                 self.renderLine.show()
                 self.openRealLayoutScene.show()
                 self.createVersionBtn.show()
@@ -720,8 +804,7 @@ class AssetLoader(object):
             self.publishBtn.hide()
             self.importIntoSceneBtn.show()
             self.loadObjInGplayBtn.hide()
-            self.createAssetFromAssetBtn.show()
-            self.createAssetFromAssetBtn.setText("Create Camera or Lighting from Layout")
+
 
         elif self.selected_asset.type == "dmp":
             self.renderLine.hide()
@@ -762,6 +845,7 @@ class AssetLoader(object):
 
         # Set Is In Layout label
         self.isInLayoutLbl.setText("Asset is not in any layout scene.")
+        self.loadAssociatedLayoutSceneBtn.hide()
         if "-lowres" in self.selected_asset.name:
             asset_name = self.selected_asset.name.replace("-lowres", "")
         else:
@@ -932,6 +1016,16 @@ class AssetLoader(object):
                         self.assetList.setItemHidden(self.assetList.item(i), True)
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), False)
+
+    def filter_assets_by_id(self):
+        if len(str(self.filterAssetsById.text())) > 0:
+            for asset, asset_item in self.assets.items():
+                if str(asset.id) == str(self.filterAssetsById.text()):
+                    asset_item.setHidden(False)
+                else:
+                    asset_item.setHidden(True)
+        else:
+            self.load_assets_from_selected_seq_shot_dept()
 
     def create_new_version(self):
 
@@ -1221,12 +1315,12 @@ class AssetLoader(object):
         elif self.selected_asset.type == "shd":
             self.i = 0
             self.thumbnailProgressBar.show()
-            self.thumbnailProgressBar.setMaximum(242)
+            self.thumbnailProgressBar.setMaximum(250)
             self.thumbnailProgressBar.setValue(0)
-            asset = self.selected_asset
+            asset = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
 
             self.update_thumb_process = QtCore.QProcess(self)
-            self.update_thumb_process.finished.connect(partial(self.create_mov_from_turn, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_turn, self.selected_asset, selected_version_item, selected_asset_item))
             self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
             self.update_thumb_process.waitForFinished()
             self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
@@ -1315,7 +1409,7 @@ class AssetLoader(object):
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
     def create_mov_from_turn(self, asset, selected_version_item, selected_asset_item):
-        all_files = glob("C:\\Temp\\*")
+        all_files = glob("H:/tmp/*")
         all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
 
         turn_folder = os.path.split(asset.full_path)[0].replace("\\", "/") + "/.thumb/"  # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
@@ -1358,6 +1452,7 @@ class AssetLoader(object):
             hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
             out = self.update_thumb_process.readLine()
+            print(out)
 
     def show_playblast(self):
         if self.selected_asset == None:
@@ -1926,6 +2021,10 @@ class AssetLoader(object):
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_cam_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
 
+        # Add entry to assets in layout database
+        self.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (camera_asset.id, self.selected_asset.id,))
+        self.db.commit()
+
     def create_lgt_asset_from_lay(self):
 
         self.create_from_asset_dialog.close()
@@ -1984,6 +2083,10 @@ class AssetLoader(object):
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, light_asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_lgt_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), light_asset.full_path.replace("\\", "/"), selected_shot])
+
+        # Add entry to assets in layout database
+        self.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (light_asset.id, self.selected_asset.id,))
+        self.db.commit()
 
     def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
 
