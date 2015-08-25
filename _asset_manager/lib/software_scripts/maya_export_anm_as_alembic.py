@@ -16,7 +16,6 @@ asset_name = asset_name_filename.split("_")[4]
 mc.loadPlugin("AbcExport")
 mc.file(file_path, o=True)
 
-
 all_objects = mc.ls(geometry=True)
 high_res_object_list = []
 for object in all_objects:

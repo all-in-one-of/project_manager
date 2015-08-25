@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Mon Aug 24 13:12:01 2015
+# Created: Mon Aug 24 16:36:39 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -135,10 +135,10 @@ class Ui_Form(object):
         self.assetFilter = QtGui.QLineEdit(self.filterByNameFrame)
         self.assetFilter.setObjectName(_fromUtf8("assetFilter"))
         self.horizontalLayout_5.addWidget(self.assetFilter)
-        self.assignedToFilterLbl_4 = QtGui.QLabel(self.filterByNameFrame)
-        self.assignedToFilterLbl_4.setMaximumSize(QtCore.QSize(80, 16777215))
-        self.assignedToFilterLbl_4.setObjectName(_fromUtf8("assignedToFilterLbl_4"))
-        self.horizontalLayout_5.addWidget(self.assignedToFilterLbl_4)
+        self.filterByIdLbl = QtGui.QLabel(self.filterByNameFrame)
+        self.filterByIdLbl.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.filterByIdLbl.setObjectName(_fromUtf8("filterByIdLbl"))
+        self.horizontalLayout_5.addWidget(self.filterByIdLbl)
         self.filterAssetsById = QtGui.QLineEdit(self.filterByNameFrame)
         self.filterAssetsById.setObjectName(_fromUtf8("filterAssetsById"))
         self.horizontalLayout_5.addWidget(self.filterAssetsById)
@@ -221,7 +221,7 @@ class Ui_Form(object):
         self.assetList.setFrameShape(QtGui.QFrame.StyledPanel)
         self.assetList.setDragDropMode(QtGui.QAbstractItemView.NoDragDrop)
         self.assetList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.assetList.setIconSize(QtCore.QSize(164, 164))
+        self.assetList.setIconSize(QtCore.QSize(188, 188))
         self.assetList.setMovement(QtGui.QListView.Static)
         self.assetList.setProperty("isWrapping", True)
         self.assetList.setResizeMode(QtGui.QListView.Adjust)
@@ -1952,7 +1952,7 @@ class Ui_Form(object):
         self.assignedToFilterComboBox.setItemText(18, _translate("Form", "Valentin", None))
         self.assignedToFilterLbl_2.setText(_translate("Form", "Filter by name:", None))
         self.assetFilter.setPlaceholderText(_translate("Form", "asset name", None))
-        self.assignedToFilterLbl_4.setText(_translate("Form", "Filter by id:", None))
+        self.filterByIdLbl.setText(_translate("Form", "Filter by id:", None))
         self.filterAssetsById.setPlaceholderText(_translate("Form", "id number", None))
         self.label.setText(_translate("Form", "Project:", None))
         self.addProjectBtn.setText(_translate("Form", "+", None))

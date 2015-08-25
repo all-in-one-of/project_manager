@@ -764,7 +764,7 @@ class ReferenceTab(object):
         self.ref_assets_instances.append(asset)
 
         # Create reference from capture
-        self.Lib.take_screenshot(self, path=asset.full_path)
+        self.Lib.take_screenshot(self, path=asset.full_path, user_selection=True)
         downloaded_img = Image.open(asset.full_path)
         image_width = downloaded_img.size[0]
         self.Lib.compress_image(self, asset.full_path, image_width, self.compression_level)

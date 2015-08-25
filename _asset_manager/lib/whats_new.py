@@ -232,8 +232,6 @@ class WhatsNew(object):
         current_time = current_time.strftime("%d/%m/%Y à %H:%M")
         current_time = unicode(current_time, "utf-8")
 
-        title = self.blogPostTitleComboBox.currentText()
-        title = unicode(self.utf8_codec.fromUnicode(title), 'utf-8')
 
         message = self.addNewBlogPostTextEdit.toPlainText()
         message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')

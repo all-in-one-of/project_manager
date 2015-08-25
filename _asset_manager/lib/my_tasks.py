@@ -52,6 +52,7 @@ class MyTasks(object):
         self.mtFilterByStatusComboBox.addItems(self.mt_status.keys())
         self.mtFilterByMemberComboBox.addItem("None")
         self.mtFilterByMemberComboBox.addItems(sorted(self.members.values()))
+        self.mtFilterByMemberComboBox.setCurrentIndex(self.mtFilterByMemberComboBox.findText(self.members[self.username]))
 
         self.mtHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
         self.mtHideDoneCheckBox.clicked.connect(self.mt_filter)
@@ -300,13 +301,13 @@ class MyTasks(object):
             if shot_filter == "None": shot_filter = task.shot
             if department_filter == "None": department_filter = task.department
             if status_filter == "None" : status_filter = task.status
-            if member_filter == "None" : member_filter = self.members[task.assignation]
+            if member_filter == "None" : member_filter = task.assignation
             if bid_filter == 0: bid_filter = task.bid
 
             if str(bid_operation) == ">=": bid_result = operator.le(int(bid_filter), int(task.bid))
             elif str(bid_operation) == "<=": bid_result = operator.ge(int(bid_filter), int(task.bid))
 
-            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == self.members[task.assignation] and bid_result:
+            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == task.assignation and bid_result:
                 if self.mtHideDoneCheckBox.isChecked():
                     if task.status == "Done":
                         self.mtTableWidget.hideRow(row_index)
@@ -354,8 +355,11 @@ class MyTasks(object):
     def mt_meCheckBox_Clicked(self):
 
         if self.mtMeOnlyCheckBox.checkState():
+            index = self.mtFilterByMemberComboBox.findText(self.members[self.username])
+            self.mtFilterByMemberComboBox.setCurrentIndex(index)
             self.mtFilterByMemberComboBox.setEnabled(False)
         else:
+            self.mtFilterByMemberComboBox.setCurrentIndex(0)
             self.mtFilterByMemberComboBox.setEnabled(True)
 
         self.mt_filter()
@@ -372,5 +376,6 @@ class MyTasks(object):
     def go_to_asset_id_in_asset_loader(self, value):
         row = value.row()
         asset_id_line_edit = self.widgets[str(row) + ":11"]
+        self.filterAssetsById.setText("")
         self.filterAssetsById.setText(asset_id_line_edit.text())
         self.Tabs.setCurrentWidget(self.Tabs.widget(0))

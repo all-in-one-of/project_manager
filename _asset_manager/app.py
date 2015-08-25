@@ -70,6 +70,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def __init__(self):
         super(Main, self).__init__()
 
+        self.username = os.getenv('USERNAME')
+
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
 
         self.ReferenceTab = ReferenceTab
@@ -85,20 +87,47 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Moodboard_Creator = Moodboard_Creator
         self.PeopleTab = PeopleTab
 
-        # Database Setup
-        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite" # Copie de travail
+        # Initialize the guis
+        self.Form = self.setupUi(self)
+        self.Form.center_window()
 
+        self.db_to_load = ""
+
+        if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
+            # Project selection GUI
+            projectDialog = QtGui.QDialog(self)
+            projectDialog.setWindowTitle("Select a project")
+
+            layout = QtGui.QVBoxLayout(projectDialog)
+
+            pubBtn = QtGui.QPushButton("Pub")
+            natureBtn = QtGui.QPushButton("Nature")
+
+            pubBtn.clicked.connect(projectDialog.accept)
+            natureBtn.clicked.connect(projectDialog.reject)
+
+            layout.addWidget(pubBtn)
+            layout.addWidget(natureBtn)
+
+            projectDialog.move(300, 540)
+            result = projectDialog.exec_()
+
+            if result == 0:
+                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+            elif result == 1:
+                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db_pub.sqlite"  # Database projet pub
+
+        else:
+            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+
+        # Database Setup
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
         self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.db.cursor()
-
-        # Initialize the guis
-        self.Form = self.setupUi(self)
-        self.Form.center_window()
 
         # Global Variables
         self.i = 0
@@ -110,7 +139,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.NEF_folder = self.cur_path_one_folder_up + "\\_NEF"  # H:\01-NAD\_pipeline\_utilities\NEF
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
-        self.username = os.getenv('USERNAME')
         self.refresh_iteration = 1
         self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
                         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
@@ -544,25 +572,35 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
 
     def refresh_all(self):
+        self.statusLbl.setText("Status: Refreshing assets...")
+        self.repaint()
 
         self.AssetLoader.load_all_assets_for_first_time(self)
+        self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
 
         if self.refresh_iteration % 3 == 0:
             self.Lib.check_last_active(self)
             self.PeopleTab.get_online_status(self)
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
         self.db.commit()
-        #self.load_all_assets_for_first_time()
-        #self.load_assets_from_selected_seq_shot_dept()
-        #self.setup_tags()
+        self.setup_tags()
         self.mt_item_added = True
-        if self.refresh_iteration % 5 == 0:
-            MyTasks.mt_add_tasks_from_database(self)
+
+        self.statusLbl.setText("Status: Refreshing tasks...")
+        self.repaint()
+        MyTasks.mt_add_tasks_from_database(self)
+
+        self.statusLbl.setText("Status: Refreshing references...")
+        self.repaint()
         if self.refresh_iteration % 8 == 0:
             self.ReferenceTab.refresh_reference_list(self)
 
+        self.statusLbl.setText("Status: Refreshing what's new...")
+        self.repaint()
         self.WhatsNew.load_whats_new(self)
         self.refresh_iteration += 1
+        self.statusLbl.setText("Status: Idle...")
+        self.repaint()
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:

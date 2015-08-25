@@ -30,7 +30,6 @@ class Asset(object):
             number_of_publishes = asset[14]
             publish_from_version = asset[15]
 
-
         self.id = id
         self.project = project_name
         try:
@@ -291,7 +290,10 @@ class Asset(object):
         self.last_publish_as_date = cur_time
         self.number_of_publishes += 1
         self.main.cursor.execute('''UPDATE assets SET last_publish=? WHERE asset_id=?''', (last_publish, self.dependency,))
-        self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.dependency,))
+        if self.type == "mod":
+            self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.dependency,))
+        elif self.type == "rig":
+            self.main.cursor.execute('''UPDATE assets SET number_of_publishes=? WHERE asset_id=?''', (self.number_of_publishes, self.id,))
         self.main.db.commit()
 
 

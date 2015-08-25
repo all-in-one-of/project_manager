@@ -328,7 +328,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="assignedToFilterLbl_4">
+                 <widget class="QLabel" name="filterByIdLbl">
                   <property name="maximumSize">
                    <size>
                     <width>80</width>
@@ -579,8 +579,8 @@
                   </property>
                   <property name="iconSize">
                    <size>
-                    <width>164</width>
-                    <height>164</height>
+                    <width>188</width>
+                    <height>188</height>
                    </size>
                   </property>
                   <property name="movement">

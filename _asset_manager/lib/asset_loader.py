@@ -151,6 +151,8 @@ class AssetLoader(object):
 
         self.createAssetFromAssetBtn.hide()
 
+        self.filterByIdLbl.hide()
+        self.filterAssetsById.hide()
 
         # Create right click menu on asset list
         self.assetList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -163,16 +165,27 @@ class AssetLoader(object):
         menu = QtGui.QMenu("Menu", self)
         if self.icon_display_type == "user":
             change_icon_display_action = menu.addAction("Change icon to asset type")
-            change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
+            change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
         elif self.icon_display_type == "manager":
             change_icon_display_action = menu.addAction("Change icon to custom media")
-            change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
+            change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
         change_icon_display_action.triggered.connect(self.change_icon_display)
 
+        if self.assetList.iconSize().width() == 188:
+            change_icons_size = menu.addAction("Make icons bigger")
+            change_icons_size.setIcon(QtGui.QIcon(self.cur_path + "/media/zoomin.png"))
+            change_icons_size.triggered.connect(self.change_icons_size)
+        elif self.assetList.iconSize().width() == 256:
+            change_icons_size = menu.addAction("Make icons smaller")
+            change_icons_size.setIcon(QtGui.QIcon(self.cur_path + "/media/zoomout.png"))
+            change_icons_size.triggered.connect(self.change_icons_size)
+
+
         if self.username in ["thoudon", "lclavet"]:
-            get_asset_id = menu.addAction("Add task")
-            get_asset_id.setIcon(QtGui.QIcon(self.cur_path + "/media/copy_asset_id.png"))
-            get_asset_id.triggered.connect(self.get_asset_id)
+            add_task_to_asset = menu.addAction("Add task")
+            add_task_to_asset.setIcon(QtGui.QIcon(self.cur_path + "/media/add_task_to_asset.png"))
+            add_task_to_asset.triggered.connect(self.add_task_to_selected_asset)
+
 
         # Show the context menu.
         menu.exec_(self.assetList.mapToGlobal(QPos))
@@ -190,7 +203,13 @@ class AssetLoader(object):
                     asset_item.setIcon(QtGui.QIcon(asset.default_media_manager))
             self.icon_display_type = "user"
 
-    def get_asset_id(self):
+    def change_icons_size(self):
+        if self.assetList.iconSize().width() == 188:
+            self.assetList.setIconSize(QtCore.QSize(256, 256))
+        elif self.assetList.iconSize().width() == 256:
+            self.assetList.setIconSize(QtCore.QSize(188, 188))
+
+    def add_task_to_selected_asset(self):
         self.tmNbrOfRowsToAddSpinBox.setValue(1)
         self.TaskManager.add_task(self, asset_id=self.selected_asset.id)
         self.Tabs.setCurrentWidget(self.Tabs.widget(1))
@@ -201,6 +220,8 @@ class AssetLoader(object):
             return
 
         selected_asset_publish = self.cursor.execute('''SELECT asset_id FROM assets WHERE sequence_name=? AND shot_number=? AND asset_name=? AND asset_type=? AND asset_version="out"''', (self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, self.selected_asset.type, )).fetchone()
+        print(selected_asset_publish)
+        return
         selected_asset_publish_id = selected_asset_publish[0]
 
         is_asset_favorited = self.cursor.execute('''SELECT * FROM favorited_assets WHERE asset_id=? AND member=?''', (selected_asset_publish_id, self.username,)).fetchone()
@@ -228,12 +249,35 @@ class AssetLoader(object):
             self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
 
     def add_project(self):
-        if not str(self.addProjectLineEdit.text()):
-            self.Lib.message_box(text="Please enter a project name")
+
+        # Create soft selection and asset name dialog
+        dialog = QtGui.QDialog(self)
+        self.Lib.apply_style(self, dialog)
+
+        dialog.setWindowTitle("Enter a name")
+        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+
+        name_line_edit = QtGui.QLineEdit()
+        name_line_edit.setPlaceholderText("Please enter a name...")
+        name_line_edit.returnPressed.connect(dialog.accept)
+        shortname_line_edit = QtGui.QLineEdit()
+        shortname_line_edit.setPlaceholderText("Please enter a shortname (3 letters)")
+
+        dialog_main_layout.addWidget(name_line_edit)
+        dialog_main_layout.addWidget(shortname_line_edit)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
             return
 
-        project_name = str(self.addProjectLineEdit.text())
-        project_shortname = str(self.projectShortnameLineEdit.text())
+
+        # Get asset name
+        project_name = unicode(name_line_edit.text())
+        project_name = self.Lib.normalize_str(self, project_name)
+        project_name = project_name_tmp = self.Lib.convert_to_camel_case(self, project_name)
+
+        project_shortname = str(name_line_edit.text())
         selected_folder = str(QtGui.QFileDialog.getExistingDirectory())
 
         # Prevent two projects from having the same name
@@ -246,10 +290,8 @@ class AssetLoader(object):
         # Create project's folder
         project_path = selected_folder + "\\" + project_name
         os.makedirs(project_path + "\\assets")
-        os.makedirs(project_path + "\\assets\\spt")
         os.makedirs(project_path + "\\assets\\stb")
         os.makedirs(project_path + "\\assets\\ref")
-        os.makedirs(project_path + "\\assets\\cpt")
         os.makedirs(project_path + "\\assets\\mod")
         os.makedirs(project_path + "\\assets\\tex")
         os.makedirs(project_path + "\\assets\\rig")
@@ -266,12 +308,6 @@ class AssetLoader(object):
         self.cursor.execute('''INSERT INTO projects(project_name, project_shortname, project_path) VALUES (?, ?, ?)''',
                             (project_name, project_shortname, project_path))
         self.db.commit()
-
-        # Get projects from database and add them to the projects list
-        self.projectList.clear()
-        projects = self.cursor.execute('''SELECT * FROM projects''')
-        for project in projects:
-            self.projectList.addItem(project[1])
 
     def add_sequence(self):
         """Add specified sequence to the selected project
@@ -369,11 +405,13 @@ class AssetLoader(object):
             # Create asset object and attach it to the ListWidgetItem
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes, publish_from_version)
             # Create ListWidget Item
-            asset_item = QtGui.QListWidgetItem(asset.name)
+            asset_item = QtGui.QListWidgetItem(asset.name + " (" + asset.type + ")")
             if os.path.isfile(asset.default_media_user):
                 asset_item.setIcon(QtGui.QIcon(asset.default_media_user))
             else:
-                asset_item.setIcon(QtGui.QIcon(asset.default_media_manager))
+                pixmap = QtGui.QPixmap(asset.default_media_manager)
+                pixmap = pixmap.scaled(188, 188, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                asset_item.setIcon(QtGui.QIcon(pixmap))
 
             asset_item.setData(QtCore.Qt.UserRole, asset)
 
@@ -411,6 +449,13 @@ class AssetLoader(object):
                 version_item.setHidden(True)
 
     def projectList_Clicked(self):
+
+        if self.projectList.count() == 0:
+            self.selected_project_name = "None"
+            self.selected_project_path = "None"
+            self.selected_project_shortname = "None"
+            return
+
         # Query the project id based on the name of the selected project
         self.selected_project_name = str(self.projectList.currentText())
         self.selected_project_path = str(self.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.selected_project_name,)).fetchone()[0])
@@ -448,6 +493,7 @@ class AssetLoader(object):
         # Load all assets
         if self.assetList.count() == 0:
             self.load_all_assets_for_first_time()
+
 
     def projectList_DoubleClicked(self):
         subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
@@ -704,14 +750,16 @@ class AssetLoader(object):
             self.loadObjInGplayBtn.show()
             if "lowres" in self.selected_asset.name:
                 self.hasUvToggleBtn.hide()
+                self.createAssetFromAssetBtn.hide()
             else:
+                if self.username in ["thoudon", "lclavet"]:
+                    self.createAssetFromAssetBtn.show()
+                    self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
                 self.hasUvSeparator.show()
                 self.hasUvToggleBtn.show()
             self.publishBtn.show()
             self.loadObjInGplayBtn.setDisabled(False)
-            if self.username in ["thoudon", "lclavet"]:
-                self.createAssetFromAssetBtn.show()
-                self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
+
 
         elif self.selected_asset.type == "cam":
             self.renderLine.hide()
@@ -949,7 +997,10 @@ class AssetLoader(object):
         # Unhide all assets
         [asset.setHidden(False) for asset in self.assets.values()]
         for asset, asset_item in self.assets.items():
+            asset_item.setText(asset.name)
+
             if self.selected_sequence_name == "xxx" and self.selected_department_name == "xxx":
+                asset_item.setText(asset.name + " (" + asset.type + ")")
                 asset_item.setHidden(False)
 
             elif self.selected_sequence_name == "xxx" and self.selected_department_name != "xxx":
@@ -967,6 +1018,7 @@ class AssetLoader(object):
 
 
             elif self.selected_sequence_name != "xxx" and self.selected_department_name == "xxx":
+                asset_item.setText(asset.name + " (" + asset.type + ")")
                 if asset.sequence != self.selected_sequence_name:
                     asset_item.setHidden(True)
 
@@ -1136,6 +1188,7 @@ class AssetLoader(object):
 
     def publish_asset(self):
 
+        # Publish comment GUI
         dialog = QtGui.QDialog(self)
         dialog.setWindowTitle("Add a comment")
         self.Lib.apply_style(self, dialog)
@@ -1161,6 +1214,7 @@ class AssetLoader(object):
 
         # Update last publish time
         self.selected_asset.change_last_publish()
+
         if self.selected_asset.type == "mod":
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
@@ -1178,6 +1232,10 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "rig":
             shutil.copy2(self.selected_asset.full_path, self.selected_asset.rig_out_path)
+
+            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.rig_out_path.replace(self.selected_project_path, ""),))
+            self.db.commit()
+
             self.publish_process_finished()
 
         elif self.selected_asset.type == "anm":
@@ -1188,6 +1246,7 @@ class AssetLoader(object):
 
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
+            self.publish_process.readyRead.connect(self.rara)
             self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame)])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.anim_out_path.replace(self.selected_project_path, ""),))
@@ -1229,9 +1288,12 @@ class AssetLoader(object):
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
             self.normalize_mod_scale_process.waitForFinished()
             self.normalize_mod_scale_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_normalize_mod_scale.py", "--", self.selected_asset.obj_path])
+        elif self.selected_asset.type == "anm":
+            self.update_thumbnail(False)
+        else:
+            self.Lib.message_box(self, type="info", text="Successfully published asset!")
 
     def update_thumbnail(self, ask_window=True):
-
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             return
 
@@ -1278,6 +1340,11 @@ class AssetLoader(object):
             self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version, selected_version_item, selected_asset_item)
 
         elif self.selected_asset.type == "anm":
+
+            anim_has_camera = self.cursor.execute('''SELECT has_camera FROM camera_in_anim WHERE asset_id=?''', (self.selected_asset.id, )).fetchone()
+            if anim_has_camera == None:
+                return
+
             shots = (self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, ))).fetchall()
             start_frame = str(shots[0][0])
             end_frame = str(shots[0][1])
@@ -1335,22 +1402,13 @@ class AssetLoader(object):
             self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
 
         elif self.selected_asset.type == "tex":
-            self.i = 0
-            self.thumbnailProgressBar.show()
-            self.thumbnailProgressBar.setMaximum(170)
-            self.thumbnailProgressBar.setValue(0)
-            asset = self.selected_asset
 
-            self.update_thumb_process = QtCore.QProcess(self)
-            self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
-            self.update_thumb_process.finished.connect(partial(self.create_img_from_tex, asset, selected_version_item, selected_asset_item))
-            self.update_thumb_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
+            self.Lib.take_screenshot(self, path=self.selected_asset.default_media_user, software="mari")
+            self.Lib.compress_image(self, image_path=self.selected_asset.default_media_user, width=700, quality=100)
 
-            selected_dependency = self.selected_asset.dependency
-            obj_asset = self.Asset(self, selected_dependency, get_infos_from_id=True)
-            texture_path = self.selected_project_path + "\\assets\\tex\\" + self.selected_asset.name + "-diff.jpg"
-            self.update_thumb_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
-                                                                                                            "TexScript", self.selected_asset.default_media_user, obj_asset.obj_path, texture_path])
+            if self.selected_asset.version == "01":
+                self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
+            self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.default_media_user))
 
         elif self.selected_asset.type == "lay":
             self.Lib.take_screenshot(self, path=self.selected_asset.default_media_user)
@@ -1423,7 +1481,7 @@ class AssetLoader(object):
         subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
 
         for i, each_file in enumerate(all_files):
-            if i == 0:
+            if i == 3:
                 shutil.move(each_file, movie_path_geo.replace("_full.mp4", "_full.jpg"))
             else:
                 os.remove(each_file)
@@ -1578,7 +1636,6 @@ class AssetLoader(object):
             process.finished.connect(partial(self.load_asset_finished, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc")))
             process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/").replace(".hipnc", "_" + self.username + "_laytmp.hipnc")])
 
-
         elif self.selected_asset.type == "rig" or self.selected_asset.type == "anm":
             process = QtCore.QProcess(self)
             process.start(self.maya_path, [self.selected_asset.full_path.replace("\\", "/")])
@@ -1619,6 +1676,7 @@ class AssetLoader(object):
                 os.remove(file_to_remove)
 
     def mari_finished(self, texture_project_path):
+        self.statusLbl.setText("Status: publishing mari asset (UI will Freeze, don't click!)")
         self.mari_open_asset_process.kill()
         time.sleep(1)
         self.Lib.switch_mari_cache(self, "perso")
@@ -1629,6 +1687,7 @@ class AssetLoader(object):
         self.show()
         self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
         self.activateWindow()
+        self.statusLbl.setText("Status: Idle...")
 
     def open_real_layout_scene(self):
         process = QtCore.QProcess(self)
@@ -2192,14 +2251,9 @@ class AssetLoader(object):
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_sim_from_scratch.py", sim_asset.full_path])
 
-    def readdata(self):
-        while self.houdini_hda_process.canReadLine():
-            out = self.houdini_hda_process.readLine()
-            print(out)
-
     def asset_creation_finished(self, asset):
 
-        if self.selected_department_name == "mod" and asset.type == "rig":
+        if self.selected_asset.type == "mod" and asset.type == "rig":
             # Create default publish scene for rig asset
             out_rig_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "out", [], asset.id, "", "", self.username)
             out_rig_asset.add_asset_to_db()
@@ -2233,8 +2287,8 @@ class AssetLoader(object):
         self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.cur_path + "\\lib\\thumb_creator.py", asset.name, self.cur_path + "\\media\\default_asset_thumb\\" + asset.type + ".png", export_path, self.cur_path + "\\media\\ProximaNova-Regular.otf"])
 
     def rara(self):
-        while self.thumb_process.canReadLine():
-            out = self.thumb_process.readLine()
+        while self.publish_process.canReadLine():
+            out = self.publish_process.readLine()
             print(out)
 
 class AnimSceneChooser(QtGui.QDialog):

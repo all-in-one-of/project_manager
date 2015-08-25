@@ -105,6 +105,7 @@ class Lib(object):
             if version != "01":
                 selected_asset_item.setIcon(QtGui.QIcon(thumb_filename))
             selected_version_item.setIcon(QtGui.QIcon(thumb_filename))
+            print(selected_version_item.text())
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
             self.message_box(type="info", text="Successfully created thumbnails")
@@ -303,24 +304,46 @@ class Lib(object):
         background.save(image_path.replace(".jpg", ".png"))
         os.remove(image_path)
 
-    def take_screenshot(self, path):
+    def take_screenshot(self, path, software="maya", user_selection=False):
 
-        self.hide()
-        time.sleep(0.5)
+        if user_selection:
+            self.hide()
+            # constants
+            SCREEN_GRABBER = self.cur_path_one_folder_up + "\\_soft\\screenshot_grabber\\MiniCap.exe"
 
-        # constants
-        SCREEN_GRABBER = self.cur_path_one_folder_up + "\\_soft\\screenshot.exe"
+            # filename
+            file_name = path
 
-        # filename
-        file_name = path
+            # run the screen grabber
+            subprocess.call([SCREEN_GRABBER, '-captureregselect', '-exit', '-save', file_name])
+            # winsound.PlaySound("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
 
-        # run the screen grabber
-        subprocess.call([SCREEN_GRABBER, '-rc', '506', '87', '1450', '1031', '-o', file_name])
-        #winsound.PlaySound("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
+            self.show()
+            self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+            self.activateWindow()
+        else:
 
-        self.show()
-        self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-        self.activateWindow()
+            self.hide()
+            time.sleep(0.5)
+
+            # constants
+            SCREEN_GRABBER = self.cur_path_one_folder_up + "\\_soft\\screenshot.exe"
+
+            # filename
+            file_name = path
+
+            # run the screen grabber
+            if software == "maya":
+                subprocess.call([SCREEN_GRABBER, '-rc', '506', '87', '1450', '1031', '-o', file_name])
+            elif software == "houdini":
+                subprocess.call([SCREEN_GRABBER, '-rc', '506', '87', '1450', '1031', '-o', file_name])
+            elif software == "mari":
+                subprocess.call([SCREEN_GRABBER, '-rc', '642', '233', '1292', '883', '-o', file_name])
+            #winsound.PlaySound("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\screenshot_grabber\\camera.wav", winsound.SND_FILENAME)
+
+            self.show()
+            self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+            self.activateWindow()
 
     def fit_range(self, base_value=2.5, base_min=0, base_max=5, limit_min=0, limit_max=1):
         return ((limit_max - limit_min) * (base_value - base_min) / (base_max - base_min)) + limit_min
@@ -391,7 +414,7 @@ class Lib(object):
 
 
         # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
+        if len(self.projectList.currentText()) == 0:
             self.message_box(text="Please select a project first")
             return None, None
 
