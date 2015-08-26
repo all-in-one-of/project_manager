@@ -92,6 +92,22 @@ class ThibListWidget(QtGui.QListWidget):
 
 
 
+class ThisScrollAreaWidget(QtGui.QScrollArea):
+    def __init__(self, parent=None):
+        super(ThisScrollAreaWidget, self).__init__()
+
+    def wheelEvent(self, event):
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() * 3)))
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() / 3)))
+        elif QtGui.QApplication.keyboardModifiers() == (QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier):
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() * 10)))
+        else:
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta())))
+
+
+
 class profilPicLabel(QtGui.QLabel):
     def __init__(self, parent, *args, **kwargs):
         QtGui.QLabel.__init__(self, parent, *args, **kwargs)

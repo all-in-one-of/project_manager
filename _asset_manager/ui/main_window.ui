@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>7</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -1113,16 +1113,47 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTextEdit" name="lastPublishComment">
+                 <widget class="QFrame" name="frame_6">
                   <property name="maximumSize">
                    <size>
                     <width>400</width>
                     <height>16777215</height>
                    </size>
                   </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_3">
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <property name="margin">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>Publish history:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTextEdit" name="lastPublishComment">
+                     <property name="maximumSize">
+                      <size>
+                       <width>400</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                </layout>
@@ -4283,7 +4314,7 @@
               <number>3</number>
              </property>
              <item>
-              <widget class="QFrame" name="frame_4">
+              <widget class="QFrame" name="whatsNewFilterFrame">
                <property name="frameShape">
                 <enum>QFrame::NoFrame</enum>
                </property>
@@ -4296,8 +4327,21 @@
                 </property>
                 <item>
                  <widget class="QCheckBox" name="showOnlyMeWhatsNew">
+                  <property name="maximumSize">
+                   <size>
+                    <width>175</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="text">
                    <string>Show only news concerning me</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showAllNewsCheckBox">
+                  <property name="text">
+                   <string>Show All News</string>
                   </property>
                  </widget>
                 </item>
@@ -4366,11 +4410,21 @@
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QCheckBox" name="showImportantMessagesCheckBox">
+                  <property name="text">
+                   <string>Show Important Messages</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
              <item>
-              <widget class="QScrollArea" name="newsFeedScrollArea">
+              <widget class="ThisScrollAreaWidget" name="newsFeedScrollArea">
                <property name="frameShape">
                 <enum>QFrame::NoFrame</enum>
                </property>
@@ -4722,12 +4776,17 @@
    <extends>QLabel</extends>
    <header>custom_widgets</header>
   </customwidget>
+  <customwidget>
+   <class>ThisScrollAreaWidget</class>
+   <extends>QScrollArea</extends>
+   <header>custom_widgets</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>commentsScrollArea</tabstop>
   <tabstop>commentLineEdit</tabstop>
   <tabstop>Tabs</tabstop>
-  <tabstop>lastPublishComment</tabstop>
   <tabstop>loadAssetBtn</tabstop>
   <tabstop>importIntoSceneBtn</tabstop>
   <tabstop>createVersionBtn</tabstop>

@@ -11,3 +11,4 @@ distutils.dir_util.copy_tree("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\
 distutils.file_util.copy_file("H:\\01-NAD\\_pipeline\\_utilities\\_asset_manager\\app.py", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_asset_manager\\app.py")
 
 
+raw_input("Please press a key to continue...")

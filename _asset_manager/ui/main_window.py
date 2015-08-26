@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Mon Aug 24 16:36:39 2015
+# Created: Wed Aug 26 11:14:37 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -398,11 +398,24 @@ class Ui_Form(object):
         self.horizontalLayout_10.addItem(spacerItem1)
         self.gridLayout_11.addWidget(self.frame_3, 5, 0, 1, 1)
         self.horizontalLayout_8.addWidget(self.InfoFrame)
-        self.lastPublishComment = QtGui.QTextEdit(self.stateFrame)
+        self.frame_6 = QtGui.QFrame(self.stateFrame)
+        self.frame_6.setMaximumSize(QtCore.QSize(400, 16777215))
+        self.frame_6.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame_6.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_6.setObjectName(_fromUtf8("frame_6"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.frame_6)
+        self.verticalLayout_3.setSpacing(3)
+        self.verticalLayout_3.setMargin(3)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.label_5 = QtGui.QLabel(self.frame_6)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.verticalLayout_3.addWidget(self.label_5)
+        self.lastPublishComment = QtGui.QTextEdit(self.frame_6)
         self.lastPublishComment.setMaximumSize(QtCore.QSize(400, 16777215))
         self.lastPublishComment.setReadOnly(True)
         self.lastPublishComment.setObjectName(_fromUtf8("lastPublishComment"))
-        self.horizontalLayout_8.addWidget(self.lastPublishComment)
+        self.verticalLayout_3.addWidget(self.lastPublishComment)
+        self.horizontalLayout_8.addWidget(self.frame_6)
         self.verticalLayout_2.addWidget(self.stateFrame)
         self.Tabs.addTab(self.assetLoaderTab, _fromUtf8(""))
         self.tmTab = QtGui.QWidget()
@@ -1633,17 +1646,21 @@ class Ui_Form(object):
         self.verticalLayout_31.setSpacing(3)
         self.verticalLayout_31.setMargin(3)
         self.verticalLayout_31.setObjectName(_fromUtf8("verticalLayout_31"))
-        self.frame_4 = QtGui.QFrame(self.whatsNewTab)
-        self.frame_4.setFrameShape(QtGui.QFrame.NoFrame)
-        self.frame_4.setFrameShadow(QtGui.QFrame.Raised)
-        self.frame_4.setObjectName(_fromUtf8("frame_4"))
-        self.horizontalLayout_20 = QtGui.QHBoxLayout(self.frame_4)
+        self.whatsNewFilterFrame = QtGui.QFrame(self.whatsNewTab)
+        self.whatsNewFilterFrame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.whatsNewFilterFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.whatsNewFilterFrame.setObjectName(_fromUtf8("whatsNewFilterFrame"))
+        self.horizontalLayout_20 = QtGui.QHBoxLayout(self.whatsNewFilterFrame)
         self.horizontalLayout_20.setMargin(3)
         self.horizontalLayout_20.setObjectName(_fromUtf8("horizontalLayout_20"))
-        self.showOnlyMeWhatsNew = QtGui.QCheckBox(self.frame_4)
+        self.showOnlyMeWhatsNew = QtGui.QCheckBox(self.whatsNewFilterFrame)
+        self.showOnlyMeWhatsNew.setMaximumSize(QtCore.QSize(175, 16777215))
         self.showOnlyMeWhatsNew.setObjectName(_fromUtf8("showOnlyMeWhatsNew"))
         self.horizontalLayout_20.addWidget(self.showOnlyMeWhatsNew)
-        self.verticalLayout_31.addWidget(self.frame_4)
+        self.showAllNewsCheckBox = QtGui.QCheckBox(self.whatsNewFilterFrame)
+        self.showAllNewsCheckBox.setObjectName(_fromUtf8("showAllNewsCheckBox"))
+        self.horizontalLayout_20.addWidget(self.showAllNewsCheckBox)
+        self.verticalLayout_31.addWidget(self.whatsNewFilterFrame)
         self.filterNewsByTypeFrame = QtGui.QFrame(self.whatsNewTab)
         self.filterNewsByTypeFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.filterNewsByTypeFrame.setFrameShadow(QtGui.QFrame.Raised)
@@ -1671,8 +1688,12 @@ class Ui_Form(object):
         self.showNewCommentsCheckBox.setChecked(True)
         self.showNewCommentsCheckBox.setObjectName(_fromUtf8("showNewCommentsCheckBox"))
         self.horizontalLayout_3.addWidget(self.showNewCommentsCheckBox)
+        self.showImportantMessagesCheckBox = QtGui.QCheckBox(self.filterNewsByTypeFrame)
+        self.showImportantMessagesCheckBox.setChecked(True)
+        self.showImportantMessagesCheckBox.setObjectName(_fromUtf8("showImportantMessagesCheckBox"))
+        self.horizontalLayout_3.addWidget(self.showImportantMessagesCheckBox)
         self.verticalLayout_31.addWidget(self.filterNewsByTypeFrame)
-        self.newsFeedScrollArea = QtGui.QScrollArea(self.whatsNewTab)
+        self.newsFeedScrollArea = ThisScrollAreaWidget(self.whatsNewTab)
         self.newsFeedScrollArea.setFrameShape(QtGui.QFrame.NoFrame)
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
@@ -1812,14 +1833,13 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(0)
+        self.Tabs.setCurrentIndex(7)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
         Form.setTabOrder(self.commentsScrollArea, self.commentLineEdit)
         Form.setTabOrder(self.commentLineEdit, self.Tabs)
-        Form.setTabOrder(self.Tabs, self.lastPublishComment)
-        Form.setTabOrder(self.lastPublishComment, self.loadAssetBtn)
+        Form.setTabOrder(self.Tabs, self.loadAssetBtn)
         Form.setTabOrder(self.loadAssetBtn, self.importIntoSceneBtn)
         Form.setTabOrder(self.importIntoSceneBtn, self.createVersionBtn)
         Form.setTabOrder(self.createVersionBtn, self.publishBtn)
@@ -1985,6 +2005,7 @@ class Ui_Form(object):
         self.publishBtn.setToolTip(_translate("Form", "<html><head/><body><p>Publish</p></body></html>", None))
         self.addRemoveAssetAsFavoriteBtn.setToolTip(_translate("Form", "<html><head/><body><p>Add asset to favorite</p></body></html>", None))
         self.isInLayoutLbl.setText(_translate("Form", "Asset is not in any layout scene.", None))
+        self.label_5.setText(_translate("Form", "Publish history:", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.assetLoaderTab), _translate("Form", "Asset Loader", None))
         self.tmFilterByGroupBox.setTitle(_translate("Form", "Filter by", None))
         self.tmProjectLbl.setText(_translate("Form", "Project:", None))
@@ -2169,11 +2190,13 @@ class Ui_Form(object):
         self.sendEmailBtn.setText(_translate("Form", "Send E-mail", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.peopleTab), _translate("Form", "People", None))
         self.showOnlyMeWhatsNew.setText(_translate("Form", "Show only news concerning me", None))
+        self.showAllNewsCheckBox.setText(_translate("Form", "Show All News", None))
         self.showNewPublishesCheckBox.setText(_translate("Form", "Show Publishes", None))
         self.showNewAssetsCheckBox.setText(_translate("Form", "Show New Assets", None))
         self.showNewTasksCheckBox.setText(_translate("Form", "Show New Tasks", None))
         self.showNewImagesCheckBox.setText(_translate("Form", "Show New Images", None))
         self.showNewCommentsCheckBox.setText(_translate("Form", "Show New comments", None))
+        self.showImportantMessagesCheckBox.setText(_translate("Form", "Show Important Messages", None))
         self.markAllNewsAsReadBtn.setText(_translate("Form", "Mark all as read", None))
         self.addNewBlogPostBtn.setText(_translate("Form", "Add Important Message", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.whatsNewTab), _translate("Form", "What\'s New", None))
@@ -2184,7 +2207,7 @@ class Ui_Form(object):
         self.commentsForAssetLbl.setText(_translate("Form", "Comments for asset:", None))
         self.commentLineEdit.setPlaceholderText(_translate("Form", "Enter comment here and press return...", None))
 
-from custom_widgets import ThibListWidget, profilPicLabel
+from custom_widgets import ThibListWidget, ThisScrollAreaWidget, profilPicLabel
 
 if __name__ == "__main__":
     import sys

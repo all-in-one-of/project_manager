@@ -494,7 +494,6 @@ class AssetLoader(object):
         if self.assetList.count() == 0:
             self.load_all_assets_for_first_time()
 
-
     def projectList_DoubleClicked(self):
         subprocess.Popen(r'explorer /select,' + str(self.selected_project_path))
 
@@ -687,8 +686,11 @@ class AssetLoader(object):
         self.deleteAssetBtn.setDisabled(False)
         self.openRealLayoutScene.setDisabled(False)
 
-        selected_asset = self.assetList.selectedItems()[0]
-        selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        try:
+            selected_asset = self.assetList.selectedItems()[0]
+            selected_asset = selected_asset.data(QtCore.Qt.UserRole).toPyObject()
+        except:
+            return
 
         for version_item in self.versions:
             version_asset = version_item.data(QtCore.Qt.UserRole).toPyObject()
@@ -702,6 +704,10 @@ class AssetLoader(object):
         self.versionList_Clicked()
 
     def versionList_simple_view(self):
+
+        if self.selected_asset == None:
+            return
+
         self.statusLbl.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
@@ -718,6 +724,9 @@ class AssetLoader(object):
             media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
 
     def versionList_advanced_view(self):
+        if self.selected_asset == None:
+            return
+
         self.statusLbl.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
@@ -843,12 +852,13 @@ class AssetLoader(object):
                 self.renderLine.show()
                 self.openRealLayoutScene.show()
                 self.createVersionBtn.show()
+                self.importIntoSceneBtn.show()
             else:
+                self.importIntoSceneBtn.hide()
                 self.renderLine.hide()
                 self.openRealLayoutScene.hide()
                 self.createVersionBtn.hide()
             self.publishBtn.hide()
-            self.importIntoSceneBtn.show()
             self.loadObjInGplayBtn.hide()
 
 

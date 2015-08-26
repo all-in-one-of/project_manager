@@ -97,6 +97,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             # Project selection GUI
             projectDialog = QtGui.QDialog(self)
             projectDialog.setWindowTitle("Select a project")
+            projectDialog.setMinimumWidth(175)
 
             layout = QtGui.QVBoxLayout(projectDialog)
 
@@ -109,7 +110,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             layout.addWidget(pubBtn)
             layout.addWidget(natureBtn)
 
-            projectDialog.move(300, 540)
+            projectDialog.move(960, 540)
             result = projectDialog.exec_()
 
             if result == 0:
@@ -268,7 +269,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.check_news_thread.daemon = True
         #self.check_news_thread.start()
 
-
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -403,9 +403,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def remove_tabs_based_on_members(self):
 
         if not (self.username == "thoudon" or self.username == "lclavet"):
-            self.addProjectFrame.hide()
-            self.addSequenceFrame.hide()
-            self.addShotFrame.hide()
+            self.addProjectBtn.hide()
+            self.addSequenceBtn.hide()
+            self.addShotBtn.hide()
             self.adminPrefFrame.hide()
             self.createAssetFromScratchBtn.hide()
 
@@ -415,63 +415,47 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
         elif self.members[self.username] == "Chloe":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Christopher":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "David":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Edwin":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Jeremy":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Laurence":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Louis-Philippe":
@@ -481,40 +465,30 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Mathieu":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Maxime":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Olivier":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Simon":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Thibault":
@@ -523,23 +497,17 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         elif self.members[self.username] == "Yann":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
         elif self.members[self.username] == "Yi":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
 
         elif self.members[self.username] == "Valentin":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-            item = self.departmentList.findItems("Rendering", QtCore.Qt.MatchExactly)[0]
-            self.departmentList.takeItem(self.departmentList.indexFromItem(item).row())
 
     def get_tabs_id_from_name(self):
         self.tabs_list = {}
@@ -764,29 +732,8 @@ if __name__ == "__main__":
         app = QtGui.QApplication(sys.argv)
         app.setQuitOnLastWindowClosed(False)
 
-        # Show Splashscreen
-        splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
-        splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-        splash.setMask(splash_pix.mask())
-
-        splash.show()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
-        splash.repaint()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
-        splash.repaint()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
-        splash.repaint()
-
-        splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
-        splash.repaint()
-
         window = Main()
         window.show()
-
-        splash.finish(window)
 
         sys.exit(app.exec_())
     else:
@@ -794,31 +741,10 @@ if __name__ == "__main__":
             app = QtGui.QApplication(sys.argv)
             app.setQuitOnLastWindowClosed(False)
 
-            # Show Splashscreen
-            splash_pix = QtGui.QPixmap(cur_path + "\\media\\splashscreen.jpg")
-            splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-            splash.setMask(splash_pix.mask())
-
-            splash.show()
-
-            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-02.jpg"))
-            splash.repaint()
-
-            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-03.jpg"))
-            splash.repaint()
-
-            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-04.jpg"))
-            splash.repaint()
-
-            splash.setPixmap(QtGui.QPixmap(cur_path + "\\media\\splashscreen-05.jpg"))
-            splash.repaint()
-
             window = Main()
             window.show()
 
-            splash.finish(window)
             sys.exit(app.exec_())
-
         except Exception as e:
             logger.debug(e)
 

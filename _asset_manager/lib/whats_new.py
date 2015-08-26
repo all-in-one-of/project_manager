@@ -34,10 +34,15 @@ class WhatsNew(object):
         self.showNewTasksCheckBox.stateChanged.connect(self.filter_feed_entries)
         self.showNewImagesCheckBox.stateChanged.connect(self.filter_feed_entries)
         self.showNewCommentsCheckBox.stateChanged.connect(self.filter_feed_entries)
+        self.showImportantMessagesCheckBox.stateChanged.connect(self.filter_feed_entries)
+
+        self.showAllNewsCheckBox.stateChanged.connect(self.load_whats_new)
 
         self.newsfeed_gridLayout = QtGui.QVBoxLayout(self.newsFeedScrollAreaWidgetContents)
         self.newsfeed_gridLayout.setMargin(0)
         self.newsfeed_gridLayout.setSpacing(3)
+
+
 
 
     def load_whats_new(self):
@@ -52,8 +57,8 @@ class WhatsNew(object):
 
         # Get all log entries based on type
         self.log_entries_db = self.cursor.execute('''SELECT * FROM log ''').fetchall()
-        self.log_entries_db = [entry for entry in self.log_entries_db if self.username in entry[2]] # Get unread entries
-
+        if self.showAllNewsCheckBox.checkState() == 0:
+            self.log_entries_db = [entry for entry in self.log_entries_db if self.username in entry[2]]  # Get unread entries
 
         if len(self.log_entries_db) == 0:
             self.create_feed_entry(type="nothing", created_by="default", description="Booh :(")
@@ -77,9 +82,34 @@ class WhatsNew(object):
             log = self.LogEntry(self, log_id, log_dependancy, log_viewed_by, log_members_concerned, log_from, log_to, log_type, log_description, log_time)
             self.log_entries.append(log)
 
+
+
         # Add log entries to GUI
-        for log in reversed(self.log_entries):
+        log_day = "0"
+        for i, log in enumerate(reversed(self.log_entries)):
+
+
+            if log_day != str(log.time.split("/")[0]): # If day is different than last log day.
+                # Create label
+                log_date = log.time.split(" ")[0]  # Ex: 01/01/2015
+                log_date = datetime.strptime(log_date, '%d/%m/%Y').strftime('%A %d %B %Y')  # Convert 01/01/2015 to Monday 01 January 2015
+                font = QtGui.QFont()
+                font.setPointSize(25)
+                day_label = QtGui.QLabel("      " + log_date)
+                day_label.setFont(font)
+
+                if i != 0:
+                    separation_line = QtGui.QFrame()
+                    separation_line.setFrameShape(QtGui.QFrame.HLine)
+                    separation_line.setFrameShadow(QtGui.QFrame.Sunken)
+                    self.newsfeed_gridLayout.addWidget(separation_line)
+                self.newsfeed_gridLayout.addWidget(day_label)
+
+            log_day = str(log.time.split("/")[0])
+
             self.create_feed_entry(type=log.type, members_concerned=log.members_concerned, dependancy=log.dependancy, created_by=log.created_by, log_to=log.log_to, description=log.description, log_time=log.time)
+
+
 
         self.filter_feed_entries()
 
@@ -177,7 +207,6 @@ class WhatsNew(object):
 
         self.newsfeed_gridLayout.addWidget(feedEntryFrame)
 
-
     def filter_feed_entries(self):
 
         # Create a list which store which checkbox is checked (ex: ["publish", "asset"])
@@ -193,8 +222,8 @@ class WhatsNew(object):
             checkbox_states.append("image")
         if self.showNewCommentsCheckBox.checkState():
             checkbox_states.append("comment")
-
-        checkbox_states.append("important")
+        if self.showImportantMessagesCheckBox.checkState():
+            checkbox_states.append("important")
 
         for feed_entry, type, members_concerned in self.log_widgets:
             # Current feed entry type is checked
@@ -238,5 +267,4 @@ class WhatsNew(object):
 
         log_entry = self.LogEntry(self, 0, "", [], [], self.username, "", "important", message, datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
-
 

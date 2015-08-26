@@ -9,3 +9,9 @@
 2015-07-31 09:25:11,611 ::: app.py ::: <module>() ::: line 707 ::: 'ascii' codec can't encode character u'\xe9' in position 23: ordinal not in range(128)
 2015-07-31 09:26:03,322 ::: app.py ::: <module>() ::: line 707 ::: 'ascii' codec can't encode character u'\xe9' in position 24: ordinal not in range(128)
 2015-07-31 09:39:29,904 ::: app.py ::: <module>() ::: line 707 ::: 'Main' object has no attribute 'markAllAsReadBtn'
+2015-08-26 09:00:05,009 ::: app.py ::: <module>() ::: line 823 ::: 'Main' object has no attribute 'cur_path'
+2015-08-26 09:29:50,276 ::: app.py ::: <module>() ::: line 783 ::: 'Main' object has no attribute 'theme'
+2015-08-26 09:30:18,426 ::: app.py ::: <module>() ::: line 782 ::: 'Main' object has no attribute 'themePrefComboBox'
+2015-08-26 09:30:33,049 ::: app.py ::: <module>() ::: line 783 ::: 'builtin_function_or_method' object has no attribute 'execute'
+2015-08-26 09:32:38,983 ::: app.py ::: <module>() ::: line 782 ::: 'Main' object has no attribute 'cur_path'
+2015-08-26 09:44:16,984 ::: app.py ::: <module>() ::: line 782 ::: global name 'ThibListWidget' is not defined
