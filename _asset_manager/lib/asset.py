@@ -70,7 +70,8 @@ class Asset(object):
                 minutes = time.split(":")[1]
                 self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
         else:
-            self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+            published_by = last_publish.split(" ")[0]
+            self.last_publish = datetime.now().strftime(published_by + " on %d/%m/%Y at %H:%M")
             self.last_publish_as_date = self.last_publish_as_date = datetime.now()
 
         self.number_of_publishes = number_of_publishes
@@ -80,7 +81,7 @@ class Asset(object):
         self.full_path = self.project_path + self.path
 
         # Get the last version of the asset (Ex: if an asset has 5 version, last_version is equal to "05")
-        self.last_version = self.main.cursor.execute('''SELECT MAX(asset_version) FROM assets WHERE asset_name=? AND asset_extension=? AND asset_type=?''', (self.name, self.extension, self.type,)).fetchone()[0]
+        self.last_version = self.main.cursor.execute('''SELECT MAX(asset_version) FROM assets WHERE asset_name=? AND asset_extension=? AND asset_type=? AND asset_version!="out"''', (self.name, self.extension, self.type,)).fetchone()[0]
 
         # Default media for asset
         self.default_media_manager = self.main.cur_path + "\\media\\default_asset_thumb\\{0}.png".format(self.type)
@@ -159,11 +160,6 @@ class Asset(object):
         self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes,))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
-
-    def rara(self):
-        while self.thumb_process.canReadLine():
-            out = self.thumb_process.readLine()
-            print(out)
 
     def remove_asset_from_db(self):
         try:

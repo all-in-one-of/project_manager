@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Wed Aug 26 11:14:37 2015
+# Created: Wed Aug 26 13:36:19 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -135,13 +135,6 @@ class Ui_Form(object):
         self.assetFilter = QtGui.QLineEdit(self.filterByNameFrame)
         self.assetFilter.setObjectName(_fromUtf8("assetFilter"))
         self.horizontalLayout_5.addWidget(self.assetFilter)
-        self.filterByIdLbl = QtGui.QLabel(self.filterByNameFrame)
-        self.filterByIdLbl.setMaximumSize(QtCore.QSize(80, 16777215))
-        self.filterByIdLbl.setObjectName(_fromUtf8("filterByIdLbl"))
-        self.horizontalLayout_5.addWidget(self.filterByIdLbl)
-        self.filterAssetsById = QtGui.QLineEdit(self.filterByNameFrame)
-        self.filterAssetsById.setObjectName(_fromUtf8("filterAssetsById"))
-        self.horizontalLayout_5.addWidget(self.filterAssetsById)
         self.verticalLayout_2.addWidget(self.filterByNameFrame)
         self.filterByProjSeqShotDepFrame = QtGui.QFrame(self.assetLoaderTab)
         self.filterByProjSeqShotDepFrame.setFrameShape(QtGui.QFrame.NoFrame)
@@ -1833,7 +1826,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1972,8 +1965,6 @@ class Ui_Form(object):
         self.assignedToFilterComboBox.setItemText(18, _translate("Form", "Valentin", None))
         self.assignedToFilterLbl_2.setText(_translate("Form", "Filter by name:", None))
         self.assetFilter.setPlaceholderText(_translate("Form", "asset name", None))
-        self.filterByIdLbl.setText(_translate("Form", "Filter by id:", None))
-        self.filterAssetsById.setPlaceholderText(_translate("Form", "id number", None))
         self.label.setText(_translate("Form", "Project:", None))
         self.addProjectBtn.setText(_translate("Form", "+", None))
         self.label_2.setText(_translate("Form", "Sequence:", None))

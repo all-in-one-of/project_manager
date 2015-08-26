@@ -376,6 +376,12 @@ class MyTasks(object):
     def go_to_asset_id_in_asset_loader(self, value):
         row = value.row()
         asset_id_line_edit = self.widgets[str(row) + ":11"]
-        self.filterAssetsById.setText("")
-        self.filterAssetsById.setText(asset_id_line_edit.text())
+        for asset, asset_item in self.assets.items():
+            asset_id = str(asset_id_line_edit.text())
+            asset_item.setHidden(False)
+            if asset_id == str(asset.id):
+                asset_item.setHidden(False)
+            else:
+                asset_item.setHidden(True)
+
         self.Tabs.setCurrentWidget(self.Tabs.widget(0))

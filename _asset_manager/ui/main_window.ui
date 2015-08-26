@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>7</number>
+            <number>0</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -324,26 +324,6 @@
                  <widget class="QLineEdit" name="assetFilter">
                   <property name="placeholderText">
                    <string>asset name</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="filterByIdLbl">
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Filter by id:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="filterAssetsById">
-                  <property name="placeholderText">
-                   <string>id number</string>
                   </property>
                  </widget>
                 </item>

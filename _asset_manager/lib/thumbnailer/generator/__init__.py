@@ -57,23 +57,25 @@ def generate():
     # METAL = bpy.data.materials['metal']
     # bpy.context.active_object.active_material = METAL
 
+
     bpy.context.scene.cycles.samples = int(sys.argv[-3])
     bpy.context.scene.render.resolution_percentage = int(sys.argv[-2])
 
     if sys.argv[-4] == "full":
-        bpy.context.scene.render.filepath = "C:\\Temp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_full.jpg").split("\\")[-1]
+        bpy.context.scene.render.filepath = "H:\\tmp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_full.jpg").split("\\")[-1]
         bpy.ops.render.render(write_still=True)
 
     elif sys.argv[-4] == "quad":
         for i in range(0, 360, 90):
             bpy.context.object.rotation_euler[2] = i * 0.0174532925
-            bpy.context.scene.render.filepath = "C:\\Temp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_" + str(i).zfill(3) + ".jpg").split("\\")[-1]
+            bpy.context.scene.render.filepath = "H:\\tmp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_" + str(i).zfill(3) + ".jpg").split("\\")[-1]
             bpy.ops.render.render(write_still=True)
 
     elif sys.argv[-4] == "turn":
         for i in range(0, 360, 15):
+        	#bpy.context.scene.cycles.seed = i
             bpy.context.object.rotation_euler[2] = i * 0.0174532925
-            bpy.context.scene.render.filepath = "C:\\Temp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_" + str(int(i/15)).zfill(2) + ".jpg").split("\\")[-1]
+            bpy.context.scene.render.filepath = "H:\\tmp\\" + objFilename.replace("out.obj", sys.argv[-1] + "_" + str(int(i/15)).zfill(2) + ".jpg").split("\\")[-1]
             bpy.ops.render.render(write_still=True)
 
     print("RENDER IS FINISHED")

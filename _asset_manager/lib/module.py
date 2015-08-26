@@ -27,7 +27,7 @@ class Lib(object):
         self.updateThumbBtn.setEnabled(False)
         self.full_obj_path = obj_path
         self.obj_name = obj_path[obj_path.find("_mod_")+len("_mod_"):obj_path.rfind("_out")]
-        self.obj_tmp_path = "C:\\Temp\\" + obj_path.split("\\")[-1]
+        self.obj_tmp_path = "H:\\tmp\\" + obj_path.split("\\")[-1]
         self.type = type
         self.version = version
         self.i = 0
@@ -673,12 +673,15 @@ class DesktopWidget(QtGui.QWidget):
 class CheckNews(QtCore.QThread):
     def __init__(self, main):
         QtCore.QThread.__init__(self)
+        self.main = main
 
     def run(self):
         while True:
-            self.emit(QtCore.SIGNAL("refresh_all"))
-            time.sleep(10)
-
+            if self.main.isHidden():
+                self.emit(QtCore.SIGNAL("refresh_all"))
+                time.sleep(15)
+            else:
+                time.sleep(15)
 
 if __name__ == "__main__":
     test = Lib()

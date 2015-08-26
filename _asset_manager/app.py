@@ -91,6 +91,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Form = self.setupUi(self)
         self.Form.center_window()
 
+        self.setMinimumSize(1453, 923)
+        self.setMaximumSize(1453, 923)
+
         self.db_to_load = ""
 
         if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
@@ -122,7 +125,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
 
         # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
+        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
         self.backup_database()
@@ -236,6 +239,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Set systray actions
         self.quitAction = QtGui.QAction("Quit", self, triggered=self.terminate_program)
+        self.quitAction.setIcon(QtGui.QIcon(self.cur_path + "/media/turn_off.png"))
 
         # Systray icon
         self.trayIconMenu = QtGui.QMenu(self)
@@ -264,10 +268,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
-        #self.check_news_thread = CheckNews(self)
-        #self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
-        #self.check_news_thread.daemon = True
-        #self.check_news_thread.start()
+        self.check_news_thread = CheckNews(self)
+        self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
+        self.check_news_thread.daemon = True
+        self.check_news_thread.start()
+
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -546,9 +551,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.AssetLoader.load_all_assets_for_first_time(self)
         self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
 
-        if self.refresh_iteration % 3 == 0:
-            self.Lib.check_last_active(self)
-            self.PeopleTab.get_online_status(self)
+        self.Lib.check_last_active(self)
+        self.PeopleTab.get_online_status(self)
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
         self.db.commit()
         self.setup_tags()
@@ -560,13 +564,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         self.statusLbl.setText("Status: Refreshing references...")
         self.repaint()
-        if self.refresh_iteration % 8 == 0:
-            self.ReferenceTab.refresh_reference_list(self)
+
+        self.ReferenceTab.refresh_reference_list(self)
 
         self.statusLbl.setText("Status: Refreshing what's new...")
         self.repaint()
         self.WhatsNew.load_whats_new(self)
-        self.refresh_iteration += 1
+
         self.statusLbl.setText("Status: Idle...")
         self.repaint()
 
@@ -715,7 +719,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 if __name__ == "__main__":
 
-    log_to_file = False
+    log_to_file = True
     cur_path = os.path.dirname(os.path.realpath(__file__))
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
