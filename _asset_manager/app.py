@@ -135,6 +135,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Global Variables
         self.i = 0
+        self.ref_assets_instances = []
         self.selected_asset = None
         self.utf8_codec = QtCore.QTextCodec.codecForName("utf-8")
         self.today = time.strftime("%d/%m/%Y", time.gmtime())
@@ -564,7 +565,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.statusLbl.setText("Status: Refreshing references...")
         self.repaint()
 
-        self.ReferenceTab.refresh_reference_list(self)
+        if len(self.ref_assets_instances) > 1:
+            self.ReferenceTab.refresh_reference_list(self)
 
         self.statusLbl.setText("Status: Refreshing what's new...")
         self.repaint()

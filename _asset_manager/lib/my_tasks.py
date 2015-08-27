@@ -242,8 +242,6 @@ class MyTasks(object):
         clicked_widget = self.sender()
         clicked_widget_value = value
 
-        print(clicked_widget)
-
         # Get index from clicked_widget position
         if type(clicked_widget) == QtGui.QTableWidget:
             widget_index = self.mtTableWidget.indexAt(clicked_widget.pos())

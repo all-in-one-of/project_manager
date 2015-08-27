@@ -42,9 +42,6 @@ class WhatsNew(object):
         self.newsfeed_gridLayout.setMargin(0)
         self.newsfeed_gridLayout.setSpacing(3)
 
-
-
-
     def load_whats_new(self):
 
         for i in range(self.newsfeed_gridLayout.count()):
@@ -165,9 +162,13 @@ class WhatsNew(object):
         feedTextFrame_layout = QtGui.QVBoxLayout(feedTextFrame)
         feedTitleFrame = QtGui.QFrame(feedTextFrame)
         feedTitleFrame_layout = QtGui.QHBoxLayout(feedTitleFrame)
-        feedIconLbl = QtGui.QLabel()
+        feedIconBtn = QtGui.QPushButton()
+        feedIconBtn.setFixedSize(32, 32)
 
-        feedIconLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\whatsnewicons\\" + type + ".png"))
+        feedIconBtn.clicked.connect(self.load_log_entry_data)
+        feedIconBtn.log_entry_asset_id = dependancy
+        feedIconBtn.asset_type = type
+        feedIconBtn.setIcon(QtGui.QIcon(self.cur_path + "\\media\\whatsnewicons\\" + type + ".png"))
 
         if type == "publish":
             feedTitleLbl = QtGui.QLabel(" Asset published | " + log_time, feedEntryFrame)
@@ -189,11 +190,9 @@ class WhatsNew(object):
         font.setPointSize(10)
         font.setWeight(75)
         feedTitleLbl.setFont(font)
-        feedTitleFrame_layout.addWidget(feedIconLbl)
+        feedTitleFrame_layout.addWidget(feedIconBtn)
         feedTitleFrame_layout.addWidget(feedTitleLbl)
         feedTitleFrame_layout.addItem(horizontal_spacer)
-
-        load_new_btn = QtGui.QPushButton("See")
 
         feedMessageLbl = QtGui.QLabel(description, feedEntryFrame)
         feedMessageLbl.setWordWrap(True)
@@ -262,10 +261,56 @@ class WhatsNew(object):
         current_time = current_time.strftime("%d/%m/%Y à %H:%M")
         current_time = unicode(current_time, "utf-8")
 
-
         message = self.addNewBlogPostTextEdit.toPlainText()
         message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
 
         log_entry = self.LogEntry(self, 0, "", [], [], self.username, "", "important", message, datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
+
+    def load_log_entry_data(self):
+        asset_id = self.sender().log_entry_asset_id
+        asset_type = self.sender().asset_type
+
+        if asset_type in ["publish", "asset"]:
+
+            # Check if asset still exists
+            assets_id_list = [asset.id for asset in self.assets.keys()]
+            if asset_id not in assets_id_list:
+                self.Lib.message_box(self, type="error", text="This asset does not exist. It must have been deleted!")
+                return
+
+            for asset, asset_item in self.assets.items():
+                asset_item.setHidden(False)
+                if asset_id == asset.id:
+                    asset_item.setHidden(False)
+                else:
+                    asset_item.setHidden(True)
+
+            self.Tabs.setCurrentWidget(self.Tabs.widget(0))
+
+        elif asset_type == "task":
+
+            number_of_rows = self.mtTableWidget.rowCount()
+            for row_index in xrange(number_of_rows):
+                id_cell = self.mt_widgets[str(row_index) + ":0"]
+                task_id = id_cell.text()
+                if str(asset_id) == str(task_id):
+                    self.mtTableWidget.showRow(row_index)
+                else:
+                    self.mtTableWidget.hideRow(row_index)
+
+            self.mtTableWidget.resizeColumnsToContents()
+            self.mtTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+            self.Tabs.setCurrentWidget(self.Tabs.widget(self.tabs_list["Tasks"]))
+
+        elif asset_type == "image":
+
+            print(self.ref_assets_instances)
+
+
+            self.Tabs.setCurrentWidget(self.Tabs.widget(self.tabs_list["Images Manager"]))
+
+
+
+
 

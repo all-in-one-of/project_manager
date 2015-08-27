@@ -149,6 +149,7 @@ class Asset(object):
                 new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
 
         os.rename(self.full_path, self.project_path + new_path)
+        os.rename(self.full_path.replace("." + self.extension, "_thumb." + self.extension), self.project_path + new_path.replace("." + self.extension, "_thumb." + self.extension))
         self.full_path = self.project_path + new_path
         self.path = new_path
         self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
