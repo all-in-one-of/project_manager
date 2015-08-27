@@ -116,6 +116,8 @@ class ReferenceTab(object):
             (self.selected_project_name, "ref")).fetchall()
         progressBar.setMaximum(len(ref_all_references_assets))
 
+        self.references = []
+
         for i, ref in enumerate(ref_all_references_assets):
             id = ref[0]
             project_name = ref[1]
@@ -154,6 +156,7 @@ class ReferenceTab(object):
             ref_item.setData(QtCore.Qt.UserRole, asset)
 
             if os.path.isfile(asset.full_path):  # Check if image exists to prevent errors
+                self.references.append((ref_item, asset))
                 self.all_references_ListWidgetItems.append(ref_item)
                 self.referenceThumbListWidget.addItem(ref_item)
 
@@ -639,6 +642,7 @@ class ReferenceTab(object):
         new_item.setIcon(QtGui.QIcon(asset.full_path.replace(".jpg", "_thumb.jpg")))
         self.all_references_ListWidgetItems.append(new_item)
         self.referenceThumbListWidget.addItem(new_item)
+        self.references.append((new_item, asset))
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)
@@ -728,6 +732,7 @@ class ReferenceTab(object):
             self.referenceThumbListWidget.addItem(new_item)
             self.all_references_ListWidgetItems.append(new_item)
             self.referenceThumbListWidget.setItemSelected(new_item, True)
+            self.references.append((new_item, asset))
 
 
         dialog.repaint()
@@ -784,6 +789,7 @@ class ReferenceTab(object):
 
         self.referenceThumbListWidget.addItem(new_item)
         self.all_references_ListWidgetItems.append(new_item)
+        self.references.append((new_item, asset))
 
         self.toggle_thumbnail_text()
         self.referenceThumbListWidget.scrollToItem(new_item)

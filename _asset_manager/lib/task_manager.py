@@ -415,6 +415,7 @@ class TaskManager(object):
             task = self.Task(self, task_id)
             task.get_infos_from_id()
             task.remove_task_from_db()
+            self.Lib.remove_log_entry_from_asset_id(self, task_id)
 
         self.item_added = True
         self.add_tasks_from_database()

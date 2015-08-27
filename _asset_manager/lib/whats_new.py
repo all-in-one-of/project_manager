@@ -290,6 +290,13 @@ class WhatsNew(object):
 
         elif asset_type == "task":
 
+            # Check if task still exists
+            tasks_id_list = self.cursor.execute('''SELECT task_id FROM tasks WHERE task_confirmation="1"''').fetchall()
+            tasks_id_list = [i[0] for i in tasks_id_list]
+            if not asset_id in tasks_id_list:
+                self.Lib.message_box(self, type="error", text="This task does not exist. It must have been deleted!")
+                return
+
             number_of_rows = self.mtTableWidget.rowCount()
             for row_index in xrange(number_of_rows):
                 id_cell = self.mt_widgets[str(row_index) + ":0"]
@@ -305,8 +312,24 @@ class WhatsNew(object):
 
         elif asset_type == "image":
 
-            print(self.ref_assets_instances)
+            if len(self.ref_assets_instances) < 1:
+                self.Lib.message_box(self, type="error", text="Please load images in Images Manager.")
+                return
 
+            # Check if asset still exists
+            assets_id_list = [asset[1].id for asset in self.references]
+            print(assets_id_list)
+            if asset_id not in assets_id_list:
+                self.Lib.message_box(self, type="error", text="This asset does not exist. It must have been deleted!")
+                return
+
+            for item in self.references:
+                asset_item = item[0]
+                asset = item[1]
+                if str(asset.id) == str(asset_id):
+                    asset_item.setHidden(False)
+                else:
+                    asset_item.setHidden(True)
 
             self.Tabs.setCurrentWidget(self.Tabs.widget(self.tabs_list["Images Manager"]))
 

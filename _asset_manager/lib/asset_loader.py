@@ -1757,6 +1757,8 @@ class AssetLoader(object):
         for asset in assets_to_delete:
             asset.remove_asset_from_db()
 
+        self.Lib.remove_log_entry_from_asset_id(self, asset.id)
+
         self.load_all_assets_for_first_time()
 
         # Hide all versions
