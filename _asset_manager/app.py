@@ -273,7 +273,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.check_news_thread.daemon = True
         self.check_news_thread.start()
 
-
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
         if len(self.projectList.selectedItems()) == 0:
@@ -661,6 +660,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         elif key == QtCore.Qt.Key_F1:
             self.show_wiki_help(widget_under_mouse)
+
+        elif key == QtCore.Qt.Key_F5:
+            self.refresh_all()
 
     def show_wiki_help(self, widget):
         if widget.objectName() == "publishBtn":

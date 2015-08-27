@@ -25,7 +25,11 @@ class ThibListWidget(QtGui.QListWidget):
 
     def keyPressEvent(self, QKeyEvent):
 
-        main = self.parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget()
+        if self.objectName() in ["assetList", "versionList"]:
+            main = self.parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget()
+        elif self.objectName() in ["referenceThumbListWidget"]:
+            main = self.parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget()
+
         key = QKeyEvent.key()
 
         self.firstrelease = True
@@ -38,6 +42,9 @@ class ThibListWidget(QtGui.QListWidget):
             else:
                 main.showFullScreen()
             return
+
+        elif key == QtCore.Qt.Key_F5:
+            main.refresh_all()
 
         if key == QtCore.Qt.Key_Delete:
             if self.objectName() == "versionList":

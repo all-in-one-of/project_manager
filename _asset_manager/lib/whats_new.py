@@ -160,14 +160,13 @@ class WhatsNew(object):
             feedPicFrame_layout.addWidget(profilPicToLbl)
 
 
-
         # Text Frame
         feedTextFrame = QtGui.QFrame(feedEntryFrame)
         feedTextFrame_layout = QtGui.QVBoxLayout(feedTextFrame)
         feedTitleFrame = QtGui.QFrame(feedTextFrame)
         feedTitleFrame_layout = QtGui.QHBoxLayout(feedTitleFrame)
         feedIconLbl = QtGui.QLabel()
-        #if type != "important":
+
         feedIconLbl.setPixmap(QtGui.QPixmap(self.cur_path + "\\media\\whatsnewicons\\" + type + ".png"))
 
         if type == "publish":
@@ -193,6 +192,8 @@ class WhatsNew(object):
         feedTitleFrame_layout.addWidget(feedIconLbl)
         feedTitleFrame_layout.addWidget(feedTitleLbl)
         feedTitleFrame_layout.addItem(horizontal_spacer)
+
+        load_new_btn = QtGui.QPushButton("See")
 
         feedMessageLbl = QtGui.QLabel(description, feedEntryFrame)
         feedMessageLbl.setWordWrap(True)
