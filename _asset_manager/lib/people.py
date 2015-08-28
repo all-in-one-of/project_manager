@@ -32,21 +32,16 @@ class PeopleTab(object):
                               self.profilePicLbl_13,
                               self.profilePicLbl_14,
                               self.profilePicLbl_15,
-                              self.profilePicLbl_16,
-                              self.profilePicLbl_17,
-                              self.profilePicLbl_18, self.profilePicLbl]
+                              self.profilePicLbl]
 
         self.members_photos = [
-                               self.cur_path + "\\media\\members_photos\\achaput.jpg",
                                self.cur_path + "\\media\\members_photos\\costiguy.jpg",
                                self.cur_path + "\\media\\members_photos\\cgonnord.jpg",
-                               self.cur_path + "\\media\\members_photos\\dcayerdesforges.jpg",
                                self.cur_path + "\\media\\members_photos\\earismendez.jpg",
                                self.cur_path + "\\media\\members_photos\\erodrigue.jpg",
                                self.cur_path + "\\media\\members_photos\\jberger.jpg",
                                self.cur_path + "\\media\\members_photos\\lgregoire.jpg",
                                self.cur_path + "\\media\\members_photos\\lclavet.jpg",
-                               self.cur_path + "\\media\\members_photos\\mchretien.jpg",
                                self.cur_path + "\\media\\members_photos\\mbeaudoin.jpg",
                                self.cur_path + "\\media\\members_photos\\mroz.jpg",
                                self.cur_path + "\\media\\members_photos\\obolduc.jpg",
@@ -169,14 +164,10 @@ class PeopleTab(object):
 
         addr_list = []
 
-        if self.achaputProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[0])
         if self.costiguyProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[1])
         if self.cgonnordProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[2])
-        if self.dcayerdesforgesProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[3])
         if self.earismendezProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[4])
         if self.erodrigueProfilCheckBox.checkState() == 2:
@@ -187,8 +178,6 @@ class PeopleTab(object):
             addr_list.append(self.members_mail[7])
         if self.lclavetProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[8])
-        if self.mchretienProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[9])
         if self.mbeaudoinProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[10])
         if self.mrozProfilCheckBox.checkState() == 2:
@@ -213,15 +202,7 @@ class PeopleTab(object):
     def check_on_double_click(self, lbl, value):
 
 
-        if value.split("\\")[-1].replace(".jpg", "") == "achaput":
-            if self.achaputProfilCheckBox.checkState() == 2:
-                self.achaputProfilCheckBox.setCheckState(0)
-                self.achaputProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
-            else:
-                self.achaputProfilCheckBox.setCheckState(2)
-                self.achaputProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
-
-        elif value.split("\\")[-1].replace(".jpg", "") == "costiguy":
+        if value.split("\\")[-1].replace(".jpg", "") == "costiguy":
             if self.costiguyProfilCheckBox.checkState() == 2:
                 self.costiguyProfilCheckBox.setCheckState(0)
                 self.costiguyProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
@@ -236,14 +217,6 @@ class PeopleTab(object):
             else:
                 self.cgonnordProfilCheckBox.setCheckState(2)
                 self.cgonnordProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
-
-        elif value.split("\\")[-1].replace(".jpg", "") == "dcayerdesforges":
-            if self.dcayerdesforgesProfilCheckBox.checkState() == 2:
-                self.dcayerdesforgesProfilCheckBox.setCheckState(0)
-                self.dcayerdesforgesProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
-            else:
-                self.dcayerdesforgesProfilCheckBox.setCheckState(2)
-                self.dcayerdesforgesProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
 
         elif value.split("\\")[-1].replace(".jpg", "") == "earismendez":
             if self.earismendezProfilCheckBox.checkState() == 2:
@@ -284,14 +257,6 @@ class PeopleTab(object):
             else:
                 self.lclavetProfilCheckBox.setCheckState(2)
                 self.lclavetProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
-
-        elif value.split("\\")[-1].replace(".jpg", "") == "mchretien":
-            if self.mchretienProfilCheckBox.checkState() == 2:
-                self.mchretienProfilCheckBox.setCheckState(0)
-                self.mchretienProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
-            else:
-                self.mchretienProfilCheckBox.setCheckState(2)
-                self.mchretienProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
 
         elif value.split("\\")[-1].replace(".jpg", "") == "mbeaudoin":
             if self.mbeaudoinProfilCheckBox.checkState() == 2:

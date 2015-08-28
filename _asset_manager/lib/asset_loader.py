@@ -221,7 +221,7 @@ class AssetLoader(object):
 
         is_asset_uved = self.cursor.execute('''SELECT * FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id, )).fetchone()
         if is_asset_uved == None:
-            self.cursor.execute('''INSERT INTO uved_assets(asset_id, has_uv) VALUES(?,?)''', (self.selected_asset.id, 1,))
+            self.cursor.execute('''INSERT INTO uved_assets(asset_id, has_uv, username) VALUES(?,?,?)''', (self.selected_asset.id, 1, self.username))
             self.db.commit()
             self.hasUvToggleBtn.setIcon(self.has_uv_icon)
         else:

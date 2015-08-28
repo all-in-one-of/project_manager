@@ -145,9 +145,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.refresh_iteration = 1
-        self.members = {"achaput": "Amelie", "costiguy": "Chloe", "cgonnord": "Christopher", "dcayerdesforges": "David",
+        self.members = {"costiguy": "Chloe", "cgonnord": "Christopher",
                         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
-                        "lclavet": "Louis-Philippe", "mchretien": "Marc-Antoine", "mbeaudoin": "Mathieu",
+                        "lclavet": "Louis-Philippe", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
         self.departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
@@ -368,14 +368,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         if not self.meOnlyCheckBox.checkState():
             self.assignedToFilterComboBox.setCurrentIndex(0)
         else:
-            if self.username == "achaput":
-                self.assignedToFilterComboBox.setCurrentIndex(1)
-            elif self.username == "costiguy":
+            if self.username == "costiguy":
                 self.assignedToFilterComboBox.setCurrentIndex(2)
             elif self.username == "cgonnord":
                 self.assignedToFilterComboBox.setCurrentIndex(3)
-            elif self.username == "dcayerdesforges":
-                self.assignedToFilterComboBox.setCurrentIndex(4)
             elif self.username == "earismendez":
                 self.assignedToFilterComboBox.setCurrentIndex(5)
             elif self.username == "erodrigue":
@@ -386,8 +382,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                 self.assignedToFilterComboBox.setCurrentIndex(8)
             elif self.username == "lclavet":
                 self.assignedToFilterComboBox.setCurrentIndex(9)
-            elif self.username == "mchretien":
-                self.assignedToFilterComboBox.setCurrentIndex(10)
             elif self.username == "mbeaudoin":
                 self.assignedToFilterComboBox.setCurrentIndex(11)
             elif self.username == "mroz":
