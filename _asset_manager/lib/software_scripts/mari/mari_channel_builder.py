@@ -59,11 +59,6 @@ class MariChannelBuilder(gui.QDialog):
         self.mid_group_layout = gui.QVBoxLayout(self)
         self.mid_group.setLayout(self.mid_group_layout)
 
-        # Close Layout
-        self.right_group = gui.QGroupBox(self)
-        self.right_group_layout = gui.QVBoxLayout(self)
-        self.right_group.setLayout(self.right_group_layout)
-
         # Add Layout to main
         main_layout.addWidget(left_group)
         main_layout.addWidget(self.mid_group)
@@ -97,11 +92,30 @@ class MariChannelBuilder(gui.QDialog):
         sel_all.connect("clicked()", self.select_all)
         sel_none.connect("clicked()", self.select_none)
 
-        # Close button
-        close_btn = gui.QPushButton("Close")
-        self.right_group_layout.addWidget(close_btn)
-        close_btn.connect("clicked()", self.reject)
-        print self.chk_dict
+        # Build Selected
+        build_selected = gui.QPushButton("Build Selected")  # Bouton Build Selected
+        self.build_selected_same_size_chkbox = gui.QCheckBox("Use same size for all maps?")
+        self.build_selected_size_combobox = gui.QComboBox()
+        self.build_selected_groupbox = gui.QGroupBox(self)  # Creation du cadre
+        self.build_selected_layout = gui.QGridLayout(self)  # Layout du cadre
+        self.build_selected_groupbox.setLayout(self.build_selected_layout)  # Attribuer le layout au cadre
+
+        self.build_selected_layout.addWidget(build_selected)  # Ajouter bouton au layout
+
+        self.build_selected_layout.addWidget(self.build_selected_same_size_chkbox)  # Ajouter checkbox au layout
+
+        self.build_selected_layout.addWidget(self.build_selected_size_combobox)  # AJouter combobox au layout
+        self.build_selected_size_combobox.insertItem(0, "1024", )  # Ajouter resolution 1024
+        self.build_selected_size_combobox.insertItem(1, "2048", )  # Ajouter resolution 2048
+        self.build_selected_size_combobox.insertItem(2, "4096", )  # Ajouter resolution 4096
+        self.build_selected_size_combobox.insertItem(3, "8192", )  # Ajouter resolution 8192
+        self.build_selected_size_combobox.setDisabled(1)
+
+        self.mid_group_layout.addWidget(self.build_selected_groupbox)  # Ajouter le cadre au layout du milieu
+
+        build_selected.connect("clicked()", self.build_selected_fc)
+        self.build_selected_same_size_chkbox.connect("clicked()", self.lock_build_selected_combobox)
+
 
         # Build All
         build_all = gui.QPushButton("Build All")  # Bouton Build All
@@ -129,29 +143,7 @@ class MariChannelBuilder(gui.QDialog):
 
 
 
-        # Build Selected
-        build_selected = gui.QPushButton("Build Selected")  # Bouton Build Selected
-        self.build_selected_same_size_chkbox = gui.QCheckBox("Use same size for all maps?")
-        self.build_selected_size_combobox = gui.QComboBox()
-        self.build_selected_groupbox = gui.QGroupBox(self)  # Creation du cadre
-        self.build_selected_layout = gui.QGridLayout(self)  # Layout du cadre
-        self.build_selected_groupbox.setLayout(self.build_selected_layout)  # Attribuer le layout au cadre
 
-        self.build_selected_layout.addWidget(build_selected)  # Ajouter bouton au layout
-
-        self.build_selected_layout.addWidget(self.build_selected_same_size_chkbox)  # Ajouter checkbox au layout
-
-        self.build_selected_layout.addWidget(self.build_selected_size_combobox)  # AJouter combobox au layout
-        self.build_selected_size_combobox.insertItem(0, "1024", )  # Ajouter resolution 1024
-        self.build_selected_size_combobox.insertItem(1, "2048", )  # Ajouter resolution 2048
-        self.build_selected_size_combobox.insertItem(2, "4096", )  # Ajouter resolution 4096
-        self.build_selected_size_combobox.insertItem(3, "8192", )  # Ajouter resolution 8192
-        self.build_selected_size_combobox.setDisabled(1)
-
-        self.mid_group_layout.addWidget(self.build_selected_groupbox)  # Ajouter le cadre au layout du milieu
-
-        build_selected.connect("clicked()", self.build_selected_fc)
-        self.build_selected_same_size_chkbox.connect("clicked()", self.lock_build_selected_combobox)
 
     def lock_build_all_combobox(self):
         """Fonction pour barrer la ComboBox(Build All) quand non necessaire"""

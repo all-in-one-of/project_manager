@@ -97,9 +97,6 @@ class AssetLoader(object):
         self.selected_sequence_name = "xxx"
         self.selected_shot_number = "xxxx"
 
-        # Filtering options
-        self.meOnlyCheckBox.stateChanged.connect(self.filter_assets_for_me)
-
         # Connect the filter textboxes
         self.assetFilter.textChanged.connect(self.filterList_textChanged)
 
@@ -432,12 +429,16 @@ class AssetLoader(object):
             # Create asset object and attach it to the ListWidgetItem
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes, publish_from_version)
             # Create ListWidget Item
-            asset_item = QtGui.QListWidgetItem(asset.name + " (" + asset.type + ")")
+            if "-lowres" in asset.name:
+                asset_name = asset.name.replace("-lowres", "")
+            else:
+                asset_name = asset.name
+            asset_item = QtGui.QListWidgetItem(asset_name + " (" + asset.type + ")")
             if os.path.isfile(asset.default_media_user):
                 asset_item.setIcon(QtGui.QIcon(asset.default_media_user))
             else:
                 pixmap = QtGui.QPixmap(asset.default_media_manager)
-                pixmap = pixmap.scaled(188, 188, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                pixmap = pixmap.scaled(256, 256, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
                 asset_item.setIcon(QtGui.QIcon(pixmap))
 
             asset_item.setData(QtCore.Qt.UserRole, asset)
@@ -1040,10 +1041,14 @@ class AssetLoader(object):
         # Unhide all assets
         [asset.setHidden(False) for asset in self.assets.values()]
         for asset, asset_item in self.assets.items():
-            asset_item.setText(asset.name)
+            if "-lowres" in asset.name:
+                asset_name = asset.name.replace("-lowres", "")
+            else:
+                asset_name = asset.name
+            asset_item.setText(asset_name)
 
             if self.selected_sequence_name == "xxx" and self.selected_department_name == "xxx":
-                asset_item.setText(asset.name + " (" + asset.type + ")")
+                asset_item.setText(asset_name + " (" + asset.type + ")")
                 asset_item.setHidden(False)
 
             elif self.selected_sequence_name == "xxx" and self.selected_department_name != "xxx":
@@ -1061,7 +1066,7 @@ class AssetLoader(object):
 
 
             elif self.selected_sequence_name != "xxx" and self.selected_department_name == "xxx":
-                asset_item.setText(asset.name + " (" + asset.type + ")")
+                asset_item.setText(asset_name + " (" + asset.type + ")")
                 if asset.sequence != self.selected_sequence_name:
                     asset_item.setHidden(True)
 
@@ -1759,6 +1764,10 @@ class AssetLoader(object):
 
         self.Lib.remove_log_entry_from_asset_id(self, asset.id)
 
+        tex_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
+        if tex_path != None:
+            shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + tex_path)
+
         self.load_all_assets_for_first_time()
 
         # Hide all versions
@@ -2050,13 +2059,14 @@ class AssetLoader(object):
         self.mari_process.readyRead.connect(self.mari_process_read_data)
         self.mari_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.mari_process.waitForFinished()
-        self.mari_process.start(self.mari_path, ["-t", self.cur_path + "\\lib\\software_scripts\\mari_create_project.py", self.selected_asset.name, "01", obj_publish_path.full_path])
+        self.mari_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_create_project.py", self.selected_asset.name, "01", obj_publish_path.full_path.replace("\\\\", "/")])
 
     def mari_process_read_data(self):
         while self.mari_process.canReadLine():
             out = self.mari_process.readLine()
             if "Welcome to Mari 2.6v2!  Type help() to get started." in out:
                 self.mari_process.kill()
+            print(out)
 
     def create_cam_asset_from_lay(self):
 

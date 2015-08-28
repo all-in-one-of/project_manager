@@ -547,6 +547,8 @@ class Lib(object):
                         return path.split("/")[-1] # Return path (Ex: "8e0930b8-61b1-4ade-8dbd-8bb422ef6686")
             f.close()
 
+        return None
+
 class DesktopWidget(QtGui.QWidget):
 
     def __init__(self, task_name, task_department, task_status, task_start, task_end, task_bid):

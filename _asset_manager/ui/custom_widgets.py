@@ -17,6 +17,26 @@ class ThibListWidget(QtGui.QListWidget):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() * 3)))
         elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
+            if self.objectName() == "assetList":
+                if self.iconSize().height() > 256:
+                    self.setIconSize(QtCore.QSize(256, 256))
+                elif self.iconSize().height() < 48:
+                    self.setIconSize(QtCore.QSize(48, 48))
+                else:
+                    self.setIconSize(QtCore.QSize(self.iconSize().height() + event.delta() / 12, self.iconSize().height() + event.delta() / 12))
+            elif self.objectName() == "referenceThumbListWidget":
+                if self.iconSize().height() > 512:
+                    self.setIconSize(QtCore.QSize(512, 512))
+                elif self.iconSize().height() < 48:
+                    self.setIconSize(QtCore.QSize(48, 48))
+                else:
+                    self.setIconSize(QtCore.QSize(self.iconSize().height() + event.delta() / 12, self.iconSize().height() + event.delta() / 12))
+
+            try:
+                self.scrollToItem(self.selectedItems()[0])
+            except:
+                pass
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() / 3)))
         elif QtGui.QApplication.keyboardModifiers() == (QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier):
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() * 10)))

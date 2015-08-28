@@ -318,7 +318,6 @@ class WhatsNew(object):
 
             # Check if asset still exists
             assets_id_list = [asset[1].id for asset in self.references]
-            print(assets_id_list)
             if asset_id not in assets_id_list:
                 self.Lib.message_box(self, type="error", text="This asset does not exist. It must have been deleted!")
                 return

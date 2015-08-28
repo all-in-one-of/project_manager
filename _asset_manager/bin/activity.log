@@ -16,3 +16,5 @@
 2015-08-26 09:32:38,983 ::: app.py ::: <module>() ::: line 782 ::: 'Main' object has no attribute 'cur_path'
 2015-08-26 09:44:16,984 ::: app.py ::: <module>() ::: line 782 ::: global name 'ThibListWidget' is not defined
 2015-08-27 13:13:51,832 ::: app.py ::: <module>() ::: line 755 ::: 'QPushButton' object has no attribute 'setPixmap'
+2015-08-28 13:51:31,164 ::: app.py ::: <module>() ::: line 757 ::: 'Main' object has no attribute 'meOnlyCheckBox'
+2015-08-28 13:51:42,668 ::: app.py ::: <module>() ::: line 757 ::: 'Main' object has no attribute 'meOnlyCheckBox'
