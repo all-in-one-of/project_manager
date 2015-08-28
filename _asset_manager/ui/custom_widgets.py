@@ -83,6 +83,18 @@ class ThibListWidget(QtGui.QListWidget):
                     break
                 if not item.isHidden():
                     break
+
+            if self.objectName() == "versionList":
+                self.emit(QtCore.SIGNAL('version_arrow_key_pressed'))
+            elif self.objectName() == "assetList":
+                self.emit(QtCore.SIGNAL('asset_arrow_key_pressed'))
+            elif self.objectName() == "departmentList":
+                self.emit(QtCore.SIGNAL('department_arrow_key_pressed'))
+            elif self.objectName() == "seqList":
+                self.emit(QtCore.SIGNAL('seq_arrow_key_pressed'))
+            elif self.objectName() == "shotList":
+                self.emit(QtCore.SIGNAL('shot_arrow_key_pressed'))
+
         elif key == QtCore.Qt.Key_Down:
             while True:
                 try:
@@ -93,16 +105,16 @@ class ThibListWidget(QtGui.QListWidget):
                 if not item.isHidden():
                     break
 
-        if self.objectName() == "versionList":
-            self.emit(QtCore.SIGNAL('version_arrow_key_pressed'))
-        elif self.objectName() == "assetList":
-            self.emit(QtCore.SIGNAL('asset_arrow_key_pressed'))
-        elif self.objectName() == "departmentList":
-            self.emit(QtCore.SIGNAL('department_arrow_key_pressed'))
-        elif self.objectName() == "seqList":
-            self.emit(QtCore.SIGNAL('seq_arrow_key_pressed'))
-        elif self.objectName() == "shotList":
-            self.emit(QtCore.SIGNAL('shot_arrow_key_pressed'))
+            if self.objectName() == "versionList":
+                self.emit(QtCore.SIGNAL('version_arrow_key_pressed'))
+            elif self.objectName() == "assetList":
+                self.emit(QtCore.SIGNAL('asset_arrow_key_pressed'))
+            elif self.objectName() == "departmentList":
+                self.emit(QtCore.SIGNAL('department_arrow_key_pressed'))
+            elif self.objectName() == "seqList":
+                self.emit(QtCore.SIGNAL('seq_arrow_key_pressed'))
+            elif self.objectName() == "shotList":
+                self.emit(QtCore.SIGNAL('shot_arrow_key_pressed'))
 
         return
 

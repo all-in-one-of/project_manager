@@ -58,6 +58,12 @@ class Lib(object):
             self.thumbnailProgressBar.hide()
             return
 
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            self.thumbnailProgressBar.hide()
+            self.updateThumbBtn.setEnabled(True)
+            self.message_box(type="info", text="Successfully created thumbnails")
+            return
+
         self.create_thumbnail_process = QtCore.QProcess(self)
         self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
         self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
@@ -105,7 +111,6 @@ class Lib(object):
             if version != "01":
                 selected_asset_item.setIcon(QtGui.QIcon(thumb_filename))
             selected_version_item.setIcon(QtGui.QIcon(thumb_filename))
-            print(selected_version_item.text())
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
             self.message_box(type="info", text="Successfully created thumbnails")

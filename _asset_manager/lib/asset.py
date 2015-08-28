@@ -211,6 +211,8 @@ class Asset(object):
         self.main.cursor.execute('''DELETE FROM uved_assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM comments WHERE comment_id=?''', (self.id,))
+        self.main.cursor.execute('''DELETE FROM tasks WHERE asset_id=?''', (self.id,))
+        self.main.cursor.execute('''DELETE FROM publish_comments WHERE asset_id=?''', (self.id,))
 
         self.main.db.commit()
 

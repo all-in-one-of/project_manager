@@ -167,16 +167,6 @@ class AssetLoader(object):
             change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
         change_icon_display_action.triggered.connect(self.change_icon_display)
 
-        if self.assetList.iconSize().width() == 188:
-            change_icons_size = menu.addAction("Make icons bigger")
-            change_icons_size.setIcon(QtGui.QIcon(self.cur_path + "/media/zoomin.png"))
-            change_icons_size.triggered.connect(self.change_icons_size)
-        elif self.assetList.iconSize().width() == 256:
-            change_icons_size = menu.addAction("Make icons smaller")
-            change_icons_size.setIcon(QtGui.QIcon(self.cur_path + "/media/zoomout.png"))
-            change_icons_size.triggered.connect(self.change_icons_size)
-
-
         if self.username in ["thoudon", "lclavet"]:
             add_task_to_asset = menu.addAction("Add task")
             add_task_to_asset.setIcon(QtGui.QIcon(self.cur_path + "/media/add_task_to_asset.png"))
@@ -199,13 +189,10 @@ class AssetLoader(object):
                     asset_item.setIcon(QtGui.QIcon(asset.default_media_manager))
             self.icon_display_type = "user"
 
-    def change_icons_size(self):
-        if self.assetList.iconSize().width() == 188:
-            self.assetList.setIconSize(QtCore.QSize(256, 256))
-        elif self.assetList.iconSize().width() == 256:
-            self.assetList.setIconSize(QtCore.QSize(188, 188))
-
     def add_task_to_selected_asset(self):
+        if len(self.assetList.selectedItems()) == 0:
+            return
+
         self.tmNbrOfRowsToAddSpinBox.setValue(1)
         self.TaskManager.add_task(self, asset_id=self.selected_asset.id)
         self.Tabs.setCurrentWidget(self.Tabs.widget(1))
@@ -1960,7 +1947,7 @@ class AssetLoader(object):
         while asset_name_tmp in all_assets_name:
             all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets''').fetchall()
             all_assets_name = [str(i[0]) for i in all_assets_name]
-            asset_name_tmp = asset_name + "-" + str(version).zfill(2)
+            asset_name_tmp = asset_name + str(version).zfill(2)
             version += 1
 
         asset_name = asset_name_tmp
