@@ -662,7 +662,7 @@ class ReferenceTab(object):
         if selected_sequence == None: return
 
         # Ask for user to select files
-        selected_files = QtGui.QFileDialog.getOpenFileNames(self, 'Select Files', 'H:/', "Images Files (*.jpg *.png *bmp)")
+        selected_files = QtGui.QFileDialog.getOpenFileNames(self, 'Select Files', 'H:/', "Images Files (*.jpg *.png)")
 
         if len(selected_files) < 1:
             return

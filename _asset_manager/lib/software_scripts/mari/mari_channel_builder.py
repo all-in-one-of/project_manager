@@ -225,6 +225,8 @@ class MariChannelBuilder(gui.QDialog):
             self.sel_obj.createChannel("frnl", self.build_all_same_size, self.build_all_same_size, 8)
             self.sel_obj.createChannel("mask", self.build_all_same_size, self.build_all_same_size, 8)
 
+        self.close()
+
     def build_selected_fc(self):
         """Fonction pour crer les maps selectionner seulement"""
         if self.build_selected_same_size_chkbox.checkState() == 0:  # Build selected SANS SAME SIZE CHECKBOX
@@ -360,4 +362,6 @@ class MariChannelBuilder(gui.QDialog):
                 self.sel_obj.createChannel("mask", self.build_selected_same_size, self.build_selected_same_size, 8)
             else:
                 pass
+
+        self.close()
 

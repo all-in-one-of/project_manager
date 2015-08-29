@@ -109,7 +109,7 @@ class Task(object):
         self.confirmation = new_confirmation
 
     def add_comment(self, author, comment, time, type):
-        self.main.cursor.execute('''INSERT INTO comments(comment_id, comment_author, comment_text, comment_time, comment_type) VALUES(?,?,?,?,?)''', (self.id, author, comment, time, type))
+        self.main.cursor.execute('''INSERT INTO comments(asset_id, comment_author, comment_text, comment_time, comment_type, comment_image) VALUES(?,?,?,?,?,?)''', (self.id, author, comment, time, type, ""))
         self.main.db.commit()
 
     def remove_comment(self, author, comment, time):

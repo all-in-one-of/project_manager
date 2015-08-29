@@ -5,6 +5,9 @@ from PyQt4 import QtGui, QtCore
 import time
 from functools import partial
 from datetime import datetime
+import os
+import shutil
+import webbrowser
 
 class CommentWidget(object):
 
@@ -17,13 +20,13 @@ class CommentWidget(object):
         current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
 
         if current_tab_text == "Images Manager":
-            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="ref"''', (self.selected_asset.id,)).fetchall()
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=? AND comment_type="ref"''', (self.selected_asset.id,)).fetchall()
         elif current_tab_text == "Task Manager":
-            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="task"''', (self.selected_asset.id,)).fetchall()
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=? AND comment_type="task"''', (self.selected_asset.id,)).fetchall()
         elif current_tab_text == "Asset Loader":
-            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=? AND comment_type="asset"''', (self.selected_asset.id,)).fetchall()
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=? AND comment_type="asset"''', (self.selected_asset.id,)).fetchall()
         elif "What's New" in current_tab_text:
-            comments = self.cursor.execute('''SELECT * FROM comments WHERE comment_id=?''', (self.selected_asset.id,)).fetchall()
+            comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
 
         self.commentsForAssetLbl.setText("Comments for asset: {0} ({1})".format(self.selected_asset.name, self.selected_asset.type))
 
@@ -35,28 +38,30 @@ class CommentWidget(object):
             item.widget().deleteLater()
 
         if len(comments) == 0:
-            self.create_comment_frame("default", "There's no comments", "")
+            self.create_comment_frame("default", "There's no comments", "", "")
 
         for i, comment in enumerate(reversed(comments)):
-            comment_author = comment[1]
-            comment_text = comment[2]
-            comment_time = comment[3]
+            comment_id = comment[0]
+            asset_id = comment[1]
+            comment_author = comment[2]
+            comment_text = comment[3]
+            comment_time = comment[4]
 
             if i == 0:  # If first comment, align it to left
-                self.create_comment_frame(comment_author, comment_text, comment_time)
+                self.create_comment_frame(comment_author, comment_text, comment_time, asset_id, comment_id)
             else:
                 if comment_author == self.comment_authors[-1]:  # Current author is the same as last author
                     if self.cur_alignment == "left":
-                        self.create_comment_frame(comment_author, comment_text, comment_time)
+                        self.create_comment_frame(comment_author, comment_text, comment_time, asset_id, comment_id)
                     elif self.cur_alignment == "right":
-                        self.create_comment_frame(comment_author, comment_text, comment_time)
+                        self.create_comment_frame(comment_author, comment_text, comment_time, asset_id, comment_id)
                 elif comment_author != self.comment_authors[-1]:  # Current author is different from last author
                     if self.cur_alignment == "left":  # If current alignment is left, align right and change self.cur_alignment to opposite
                         self.cur_alignment = "right"
-                        self.create_comment_frame(comment_author, comment_text, comment_time)
+                        self.create_comment_frame(comment_author, comment_text, comment_time, asset_id, comment_id)
                     elif self.cur_alignment == "right":  # If current alignment is right, align left and change self.cur_alignment to opposite
                         self.cur_alignment = "left"
-                        self.create_comment_frame(comment_author, comment_text, comment_time)
+                        self.create_comment_frame(comment_author, comment_text, comment_time, asset_id, comment_id)
 
             self.comment_authors.append(comment_author)
 
@@ -70,7 +75,7 @@ class CommentWidget(object):
         # Get all comment authors except me
         self.comment_authors = list(set(self.comment_authors))
 
-    def create_comment_frame(self, comment_author, comment_text, comment_time):
+    def create_comment_frame(self, comment_author, comment_text, comment_time, asset_id, comment_id):
 
         self.comment_frame = QtGui.QFrame(self.commentsScrollArea)
         self.comment_frame.setMaximumHeight(80)
@@ -93,10 +98,16 @@ class CommentWidget(object):
             edit_frame_layout.setContentsMargins(2, 0, 0, 0)
             edit_frame_layout.setSpacing(0)
             add_img_button = QtGui.QPushButton(edit_frame)
-            add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon.png"))
+            comment_image = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id,)).fetchone()[0]
+            if len(comment_image) < 1:
+                add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon_disabled.png"))
+                add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_id))
+            else:
+                add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon.png"))
+                add_img_button.clicked.connect(partial(self.show_comment_img, comment_id))
             add_img_button.setIconSize(QtCore.QSize(24, 24))
             add_img_button.setMaximumSize(24, 24)
-            add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_text_edit, comment_author, comment_text, comment_time))
+            add_img_button.setToolTip("Use Ctrl to delete or Alt to replace image")
             update_button = QtGui.QPushButton(edit_frame)
             update_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\add_task_to_asset.png"))
             update_button.setIconSize(QtCore.QSize(24, 24))
@@ -195,5 +206,30 @@ class CommentWidget(object):
         self.selected_asset.edit_comment(new_comment, comment_author, comment_text, comment_time)
         self.load_comments()
 
-    def add_img_to_comment(self):
-        pass
+    def add_img_to_comment(self, comment_id):
+        # Ask for user to select files
+        selected_image_path = QtGui.QFileDialog.getOpenFileName(self, 'Select Files', 'H:/', "Images Files (*.jpg *.png)")
+
+        if len(selected_image_path) < 1:
+            return
+
+        comment_img_path = self.selected_asset.comment_filename + "_" + str(comment_id) + ".jpg"
+        shutil.copy(selected_image_path, comment_img_path)
+        self.Lib.compress_image(self, os.path.abspath(comment_img_path), 1920, 75)
+
+        self.cursor.execute('''UPDATE comments SET comment_image=? WHERE comment_id=?''', (comment_img_path, comment_id,))
+        self.db.commit()
+
+        self.load_comments()
+
+    def show_comment_img(self, comment_id):
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
+            self.add_img_to_comment(comment_id)
+            return
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
+            self.cursor.execute('''UPDATE comments SET comment_image="" WHERE comment_id=?''', (comment_id,))
+            self.load_comments()
+            return
+
+        comment_img_path = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id, )).fetchone()
+        webbrowser.open(comment_img_path[0])

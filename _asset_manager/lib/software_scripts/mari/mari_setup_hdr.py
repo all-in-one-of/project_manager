@@ -12,11 +12,13 @@ class Hdr_Manager(gui.QDialog):
         self.thumb_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_soft\\_prefs\\houdini\\houdini14.0\\ressources\\HDR\\thumb"
         self.hdr_list = []
 
+
         self.UI()
+        self.show()
 
     def UI(self):
 
-        self.setWindowTitle("Channel Builder")
+        self.setWindowTitle("HDR Choice")
         main_layout = gui.QHBoxLayout(self)
 
         #Left Layout
@@ -34,16 +36,18 @@ class Hdr_Manager(gui.QDialog):
 
         num = 0
         for maps in self.hdr_list:          #Add Maps in combobox
-            print maps
             self.hdr_combobox.insertItem(num, maps)
             num = num + 1
         self.left_group_layout.addWidget(self.hdr_combobox)
 
-        #Thumbnail viewer
-        thumb_view = gui.QLabel()
-        pixmap = gui.QPixmap("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/_prefs/houdini/houdini14.0/ressources/HDR/thumb/bigtree_thumb.jpg")
-        thumb_view.setPixmap(pixmap)
-        self.left_group_layout.addWidget(thumb_view)
+        # #Thumbnail viewer
+        self.thumb_view = gui.QLabel()
+        self.selection = self.hdr_combobox.currentText
+        self.pixmap = gui.QPixmap(self.thumb_path + "\\" + self.selection + "_thumb.jpg")
+        self.thumb_view.setPixmap(self.pixmap)
+        self.left_group_layout.addWidget(self.thumb_view)
+
+        self.hdr_combobox.connect("currentIndexChanged(int)", self.change_hdr_pixmap)
 
         #Apply HDR
         apply_hdr = gui.QPushButton("Apply HDR")
@@ -53,12 +57,16 @@ class Hdr_Manager(gui.QDialog):
         # Add Layout to main
         main_layout.addWidget(self.left_group)
 
-        self.show()
-
 
     def applyHDR(self):
         self.selection = self.hdr_combobox.currentText
         self.hdr.setCubeImage(self.hdr_path + "\\" + self.selection + ".hdr", 2)
+
+    def change_hdr_pixmap(self):
+        selected_hdr = self.hdr_combobox.currentText
+        self.pixmap = gui.QPixmap(self.thumb_path + "\\" + selected_hdr + "_thumb.jpg")
+        self.thumb_view.setPixmap(self.pixmap)
+
 
 MainWindow = Hdr_Manager()
 MainWindow.show()

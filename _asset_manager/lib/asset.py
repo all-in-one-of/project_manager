@@ -76,7 +76,7 @@ class Asset(object):
 
         self.number_of_publishes = number_of_publishes
         self.creator = creator
-        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
+        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
 
@@ -128,6 +128,9 @@ class Asset(object):
         # print(self.default_media_user)
         # print(self.advanced_media)
         # print("####################################")
+
+        self.comments_folder = self.project_path + "\\assets\\{0}\\.comments".format(self.type)
+        self.comment_filename = self.project_path + "\\assets\\{0}\\.comments\\{0}_{1}".format(self.type, self.name)
 
         self.publish_from_version = publish_from_version
 
@@ -210,7 +213,7 @@ class Asset(object):
         self.main.cursor.execute('''DELETE FROM assets_in_layout WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM uved_assets WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM assets WHERE asset_id=?''', (self.id,))
-        self.main.cursor.execute('''DELETE FROM comments WHERE comment_id=?''', (self.id,))
+        self.main.cursor.execute('''DELETE FROM comments WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM tasks WHERE asset_id=?''', (self.id,))
         self.main.cursor.execute('''DELETE FROM publish_comments WHERE asset_id=?''', (self.id,))
 
@@ -255,14 +258,14 @@ class Asset(object):
         self.dependency = new_dependency
 
     def add_comment(self, author, comment, time, type):
-        self.main.cursor.execute('''INSERT INTO comments(comment_id, comment_author, comment_text, comment_time, comment_type) VALUES(?,?,?,?,?)''', (self.id, author, comment, time, type))
+        self.main.cursor.execute('''INSERT INTO comments(asset_id, comment_author, comment_text, comment_time, comment_type, comment_image) VALUES(?,?,?,?,?,?)''', (self.id, author, comment, time, type, ""))
         self.main.db.commit()
-        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
+        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
 
     def remove_comment(self, author, comment, time):
         self.main.cursor.execute('''DELETE FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time))
         self.main.db.commit()
-        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE comment_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
+        self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
 
     def edit_comment(self, new_comment, comment_author, old_comment, comment_time):
         self.main.cursor.execute('''UPDATE comments SET comment_text=? WHERE comment_author=? AND comment_text=? AND comment_time=?''', (new_comment, comment_author, old_comment, comment_time,))

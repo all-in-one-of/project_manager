@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Fri Aug 28 17:42:46 2015
+# Created: Sat Aug 29 11:09:55 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -165,7 +165,7 @@ class Ui_Form(object):
         self.assetList = ThibListWidget(self.assetAndVersionFrame)
         self.assetList.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.assetList.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.assetList.setDragDropMode(QtGui.QAbstractItemView.DragOnly)
+        self.assetList.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         self.assetList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.assetList.setIconSize(QtCore.QSize(188, 188))
         self.assetList.setMovement(QtGui.QListView.Free)
@@ -1741,7 +1741,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(6)
+        self.Tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
