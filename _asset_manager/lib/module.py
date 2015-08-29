@@ -555,6 +555,15 @@ class Lib(object):
 
         return None
 
+    def delete_unecessary_folders(self, folder_path=None, folders_to_delete=[]):
+        if folder_path == None:
+            return
+
+        for folder in folders_to_delete:
+            folders = [x[0] for x in os.walk(folder_path) if folder in x[0].split("\\")[-1]]
+            for folder in folders:
+                shutil.rmtree(folder, ignore_errors=True)
+
 class DesktopWidget(QtGui.QWidget):
 
     def __init__(self, task_name, task_department, task_status, task_start, task_end, task_bid):

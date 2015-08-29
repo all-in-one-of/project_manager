@@ -114,6 +114,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             layout.addWidget(natureBtn)
 
             projectDialog.move(960, 540)
+            projectDialog.setWindowFlags(projectDialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
             result = projectDialog.exec_()
 
             if result == 0:
@@ -268,6 +269,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.__init__(self)
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
+
+        # Delete unecessary folders
+        self.Lib.delete_unecessary_folders(self, folder_path=self.selected_project_path, folders_to_delete=["backup", "Cache"])
 
         self.check_news_thread = CheckNews(self)
         self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
