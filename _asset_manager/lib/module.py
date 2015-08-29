@@ -696,6 +696,8 @@ class CheckNews(QtCore.QThread):
         while True:
             if self.main.isHidden():
                 self.emit(QtCore.SIGNAL("refresh_all"))
+                # Delete unecessary folders
+                self.main.Lib.delete_unecessary_folders(self.main, folder_path=self.main.selected_project_path + "\\assets", folders_to_delete=["backup", "Cache"])
                 time.sleep(15)
             else:
                 time.sleep(15)

@@ -96,6 +96,7 @@ class CommentWidget(object):
             add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon.png"))
             add_img_button.setIconSize(QtCore.QSize(24, 24))
             add_img_button.setMaximumSize(24, 24)
+            add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_text_edit, comment_author, comment_text, comment_time))
             update_button = QtGui.QPushButton(edit_frame)
             update_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\add_task_to_asset.png"))
             update_button.setIconSize(QtCore.QSize(24, 24))
@@ -119,7 +120,6 @@ class CommentWidget(object):
         comment_text_edit.setText(comment_text)
         comment_text_edit.setToolTip(comment_time.replace(")", ""))
         #self.comment_text_edit_dic[comment_text_edit] = comment_author + ": " + comment_text + "(" + comment_time
-
 
         if self.cur_alignment == "left":
             comment_frame_layout.addWidget(author_picture_lbl)
@@ -194,3 +194,6 @@ class CommentWidget(object):
         new_comment = str(edit_comment_textbox.toPlainText())
         self.selected_asset.edit_comment(new_comment, comment_author, comment_text, comment_time)
         self.load_comments()
+
+    def add_img_to_comment(self):
+        pass

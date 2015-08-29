@@ -389,7 +389,7 @@
                    <enum>QFrame::StyledPanel</enum>
                   </property>
                   <property name="dragDropMode">
-                   <enum>QAbstractItemView::DragOnly</enum>
+                   <enum>QAbstractItemView::DragDrop</enum>
                   </property>
                   <property name="selectionMode">
                    <enum>QAbstractItemView::SingleSelection</enum>

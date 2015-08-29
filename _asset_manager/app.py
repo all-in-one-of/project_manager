@@ -118,12 +118,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             result = projectDialog.exec_()
 
             if result == 0:
-                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
             elif result == 1:
-                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db_pub.sqlite"  # Database projet pub
+                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
 
         else:
-            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database officielle
+            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
 
         # Database Setup
         #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
@@ -269,9 +269,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.__init__(self)
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
-
-        # Delete unecessary folders
-        self.Lib.delete_unecessary_folders(self, folder_path=self.selected_project_path, folders_to_delete=["backup", "Cache"])
 
         self.check_news_thread = CheckNews(self)
         self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
@@ -523,9 +520,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
     def backup_database(self):
         # Get creation_time of last database backup and compare it to current  time
-        database_files = Lib.get_files_from_folder(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\backup")
+        database_files = Lib.get_files_from_folder(self, path="Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\_backup")
         if len(database_files) > 1000:
-            Lib.message_box(u"Trop de backups détectés pour la base de donnée. Veuillez avertir Thibault, merci ;)")
+            self.Lib.message_box(self, type="error", text=u"Trop de backups détectés pour la base de donnée. Veuillez avertir Thibault, merci ;)")
+
+        cur_db_name = os.path.split(self.db_path)[-1].replace(".sqlite", "")
+        database_files = [i for i in database_files if cur_db_name in os.path.split(i)[-1]]
 
         database_files = sorted(database_files)
         last_database_file = database_files[-1]
@@ -540,7 +540,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             last_database_file_version = int(fileName.split("_")[-1])
             new_version = str(last_database_file_version + 1).zfill(4)
             backup_database_filename = fileName.replace(str(last_database_file_version).zfill(4), new_version) + ".sqlite"
-            shutil.copy("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite", backup_database_filename)
+            shutil.copy(self.db_path, backup_database_filename)
 
     def refresh_all(self):
         self.statusLbl.setText("Status: Refreshing assets...")
