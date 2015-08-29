@@ -3459,6 +3459,41 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="1" column="4">
+                    <widget class="profilPicLabel" name="profilePicLbl_05">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="4">
+                    <widget class="QCheckBox" name="jbergerProfilCheckBox">
+                     <property name="text">
+                      <string>Jérémy</string>
+                     </property>
+                    </widget>
+                   </item>
                   </layout>
                  </widget>
                 </item>
@@ -3547,41 +3582,6 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="0">
-                    <widget class="QCheckBox" name="jbergerProfilCheckBox">
-                     <property name="text">
-                      <string>Jérémy</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="profilPicLabel" name="profilePicLbl_05">
-                     <property name="minimumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::Box</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Plain</enum>
-                     </property>
-                     <property name="lineWidth">
-                      <number>0</number>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="1" column="4">
                     <widget class="profilPicLabel" name="profilePicLbl_08">
                      <property name="minimumSize">
@@ -3617,22 +3617,14 @@
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="profilPicSecondRowFrame">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_8">
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <item row="0" column="4">
+                   <item row="2" column="5">
+                    <widget class="QCheckBox" name="mrozProfilCheckBox">
+                     <property name="text">
+                      <string>Maxime</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="5">
                     <widget class="profilPicLabel" name="profilePicLbl_09">
                      <property name="minimumSize">
                       <size>
@@ -3660,13 +3652,56 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="4">
-                    <widget class="QCheckBox" name="mrozProfilCheckBox">
+                   <item row="1" column="6">
+                    <widget class="profilPicLabel" name="profilePicLbl_10">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
                      <property name="text">
-                      <string>Maxime</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="6">
+                    <widget class="QCheckBox" name="obolducProfilCheckBox">
+                     <property name="text">
+                      <string>Olivier</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="profilPicSecondRowFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_8">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
                    <item row="1" column="6">
                     <widget class="QCheckBox" name="slachapelleProfilCheckBox">
                      <property name="text">
@@ -3702,31 +3737,17 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="5">
-                    <widget class="profilPicLabel" name="profilePicLbl_10">
-                     <property name="minimumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::Box</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Plain</enum>
-                     </property>
-                     <property name="lineWidth">
-                      <number>0</number>
-                     </property>
+                   <item row="1" column="8">
+                    <widget class="QCheckBox" name="vdelbroucqProfilCheckBox">
                      <property name="text">
-                      <string/>
+                      <string>Valentin</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="7">
+                    <widget class="QCheckBox" name="thoudonProfilCheckBox">
+                     <property name="text">
+                      <string>Thibault</string>
                      </property>
                     </widget>
                    </item>
@@ -3758,113 +3779,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="5">
-                    <widget class="QCheckBox" name="obolducProfilCheckBox">
-                     <property name="text">
-                      <string>Olivier</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="7">
-                    <widget class="QCheckBox" name="thoudonProfilCheckBox">
-                     <property name="text">
-                      <string>Thibault</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="ProfilPicThirdRowFrame">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_9">
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <item row="1" column="5">
-                    <widget class="QCheckBox" name="yshanProfilCheckBox">
-                     <property name="text">
-                      <string>Yi</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="3">
-                    <widget class="QCheckBox" name="vdelbroucqProfilCheckBox">
-                     <property name="text">
-                      <string>Valentin</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="4">
-                    <widget class="QCheckBox" name="yjobinProfilCheckBox">
-                     <property name="text">
-                      <string>Yann</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="5">
-                    <widget class="profilPicLabel" name="profilePicLbl_15">
-                     <property name="minimumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::Box</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Plain</enum>
-                     </property>
-                     <property name="lineWidth">
-                      <number>0</number>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="4">
-                    <widget class="profilPicLabel" name="profilePicLbl_14">
-                     <property name="minimumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::Box</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Plain</enum>
-                     </property>
-                     <property name="lineWidth">
-                      <number>0</number>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="3">
+                   <item row="0" column="8">
                     <widget class="profilPicLabel" name="profilePicLbl_13">
                      <property name="minimumSize">
                       <size>
@@ -3892,6 +3807,76 @@
                      </property>
                      <property name="scaledContents">
                       <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="9">
+                    <widget class="profilPicLabel" name="profilePicLbl_14">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="9">
+                    <widget class="QCheckBox" name="yjobinProfilCheckBox">
+                     <property name="text">
+                      <string>Yann</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="10">
+                    <widget class="profilPicLabel" name="profilePicLbl_15">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="10">
+                    <widget class="QCheckBox" name="yshanProfilCheckBox">
+                     <property name="text">
+                      <string>Yi</string>
                      </property>
                     </widget>
                    </item>
@@ -4582,10 +4567,6 @@
   <tabstop>cgonnordProfilCheckBox</tabstop>
   <tabstop>earismendezProfilCheckBox</tabstop>
   <tabstop>costiguyProfilCheckBox</tabstop>
-  <tabstop>mrozProfilCheckBox</tabstop>
-  <tabstop>yjobinProfilCheckBox</tabstop>
-  <tabstop>yshanProfilCheckBox</tabstop>
-  <tabstop>vdelbroucqProfilCheckBox</tabstop>
   <tabstop>emailObjectLineEdit</tabstop>
   <tabstop>emailMessageTextEdit</tabstop>
   <tabstop>sendEmailBtn</tabstop>

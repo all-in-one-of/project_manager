@@ -774,8 +774,8 @@ class AssetLoader(object):
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
         if self.selected_asset.type == "mod":
-            self.renderLine.hide()
-            self.openRealLayoutScene.hide()
+            self.renderLine.show()
+            self.openRealLayoutScene.show()
             self.importIntoSceneBtn.show()
             self.loadObjInGplayBtn.show()
             if "lowres" in self.selected_asset.name:
@@ -1722,8 +1722,13 @@ class AssetLoader(object):
         self.statusLbl.setText("Status: Idle...")
 
     def open_real_layout_scene(self):
-        process = QtCore.QProcess(self)
-        process.start(self.houdini_path, [self.selected_asset.full_path])
+        if self.selected_asset.type == "mod":
+            hda_path = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_dependency=? AND asset_extension="hda" AND asset_type="lay"''', (self.selected_asset.id, )).fetchone()
+            process = QtCore.QProcess(self)
+            process.start(self.houdini_path, [self.selected_project_path + hda_path[0].replace("\\", "/")])
+        else:
+            process = QtCore.QProcess(self)
+            process.start(self.houdini_path, [self.selected_asset.full_path])
 
     def open_associated_layout_scene(self):
         shutil.copy2(self.associated_layout_scene, self.associated_layout_scene.replace(".hipnc", "_" + self.username + "_layplacementtmp.hipnc"))
@@ -2221,9 +2226,10 @@ class AssetLoader(object):
 
             # Create HDA associated to modeling scene
             self.houdini_hda_process = QtCore.QProcess(self)
+            self.houdini_hda_process.readyRead.connect(self.plao)
             self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, main_hda_asset))
             self.houdini_hda_process.waitForFinished()
-            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
+            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
         else:
             # Create modeling scene asset
@@ -2262,10 +2268,13 @@ class AssetLoader(object):
 
             # Create HDA associated to modeling scene
             self.houdini_hda_process = QtCore.QProcess(self)
-            self.houdini_hda_process.readyRead.connect(self.rara)
             self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
             self.houdini_hda_process.waitForFinished()
             self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
+
+    def plao(self):
+        while self.houdini_hda_process.canReadLine():
+            print(self.houdini_hda_process.readLine())
 
     def create_lay_asset_from_scratch(self, asset_name):
 
@@ -2295,14 +2304,15 @@ class AssetLoader(object):
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
 
-        if self.selected_asset.type == "mod" and asset.type == "rig":
-            # Create default publish scene for rig asset
-            out_rig_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "out", [], asset.id, "", "", self.username)
-            out_rig_asset.add_asset_to_db()
+        if self.selected_asset != None:
+            if self.selected_asset.type == "mod" and asset.type == "rig":
+                # Create default publish scene for rig asset
+                out_rig_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "ma", "rig", "out", [], asset.id, "", "", self.username)
+                out_rig_asset.add_asset_to_db()
 
-            asset.change_dependency(out_rig_asset.id)
+                asset.change_dependency(out_rig_asset.id)
 
-            shutil.copy(asset.full_path, out_rig_asset.full_path)
+                shutil.copy(asset.full_path, out_rig_asset.full_path)
 
         # Update last access
         asset.change_last_access()
@@ -2546,6 +2556,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 self.main.db.commit()
 
         self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.readyRead.connect(self.readpro)
         self.houdini_hda_process.finished.connect(self.remove_assets_from_layout)
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_import_multiple_hdas_into_layout.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_to_add)])
@@ -2560,6 +2571,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
                 assets_to_remove.append(asset.full_path)
 
         self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.readyRead.connect(self.readpro)
         self.houdini_hda_process.finished.connect(self.process_finished)
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_delete_multiple_hda_from_lay.py", self.main.selected_asset.full_path.replace("\\", "/"), "|".join(assets_to_remove)])
@@ -2568,6 +2580,12 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
         self.houdini_hda_process.kill()
         self.main.statusLbl.setText("Status: Idle...")
+
+    def readpro(self):
+        while self.houdini_hda_process.canReadLine():
+            out = self.houdini_hda_process.readLine()
+            print(out)
+
 
 class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):

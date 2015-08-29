@@ -62,7 +62,6 @@ class MariChannelBuilder(gui.QDialog):
         # Add Layout to main
         main_layout.addWidget(left_group)
         main_layout.addWidget(self.mid_group)
-        main_layout.addWidget(self.right_group)
 
 
 

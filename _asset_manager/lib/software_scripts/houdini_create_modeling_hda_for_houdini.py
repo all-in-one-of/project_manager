@@ -1,6 +1,5 @@
 import sys
 
-
 asset_name = sys.argv[-3]
 obj_path = sys.argv[-2].replace("\\", "/")
 export_path = sys.argv[-1].replace("\\", "/")

@@ -29,12 +29,17 @@ class MariExportManager(gui.QDialog):
     def ui_n_stuff(self):
         # Variables necessaires
         self.geo_list = mari.geo.list()
-        self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\assets\\tex\\"
         obj = mari.geo.current()
         obj_name = str(obj.name())
+
+        if "pub_" in obj_name.lower():
+            self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\pub\\assets\\tex\\"
+        elif "nature_" in obj_name.lower():
+            self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\assets\\tex\\"
+
         obj_name = obj_name[obj_name.find("_mod_") + len("_mod_"):obj_name.rfind("_")]
         self.nomenclature = obj_name + "-$CHANNEL.png"
-        print(self.nomenclature)
+
 
         # Construire la fenetre et le layout de base
         self.setWindowTitle("Export Manager")
