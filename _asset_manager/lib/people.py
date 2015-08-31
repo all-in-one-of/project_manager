@@ -52,16 +52,13 @@ class PeopleTab(object):
                                self.cur_path + "\\media\\members_photos\\yshan.jpg",
                                 self.cur_path + "\\media\\members_photos\\rtremblay.jpg"]
 
-        self.members_mail = ["amelie-chaput@hotmail.com",
-                             "ostiguy.chloe@gmail.com",
+        self.members_mail = ["ostiguy.chloe@gmail.com",
                              "christopher.gonnord@gmail.com",
-                             "david.cayerdesforges@gmail.com",
                              "edwin.arismendez@gmail.com",
                              "etienne.rodrigue89@gmail.com",
                              "jeremy.berger3d@gmail.com",
                              "lau-gregoire@hotmail.com",
                              "clavet.lp@gmail.com",
-                             "marcantoinech@gmail.com",
                              "beaudoinmathieu@hotmail.com",
                              "maximeroz@gmail.com",
                              "ol.bolduc@gmail.com",

@@ -167,8 +167,8 @@ class TaskManager(object):
             # Adding assigned to
             combo_box = QtGui.QComboBox()
             combo_box.addItems(
-                [u"Amelie", u"Chloe", u"Christopher", u"David", u"Edwin", u"Etienne", u"Jeremy",
-                 u"Laurence", u"Louis-Philippe", u"Marc-Antoine", u"Mathieu", u"Maxime", u"Olivier", u"Simon", u"Thibault",
+                [u"Chloe", u"Christopher", u"Edwin", u"Etienne", u"Jeremy",
+                 u"Laurence", u"Louis-Philippe", u"Mathieu", u"Maxime", u"Olivier", u"Simon", u"Thibault",
                  u"Valentin", u"Yann", u"Yi"])
             combo_box.setCurrentIndex(self.members_id[task.assignation])
             combo_box.currentIndexChanged.connect(self.update_tasks)
