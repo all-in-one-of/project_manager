@@ -69,6 +69,7 @@ class ReferenceTab(object):
         self.refShowSequencesCheckBox.stateChanged.connect(self.toggle_thumbnail_text)
         self.createMoodboardFromImagesBtn.clicked.connect(self.create_moodboard_from_images)
         self.connect(self.referenceThumbListWidget, QtCore.SIGNAL('delete_selected_reference'), self.remove_selected_references)
+        self.connect(self.referenceThumbListWidget, QtCore.SIGNAL('referenceThumbListWidget_simple_view'), self.reference_open_ref_in_windows_viewer)
 
         resize_icon = QtGui.QIcon(self.cur_path + "\\media\\thumbnail.png")
         self.biggerRefPushButton_01.setIcon(resize_icon)
@@ -406,11 +407,8 @@ class ReferenceTab(object):
             self.all_references_ListWidgetItems.remove(ref)
             self.referenceThumbListWidget.takeItem(self.referenceThumbListWidget.row(ref))
 
-    def reference_doubleClicked(self):
-        '''
-        Trigger action based when user double click an item
-        '''
-
+    def reference_open_ref_in_windows_viewer(self):
+        selected_reference = self.referenceThumbListWidget.selectedItems()[0]
         self.selected_asset = selected_reference.data(QtCore.Qt.UserRole).toPyObject()
 
         if "vimeo" in self.selected_asset.dependency or "youtube" in self.selected_asset.dependency:
@@ -418,6 +416,9 @@ class ReferenceTab(object):
         else:
             # Open image in windows viewer
             webbrowser.open(self.selected_asset.full_path)
+
+    def reference_doubleClicked(self):
+        subprocess.Popen(r'explorer /select,' + str(self.selected_asset.full_path))
 
     def rename_reference(self, asset):
         '''

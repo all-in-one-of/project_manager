@@ -18,3 +18,4 @@
 2015-08-27 13:13:51,832 ::: app.py ::: <module>() ::: line 755 ::: 'QPushButton' object has no attribute 'setPixmap'
 2015-08-28 13:51:31,164 ::: app.py ::: <module>() ::: line 757 ::: 'Main' object has no attribute 'meOnlyCheckBox'
 2015-08-28 13:51:42,668 ::: app.py ::: <module>() ::: line 757 ::: 'Main' object has no attribute 'meOnlyCheckBox'
+2015-09-01 08:00:11,539 ::: app.py ::: <module>() ::: line 739 ::: list index out of range

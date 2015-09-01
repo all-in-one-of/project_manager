@@ -126,6 +126,8 @@ class ThibListWidget(QtGui.QListWidget):
         elif QtCore.Qt.Key_Space in self.keylist:
             if self.objectName() in ["versionList", "assetList"]:
                 self.emit(QtCore.SIGNAL('versionList_simple_view'))
+            elif self.objectName() in ["referenceThumbListWidget"]:
+                self.emit(QtCore.SIGNAL('referenceThumbListWidget_simple_view'))
 
         self.keylist = []
 

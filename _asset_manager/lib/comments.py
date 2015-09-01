@@ -38,7 +38,7 @@ class CommentWidget(object):
             item.widget().deleteLater()
 
         if len(comments) == 0:
-            self.create_comment_frame("default", "There's no comments", "", "")
+            self.create_comment_frame("default", "There's no comments", "", "", "")
 
         for i, comment in enumerate(reversed(comments)):
             comment_id = comment[0]

@@ -129,7 +129,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
-        self.backup_database()
+        if self.db_path != "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite":
+            self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.db.cursor()
@@ -510,7 +511,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         cur_db_name = os.path.split(self.db_path)[-1].replace(".sqlite", "")
         database_files = [i for i in database_files if cur_db_name in os.path.split(i)[-1]]
-
         database_files = sorted(database_files)
         last_database_file = database_files[-1]
         creation_time = time.ctime(os.path.getctime(last_database_file))
