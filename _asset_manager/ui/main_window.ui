@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>7</number>
+            <number>2</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -1993,20 +1993,6 @@
                  <string>Asset</string>
                 </property>
                </column>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="mtRefreshTasksBtn">
-               <property name="text">
-                <string>Refresh tasks list</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="loadTasksAsWidgetBtn">
-               <property name="text">
-                <string>Load as Desktop Widgets</string>
-               </property>
               </widget>
              </item>
             </layout>
@@ -4137,10 +4123,17 @@
                   <x>0</x>
                   <y>0</y>
                   <width>1043</width>
-                  <height>538</height>
+                  <height>515</height>
                  </rect>
                 </property>
                </widget>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox">
+               <property name="singleStep">
+                <number>10</number>
+               </property>
               </widget>
              </item>
              <item>
@@ -4520,8 +4513,6 @@
   <tabstop>mtFilterByBidComboBox</tabstop>
   <tabstop>mtHideDoneCheckBox</tabstop>
   <tabstop>mtTableWidget</tabstop>
-  <tabstop>mtRefreshTasksBtn</tabstop>
-  <tabstop>loadTasksAsWidgetBtn</tabstop>
   <tabstop>seqReferenceList</tabstop>
   <tabstop>shotReferenceList</tabstop>
   <tabstop>referenceWebLineEdit</tabstop>

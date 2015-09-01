@@ -146,7 +146,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.NEF_folder = self.cur_path_one_folder_up + "\\_NEF"  # H:\01-NAD\_pipeline\_utilities\NEF
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
-        self.refresh_iteration = 1
+        self.number_of_refreshes = 0
         self.members = {"costiguy": "Chloe", "cgonnord": "Christopher",
                         "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mbeaudoin": "Mathieu",
@@ -527,6 +527,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy(self.db_path, backup_database_filename)
 
     def refresh_all(self):
+
+        if self.number_of_refreshes == 0:
+            self.number_of_refreshes += 1
+            return
+
         self.statusLbl.setText("Status: Refreshing assets...")
         self.repaint()
 
@@ -541,21 +546,20 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.mt_item_added = True
 
         self.statusLbl.setText("Status: Refreshing tasks...")
-        self.repaint()
         MyTasks.mt_add_tasks_from_database(self)
 
         self.statusLbl.setText("Status: Refreshing references...")
-        self.repaint()
 
         if len(self.ref_assets_instances) > 1:
             self.ReferenceTab.refresh_reference_list(self)
 
         self.statusLbl.setText("Status: Refreshing what's new...")
-        self.repaint()
         self.WhatsNew.load_whats_new(self)
 
         self.statusLbl.setText("Status: Idle...")
         self.repaint()
+
+
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:
@@ -705,7 +709,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 if __name__ == "__main__":
 
-    log_to_file = True
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)

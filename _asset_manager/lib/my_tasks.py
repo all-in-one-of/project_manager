@@ -42,9 +42,6 @@ class MyTasks(object):
         self.mtFilterBySequenceComboBox.addItem("None")
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_load_shots)
 
-        self.loadTasksAsWidgetBtn.clicked.connect(self.open_tasks_as_desktop_widgets)
-        self.mtRefreshTasksBtn.clicked.connect(self.mt_refresh_tasks_list)
-
         self.mtFilterByShotComboBox.addItem("None")
         self.mtFilterByDeptComboBox.addItem("None")
         self.mtFilterByDeptComboBox.addItems(self.mt_departments.keys())
@@ -113,14 +110,14 @@ class MyTasks(object):
             task_id_item = QtGui.QTableWidgetItem()
             task_id_item.setText(str(task.id))
             task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            task_id_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            task_id_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 0, task_id_item)
             self.mt_widgets[str(inversed_index) + ":0"] = task_id_item
 
             # Adding tasks description
             task_description_item = QtGui.QTableWidgetItem()
             task_description_item.setText(task.description)
-            task_description_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            task_description_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 1, task_description_item)
             self.mt_widgets[str(inversed_index) + ":1"] = task_description_item
 
@@ -128,7 +125,7 @@ class MyTasks(object):
             task_department_item = QtGui.QTableWidgetItem()
             task_department_item.setText(task.department)
             task_department_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            task_department_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            task_department_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 2, task_department_item)
             self.mt_widgets[str(inversed_index) + ":2"] = task_department_item
 
@@ -137,7 +134,7 @@ class MyTasks(object):
                 task_status_item = QtGui.QTableWidgetItem()
                 task_status_item.setText(task.status)
                 task_status_item.setTextAlignment(QtCore.Qt.AlignCenter)
-                task_status_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+                task_status_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
                 self.mtTableWidget.setItem(0, 3, task_status_item)
                 self.mt_widgets[str(inversed_index) + ":3"] = task_status_item
             else:
@@ -145,6 +142,8 @@ class MyTasks(object):
                 status_combobox.addItems(["Ready to Start", "In Progress", "On Hold", "Waiting for Approval", "Retake"])
                 status_combobox.setCurrentIndex(self.mt_status[task.status])
                 status_combobox.currentIndexChanged.connect(self.mt_update_tasks)
+                if task.assignation != self.username:
+                    status_combobox.setDisabled(True)
                 self.change_cell_status_color(status_combobox, task.status)
                 self.mtTableWidget.setCellWidget(0, 3, status_combobox)
                 self.mt_widgets[str(inversed_index) + ":3"] = status_combobox
@@ -153,7 +152,7 @@ class MyTasks(object):
             task_assignation_item = QtGui.QTableWidgetItem()
             task_assignation_item.setText(self.members[task.assignation])
             task_assignation_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            task_assignation_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            task_assignation_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 4, task_assignation_item)
             self.mt_widgets[str(inversed_index) + ":4"] = task_assignation_item
 
@@ -162,7 +161,7 @@ class MyTasks(object):
             date_start_item = QtGui.QTableWidgetItem()
             date_start_item.setText(task.start)
             date_start_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            date_start_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            date_start_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 5, date_start_item)
             self.mt_widgets[str(inversed_index) + ":5"] = date_start_item
 
@@ -171,7 +170,7 @@ class MyTasks(object):
             date_end_item = QtGui.QTableWidgetItem()
             date_end_item.setText(task.end)
             date_end_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            date_end_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            date_end_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 6, date_end_item)
             self.mt_widgets[str(inversed_index) + ":6"] = date_end_item
 
@@ -188,7 +187,7 @@ class MyTasks(object):
             task_bid_item = QtGui.QTableWidgetItem()
             task_bid_item.setText(task.bid)
             task_bid_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            task_bid_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+            task_bid_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.mtTableWidget.setItem(0, 8, task_bid_item)
             self.mt_widgets[str(inversed_index) + ":8"] = task_bid_item
 
@@ -300,6 +299,10 @@ class MyTasks(object):
             if department_filter == "None": department_filter = task.department
             if status_filter == "None" : status_filter = task.status
             if member_filter == "None" : member_filter = task.assignation
+            for shortname, longname in self.members.iteritems():
+                if longname == member_filter:
+                    member_filter = shortname
+
             if bid_filter == 0: bid_filter = task.bid
 
             if str(bid_operation) == ">=": bid_result = operator.le(int(bid_filter), int(task.bid))
@@ -372,6 +375,10 @@ class MyTasks(object):
             self.tasks[task].move(10, 10 + (i * 60))
 
     def go_to_asset_id_in_asset_loader(self, value):
+
+        if value.column() != 11:
+            return
+
         row = value.row()
         asset_id_line_edit = self.widgets[str(row) + ":11"]
         for asset, asset_item in self.assets.items():

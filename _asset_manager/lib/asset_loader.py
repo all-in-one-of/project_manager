@@ -153,6 +153,8 @@ class AssetLoader(object):
         # Create right click menu on asset list
         self.assetList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.assetList.connect(self.assetList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_right_click_menu)
+        self.shotList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.shotList.connect(self.shotList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_shot_right_click_menu)
 
         self.icon_display_type = "user"
 
@@ -172,6 +174,9 @@ class AssetLoader(object):
             add_task_to_asset.setIcon(QtGui.QIcon(self.cur_path + "/media/add_task_to_asset.png"))
             add_task_to_asset.triggered.connect(self.add_task_to_selected_asset)
 
+            get_asset_id = menu.addAction("Copy asset's ID to clipboard")
+            get_asset_id.setIcon(QtGui.QIcon(self.cur_path + "/media/copy_asset_id.png"))
+            get_asset_id.triggered.connect(self.get_asset_id)
 
         # Show the context menu.
         menu.exec_(self.assetList.mapToGlobal(QPos))
@@ -196,6 +201,25 @@ class AssetLoader(object):
         self.tmNbrOfRowsToAddSpinBox.setValue(1)
         self.TaskManager.add_task(self, asset_id=self.selected_asset.id)
         self.Tabs.setCurrentWidget(self.Tabs.widget(1))
+
+    def get_asset_id(self):
+        pos = self.assetList.mapFromGlobal(QtGui.QCursor.pos())
+        asset_item = self.assetList.itemAt(pos)
+        asset = asset_item.data(QtCore.Qt.UserRole).toPyObject()
+        clipboard.copy(str(asset.id))
+
+    def show_shot_right_click_menu(self):
+        pass
+        # # Create a menu
+        # menu = QtGui.QMenu("Menu", self)
+        #
+        # if self.username in ["thoudon", "lclavet"]:
+        #     change_shot_framerange = menu.addAction("Add task")
+        #     change_shot_framerange.setIcon(QtGui.QIcon(self.cur_path + "/media/change_shot_framerange.png"))
+        #     change_shot_framerange.triggered.connect(self.change_shot_framerange)
+        #
+        # # Show the context menu.
+        # menu.exec_(self.shotList.mapToGlobal(QPos))
 
     def change_favorite_state(self):
 
@@ -321,7 +345,7 @@ class AssetLoader(object):
         """Add specified sequence to the selected project
         """
 
-        # Create soft selection and asset name dialog
+        # Create sequence name dialog
         dialog = QtGui.QDialog(self)
         self.Lib.apply_style(self, dialog)
 
@@ -373,12 +397,37 @@ class AssetLoader(object):
         self.seqList_Clicked()
 
     def add_shot(self):
-        shot_number = str(self.shotSpinBox.text()).zfill(4)
 
         # Check if a project and a sequence are selected
-        if not (self.projectList.selectedItems() and self.seqList.selectedItems()):
-            self.Lib.message_box(text="Please select a project and a sequence first.")
+        if self.selected_sequence_name in ["All", "None", "xxx"]:
+            self.Lib.message_box(self, type="error", text="Please select a project and a sequence first.")
             return
+
+        # Create shot number dialog
+        dialog = QtGui.QDialog(self)
+        self.Lib.apply_style(self, dialog)
+
+        dialog.setWindowTitle("Enter a number")
+        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+        dialog.setMinimumWidth(150)
+
+        shot_number_spinbox = QtGui.QSpinBox()
+        shot_number_spinbox.setMinimum(10)
+        shot_number_spinbox.setMaximum(2000)
+        shot_number_spinbox.setValue(10)
+        shot_number_spinbox.setSingleStep(10)
+        accept_btn = QtGui.QPushButton("Create Shot")
+        accept_btn.clicked.connect(dialog.accept)
+
+        dialog_main_layout.addWidget(shot_number_spinbox)
+        dialog_main_layout.addWidget(accept_btn)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        shot_number = str(shot_number_spinbox.text()).zfill(4)
 
         # Prevent two shots from having the same number
         all_shots_number = self.cursor.execute(
@@ -398,6 +447,8 @@ class AssetLoader(object):
         # Add shot to GUI
         self.shotList.addItem(shot_number)
         self.seqList_Clicked()
+
+        self.Lib.message_box(self, type="info", text="Successfully created shot " + shot_number)
 
     def load_all_assets_for_first_time(self):
         '''

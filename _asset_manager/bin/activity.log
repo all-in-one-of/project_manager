@@ -19,3 +19,5 @@
 2015-08-28 13:51:31,164 ::: app.py ::: <module>() ::: line 757 ::: 'Main' object has no attribute 'meOnlyCheckBox'
 2015-08-28 13:51:42,668 ::: app.py ::: <module>() ::: line 757 ::: 'Main' object has no attribute 'meOnlyCheckBox'
 2015-09-01 08:00:11,539 ::: app.py ::: <module>() ::: line 739 ::: list index out of range
+2015-09-01 14:01:43,880 ::: app.py ::: <module>() ::: line 743 ::: 'QTableWidgetItem' object has no attribute 'setEnabled'
+2015-09-01 15:46:20,951 ::: app.py ::: <module>() ::: line 743 ::: 'Main' object has no attribute 'loadTasksAsWidgetBtn'

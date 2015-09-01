@@ -649,6 +649,8 @@ class ReferenceTab(object):
         self.referenceThumbListWidget.scrollToItem(new_item)
         self.referenceThumbListWidget.setItemSelected(new_item, True)
 
+        self.referenceWebLineEdit.clear()
+
     def create_reference_from_files(self):
         '''
         Create references from selected files

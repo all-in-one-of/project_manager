@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 01 08:02:36 2015
+# Created: Tue Sep 01 15:46:04 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -779,12 +779,6 @@ class Ui_Form(object):
         self.mtTableWidget.verticalHeader().setVisible(False)
         self.mtTableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_29.addWidget(self.mtTableWidget)
-        self.mtRefreshTasksBtn = QtGui.QPushButton(self.myTasksTab)
-        self.mtRefreshTasksBtn.setObjectName(_fromUtf8("mtRefreshTasksBtn"))
-        self.verticalLayout_29.addWidget(self.mtRefreshTasksBtn)
-        self.loadTasksAsWidgetBtn = QtGui.QPushButton(self.myTasksTab)
-        self.loadTasksAsWidgetBtn.setObjectName(_fromUtf8("loadTasksAsWidgetBtn"))
-        self.verticalLayout_29.addWidget(self.loadTasksAsWidgetBtn)
         self.Tabs.addTab(self.myTasksTab, _fromUtf8(""))
         self.imagesManagerTab = QtGui.QWidget()
         self.imagesManagerTab.setObjectName(_fromUtf8("imagesManagerTab"))
@@ -1606,10 +1600,14 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 538))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 515))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
+        self.spinBox = QtGui.QSpinBox(self.whatsNewTab)
+        self.spinBox.setSingleStep(10)
+        self.spinBox.setObjectName(_fromUtf8("spinBox"))
+        self.verticalLayout_31.addWidget(self.spinBox)
         self.markAllNewsAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
         self.markAllNewsAsReadBtn.setObjectName(_fromUtf8("markAllNewsAsReadBtn"))
         self.verticalLayout_31.addWidget(self.markAllNewsAsReadBtn)
@@ -1741,7 +1739,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1780,9 +1778,7 @@ class Ui_Form(object):
         Form.setTabOrder(self.mtBidOperationComboBox, self.mtFilterByBidComboBox)
         Form.setTabOrder(self.mtFilterByBidComboBox, self.mtHideDoneCheckBox)
         Form.setTabOrder(self.mtHideDoneCheckBox, self.mtTableWidget)
-        Form.setTabOrder(self.mtTableWidget, self.mtRefreshTasksBtn)
-        Form.setTabOrder(self.mtRefreshTasksBtn, self.loadTasksAsWidgetBtn)
-        Form.setTabOrder(self.loadTasksAsWidgetBtn, self.seqReferenceList)
+        Form.setTabOrder(self.mtTableWidget, self.seqReferenceList)
         Form.setTabOrder(self.seqReferenceList, self.shotReferenceList)
         Form.setTabOrder(self.shotReferenceList, self.referenceWebLineEdit)
         Form.setTabOrder(self.referenceWebLineEdit, self.showUrlImageBtn)
@@ -1960,8 +1956,6 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Shot", None))
         item = self.mtTableWidget.horizontalHeaderItem(11)
         item.setText(_translate("Form", "Asset", None))
-        self.mtRefreshTasksBtn.setText(_translate("Form", "Refresh tasks list", None))
-        self.loadTasksAsWidgetBtn.setText(_translate("Form", "Load as Desktop Widgets", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.myTasksTab), _translate("Form", "Tasks", None))
         self.sequencesReferenceLbl.setText(_translate("Form", "Sequences", None))
         self.seqReferenceList.setSortingEnabled(False)
