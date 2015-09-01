@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
 
+
 from random import randint
 
 class TaskManager(object):
@@ -338,8 +339,19 @@ class TaskManager(object):
                 task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
                 task.change_confirmation(1)
                 # Add Log Entry
-                log_entry = self.LogEntry(self, 0, task.id, [], [task.assignation], self.username, task.assignation, "task", u"{0} has assigned a new {1} task to {2}: {3}.".format(self.members[self.username], task.department, self.members[task.assignation], task.description), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
+                log_entry = self.LogEntry(self, 0, task.id, [], [task.assignation], self.username, task.assignation, "task", u"{0} has assigned a new {1} task to {2}: {3}".format(self.members[self.username], task.department, self.members[task.assignation], task.description), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
                 log_entry.add_log_to_database()
+
+                email = self.cursor.execute('''SELECT email FROM preferences WHERE username=?''', (task.assignation,)).fetchone()[0]
+
+                subject = QtCore.QString("A new task has been assigned to you")
+                subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8')
+
+                message = QtCore.QString(u"{0} has assigned a new {1} task to {2}: {3}".format(self.members[self.username], task.department, self.members[task.assignation], task.description))
+                message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
+
+                self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=[email], subject=subject, message=message, username=self.members[self.username])
+
             else:
                 clicked_widget.setText("Confirm")
                 task_id_widget.setBackground(QtGui.QColor(135, 45, 44))

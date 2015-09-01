@@ -63,6 +63,7 @@ class PeopleTab(object):
                              "maximeroz@gmail.com",
                              "ol.bolduc@gmail.com",
                              "simonlachapelle@gmail.com",
+                             "houdon.thibault@gmail.com",
                              "valentin.delbroucq@gmail.com",
                              "yannjobinphoto@gmail.com",
                              "yishan3d@gmail.com",
@@ -162,37 +163,37 @@ class PeopleTab(object):
         addr_list = []
 
         if self.costiguyProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[1])
+            addr_list.append(self.members_mail[0])
         if self.cgonnordProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[2])
+            addr_list.append(self.members_mail[1])
         if self.earismendezProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[4])
+            addr_list.append(self.members_mail[2])
         if self.erodrigueProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[5])
+            addr_list.append(self.members_mail[3])
         if self.jbergerProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[6])
+            addr_list.append(self.members_mail[4])
         if self.lgregoireProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[7])
+            addr_list.append(self.members_mail[5])
         if self.lclavetProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[8])
+            addr_list.append(self.members_mail[6])
         if self.mbeaudoinProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[10])
+            addr_list.append(self.members_mail[7])
         if self.mrozProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[11])
+            addr_list.append(self.members_mail[8])
         if self.obolducProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[12])
+            addr_list.append(self.members_mail[9])
         if self.slachapelleProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[13])
+            addr_list.append(self.members_mail[10])
         if self.thoudonProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[14])
+            addr_list.append(self.members_mail[11])
         if self.vdelbroucqProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[15])
+            addr_list.append(self.members_mail[12])
         if self.yjobinProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[16])
+            addr_list.append(self.members_mail[13])
         if self.yshanProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[17])
+            addr_list.append(self.members_mail[14])
         if self.rtremblayProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[18])
+            addr_list.append(self.members_mail[15])
 
         self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
 

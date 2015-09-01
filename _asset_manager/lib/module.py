@@ -16,6 +16,7 @@ import distutils.core
 import shutil
 from datetime import datetime
 import smtplib
+from email.mime.text import MIMEText
 from dateutil import relativedelta
 from glob import glob
 from functools import partial
@@ -485,14 +486,17 @@ class Lib(object):
 
     def send_email(self, from_addr="nad.update@gmail.com", addr_list=[], subject="", message="", login="nad.update@gmail.com", password="python123", username=""):
 
+        if username == "":
+            username = self.members[self.username]
+
         subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8').encode('utf-8')
         message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8').encode('utf-8')
 
         smtpserver = 'smtp.gmail.com:25'
         header = 'From: {0}\n'.format(from_addr)
         header += 'To: %s\n' % ','.join(addr_list)
-        header += 'Subject: {0} par {1}\n\n'.format(subject, username)
-        message = header + message + "\nEnvoyé par " + username + " depuis Manager 2.0"
+        header += 'Subject: {0} by {1}\n\n'.format(subject, username)
+        message = "{0}{1}".format(header, message)
 
         server = smtplib.SMTP(smtpserver)
         server.starttls()
