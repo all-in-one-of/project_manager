@@ -267,8 +267,11 @@ class MyTasks(object):
 
     def mt_filter(self):
 
+
+
         number_of_rows = self.mtTableWidget.rowCount()
         for row_index in xrange(number_of_rows):
+
             # Retrieve text / value of filter widgets
             project_filter = str(self.mtFilterByProjectComboBox.currentText())
             sequence_filter = str(self.mtFilterBySequenceComboBox.currentText())
@@ -290,7 +293,7 @@ class MyTasks(object):
             # If task is not confirmed, hide it:
             if task.confirmation == "0":
                 self.mtTableWidget.hideRow(row_index)
-                break
+                pass
 
             # If filters are set to default value, set the filters variables to the current row values
             if project_filter == "None": project_filter = task.project
@@ -308,7 +311,7 @@ class MyTasks(object):
             if str(bid_operation) == ">=": bid_result = operator.le(int(bid_filter), int(task.bid))
             elif str(bid_operation) == "<=": bid_result = operator.ge(int(bid_filter), int(task.bid))
 
-            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == task.assignation and bid_result:
+            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and str(member_filter) == str(task.assignation) and bid_result:
                 if self.mtHideDoneCheckBox.isChecked():
                     if task.status == "Done":
                         self.mtTableWidget.hideRow(row_index)
@@ -318,7 +321,6 @@ class MyTasks(object):
                     self.mtTableWidget.showRow(row_index)
             else:
                 self.mtTableWidget.hideRow(row_index)
-
 
         self.mtTableWidget.resizeColumnsToContents()
         self.mtTableWidget.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)

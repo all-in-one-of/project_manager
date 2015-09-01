@@ -4077,16 +4077,6 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="showTaskChangeCheckBox">
-                  <property name="text">
-                   <string>Show Tasks Change</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QCheckBox" name="showNewImagesCheckBox">
                   <property name="text">
                    <string>Show New Images</string>
