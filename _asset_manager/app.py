@@ -125,8 +125,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         else:
             self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
 
-        # Database Setup
-        #self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
+
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            # Database Setup
+            self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
         if self.db_path != "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite":
@@ -271,14 +273,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
-        self.check_news_thread = CheckNews(self)
-        self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
+        #self.check_news_thread = CheckNews(self)
+        #self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
+        #self.check_news_thread.daemon = True
+        #self.check_news_thread.start()
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
-        if len(self.projectList.selectedItems()) == 0:
+        if len(self.projectList.currentText()) == 0:
             Lib.message_box(text="Please select a project first.")
             return
 
@@ -709,7 +711,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 if __name__ == "__main__":
 
-    log_to_file = False
+    log_to_file = True
     cur_path = os.path.dirname(os.path.realpath(__file__))
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)

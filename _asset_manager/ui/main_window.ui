@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>7</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -4070,6 +4070,16 @@
                  <widget class="QCheckBox" name="showNewTasksCheckBox">
                   <property name="text">
                    <string>Show New Tasks</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showTaskChangeCheckBox">
+                  <property name="text">
+                   <string>Show Tasks Change</string>
                   </property>
                   <property name="checked">
                    <bool>true</bool>
