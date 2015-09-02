@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 01 19:27:05 2015
+# Created: Wed Sep 02 13:03:10 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1600,14 +1600,10 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 515))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 538))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
-        self.spinBox = QtGui.QSpinBox(self.whatsNewTab)
-        self.spinBox.setSingleStep(10)
-        self.spinBox.setObjectName(_fromUtf8("spinBox"))
-        self.verticalLayout_31.addWidget(self.spinBox)
         self.markAllNewsAsReadBtn = QtGui.QPushButton(self.whatsNewTab)
         self.markAllNewsAsReadBtn.setObjectName(_fromUtf8("markAllNewsAsReadBtn"))
         self.verticalLayout_31.addWidget(self.markAllNewsAsReadBtn)
@@ -1739,7 +1735,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(1)
+        self.Tabs.setCurrentIndex(7)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form

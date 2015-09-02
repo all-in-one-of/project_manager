@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>7</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -4123,17 +4123,10 @@
                   <x>0</x>
                   <y>0</y>
                   <width>1043</width>
-                  <height>515</height>
+                  <height>538</height>
                  </rect>
                 </property>
                </widget>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox">
-               <property name="singleStep">
-                <number>10</number>
-               </property>
               </widget>
              </item>
              <item>

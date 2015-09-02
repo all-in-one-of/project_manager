@@ -23,7 +23,7 @@ class MyTasks(object):
         self.mt_item_added = False
         self.mtTableWidget.setStyleSheet("color: black;")
 
-        self.mtTableWidget.itemDoubleClicked.connect(self.go_to_asset_id_in_asset_loader)
+        self.mtTableWidget.itemDoubleClicked.connect(self.mtTableWidget_DoubleClicked)
 
         self.mtFilterByProjectComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_filter)
@@ -108,6 +108,7 @@ class MyTasks(object):
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
+            task_id_item.setData(QtCore.Qt.UserRole, task)
             task_id_item.setText(str(task.id))
             task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
             task_id_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
@@ -266,9 +267,6 @@ class MyTasks(object):
         self.change_cell_status_color(task_status_widget, task_status)
 
     def mt_filter(self):
-
-
-
         number_of_rows = self.mtTableWidget.rowCount()
         for row_index in xrange(number_of_rows):
 
@@ -376,19 +374,29 @@ class MyTasks(object):
 
             self.tasks[task].move(10, 10 + (i * 60))
 
-    def go_to_asset_id_in_asset_loader(self, value):
-
-        if value.column() != 11:
-            return
+    def mtTableWidget_DoubleClicked(self, value):
 
         row = value.row()
-        asset_id_line_edit = self.widgets[str(row) + ":11"]
-        for asset, asset_item in self.assets.items():
-            asset_id = str(asset_id_line_edit.text())
-            asset_item.setHidden(False)
-            if asset_id == str(asset.id):
-                asset_item.setHidden(False)
-            else:
-                asset_item.setHidden(True)
+        column = value.column()
+        if value.column() != 11:
+            # Show comments for clicked task
+            task_item = self.mtTableWidget.item(row, column)
+            self.selected_asset = task_item.data(QtCore.Qt.UserRole).toPyObject()
+            if self.selected_asset == None:
+                return  # User clicked on the days left cell
 
-        self.Tabs.setCurrentWidget(self.Tabs.widget(0))
+            self.commentLineEdit.setFocus()
+            self.CommentWidget.load_comments(self)
+        else:
+            # Go to asset in asset loader
+            asset_id_line_edit = self.widgets[str(row) + ":11"]
+            for asset, asset_item in self.assets.items():
+                asset_id = str(asset_id_line_edit.text())
+                asset_item.setHidden(False)
+                if asset_id == str(asset.id):
+                    asset_item.setHidden(False)
+                else:
+                    asset_item.setHidden(True)
+
+            self.Tabs.setCurrentWidget(self.Tabs.widget(0))
+
