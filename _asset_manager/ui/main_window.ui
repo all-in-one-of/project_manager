@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>7</number>
+            <number>1</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -1344,7 +1344,7 @@
                          </size>
                         </property>
                         <property name="text">
-                         <string>Hide Confirmed</string>
+                         <string>Hide unConfirmed</string>
                         </property>
                        </widget>
                       </item>

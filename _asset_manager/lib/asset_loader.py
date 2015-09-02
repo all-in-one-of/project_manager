@@ -840,8 +840,8 @@ class AssetLoader(object):
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
         if self.selected_asset.type == "mod":
-            self.renderLine.show()
-            self.openRealLayoutScene.show()
+            self.renderLine.hide()
+            self.openRealLayoutScene.hide()
             self.importIntoSceneBtn.show()
             self.loadObjInGplayBtn.show()
             if "lowres" in self.selected_asset.name:

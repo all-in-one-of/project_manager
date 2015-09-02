@@ -561,8 +561,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.statusLbl.setText("Status: Idle...")
         self.repaint()
 
-
-
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:
             self.theme = 0
@@ -670,17 +668,18 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.trayIcon.show()
 
     def terminate_program(self):
-        # Check if a software is still open and ask user to close it before closing the manager
-        tasks = subprocess.check_output(['tasklist'])
-        if "mari" in tasks.lower():
-            self.Lib.message_box(self, type="error", text="Please save your work and close Mari before closing the Manager!")
-            return
-        elif "maya" in tasks.lower():
-            self.Lib.message_box(self, type="error", text="Please save your work and close Maya before closing the Manager!")
-            return
-        elif "houdin" in tasks.lower():
-            self.Lib.message_box(self, type="error", text="Please save your work and close Houdini before closing the Manager!")
-            return
+        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+            # Check if a software is still open and ask user to close it before closing the manager
+            tasks = subprocess.check_output(['tasklist'])
+            if "mari" in tasks.lower():
+                self.Lib.message_box(self, type="error", text="Please save your work and close Mari before closing the Manager!")
+                return
+            elif "maya" in tasks.lower():
+                self.Lib.message_box(self, type="error", text="Please save your work and close Maya before closing the Manager!")
+                return
+            elif "houdin" in tasks.lower():
+                self.Lib.message_box(self, type="error", text="Please save your work and close Houdini before closing the Manager!")
+                return
 
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))

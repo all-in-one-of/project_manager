@@ -291,9 +291,9 @@ class MyTasks(object):
             task.get_infos_from_id()
 
             # If task is not confirmed, hide it:
-            if task.confirmation == "0":
+            if task.confirmation == "0" and task.status != "Done":
                 self.mtTableWidget.hideRow(row_index)
-                pass
+                continue
 
             # If filters are set to default value, set the filters variables to the current row values
             if project_filter == "None": project_filter = task.project

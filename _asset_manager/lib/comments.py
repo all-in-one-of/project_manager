@@ -23,12 +23,14 @@ class CommentWidget(object):
             comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=? AND comment_type="ref"''', (self.selected_asset.id,)).fetchall()
         elif current_tab_text == "Task Manager":
             comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=? AND comment_type="task"''', (self.selected_asset.id,)).fetchall()
+            self.commentsForAssetLbl.setText("Comments for task #{0}".format(self.selected_asset.id, ))
         elif current_tab_text == "Asset Loader":
             comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=? AND comment_type="asset"''', (self.selected_asset.id,)).fetchall()
+            self.commentsForAssetLbl.setText("Comments for asset: {0} ({1})".format(self.selected_asset.name, self.selected_asset.type))
         elif "What's New" in current_tab_text:
             comments = self.cursor.execute('''SELECT * FROM comments WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
 
-        self.commentsForAssetLbl.setText("Comments for asset: {0} ({1})".format(self.selected_asset.name, self.selected_asset.type))
+
 
         self.comment_authors = []
         self.cur_alignment = "left"

@@ -46,7 +46,7 @@ def generate():
     CAMERAS.location = (0,0,dimZ)
 
     # Make smooth, add SubSurf modifier and increase subdivisions
-    bpy.ops.object.shade_smooth()
+    bpy.ops.object.shade_flat()
     #bpy.ops.object.modifier_add(type='SUBSURF')
     #OBJ.modifiers["Subsurf"].levels = 3
 

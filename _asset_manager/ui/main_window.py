@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 01 15:48:30 2015
+# Created: Tue Sep 01 19:27:05 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1582,10 +1582,6 @@ class Ui_Form(object):
         self.showNewTasksCheckBox.setChecked(True)
         self.showNewTasksCheckBox.setObjectName(_fromUtf8("showNewTasksCheckBox"))
         self.horizontalLayout_3.addWidget(self.showNewTasksCheckBox)
-        self.showTaskChangeCheckBox = QtGui.QCheckBox(self.filterNewsByTypeFrame)
-        self.showTaskChangeCheckBox.setChecked(True)
-        self.showTaskChangeCheckBox.setObjectName(_fromUtf8("showTaskChangeCheckBox"))
-        self.horizontalLayout_3.addWidget(self.showTaskChangeCheckBox)
         self.showNewImagesCheckBox = QtGui.QCheckBox(self.filterNewsByTypeFrame)
         self.showNewImagesCheckBox.setChecked(True)
         self.showNewImagesCheckBox.setObjectName(_fromUtf8("showNewImagesCheckBox"))
@@ -1743,7 +1739,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1889,7 +1885,7 @@ class Ui_Form(object):
         self.tmBidOperationComboBox.setItemText(0, _translate("Form", ">=", None))
         self.tmBidOperationComboBox.setItemText(1, _translate("Form", "<=", None))
         self.tmHideDoneCheckBox.setText(_translate("Form", "Hide Done", None))
-        self.tmHideConfirmedCheckBox.setText(_translate("Form", "Hide Confirmed", None))
+        self.tmHideConfirmedCheckBox.setText(_translate("Form", "Hide unConfirmed", None))
         self.tmTaskManagementFrame.setTitle(_translate("Form", "Tasks Management", None))
         self.tmAddTaskBtn.setText(_translate("Form", "Add Task(s)", None))
         self.tmRemoveTaskBtn.setText(_translate("Form", "Remove Task(s)", None))
@@ -2057,7 +2053,6 @@ class Ui_Form(object):
         self.showNewPublishesCheckBox.setText(_translate("Form", "Show Publishes", None))
         self.showNewAssetsCheckBox.setText(_translate("Form", "Show New Assets", None))
         self.showNewTasksCheckBox.setText(_translate("Form", "Show New Tasks", None))
-        self.showTaskChangeCheckBox.setText(_translate("Form", "Show Tasks Change", None))
         self.showNewImagesCheckBox.setText(_translate("Form", "Show New Images", None))
         self.showNewCommentsCheckBox.setText(_translate("Form", "Show New comments", None))
         self.showImportantMessagesCheckBox.setText(_translate("Form", "Show Important Messages", None))
