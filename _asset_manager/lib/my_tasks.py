@@ -25,7 +25,6 @@ class MyTasks(object):
 
         self.mtTableWidget.itemDoubleClicked.connect(self.mtTableWidget_DoubleClicked)
 
-        self.mtFilterByProjectComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByShotComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByDeptComboBox.currentIndexChanged.connect(self.mt_filter)
@@ -35,9 +34,8 @@ class MyTasks(object):
         self.mtFilterByMemberComboBox.setEnabled(False)
         self.mtBidOperationComboBox.currentIndexChanged.connect(self.mt_filter)
         self.mtFilterByBidComboBox.valueChanged.connect(self.mt_filter)
-
-        self.mtFilterByProjectComboBox.addItem("None")
-        self.mtFilterByProjectComboBox.currentIndexChanged.connect(self.mt_load_sequences)
+        self.mtDaysLeftComboBox.currentIndexChanged.connect(self.mt_filter)
+        self.mtFilterByDaysLeftSpinBox.valueChanged.connect(self.mt_filter)
 
         self.mtFilterBySequenceComboBox.addItem("None")
         self.mtFilterBySequenceComboBox.currentIndexChanged.connect(self.mt_load_shots)
@@ -54,9 +52,7 @@ class MyTasks(object):
         self.mtHideDoneCheckBox.setCheckState(QtCore.Qt.Checked)
         self.mtHideDoneCheckBox.clicked.connect(self.mt_filter)
 
-        # Add project to project filter combobox
-        for project in self.projects:
-            self.mtFilterByProjectComboBox.addItem(project)
+        self.mt_load_sequences()
 
         self.mt_add_tasks_from_database()
 
@@ -67,7 +63,6 @@ class MyTasks(object):
 
 
         all_tasks = self.cursor.execute('''SELECT * FROM tasks''').fetchall()
-
         self.mt_widgets = {}
 
         inversed_index = len(all_tasks) - 1
@@ -85,10 +80,9 @@ class MyTasks(object):
             department = task[6]
             status = task[7]
             assignation = task[8]
-            start = task[9]
-            end = task[10]
-            bid = task[11]
-            confirmation = task[12]
+            end = task[9]
+            bid = task[10]
+            confirmation = task[11]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -98,13 +92,12 @@ class MyTasks(object):
             if department == None: department = ""
             if status == None: status = ""
             if assignation == None: assignation = ""
-            if start == None: start = ""
             if end == None: end = ""
             if bid == None: bid = ""
             if confirmation == None: confirmation = ""
 
             task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department,
-                             status, assignation, start, end, bid, confirmation)
+                             status, assignation, end, bid, confirmation)
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
@@ -157,23 +150,15 @@ class MyTasks(object):
             self.mtTableWidget.setItem(0, 4, task_assignation_item)
             self.mt_widgets[str(inversed_index) + ":4"] = task_assignation_item
 
-            # Adding task start
-            date_start = QtCore.QDate.fromString(task.start, 'dd/MM/yyyy')
-            date_start_item = QtGui.QTableWidgetItem()
-            date_start_item.setText(task.start)
-            date_start_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            date_start_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.mtTableWidget.setItem(0, 5, date_start_item)
-            self.mt_widgets[str(inversed_index) + ":5"] = date_start_item
-
             # Adding task end
+            date_start = QtCore.QDate.currentDate()
             date_end = QtCore.QDate.fromString(task.end, 'dd/MM/yyyy')
             date_end_item = QtGui.QTableWidgetItem()
             date_end_item.setText(task.end)
             date_end_item.setTextAlignment(QtCore.Qt.AlignCenter)
             date_end_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.mtTableWidget.setItem(0, 6, date_end_item)
-            self.mt_widgets[str(inversed_index) + ":6"] = date_end_item
+            self.mtTableWidget.setItem(0, 5, date_end_item)
+            self.mt_widgets[str(inversed_index) + ":5"] = date_end_item
 
             # Adding days left
             days_left = str(date_start.daysTo(date_end))
@@ -181,40 +166,40 @@ class MyTasks(object):
             days_left_item.setText(days_left)
             days_left_item.setTextAlignment(QtCore.Qt.AlignCenter)
             days_left_item.setFlags(QtCore.Qt.ItemIsEnabled)
-            self.mtTableWidget.setItem(0, 7, days_left_item)
-            self.mt_widgets[str(inversed_index) + ":7"] = days_left_item
+            self.mtTableWidget.setItem(0, 6, days_left_item)
+            self.mt_widgets[str(inversed_index) + ":6"] = days_left_item
 
             # Adding task bid
             task_bid_item = QtGui.QTableWidgetItem()
             task_bid_item.setText(task.bid)
             task_bid_item.setTextAlignment(QtCore.Qt.AlignCenter)
             task_bid_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.mtTableWidget.setItem(0, 8, task_bid_item)
-            self.mt_widgets[str(inversed_index) + ":8"] = task_bid_item
+            self.mtTableWidget.setItem(0, 7, task_bid_item)
+            self.mt_widgets[str(inversed_index) + ":7"] = task_bid_item
 
             # Adding sequence name
             sequence_item = QtGui.QTableWidgetItem()
             sequence_item.setText(task.sequence)
             sequence_item.setTextAlignment(QtCore.Qt.AlignCenter)
             sequence_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.mtTableWidget.setItem(0, 9, sequence_item)
-            self.mt_widgets[str(inversed_index) + ":9"] = sequence_item
+            self.mtTableWidget.setItem(0, 8, sequence_item)
+            self.mt_widgets[str(inversed_index) + ":8"] = sequence_item
 
             # Adding shot number
             shot_item = QtGui.QTableWidgetItem()
             shot_item.setText(task.sequence)
             shot_item.setTextAlignment(QtCore.Qt.AlignCenter)
             shot_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.mtTableWidget.setItem(0, 10, shot_item)
-            self.mt_widgets[str(inversed_index) + ":10"] = shot_item
+            self.mtTableWidget.setItem(0, 9, shot_item)
+            self.mt_widgets[str(inversed_index) + ":9"] = shot_item
 
             # Adding assets
             asset_item = QtGui.QTableWidgetItem()
             asset_item.setTextAlignment(QtCore.Qt.AlignCenter)
             asset_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             asset_item.setText(str(task.asset_id))
-            self.mtTableWidget.setItem(0, 11, asset_item)
-            self.mt_widgets[str(inversed_index) + ":11"] = asset_item
+            self.mtTableWidget.setItem(0, 10, asset_item)
+            self.mt_widgets[str(inversed_index) + ":10"] = asset_item
 
             # If hide done checkbox is checked and current task is done, hide it
             if self.mtHideDoneCheckBox.isChecked():
@@ -271,12 +256,13 @@ class MyTasks(object):
         for row_index in xrange(number_of_rows):
 
             # Retrieve text / value of filter widgets
-            project_filter = str(self.mtFilterByProjectComboBox.currentText())
             sequence_filter = str(self.mtFilterBySequenceComboBox.currentText())
             shot_filter = str(self.mtFilterByShotComboBox.currentText())
             department_filter = self.mtFilterByDeptComboBox.currentText()
             status_filter = self.mtFilterByStatusComboBox.currentText()
             member_filter = self.mtFilterByMemberComboBox.currentText()
+            daysleft_filter = self.mtFilterByDaysLeftSpinBox.value()
+            daysleft_operation = self.mtDaysLeftComboBox.currentText()
             bid_filter = self.mtFilterByBidComboBox.value()
             bid_operation = self.mtBidOperationComboBox.currentText()
 
@@ -294,7 +280,6 @@ class MyTasks(object):
                 continue
 
             # If filters are set to default value, set the filters variables to the current row values
-            if project_filter == "None": project_filter = task.project
             if sequence_filter == "None": sequence_filter = task.sequence
             if shot_filter == "None": shot_filter = task.shot
             if department_filter == "None": department_filter = task.department
@@ -304,12 +289,19 @@ class MyTasks(object):
                 if longname == member_filter:
                     member_filter = shortname
 
+            days_left = QtCore.QDate.currentDate().daysTo(QtCore.QDate.fromString(task.end, "dd/MM/yyyy"))
+            if daysleft_filter == 0:
+                daysleft_filter = days_left
+
             if bid_filter == 0: bid_filter = task.bid
 
             if str(bid_operation) == ">=": bid_result = operator.le(int(bid_filter), int(task.bid))
             elif str(bid_operation) == "<=": bid_result = operator.ge(int(bid_filter), int(task.bid))
 
-            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and str(member_filter) == str(task.assignation) and bid_result:
+            if str(daysleft_operation) == ">=": days_left_result = operator.le(int(daysleft_filter), int(days_left))
+            elif str(daysleft_operation) == "<=": days_left_result = operator.ge(int(daysleft_filter), int(days_left))
+
+            if sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and str(member_filter) == str(task.assignation) and bid_result and days_left_result:
                 if self.mtHideDoneCheckBox.isChecked():
                     if task.status == "Done":
                         self.mtTableWidget.hideRow(row_index)
@@ -328,7 +320,7 @@ class MyTasks(object):
         self.mt_add_tasks_from_database()
 
     def mt_load_sequences(self):
-        current_project = str(self.mtFilterByProjectComboBox.currentText())
+        current_project = str(self.projectList.currentText())
         if current_project == "None":
             return
 

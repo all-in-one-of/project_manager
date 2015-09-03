@@ -52,17 +52,15 @@ class TaskManager(object):
         self.tmHideDoneCheckBox.clicked.connect(self.filter)
         self.tmHideConfirmedCheckBox.clicked.connect(self.filter)
 
-        self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterBySequenceComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByShotComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByDeptComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByStatusComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByMemberComboBox.currentIndexChanged.connect(self.filter)
         self.tmBidOperationComboBox.currentIndexChanged.connect(self.filter)
+        self.tmFilterByDaysLeftComboBox.valueChanged.connect(self.filter)
+        self.tmDaysLeftOperationComboBox.currentIndexChanged.connect(self.filter)
         self.tmFilterByBidComboBox.valueChanged.connect(self.filter)
-
-        self.tmFilterByProjectComboBox.addItem("None")
-        self.tmFilterByProjectComboBox.currentIndexChanged.connect(self.tm_load_sequences)
 
         self.tmFilterBySequenceComboBox.addItem("None")
         self.tmFilterBySequenceComboBox.currentIndexChanged.connect(self.tm_load_shots)
@@ -75,9 +73,7 @@ class TaskManager(object):
         self.tmFilterByMemberComboBox.addItem("None")
         self.tmFilterByMemberComboBox.addItems(sorted(self.members.values()))
 
-        # Add project to project filter combobox
-        for project in self.projects:
-            self.tmFilterByProjectComboBox.addItem(project)
+        self.tm_load_sequences()
 
         self.add_tasks_from_database()
 
@@ -107,10 +103,9 @@ class TaskManager(object):
             department = task[6]
             status = task[7]
             assignation = task[8]
-            start = task[9]
-            end = task[10]
-            bid = task[11]
-            confirmation = task[12]
+            end = task[9]
+            bid = task[10]
+            confirmation = task[11]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -120,12 +115,11 @@ class TaskManager(object):
             if department == None: department = ""
             if status == None: status = ""
             if assignation == None: assignation = ""
-            if start == None: start = ""
             if end == None: end = ""
             if bid == None: bid = ""
             if confirmation == None: confirmation = ""
 
-            task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, start, end, bid, confirmation)
+            task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, end, bid, confirmation)
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
@@ -176,16 +170,6 @@ class TaskManager(object):
             self.tmTableWidget.setCellWidget(0, 4, combo_box)
             self.widgets[str(inversed_index) + ":4"] = combo_box
 
-            # Adding task start
-            date_start = QtCore.QDate.fromString(task.start, 'dd/MM/yyyy')
-            date_start_edit = QtGui.QDateEdit()
-            date_start_edit.setDate(date_start)
-            date_start_edit.setDisplayFormat("dd/MM/yyyy")
-            date_start_edit.setFrame(False)
-            self.set_calendar(date_start_edit)
-            self.tmTableWidget.setCellWidget(0, 5, date_start_edit)
-            self.widgets[str(inversed_index) + ":5"] = date_start_edit
-
             # Adding task end
             date_end = QtCore.QDate.fromString(task.end, 'dd/MM/yyyy')
             date_end_edit = QtGui.QDateEdit()
@@ -193,17 +177,19 @@ class TaskManager(object):
             date_end_edit.setDisplayFormat("dd/MM/yyyy")
             date_end_edit.setFrame(False)
             self.set_calendar(date_end_edit)
-            self.tmTableWidget.setCellWidget(0, 6, date_end_edit)
-            self.widgets[str(inversed_index) + ":6"] = date_end_edit
+            self.tmTableWidget.setCellWidget(0, 5, date_end_edit)
+            self.widgets[str(inversed_index) + ":5"] = date_end_edit
+
 
             # Adding days left
+            date_start = QtCore.QDate.currentDate()
             days_left = str(date_start.daysTo(date_end))
             days_left_item = QtGui.QTableWidgetItem()
             days_left_item.setText(days_left)
             days_left_item.setTextAlignment(QtCore.Qt.AlignCenter)
             days_left_item.setFlags(QtCore.Qt.ItemIsEnabled)
-            self.tmTableWidget.setItem(0, 7, days_left_item)
-            self.widgets[str(inversed_index) + ":7"] = days_left_item
+            self.tmTableWidget.setItem(0, 6, days_left_item)
+            self.widgets[str(inversed_index) + ":6"] = days_left_item
 
             # Adding task bid
             task_bid_item = QtGui.QSpinBox()
@@ -214,8 +200,8 @@ class TaskManager(object):
             task_bid_item.setMinimum(0)
             task_bid_item.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
             task_bid_item.valueChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 8, task_bid_item)
-            self.widgets[str(inversed_index) + ":8"] = task_bid_item
+            self.tmTableWidget.setCellWidget(0, 7, task_bid_item)
+            self.widgets[str(inversed_index) + ":7"] = task_bid_item
 
             # Adding sequence name
             all_sequences = self.cursor.execute('''SELECT sequence_name FROM sequences WHERE project_name=?''', (task.project,)).fetchall()
@@ -226,8 +212,8 @@ class TaskManager(object):
             index = combo_box.findText(task.sequence, QtCore.Qt.MatchFixedString)
             combo_box.setCurrentIndex(index)
             combo_box.currentIndexChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 9, combo_box)
-            self.widgets[str(inversed_index) + ":9"] = combo_box
+            self.tmTableWidget.setCellWidget(0, 8, combo_box)
+            self.widgets[str(inversed_index) + ":8"] = combo_box
 
             # Adding shot number
             all_shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (task.project, task.sequence)).fetchall()
@@ -238,15 +224,15 @@ class TaskManager(object):
             index = combo_box.findText(task.shot, QtCore.Qt.MatchFixedString)
             combo_box.setCurrentIndex(index)
             combo_box.currentIndexChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 10, combo_box)
-            self.widgets[str(inversed_index) + ":10"] = combo_box
+            self.tmTableWidget.setCellWidget(0, 9, combo_box)
+            self.widgets[str(inversed_index) + ":9"] = combo_box
 
             # Adding assets
             line_edit = QtGui.QLineEdit()
             line_edit.setText(str(task.asset_id))
             line_edit.textChanged.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 11, line_edit)
-            self.widgets[str(inversed_index) + ":11"] = line_edit
+            self.tmTableWidget.setCellWidget(0, 10, line_edit)
+            self.widgets[str(inversed_index) + ":10"] = line_edit
 
             # Add confirm task button
             if task.confirmation == "0":
@@ -254,8 +240,8 @@ class TaskManager(object):
             else:
                 confirm_button = QtGui.QPushButton("UnConfirm")
             confirm_button.clicked.connect(self.update_tasks)
-            self.tmTableWidget.setCellWidget(0, 12, confirm_button)
-            self.widgets[str(inversed_index) + ":12"] = confirm_button
+            self.tmTableWidget.setCellWidget(0, 11, confirm_button)
+            self.widgets[str(inversed_index) + ":11"] = confirm_button
 
             # If hide done checkbox is checked and current task is done, hide it
             if self.tmHideDoneCheckBox.isChecked():
@@ -309,24 +295,21 @@ class TaskManager(object):
             if task_assignation.decode('UTF-8') == val.decode('UTF-8'):
                 task_assignation = key
 
-        task_start_widget = self.widgets[str(widget_row_index) + ":5"]
-        task_start = str(task_start_widget.date().toString("dd/MM/yyyy"))
-
-        task_end_widget = self.widgets[str(widget_row_index) + ":6"]
+        task_end_widget = self.widgets[str(widget_row_index) + ":5"]
         task_end = str(task_end_widget.date().toString("dd/MM/yyyy"))
 
-        task_time_left_widget = self.widgets[str(widget_row_index) + ":7"]
+        task_time_left_widget = self.widgets[str(widget_row_index) + ":6"]
 
-        task_bid_widget = self.widgets[str(widget_row_index) + ":8"]
+        task_bid_widget = self.widgets[str(widget_row_index) + ":7"]
         task_bid = str(task_bid_widget.value())
 
-        task_sequence_widget = self.widgets[str(widget_row_index) + ":9"]
+        task_sequence_widget = self.widgets[str(widget_row_index) + ":8"]
         task_sequence = str(task_sequence_widget.currentText())
 
-        task_shot_widget = self.widgets[str(widget_row_index) + ":10"]
+        task_shot_widget = self.widgets[str(widget_row_index) + ":9"]
         task_shot = str(task_shot_widget.currentText())
 
-        task_asset_widget = self.widgets[str(widget_row_index) + ":11"]
+        task_asset_widget = self.widgets[str(widget_row_index) + ":10"]
         task_asset_name = str(task_asset_widget.text())
 
         task = self.Task(self, task_id)
@@ -369,7 +352,6 @@ class TaskManager(object):
         if task_department != task.department: task.change_department(task_department)
         if task_status != task.status: task.change_status(task_status)
         if task_assignation != task.assignation: task.change_assignation(task_assignation)
-        if task_start != task.start: task.change_start(task_start)
         if task_end != task.end: task.change_end(task_end)
         if task_bid != task.bid: task.change_bid(task_bid)
 
@@ -380,24 +362,24 @@ class TaskManager(object):
             shots_from_sequence = [str(i[0]) for i in shots_from_sequence]
             shots_from_sequence.insert(0, "xxxx")
             # Add shots to shots combo box
-            shot_combobox = self.widgets[str(widget_row_index) + ":10"]
+            shot_combobox = self.widgets[str(widget_row_index) + ":9"]
             shot_combobox.clear()
             shot_combobox.addItems(shots_from_sequence)
 
-        task_sequence_widget = self.widgets[str(widget_row_index) + ":9"]
+        task_sequence_widget = self.widgets[str(widget_row_index) + ":8"]
         task_sequence = str(task_sequence_widget.currentText())
 
-        task_shot_widget = self.widgets[str(widget_row_index) + ":10"]
+        task_shot_widget = self.widgets[str(widget_row_index) + ":9"]
         task_shot = str(task_shot_widget.currentText())
 
-        task_asset_widget = self.widgets[str(widget_row_index) + ":11"]
+        task_asset_widget = self.widgets[str(widget_row_index) + ":10"]
         task_asset_id = str(task_asset_widget.text())
 
         if task_sequence != task.sequence: task.change_sequence(task_sequence)
         if task_shot != task.shot: task.change_shot(task_shot)
         if task_asset_id != task.asset_id: task.change_asset_id(task_asset_id)
 
-        self.calculate_days_left(task_start_widget, task_end_widget, task_time_left_widget)
+        self.calculate_days_left(task_end_widget, task_time_left_widget)
         self.change_cell_status_color(task_status_widget, task.status)
 
     def add_task(self, item_added=None, asset_id=0):
@@ -412,7 +394,7 @@ class TaskManager(object):
         number_of_rows_to_add = self.tmNbrOfRowsToAddSpinBox.value()
 
         for i in xrange(number_of_rows_to_add):
-            task = self.Task(self, 0, self.selected_project_name, "xxx", "xxxx", asset_id, "", "Script", "Ready to Start", u"costiguy", self.today, self.today, "0", "0")
+            task = self.Task(self, 0, self.selected_project_name, "xxx", "xxxx", asset_id, "", "Script", "Ready to Start", u"costiguy", self.today, "0", "0")
             task.add_task_to_db()
 
         self.add_tasks_from_database()
@@ -471,12 +453,13 @@ class TaskManager(object):
         number_of_rows = self.tmTableWidget.rowCount()
         for row_index in xrange(number_of_rows):
             # Retrieve text / value of filter widgets
-            project_filter = str(self.tmFilterByProjectComboBox.currentText())
             sequence_filter = str(self.tmFilterBySequenceComboBox.currentText())
             shot_filter = str(self.tmFilterByShotComboBox.currentText())
             department_filter = self.tmFilterByDeptComboBox.currentText()
             status_filter = self.tmFilterByStatusComboBox.currentText()
             member_filter = self.tmFilterByMemberComboBox.currentText()
+            daysleft_filter = self.tmFilterByDaysLeftComboBox.value()
+            daysleft_operation = self.tmDaysLeftOperationComboBox.currentText()
             bid_filter = self.tmFilterByBidComboBox.value()
             bid_operation = self.tmBidOperationComboBox.currentText()
 
@@ -485,19 +468,23 @@ class TaskManager(object):
             task.get_infos_from_id()
 
             # If filters are set to default value, set the filters variables to the current row values
-            if project_filter == "None": project_filter = task.project
             if sequence_filter == "None": sequence_filter = task.sequence
             if shot_filter == "None": shot_filter = task.shot
             if department_filter == "None": department_filter = task.department
             if status_filter == "None" : status_filter = task.status
             if member_filter == "None" : member_filter = self.members[task.assignation]
             if bid_filter == 0: bid_filter = task.bid
-
+            days_left = QtCore.QDate.currentDate().daysTo(QtCore.QDate.fromString(task.end, "dd/MM/yyyy"))
+            if daysleft_filter == 0:
+                daysleft_filter = days_left
 
             if str(bid_operation) == ">=": bid_result = operator.le(int(bid_filter), int(task.bid))
             elif str(bid_operation) == "<=": bid_result = operator.ge(int(bid_filter), int(task.bid))
 
-            if project_filter == task.project and sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == self.members[task.assignation] and bid_result:
+            if str(daysleft_operation) == ">=": days_left_result = operator.le(int(daysleft_filter), int(days_left))
+            elif str(daysleft_operation) == "<=": days_left_result = operator.ge(int(daysleft_filter), int(days_left))
+
+            if sequence_filter == task.sequence and shot_filter == task.shot and department_filter == task.department and status_filter == task.status and member_filter == self.members[task.assignation] and bid_result and days_left_result:
                 # Check each row for "Done" and "Confirmed"
                 if self.tmHideDoneCheckBox.isChecked() and self.tmHideConfirmedCheckBox.isChecked():
                     if task.status == "Done":
@@ -538,9 +525,9 @@ class TaskManager(object):
         self.commentLineEdit.setFocus()
         self.CommentWidget.load_comments(self)
 
-    def calculate_days_left(self, task_start_widget, task_end_widget, task_time_left_widget):
+    def calculate_days_left(self, task_end_widget, task_time_left_widget):
 
-        date_start = task_start_widget.date()
+        date_start = QtCore.QDate.currentDate()
         date_end = task_end_widget.date()
         days_left = str(date_start.daysTo(date_end))
         task_time_left_widget.setText(days_left)
@@ -569,7 +556,7 @@ class TaskManager(object):
             cell_item.setStyleSheet("background-color: #4b4b4b;")
 
     def tm_load_sequences(self):
-        current_project = str(self.tmFilterByProjectComboBox.currentText())
+        current_project = str(self.projectList.currentText())
         if current_project == "None":
             return
 

@@ -1008,37 +1008,6 @@
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_26">
                    <item>
-                    <widget class="QFrame" name="tmProjectFilterFrame">
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <layout class="QHBoxLayout" name="horizontalLayout_35">
-                      <property name="margin">
-                       <number>0</number>
-                      </property>
-                      <item>
-                       <widget class="QLabel" name="tmProjectLbl">
-                        <property name="maximumSize">
-                         <size>
-                          <width>65</width>
-                          <height>16777215</height>
-                         </size>
-                        </property>
-                        <property name="text">
-                         <string>Project:</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QComboBox" name="tmFilterByProjectComboBox"/>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
                     <widget class="QFrame" name="tmSequenceFilterFrame">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
@@ -1212,6 +1181,92 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QFrame" name="tmDaysLeftFilterGroupBox">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_35">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="tmDaysLeftLbl">
+                        <property name="minimumSize">
+                         <size>
+                          <width>65</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>65</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="text">
+                         <string>Days Left:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QComboBox" name="tmDaysLeftOperationComboBox">
+                        <property name="minimumSize">
+                         <size>
+                          <width>41</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>65</width>
+                          <height>16777215</height>
+                         </size>
+                        </property>
+                        <property name="frame">
+                         <bool>true</bool>
+                        </property>
+                        <item>
+                         <property name="text">
+                          <string>&gt;=</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>&lt;=</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="tmFilterByDaysLeftComboBox">
+                        <property name="minimum">
+                         <number>-100</number>
+                        </property>
+                        <property name="maximum">
+                         <number>100</number>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="tmHorizontalSpacer_2">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QFrame" name="tmBidFilterFrame">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
@@ -1344,7 +1399,7 @@
                          </size>
                         </property>
                         <property name="text">
-                         <string>Hide unConfirmed</string>
+                         <string>Hide Confirmed</string>
                         </property>
                        </widget>
                       </item>
@@ -1497,11 +1552,6 @@
                   </column>
                   <column>
                    <property name="text">
-                    <string>Start</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
                     <string>End</string>
                    </property>
                   </column>
@@ -1566,37 +1616,6 @@
                 <bool>false</bool>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_28">
-                <item>
-                 <widget class="QFrame" name="mtProjectFilterFrame">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_42">
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="mtProjectLbl">
-                     <property name="maximumSize">
-                      <size>
-                       <width>65</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>Project:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QComboBox" name="mtFilterByProjectComboBox"/>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
                 <item>
                  <widget class="QFrame" name="mtSequenceFilterFrame">
                   <property name="frameShape">
@@ -1787,6 +1806,95 @@
                  </widget>
                 </item>
                 <item>
+                 <widget class="QFrame" name="mtDaysLeftFilterFrame">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_53">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="mtDaysLeftLbl">
+                     <property name="minimumSize">
+                      <size>
+                       <width>65</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>60</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Days Left:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="mtDaysLeftComboBox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>41</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>65</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="frame">
+                      <bool>true</bool>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>&gt;=</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>&lt;=</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="mtFilterByDaysLeftSpinBox">
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::PlusMinus</enum>
+                     </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="mtHorizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QFrame" name="mtBidFilterFrame">
                   <property name="frameShape">
                    <enum>QFrame::NoFrame</enum>
@@ -1956,11 +2064,6 @@
                <column>
                 <property name="text">
                  <string>Assigned to</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Start</string>
                 </property>
                </column>
                <column>
@@ -4479,7 +4582,6 @@
   <tabstop>publishBtn</tabstop>
   <tabstop>hasUvToggleBtn</tabstop>
   <tabstop>addRemoveAssetAsFavoriteBtn</tabstop>
-  <tabstop>tmFilterByProjectComboBox</tabstop>
   <tabstop>tmFilterBySequenceComboBox</tabstop>
   <tabstop>tmFilterByShotComboBox</tabstop>
   <tabstop>tmFilterByDeptComboBox</tabstop>
@@ -4495,7 +4597,6 @@
   <tabstop>tmCompleteTaskBtn</tabstop>
   <tabstop>tmTableWidget</tabstop>
   <tabstop>tmShowBidCurveBtn</tabstop>
-  <tabstop>mtFilterByProjectComboBox</tabstop>
   <tabstop>mtFilterBySequenceComboBox</tabstop>
   <tabstop>mtFilterByShotComboBox</tabstop>
   <tabstop>mtFilterByDeptComboBox</tabstop>
