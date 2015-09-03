@@ -370,18 +370,19 @@ class MyTasks(object):
 
         row = value.row()
         column = value.column()
-        if value.column() != 11:
+        if column != 10:
             # Show comments for clicked task
-            task_item = self.mtTableWidget.item(row, column)
+            task_item = self.mtTableWidget.item(row, 0)
             self.selected_asset = task_item.data(QtCore.Qt.UserRole).toPyObject()
             if self.selected_asset == None:
                 return  # User clicked on the days left cell
+
 
             self.commentLineEdit.setFocus()
             self.CommentWidget.load_comments(self)
         else:
             # Go to asset in asset loader
-            asset_id_line_edit = self.widgets[str(row) + ":11"]
+            asset_id_line_edit = self.widgets[str(row) + ":10"]
             for asset, asset_item in self.assets.items():
                 asset_id = str(asset_id_line_edit.text())
                 asset_item.setHidden(False)
