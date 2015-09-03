@@ -7,7 +7,7 @@ camera_name = sys.argv[-3].replace("-", "_")
 start_frame = sys.argv[-2]
 end_frame = sys.argv[-1]
 
-hou.hipFile.load(layout_path)
+hou.hipFile.load(layout_path, suppress_save_prompt=True, ignore_load_warnings=True)
 
 
 obj_context = hou.node("/obj")

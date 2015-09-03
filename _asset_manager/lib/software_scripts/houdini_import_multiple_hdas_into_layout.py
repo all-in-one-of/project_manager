@@ -6,7 +6,7 @@ hdas_to_import = sys.argv[-1]
 hdas_to_import = hdas_to_import.split("|")
 
 
-hou.hipFile.load(hip_file)
+hou.hipFile.load(hip_file, suppress_save_prompt=True, ignore_load_warnings=True)
 for hda in hdas_to_import:
     print(hda)
     hda_name = hda[hda.find("_lay_")+len("_lay_"):hda.rfind("_")]

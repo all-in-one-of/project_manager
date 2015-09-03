@@ -2186,6 +2186,7 @@ class AssetLoader(object):
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.readyRead.connect(self.plao)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, camera_asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_cam_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
@@ -2651,7 +2652,6 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         while self.houdini_hda_process.canReadLine():
             out = self.houdini_hda_process.readLine()
             print(out)
-
 
 class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
     def __init__(self, main):

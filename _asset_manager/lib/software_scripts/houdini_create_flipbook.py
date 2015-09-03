@@ -11,7 +11,7 @@ end_frame = sys.argv[-1]
 print("5")
 
 
-hou.hipFile.load(scene_path)
+hou.hipFile.load(scene_path, suppress_save_prompt=True, ignore_load_warnings=True)
 print("6")
 
 hou.node("/out").createNode("TH_OpenGL", "TH_OpenGL")

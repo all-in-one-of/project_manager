@@ -4,7 +4,7 @@ import hou
 scene_path = sys.argv[-2].replace("\\", "/")
 hda_paths = sys.argv[-1]
 hda_paths = hda_paths.split("|")
-hou.hipFile.load(scene_path)
+hou.hipFile.load(scene_path, suppress_save_prompt=True, ignore_load_warnings=True)
 for hda_path in hda_paths:
     hda_name = hda_path[hda_path.find("_lay_")+len("_lay_"):hda_path.rfind("_out.")]
     hou.node("/obj/" + hda_name).allowEditingOfContents()

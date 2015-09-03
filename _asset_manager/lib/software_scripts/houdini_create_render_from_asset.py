@@ -7,7 +7,7 @@ print(file_path)
 print(hda_path)
 print(hda_name)
 
-hou.hipFile.load(file_path)
+hou.hipFile.load(file_path, suppress_save_prompt=True, ignore_load_warnings=True)
 print("1")
 
 hou.hda.installFile(hda_path)

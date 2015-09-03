@@ -4,7 +4,7 @@ hip_file = sys.argv[-2]
 hdas_to_remove = sys.argv[-1]
 hdas_to_remove = hdas_to_remove.split("|")
 
-hou.hipFile.load(hip_file)
+hou.hipFile.load(hip_file, suppress_save_prompt=True, ignore_load_warnings=True)
 for hda in hdas_to_remove:
     hda = hda.replace("\\", "/")
     hda_name = hda[hda.find("_lay_")+len("_lay_"):hda.rfind("_")]
