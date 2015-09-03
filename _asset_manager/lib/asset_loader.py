@@ -993,7 +993,11 @@ class AssetLoader(object):
             asset_name = self.selected_asset.name.replace("-lowres", "")
         else:
             asset_name = self.selected_asset.name
-        layout_asset = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_type="lay" AND asset_extension="hda" AND asset_version="out"''', (asset_name,)).fetchone()
+        if self.selected_asset.type == "cam":
+            layout_asset = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_type="cam" AND asset_extension="hda"''', (asset_name,)).fetchone()
+        else:
+            layout_asset = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_type="lay" AND asset_extension="hda" AND asset_version="out"''', (asset_name,)).fetchone()
+
         if layout_asset != None:
             layout_asset_id = layout_asset[0]
             is_asset_in_layout = self.cursor.execute('''SELECT layout_id FROM assets_in_layout WHERE asset_id=?''', (layout_asset_id,)).fetchone()
