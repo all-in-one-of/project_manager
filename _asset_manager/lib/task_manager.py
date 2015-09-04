@@ -140,10 +140,11 @@ class TaskManager(object):
             self.tmTableWidget.setItem(0, 1, task_description_item)
             self.widgets[str(inversed_index) + ":1"] = task_description_item
 
+
             # Adding department combo boxes
             combo_box = QtGui.QComboBox()
             combo_box.addItems(["Script", "Storyboard", "References", "Concepts", "Modeling", "Texturing",
-                            "Rigging", "Animation", "Simulation", "Shading", "Layout",
+                            "Rigging", "Animation", "Simulation", "Shading", "Camera", "Lighting", "Layout",
                             "DMP", "Compositing", "Editing", "RnD"])
             combo_box.setCurrentIndex(self.tm_departments[task.department])
             combo_box.currentIndexChanged.connect(self.update_tasks)
@@ -311,7 +312,6 @@ class TaskManager(object):
 
         task_asset_widget = self.widgets[str(widget_row_index) + ":10"]
         task_asset_name = str(task_asset_widget.text())
-
         task = self.Task(self, task_id)
         task.get_infos_from_id()
 
@@ -321,6 +321,7 @@ class TaskManager(object):
                 clicked_widget.setText("UnConfirm")
                 task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
                 task.change_confirmation(1)
+
                 # Add Log Entry
                 log_entry = self.LogEntry(self, 0, task.id, [], [task.assignation], self.username, task.assignation, "task", u"{0} has assigned a new {1} task to {2}: {3}".format(self.members[self.username], task.department, self.members[task.assignation], task.description), datetime.datetime.now().strftime("%d/%m/%Y at %H:%M"))
                 log_entry.add_log_to_database()
@@ -356,7 +357,7 @@ class TaskManager(object):
         if task_bid != task.bid: task.change_bid(task_bid)
 
         # Sequence was changed -> Filter shots and assets from sequence and department
-        if widget_row_column == 9 or widget_row_column == 2:
+        if widget_row_column == 8:
             # Get shots from current sequence
             shots_from_sequence = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, task_sequence,)).fetchall()
             shots_from_sequence = [str(i[0]) for i in shots_from_sequence]
@@ -365,6 +366,7 @@ class TaskManager(object):
             shot_combobox = self.widgets[str(widget_row_index) + ":9"]
             shot_combobox.clear()
             shot_combobox.addItems(shots_from_sequence)
+
 
         task_sequence_widget = self.widgets[str(widget_row_index) + ":8"]
         task_sequence = str(task_sequence_widget.currentText())
@@ -420,7 +422,7 @@ class TaskManager(object):
         for row in selected_rows:
 
             # Add bid value from each row
-            cur_row_bid = self.widgets[str(row.row()) + ":8"]
+            cur_row_bid = self.widgets[str(row.row()) + ":7"]
             cur_row_bid = cur_row_bid.value()
             bid += cur_row_bid
 

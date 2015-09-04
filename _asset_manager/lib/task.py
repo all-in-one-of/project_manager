@@ -77,12 +77,6 @@ class Task(object):
         self.main.db.commit()
         self.assignation = new_assignation
 
-    def change_start(self, new_start):
-        if self.start == new_start: return
-        self.main.cursor.execute('''UPDATE tasks SET task_start=? WHERE task_id=?''', (new_start, self.id,))
-        self.main.db.commit()
-        self.start = new_start
-
     def change_end(self, new_end):
         if self.end == new_end: return
         self.main.cursor.execute('''UPDATE tasks SET task_end=? WHERE task_id=?''', (new_end, self.id,))
