@@ -41,11 +41,11 @@ class Lib(object):
         if "full" in self.thumbs_to_create:
             self.type = "full"
             self.sampling = 250
-            self.resolution = 100
+            self.resolution = 150
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
-            self.sampling = 25
+            self.sampling = 50
             self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
@@ -87,7 +87,7 @@ class Lib(object):
 
         if self.type == "full":
             filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
-            self.compress_image(filename, int(1000 * float(self.resolution) / 100), 100)
+            self.compress_image(filename, int(1920 * float(self.resolution) / 100), 100)
 
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
@@ -95,7 +95,7 @@ class Lib(object):
         elif self.type == "turn":
             file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")
             movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4")
-            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
+            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-b", "800k", "crf", "0", "-y", "-r", "24", movie_path])
 
             turn_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_advanced.mp4")
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4"), turn_filename)

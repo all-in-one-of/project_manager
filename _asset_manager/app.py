@@ -714,10 +714,11 @@ if __name__ == "__main__":
 
     log_to_file = True
     cur_path = os.path.dirname(os.path.realpath(__file__))
+    cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s ::: %(filename)s ::: ''%(funcName)s() ::: line ''%(lineno)d ::: ''%(message)s')
-    file_handler = RotatingFileHandler(cur_path + '\\bin\\activity.log', 'a', 1000000, 1)
+    file_handler = RotatingFileHandler(cur_path_one_folder_up + '\\_database\\activity.log', 'a', 1000000, 1)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
