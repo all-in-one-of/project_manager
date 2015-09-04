@@ -331,7 +331,7 @@ class TaskManager(object):
                 subject = QtCore.QString("A new task has been assigned to you")
                 subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8')
 
-                message = QtCore.QString(u"{0} has assigned a new {1} task to {2}: {3}".format(self.members[self.username], task.department, self.members[task.assignation], task.description))
+                message = QtCore.QString(u"{0} has assigned a new {1} task to {2}: {3} (You have {4} days left to complete it)".format(self.members[self.username], task.department, self.members[task.assignation], task.description, task_time_left_widget.text()))
                 message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
 
                 self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=[email], subject=subject, message=message, username=self.members[self.username])
