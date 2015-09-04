@@ -141,6 +141,9 @@ class Lib(object):
         if not os.path.isdir("H:/plugins"):
             distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\plugins", "H:/plugins")
 
+        if not os.path.isdir("H:/DJView"):
+            distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\DJView", "H:/DJView")
+
         if not os.path.isdir("H:/.mari"):
             distutils.dir_util.copy_tree(self.cur_path_one_folder_up + "\\_setup\\.mari", "H:/.mari")
 
