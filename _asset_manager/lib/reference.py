@@ -838,8 +838,6 @@ class ReferenceTab(object):
         return asset_name
 
     def load_ref_in_kuadro(self):
-
-
         os.system("taskkill /im kuadro.exe /f")
 
         references_to_load = []
@@ -849,7 +847,7 @@ class ReferenceTab(object):
             references_to_load.append(asset.full_path)
 
         references_to_load = " ".join(references_to_load)
-        subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\kuadro.exe",
+        subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\PureRef.exe",
                           [references_to_load]], close_fds=True)
 
     def load_ref_in_photoshop(self):

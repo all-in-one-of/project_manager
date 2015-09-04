@@ -22,3 +22,4 @@
 2015-09-01 14:01:43,880 ::: app.py ::: <module>() ::: line 743 ::: 'QTableWidgetItem' object has no attribute 'setEnabled'
 2015-09-01 15:46:20,951 ::: app.py ::: <module>() ::: line 743 ::: 'Main' object has no attribute 'loadTasksAsWidgetBtn'
 2015-09-03 11:04:49,151 ::: app.py ::: <module>() ::: line 744 ::: global name 'date_start' is not defined
+2015-09-03 20:40:26,424 ::: app.py ::: <module>() ::: line 745 ::: u'Misc'

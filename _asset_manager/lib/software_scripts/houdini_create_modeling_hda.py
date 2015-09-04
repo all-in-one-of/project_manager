@@ -14,7 +14,6 @@ asset_node = hou.node("/obj").createNode(asset_name.replace("-", "_"), asset_nam
 
 asset_node.allowEditingOfContents()
 
-
 # Set parameters
 file_highres_node = hou.node("/obj/" + asset_name + "/layout/high-res_obj_from_modeling")
 file_lowres_node = hou.node("/obj/" + asset_name + "/layout/low-res_obj_from_modeling")

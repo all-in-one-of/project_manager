@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Thu Sep 03 12:54:13 2015
+# Created: Thu Sep 03 22:26:55 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -2007,7 +2007,7 @@ class Ui_Form(object):
         self.existingTagsListWidget.setToolTip(_translate("Form", "Remove selected tags to selected images. You can double click on a tag to remove it or select multiple tags and click on the corresponding arrow to remove them.", None))
         self.openInGroupBox.setTitle(_translate("Form", "Open in", None))
         self.openRefInPhotoshopBtn.setText(_translate("Form", "Photoshop", None))
-        self.openRefInKuadroBtn.setText(_translate("Form", "Kuadro", None))
+        self.openRefInKuadroBtn.setText(_translate("Form", "PureRef", None))
         self.hideReferenceOptionsFrameBtn.setToolTip(_translate("Form", "Collapse left pane.", None))
         self.refShowLbl.setText(_translate("Form", "Show:", None))
         self.refShowNamesCheckBox.setText(_translate("Form", "Names", None))

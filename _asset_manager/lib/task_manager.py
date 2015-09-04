@@ -14,9 +14,8 @@ class TaskManager(object):
 
     def __init__(self):
 
-
-        self.tm_departments = {"Script": 0, "Storyboard": 1, "References": 2, "Concepts": 3, "Modeling": 4, "Texturing": 5,
-                            "Rigging": 6, "Animation": 7, "Simulation": 8, "Shading": 9, "Layout": 10,
+        self.tm_departments = {"Misc": 0, "Script": 1, "Storyboard": 2, "References": 3, "Concepts": 4, "Modeling": 5, "Texturing": 6,
+                            "Rigging": 7, "Animation": 8, "Simulation": 9, "Shading": 10, "Camera": 11, "Lighting": 12, "Layout": 13,
                             "DMP": 11, "Compositing": 12, "Editing": 13, "RnD": 14}
 
         self.tm_departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
@@ -143,7 +142,7 @@ class TaskManager(object):
 
             # Adding department combo boxes
             combo_box = QtGui.QComboBox()
-            combo_box.addItems(["Script", "Storyboard", "References", "Concepts", "Modeling", "Texturing",
+            combo_box.addItems(["Misc", "Script", "Storyboard", "References", "Concepts", "Modeling", "Texturing",
                             "Rigging", "Animation", "Simulation", "Shading", "Camera", "Lighting", "Layout",
                             "DMP", "Compositing", "Editing", "RnD"])
             combo_box.setCurrentIndex(self.tm_departments[task.department])

@@ -546,9 +546,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.db.commit()
         self.setup_tags()
         self.mt_item_added = True
+        self.item_added = True
 
         self.statusLbl.setText("Status: Refreshing tasks...")
         MyTasks.mt_add_tasks_from_database(self)
+        TaskManager.add_tasks_from_database(self)
 
         self.statusLbl.setText("Status: Refreshing references...")
 
@@ -710,7 +712,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 if __name__ == "__main__":
 
-    log_to_file = True
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
