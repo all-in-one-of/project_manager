@@ -89,7 +89,7 @@ class Moodboard_Creator():
         try:
             fileName = os.path.abspath(fileName)
             self.final_image.save(fileName)
-            webbrowser.open(fileName)
+            subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", fileName])
         except:
             return
 

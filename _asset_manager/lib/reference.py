@@ -415,7 +415,7 @@ class ReferenceTab(object):
             subprocess.Popen(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", self.selected_asset.dependency])
         else:
             # Open image in windows viewer
-            webbrowser.open(self.selected_asset.full_path)
+            subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_path])
 
     def reference_doubleClicked(self):
         subprocess.Popen(r'explorer /select,' + str(self.selected_asset.full_path))

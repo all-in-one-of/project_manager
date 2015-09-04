@@ -794,15 +794,15 @@ class AssetLoader(object):
         media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
         if self.selected_asset.type in ["mod", "rig", "tex", "lay"]:
             if self.selected_asset.version == "01":
-                webbrowser.open(self.selected_asset.first_media)
+                subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.first_media])
             else:
-                webbrowser.open(self.selected_asset.full_media)
+                subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
             self.statusLbl.setText("Status: Idle...")
         elif self.selected_asset.type == "shd":
-            media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.full_media])
+            media_process.start(self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", [self.selected_asset.full_media])
 
         elif self.selected_asset.type in ["anm", "cam"]:
-            media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
+            media_process.start(self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", [self.selected_asset.advanced_media])
 
     def versionList_advanced_view(self):
         if self.selected_asset == None:
@@ -814,18 +814,18 @@ class AssetLoader(object):
 
         if self.selected_asset.type in ["rig", "tex", "lay"]:
             if self.selected_asset.version == "01":
-                webbrowser.open(self.selected_asset.first_media)
+                subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.first_media])
             else:
-                webbrowser.open(self.selected_asset.full_media)
+                subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
             self.statusLbl.setText("Status: Idle...")
         else:
             if not os.path.isfile(self.selected_asset.advanced_media):
                 if self.selected_asset.version == "01":
-                    webbrowser.open(self.selected_asset.first_media)
+                    subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.first_media])
                 else:
-                    webbrowser.open(self.selected_asset.full_media)
+                    subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
 
-            media_process.start(self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
+            media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
 
     def versionList_Clicked(self):
         # If user press arrow key in a tab other than Asset Loader, don't do anything
@@ -1622,19 +1622,19 @@ class AssetLoader(object):
             return
 
         if self.selected_asset.type == "anm":
-            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.anim_playblast_path])
+            subprocess.Popen(["H:/DJView/bin/djv_view.exe", self.selected_asset.anim_playblast_path])
 
         elif self.selected_asset.type == "cam":
-            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.cam_playblast_path])
+            subprocess.Popen(["H:/DJView/bin/djv_view.exe", self.selected_asset.cam_playblast_path])
 
     def show_shd_turn(self, type):
         if self.selected_asset == None:
             return
 
         if type == "geo":
-            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turngeo_path])
+            subprocess.Popen(["H:/DJView/bin/djv_view.exe", self.selected_asset.turngeo_path])
         elif type == "hdr":
-            subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turnhdr_path])
+            subprocess.Popen(["H:/DJView/bin/djv_view.exe", self.selected_asset.turnhdr_path])
 
     def switch_thumbnail_display(self, type=""):
         if not self.selected_asset:
@@ -1651,7 +1651,7 @@ class AssetLoader(object):
         elif type == "turn":
             result = self.check_thumbnails_conditions(type="turn")
             if result == True:
-                subprocess.Popen([self.cur_path_one_folder_up + "/_soft/DJView/bin/djv_view.exe", self.selected_asset.turn_vid_path])
+                subprocess.Popen(["H:/DJView/bin/djv_view.exe", self.selected_asset.turn_vid_path])
 
     def check_thumbnails_conditions(self, type=""):
         '''

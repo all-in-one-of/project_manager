@@ -40,7 +40,7 @@ class Lib(object):
 
         if "full" in self.thumbs_to_create:
             self.type = "full"
-            self.sampling = 100
+            self.sampling = 250
             self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
         elif "turn" in self.thumbs_to_create:
@@ -87,7 +87,7 @@ class Lib(object):
 
         if self.type == "full":
             filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
-            self.compress_image(filename, int(500 * float(self.resolution) / 100), 90)
+            self.compress_image(filename, int(1000 * float(self.resolution) / 100), 100)
 
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))

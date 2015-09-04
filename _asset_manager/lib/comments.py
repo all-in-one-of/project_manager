@@ -232,4 +232,4 @@ class CommentWidget(object):
             return
 
         comment_img_path = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id, )).fetchone()
-        webbrowser.open(comment_img_path[0])
+        subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", comment_img_path[0]])
