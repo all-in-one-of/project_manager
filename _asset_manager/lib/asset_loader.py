@@ -1328,6 +1328,7 @@ class AssetLoader(object):
         if self.selected_asset.type == "mod":
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
+            group_to_select = self.selected_asset.name + "_mod"
             if self.selected_asset.extension == "blend":
                 self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
             elif self.selected_asset.extension == "ma":
