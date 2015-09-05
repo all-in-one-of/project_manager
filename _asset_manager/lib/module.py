@@ -95,7 +95,7 @@ class Lib(object):
         elif self.type == "turn":
             file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")
             movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4")
-            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-b", "800k", "crf", "0", "-y", "-r", "24", movie_path])
+            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-b", "800k", "-crf", "0", "-y", "-r", "24", movie_path])
 
             turn_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_advanced.mp4")
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4"), turn_filename)

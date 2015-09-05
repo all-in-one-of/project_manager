@@ -33,7 +33,10 @@ for obj in bpy.context.selected_objects:
 print("8")
 OBJ = bpy.data.objects["OBJ"]
 bpy.context.scene.objects.active = bpy.data.objects["OBJ"]
-#bpy.ops.object.join()
+try:
+    bpy.ops.object.join()
+except:
+    pass
 bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
 
 print("9")
@@ -67,5 +70,5 @@ bpy.ops.object.select_all(action='TOGGLE')
 bpy.ops.object.shade_smooth()
 
 print("15")
-bpy.ops.export_scene.obj(filepath=export_path, use_materials=False, use_mesh_modifiers=False, use_vertex_groups=True, use_blen_objects=False, group_by_object=True)
+bpy.ops.export_scene.obj(filepath=obj_path, use_materials=False, use_mesh_modifiers=False, use_vertex_groups=True, use_blen_objects=False, group_by_object=True)
 print("16")

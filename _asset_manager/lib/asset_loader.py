@@ -1392,7 +1392,7 @@ class AssetLoader(object):
             self.normalize_mod_scale_process.readyRead.connect(self.testttt)
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
             self.normalize_mod_scale_process.waitForFinished()
-            self.normalize_mod_scale_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_normalize_mod_scale.py", "--", self.selected_asset.obj_path])
+            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path])
         elif self.selected_asset.type == "anm":
             self.update_thumbnail(False)
         else:
@@ -2555,27 +2555,29 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
             img = last_modeling_asset.default_media_user
 
             item = QtGui.QListWidgetItem(asset.name)
-
             if os.path.isfile(img):
                 item.setIcon(QtGui.QIcon(img))
             else:
                 item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                img = self.main.no_img_found
 
             item.setData(QtCore.Qt.UserRole, (asset, img))
 
             self.availableAssetsListWidget.addItem(item)
 
         for asset in self.assets_in_layout:
+            if asset.type != "lay":
+                continue
             last_modeling_version_id = self.main.cursor.execute('''SELECT MAX(asset_id) FROM assets WHERE asset_name=? AND asset_type="mod" AND asset_version!="out"''', (asset.name,)).fetchone()
             last_modeling_asset = self.main.Asset(self.main, last_modeling_version_id[0], get_infos_from_id=True)
             img = last_modeling_asset.default_media_user
 
             item = QtGui.QListWidgetItem(asset.name)
-
             if os.path.isfile(img):
                 item.setIcon(QtGui.QIcon(img))
             else:
                 item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                img = self.main.no_img_found
 
             item.setData(QtCore.Qt.UserRole, (asset, img))
 
@@ -2727,6 +2729,9 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
 
         # Add assets to list widget
         for asset in self.assets_not_in_layout_db:
+            if asset.type != "lay":
+                continue
+
             # Get version from which the modeling asset was published
             obj_asset_path = asset.full_path.replace("lay", "mod").replace("hda", "obj") # Get path of obj from modeling (Ex: \assets\mod\nat_xxx_xxxx_mod_pipe_out.obj)
             obj_asset_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_path=?''', (obj_asset_path.replace(self.main.selected_project_path, ""), )).fetchone()

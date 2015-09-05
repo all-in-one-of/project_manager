@@ -44,6 +44,7 @@ if len(assets_to_remove[0]) > 0:
 
 
 mc.file(save=True, type='mayaAscii', f=True)
+print("success")
 
 
 
