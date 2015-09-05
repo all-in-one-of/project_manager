@@ -1389,7 +1389,6 @@ class AssetLoader(object):
         if self.selected_asset.type == "mod":
             # Normalize modeling scale
             self.normalize_mod_scale_process = QtCore.QProcess(self)
-            self.normalize_mod_scale_process.readyRead.connect(self.testttt)
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
             self.normalize_mod_scale_process.waitForFinished()
             self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path])
@@ -1397,10 +1396,6 @@ class AssetLoader(object):
             self.update_thumbnail(False)
         else:
             self.Lib.message_box(self, type="info", text="Successfully published asset!")
-
-    def testttt(self):
-        while self.normalize_mod_scale_process.canReadLine():
-            print(self.normalize_mod_scale_process.readLine())
 
     def update_thumbnail(self, ask_window=True):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:

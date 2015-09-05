@@ -9,12 +9,21 @@ source_node.setName("Modeling")
 source_node.node("file1").destroy()
 
 # Create inside nodes
+facet_node = source_node.createNode("facet")
+facet_node.parm("unique").set(1)
+facet_node.parm("remove").set(1)
+
 out_high_res = source_node.createNode("rop_geometry")
 out_low_res = source_node.createNode("rop_geometry")
+out_high_res.setInput(0, facet_node)
+out_low_res.setInput(0, facet_node)
+
 out_high_res.setName("EXPORT_HIGH_RES")
 out_low_res.setName("EXPORT_LOW_RES")
 out_high_res.parm("sopoutput").set(obj_path)
 out_low_res.parm("sopoutput").set(obj_path.replace("_out.obj", "-lowres_out.obj"))
+out_high_res.parm("mkpath").set(0)
+out_low_res.parm("mkpath").set(0)
 out_high_res.moveToGoodPosition()
 out_low_res.moveToGoodPosition()
 out_high_res.setColor(hou.Color((0.867, 0, 0)))
