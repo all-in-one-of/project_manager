@@ -832,6 +832,9 @@ class AssetLoader(object):
         if current_tab_text != "Asset Loader":
             return
 
+        # Reset last published label
+        self.lastPublishedLbl.setText("Last published by: ...")
+
         try:
             selected_version = self.versionList.selectedItems()[0]
         except:
@@ -983,7 +986,10 @@ class AssetLoader(object):
 
 
         # Set labels
-        self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
+        if len(self.selected_asset.last_access) == 0:
+            self.lastAccessLbl.setText("Last accessed by: ...")
+        else:
+            self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
         # Set Is In Layout label
         self.isInLayoutLbl.setText("Asset is not in any layout scene.")
@@ -1056,7 +1062,7 @@ class AssetLoader(object):
         self.CommentWidget.load_comments(self)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "cam" and self.selected_asset.type != "sim":
+        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "sim":
             asset_published = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
             self.update_last_published_time_lbl(asset_published)
 
@@ -1348,10 +1354,14 @@ class AssetLoader(object):
             start_frame = framerange[0]
             end_frame = framerange[1]
 
+            associated_righ_path = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_name=? AND asset_extension="ma" AND asset_type="rig" AND asset_version="out"''', (self.selected_asset.name,)).fetchone()[0]
+            associated_rig_filename = associated_righ_path.split("\\")[-1].replace(".ma", "")
+            rig_name_to_export = "|{0}:{1}_rig".format(associated_rig_filename, self.selected_asset.name)
+
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
             self.publish_process.readyRead.connect(self.rara)
-            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame)])
+            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame), rig_name_to_export])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.anim_out_path.replace(self.selected_project_path, ""),))
             self.db.commit()
@@ -1526,7 +1536,7 @@ class AssetLoader(object):
         file_sequence = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
         movie_path = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_full.mp4"
 
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
+        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-r", "24", "-start_number", start_frame, "-i", file_sequence, "-vcodec", "libx264", "-y", "-r", "24", movie_path])
 
         thumb_filename = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_advanced.mp4"
         shutil.copy(movie_path, thumb_filename)
@@ -2408,8 +2418,8 @@ class AssetLoader(object):
         self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.cur_path + "\\lib\\thumb_creator.py", asset.name, self.cur_path + "\\media\\default_asset_thumb\\" + asset.type + ".png", export_path, self.cur_path + "\\media\\ProximaNova-Regular.otf"])
 
     def rara(self):
-        while self.houdini_hda_process.canReadLine():
-            out = self.houdini_hda_process.readLine()
+        while self.publish_process.canReadLine():
+            out = self.publish_process.readLine()
             print(out)
 
 class AnimSceneChooser(QtGui.QDialog):
