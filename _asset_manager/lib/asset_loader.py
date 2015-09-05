@@ -1397,7 +1397,7 @@ class AssetLoader(object):
         log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
 
-        if self.selected_asset.type == "mod":
+        if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
             # Normalize modeling scale
             self.normalize_mod_scale_process = QtCore.QProcess(self)
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
