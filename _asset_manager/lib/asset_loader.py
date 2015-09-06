@@ -1298,32 +1298,33 @@ class AssetLoader(object):
 
     def publish_asset(self):
 
-        # Publish comment GUI
-        dialog = QtGui.QDialog(self)
-        dialog.setWindowTitle("Add a comment")
-        self.Lib.apply_style(self, dialog)
+        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+            # Publish comment GUI
+            dialog = QtGui.QDialog(self)
+            dialog.setWindowTitle("Add a comment")
+            self.Lib.apply_style(self, dialog)
 
-        dialog_layout = QtGui.QVBoxLayout(dialog)
+            dialog_layout = QtGui.QVBoxLayout(dialog)
 
-        publish_comment_line_edit = QtGui.QLineEdit(dialog)
-        publish_accept_btn = QtGui.QPushButton("Publish asset!", dialog)
-        publish_comment_line_edit.returnPressed.connect(dialog.accept)
-        publish_accept_btn.clicked.connect(dialog.accept)
+            publish_comment_line_edit = QtGui.QLineEdit(dialog)
+            publish_accept_btn = QtGui.QPushButton("Publish asset!", dialog)
+            publish_comment_line_edit.returnPressed.connect(dialog.accept)
+            publish_accept_btn.clicked.connect(dialog.accept)
 
-        dialog_layout.addWidget(publish_comment_line_edit)
-        dialog_layout.addWidget(publish_accept_btn)
-        dialog.exec_()
+            dialog_layout.addWidget(publish_comment_line_edit)
+            dialog_layout.addWidget(publish_accept_btn)
+            dialog.exec_()
 
-        if dialog.result() == 0:
-            return
+            if dialog.result() == 0:
+                return
 
-        # Add publish comment to database
-        publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
-        self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
-        self.db.commit()
+            # Add publish comment to database
+            publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
+            self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
+            self.db.commit()
 
-        # Update last publish time
-        self.selected_asset.change_last_publish()
+            # Update last publish time
+            self.selected_asset.change_last_publish()
 
         if self.selected_asset.type == "mod":
             self.publish_process = QtCore.QProcess(self)
@@ -1393,9 +1394,10 @@ class AssetLoader(object):
         else:
             favorited_by = []
 
-        # Add log entry saying that the asset has been published.
-        log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
-        log_entry.add_log_to_database()
+        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+            # Add log entry saying that the asset has been published.
+            log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
+            log_entry.add_log_to_database()
 
         if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
             # Normalize modeling scale
@@ -1409,6 +1411,8 @@ class AssetLoader(object):
             self.update_thumbnail(False)
         else:
             self.Lib.message_box(self, type="info", text="Successfully published asset!")
+
+        self.statusLbl.setText("Status: Published finished.")
 
     def update_thumbnail(self, ask_window=True):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:

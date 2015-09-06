@@ -32,7 +32,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Manager</string>
+   <string>MaNADger 3.0</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -4129,9 +4129,108 @@
                 </item>
                 <item>
                  <widget class="QCheckBox" name="showAllNewsCheckBox">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="text">
                    <string>Show All News</string>
                   </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="whatsNewFilterByMemberComboBox">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Chloé</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Christopher</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Edwin</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Étienne</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Jeremy</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Laurence</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Louis-Philippe</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Mathieu</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Maxime</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Olivier</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Simon</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Thibault</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Valentin</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Yann</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Yi</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                </layout>
@@ -4226,7 +4325,7 @@
                   <x>0</x>
                   <y>0</y>
                   <width>1043</width>
-                  <height>538</height>
+                  <height>536</height>
                  </rect>
                 </property>
                </widget>

@@ -35,6 +35,7 @@ class WhatsNew(object):
         self.showNewImagesCheckBox.stateChanged.connect(self.filter_feed_entries)
         self.showNewCommentsCheckBox.stateChanged.connect(self.filter_feed_entries)
         self.showImportantMessagesCheckBox.stateChanged.connect(self.filter_feed_entries)
+        self.whatsNewFilterByMemberComboBox.currentIndexChanged.connect(self.filter_feed_entries)
 
         self.showAllNewsCheckBox.stateChanged.connect(self.load_whats_new)
 
@@ -117,7 +118,7 @@ class WhatsNew(object):
         feedEntryFrame = QtGui.QFrame(self.newsFeedScrollArea)
         feedEntryFrame_layout = QtGui.QHBoxLayout(feedEntryFrame)
         feedEntryFrame.setMaximumHeight(120)
-        self.log_widgets.append((feedEntryFrame, type, members_concerned))
+        self.log_widgets.append((feedEntryFrame, type, members_concerned, created_by))
 
         vertical_spacer = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         horizontal_spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -225,7 +226,7 @@ class WhatsNew(object):
         if self.showImportantMessagesCheckBox.checkState():
             checkbox_states.append("important")
 
-        for feed_entry, type, members_concerned in self.log_widgets:
+        for feed_entry, type, members_concerned, created_by in self.log_widgets:
             # Current feed entry type is checked
             if type in checkbox_states:
                 # Show only concerning me is checked
