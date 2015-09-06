@@ -1403,6 +1403,8 @@ class AssetLoader(object):
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
             self.normalize_mod_scale_process.waitForFinished()
             self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path])
+        elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
+            self.update_thumbnail(False)
         elif self.selected_asset.type == "anm":
             self.update_thumbnail(False)
         else:
@@ -2538,7 +2540,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.all_layout_assets_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_type="lay" AND asset_extension="hda"''').fetchall() # Get IDs of all layout assets
 
         # GET ALL LAYOUT ASSETS WHICH ARE IN LAYOUT
-        self.assets_in_layout_id = self.main.cursor.execute('''SELECT asset_id FROM assets_in_layout''').fetchall() # Get IDs of layout assets in layout
+        self.assets_in_layout_id = self.main.cursor.execute('''SELECT asset_id FROM assets_in_layout WHERE layout_id=?''', (int(self.main.selected_asset.id),)).fetchall() # Get IDs of layout assets in layout
 
         # Convert [(1,), (2,), (3)] to [1, 2, 3]
         if len(self.all_layout_assets_id) > 0:
@@ -2632,7 +2634,7 @@ class AddAssetsToLayoutWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         for i in xrange(self.assetsToAddListWidget.count()):
             list_item = self.assetsToAddListWidget.item(i)
             asset = list_item.data(QtCore.Qt.UserRole).toPyObject()[0]
-            is_asset_in_layout = self.main.cursor.execute('''SELECT * FROM assets_in_layout WHERE asset_id=?''', (asset.id,)).fetchone()
+            is_asset_in_layout = self.main.cursor.execute('''SELECT * FROM assets_in_layout WHERE asset_id=? AND layout_id=?''', (asset.id, int(self.main.selected_asset.id),)).fetchone()
             if is_asset_in_layout == None:
                 assets_to_add.append(asset.full_path.replace("\\", "/"))
                 self.main.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
