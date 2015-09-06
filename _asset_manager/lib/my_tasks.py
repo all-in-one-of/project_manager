@@ -377,9 +377,25 @@ class MyTasks(object):
             if self.selected_asset == None:
                 return  # User clicked on the days left cell
 
-
             self.commentLineEdit.setFocus()
             self.CommentWidget.load_comments(self)
+            if column == 1:
+
+                description_widget = self.mt_widgets["{0}:{1}".format(row, column)]
+
+                dialog = QtGui.QDialog(self)
+                dialog.setWindowTitle("Task Description")
+                self.Lib.apply_style(self, dialog)
+
+                layout = QtGui.QHBoxLayout(dialog)
+
+                text_edit = QtGui.QTextEdit(dialog)
+                text_edit.setEnabled(False)
+                text_edit.setText(description_widget.text())
+                layout.addWidget(text_edit)
+
+                dialog.exec_()
+
         else:
             # Go to asset in asset loader
             asset_id_line_edit = self.widgets[str(row) + ":10"]
