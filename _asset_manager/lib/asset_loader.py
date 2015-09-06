@@ -775,7 +775,7 @@ class AssetLoader(object):
 
         for version_item in self.versions:
             version_asset = version_item.data(QtCore.Qt.UserRole).toPyObject()
-            if selected_asset.name == version_asset.name and selected_asset.type == version_asset.type:
+            if selected_asset.name == version_asset.name and selected_asset.type == version_asset.type and selected_asset.sequence == version_asset.sequence:
                 version_item.setHidden(False)
                 version_item.setSelected(True)
             else:
