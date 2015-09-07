@@ -1,10 +1,9 @@
-xsi = Application
-
 def export_obj(file_path, export_path):
-    xsi.OpenScene(file_path, "", "")
+    Application.OpenScene(file_path, "", "")
 
     try:
-        xsi.SelectObj("output", "", "")
+        Application.SelectObj("output", "BRANCH", "")
     except:
-        xsi.selectAll()
-    xsi.ObjExport(export_path, "", "", "", "", "", "", "", "", "", 0, False, False, "", False)
+        Application.selectAll()
+
+    Application.ObjExport(export_path, "", "", "", "", "", "", "", "", "", 0, False, False, "", False)
