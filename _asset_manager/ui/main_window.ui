@@ -3502,34 +3502,6 @@
                     </widget>
                    </item>
                    <item row="1" column="2">
-                    <widget class="profilPicLabel" name="profilePicLbl_03">
-                     <property name="minimumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::Box</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Plain</enum>
-                     </property>
-                     <property name="lineWidth">
-                      <number>0</number>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="3">
                     <widget class="profilPicLabel" name="profilePicLbl_04">
                      <property name="minimumSize">
                       <size>
@@ -3557,7 +3529,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="3">
+                   <item row="2" column="2">
                     <widget class="QCheckBox" name="erodrigueProfilCheckBox">
                      <property name="text">
                       <string>Étienne</string>
@@ -3571,13 +3543,6 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="2">
-                    <widget class="QCheckBox" name="earismendezProfilCheckBox">
-                     <property name="text">
-                      <string>Edwin</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="2" column="0">
                     <widget class="QCheckBox" name="costiguyProfilCheckBox">
                      <property name="text">
@@ -3585,7 +3550,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="4">
+                   <item row="1" column="3">
                     <widget class="profilPicLabel" name="profilePicLbl_05">
                      <property name="minimumSize">
                       <size>
@@ -3613,7 +3578,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="4">
+                   <item row="2" column="3">
                     <widget class="QCheckBox" name="jbergerProfilCheckBox">
                      <property name="text">
                       <string>Jérémy</string>
@@ -4785,7 +4750,6 @@
   <tabstop>rtremblayProfilCheckBox</tabstop>
   <tabstop>erodrigueProfilCheckBox</tabstop>
   <tabstop>cgonnordProfilCheckBox</tabstop>
-  <tabstop>earismendezProfilCheckBox</tabstop>
   <tabstop>costiguyProfilCheckBox</tabstop>
   <tabstop>emailObjectLineEdit</tabstop>
   <tabstop>emailMessageTextEdit</tabstop>

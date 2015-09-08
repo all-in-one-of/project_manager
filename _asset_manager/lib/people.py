@@ -7,6 +7,7 @@ from datetime import datetime
 from dateutil import relativedelta
 
 class PeopleTab(object):
+
     def __init__(self):
 
 
@@ -19,7 +20,6 @@ class PeopleTab(object):
         self.profilPicLblList = [
                                  self.profilePicLbl_01,
                               self.profilePicLbl_02,
-                              self.profilePicLbl_03,
                               self.profilePicLbl_04,
                               self.profilePicLbl_05,
                               self.profilePicLbl_06,
@@ -37,7 +37,6 @@ class PeopleTab(object):
         self.members_photos = [
                                self.cur_path + "\\media\\members_photos\\costiguy.jpg",
                                self.cur_path + "\\media\\members_photos\\cgonnord.jpg",
-                               self.cur_path + "\\media\\members_photos\\earismendez.jpg",
                                self.cur_path + "\\media\\members_photos\\erodrigue.jpg",
                                self.cur_path + "\\media\\members_photos\\jberger.jpg",
                                self.cur_path + "\\media\\members_photos\\lgregoire.jpg",
@@ -54,7 +53,6 @@ class PeopleTab(object):
 
         self.members_mail = ["ostiguy.chloe@gmail.com",
                              "christopher.gonnord@gmail.com",
-                             "edwin.arismendez@gmail.com",
                              "etienne.rodrigue89@gmail.com",
                              "jeremy.berger3d@gmail.com",
                              "lau-gregoire@hotmail.com",
@@ -152,6 +150,8 @@ class PeopleTab(object):
         self.lastActiveLbl.setText("Last Active: {0} ({1} days, {2} hours, {3} minutes ago)".format(self.last_active, last_active_period.days, last_active_period.hours, last_active_period.minutes))
         self.profilPicInfoLbl.setPixmap(QtGui.QPixmap(value))
 
+        self.check_on_double_click(lbl, value)
+
     def send_email_clicked(self):
 
         subject = self.emailObjectLineEdit.text()
@@ -166,39 +166,36 @@ class PeopleTab(object):
             addr_list.append(self.members_mail[0])
         if self.cgonnordProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[1])
-        if self.earismendezProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[2])
         if self.erodrigueProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[3])
+            addr_list.append(self.members_mail[2])
         if self.jbergerProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[4])
+            addr_list.append(self.members_mail[3])
         if self.lgregoireProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[5])
+            addr_list.append(self.members_mail[4])
         if self.lclavetProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[6])
+            addr_list.append(self.members_mail[5])
         if self.mbeaudoinProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[7])
+            addr_list.append(self.members_mail[6])
         if self.mrozProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[8])
+            addr_list.append(self.members_mail[7])
         if self.obolducProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[9])
+            addr_list.append(self.members_mail[8])
         if self.slachapelleProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[10])
+            addr_list.append(self.members_mail[9])
         if self.thoudonProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[11])
+            addr_list.append(self.members_mail[10])
         if self.vdelbroucqProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[12])
+            addr_list.append(self.members_mail[11])
         if self.yjobinProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[13])
+            addr_list.append(self.members_mail[12])
         if self.yshanProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[14])
+            addr_list.append(self.members_mail[13])
         if self.rtremblayProfilCheckBox.checkState() == 2:
-            addr_list.append(self.members_mail[15])
+            addr_list.append(self.members_mail[14])
 
         self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
 
     def check_on_double_click(self, lbl, value):
-
 
         if value.split("\\")[-1].replace(".jpg", "") == "costiguy":
             if self.costiguyProfilCheckBox.checkState() == 2:
@@ -215,14 +212,6 @@ class PeopleTab(object):
             else:
                 self.cgonnordProfilCheckBox.setCheckState(2)
                 self.cgonnordProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
-
-        elif value.split("\\")[-1].replace(".jpg", "") == "earismendez":
-            if self.earismendezProfilCheckBox.checkState() == 2:
-                self.earismendezProfilCheckBox.setCheckState(0)
-                self.earismendezProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
-            else:
-                self.earismendezProfilCheckBox.setCheckState(2)
-                self.earismendezProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
 
         elif value.split("\\")[-1].replace(".jpg", "") == "erodrigue":
             if self.erodrigueProfilCheckBox.checkState() == 2:

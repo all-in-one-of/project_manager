@@ -150,7 +150,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.number_of_refreshes = 0
         self.members = {"costiguy": "Chloe", "cgonnord": "Christopher",
-                        "earismendez": "Edwin", "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
+                        "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
@@ -425,13 +425,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-
-
-        elif self.members[self.username] == "Edwin":
-            self.Tabs.removeTab(self.tabs_list["Task Manager"])
-            self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
-
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
