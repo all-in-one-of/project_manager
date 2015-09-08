@@ -367,42 +367,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Form.showMaximized()
         self.Form.showNormal()
 
-    def filter_assets_for_me(self):
-
-        if not self.meOnlyCheckBox.checkState():
-            self.assignedToFilterComboBox.setCurrentIndex(0)
-        else:
-            if self.username == "costiguy":
-                self.assignedToFilterComboBox.setCurrentIndex(2)
-            elif self.username == "cgonnord":
-                self.assignedToFilterComboBox.setCurrentIndex(3)
-            elif self.username == "earismendez":
-                self.assignedToFilterComboBox.setCurrentIndex(5)
-            elif self.username == "erodrigue":
-                self.assignedToFilterComboBox.setCurrentIndex(6)
-            elif self.username == "jberger":
-                self.assignedToFilterComboBox.setCurrentIndex(7)
-            elif self.username == "lgregoire":
-                self.assignedToFilterComboBox.setCurrentIndex(8)
-            elif self.username == "lclavet":
-                self.assignedToFilterComboBox.setCurrentIndex(9)
-            elif self.username == "mbeaudoin":
-                self.assignedToFilterComboBox.setCurrentIndex(11)
-            elif self.username == "mroz":
-                self.assignedToFilterComboBox.setCurrentIndex(12)
-            elif self.username == "obolduc":
-                self.assignedToFilterComboBox.setCurrentIndex(13)
-            elif self.username == "slachapelle":
-                self.assignedToFilterComboBox.setCurrentIndex(14)
-            elif self.username == "thoudon":
-                self.assignedToFilterComboBox.setCurrentIndex(15)
-            elif self.username == "yjobin":
-                self.assignedToFilterComboBox.setCurrentIndex(16)
-            elif self.username == "yshan":
-                self.assignedToFilterComboBox.setCurrentIndex(17)
-            elif self.username == "vdelbroucq":
-                self.assignedToFilterComboBox.setCurrentIndex(18)
-
     def remove_tabs_based_on_members(self):
 
         if not (self.username == "thoudon" or self.username == "lclavet"):

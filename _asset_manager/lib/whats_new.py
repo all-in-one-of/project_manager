@@ -325,7 +325,6 @@ class WhatsNew(object):
             self.Tabs.setCurrentWidget(self.Tabs.widget(self.tabs_list["Tasks"]))
 
         elif asset_type == "image":
-
             if len(self.ref_assets_instances) < 1:
                 self.Lib.message_box(self, type="error", text="Please load images in Images Manager.")
                 return
@@ -346,7 +345,11 @@ class WhatsNew(object):
 
             self.Tabs.setCurrentWidget(self.Tabs.widget(self.tabs_list["Images Manager"]))
 
+        elif asset_type == "comment":
+            self.selected_asset = self.Asset(self, asset_id, get_infos_from_id=True)
 
+            self.commentLineEdit.setFocus()
+            self.CommentWidget.load_comments(self)
 
 
 

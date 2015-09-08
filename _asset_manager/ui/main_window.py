@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 08 09:37:19 2015
+# Created: Tue Sep 08 14:16:39 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1285,7 +1285,6 @@ class Ui_Form(object):
         self.usernameAdminComboBox.addItem(_fromUtf8(""))
         self.usernameAdminComboBox.addItem(_fromUtf8(""))
         self.usernameAdminComboBox.addItem(_fromUtf8(""))
-        self.usernameAdminComboBox.addItem(_fromUtf8(""))
         self.verticalLayout_22.addWidget(self.usernameAdminComboBox)
         self.verticalLayout_7.addWidget(self.adminPrefFrame)
         self.Tabs.addTab(self.preferencesTab, _fromUtf8(""))
@@ -2058,19 +2057,18 @@ class Ui_Form(object):
         self.receiveMailOnNewTaskCheckBox.setText(_translate("Form", "Receive a mail everytime a new task is assigned to me", None))
         self.usernameAdminComboBox.setItemText(0, _translate("Form", "costiguy", None))
         self.usernameAdminComboBox.setItemText(1, _translate("Form", "cgonnord", None))
-        self.usernameAdminComboBox.setItemText(2, _translate("Form", "earismendez", None))
-        self.usernameAdminComboBox.setItemText(3, _translate("Form", "erodrigue", None))
-        self.usernameAdminComboBox.setItemText(4, _translate("Form", "jberger", None))
-        self.usernameAdminComboBox.setItemText(5, _translate("Form", "lgregoire", None))
-        self.usernameAdminComboBox.setItemText(6, _translate("Form", "lclavet", None))
-        self.usernameAdminComboBox.setItemText(7, _translate("Form", "mbeaudoin", None))
-        self.usernameAdminComboBox.setItemText(8, _translate("Form", "mroz", None))
-        self.usernameAdminComboBox.setItemText(9, _translate("Form", "obolduc", None))
-        self.usernameAdminComboBox.setItemText(10, _translate("Form", "slachapelle", None))
-        self.usernameAdminComboBox.setItemText(11, _translate("Form", "thoudon", None))
-        self.usernameAdminComboBox.setItemText(12, _translate("Form", "vdelbroucq", None))
-        self.usernameAdminComboBox.setItemText(13, _translate("Form", "yjobin", None))
-        self.usernameAdminComboBox.setItemText(14, _translate("Form", "yshan", None))
+        self.usernameAdminComboBox.setItemText(2, _translate("Form", "erodrigue", None))
+        self.usernameAdminComboBox.setItemText(3, _translate("Form", "jberger", None))
+        self.usernameAdminComboBox.setItemText(4, _translate("Form", "lgregoire", None))
+        self.usernameAdminComboBox.setItemText(5, _translate("Form", "lclavet", None))
+        self.usernameAdminComboBox.setItemText(6, _translate("Form", "mbeaudoin", None))
+        self.usernameAdminComboBox.setItemText(7, _translate("Form", "mroz", None))
+        self.usernameAdminComboBox.setItemText(8, _translate("Form", "obolduc", None))
+        self.usernameAdminComboBox.setItemText(9, _translate("Form", "slachapelle", None))
+        self.usernameAdminComboBox.setItemText(10, _translate("Form", "thoudon", None))
+        self.usernameAdminComboBox.setItemText(11, _translate("Form", "vdelbroucq", None))
+        self.usernameAdminComboBox.setItemText(12, _translate("Form", "yjobin", None))
+        self.usernameAdminComboBox.setItemText(13, _translate("Form", "yshan", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.preferencesTab), _translate("Form", "Preferences", None))
         self.rtremblayProfilCheckBox.setText(_translate("Form", "Robin", None))
         self.erodrigueProfilCheckBox.setText(_translate("Form", "Étienne", None))

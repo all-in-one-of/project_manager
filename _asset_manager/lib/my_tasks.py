@@ -14,10 +14,10 @@ class MyTasks(object):
         self.mt_status = {"Ready to Start": 0, "In Progress": 1, "On Hold": 2, "Waiting for Approval": 3, "Retake": 4}
 
         self.members_id = {"costiguy": 0, "cgonnord": 1,
-                           "earismendez": 2, "erodrigue": 3, "jberger": 4, "lgregoire": 5,
-                           "lclavet": 6, "mbeaudoin": 7,
-                           "mroz": 8, "obolduc": 9, "slachapelle": 10, "thoudon": 11,
-                           "vdelbroucq": 12, "yjobin": 13, "yshan": 14}
+                           "erodrigue": 2, "jberger": 3, "lgregoire": 4,
+                           "lclavet": 5, "mbeaudoin": 6,
+                           "mroz": 7, "obolduc": 8, "slachapelle": 9, "thoudon": 10,
+                           "vdelbroucq": 11, "yjobin": 12, "yshan": 13}
 
         self.mt_item_added = False
         self.mtTableWidget.setStyleSheet("color: black;")

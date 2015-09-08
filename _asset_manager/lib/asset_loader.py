@@ -2037,7 +2037,7 @@ class AssetLoader(object):
 
         # If an asset with given name already exists, change asset name to "assetname-version" (ex: colonne-01) until no asset with given name exists
         version = 1
-        all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets''').fetchall()
+        all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_type != "ref"''').fetchall()
         all_assets_name = [str(i[0]) for i in all_assets_name]
         while asset_name_tmp in all_assets_name:
             all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets''').fetchall()
