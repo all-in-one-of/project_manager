@@ -57,7 +57,7 @@ class Asset(object):
         self.last_access = last_access
         if self.version == "out":
             if last_publish == "" or last_publish == None:
-                self.last_publish = datetime.now().strftime(self.main.members[self.main.username] + " on %d/%m/%Y at %H:%M")
+                self.last_publish = self.main.members[self.main.username] + datetime.now().strftime(" on %d/%m/%Y at %H:%M")
                 self.last_publish_as_date = datetime.now()
             else:
                 self.last_publish = last_publish
@@ -71,7 +71,9 @@ class Asset(object):
                 self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
         else:
             published_by = last_publish.split(" ")[0]
-            self.last_publish = datetime.now().strftime(published_by + " on %d/%m/%Y at %H:%M")
+            if len(published_by) == 0:
+                published_by = self.main.members[self.main.username]
+            self.last_publish = published_by + datetime.now().strftime(" on %d/%m/%Y at %H:%M")
             self.last_publish_as_date = self.last_publish_as_date = datetime.now()
 
         self.number_of_publishes = number_of_publishes

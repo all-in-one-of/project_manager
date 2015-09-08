@@ -722,7 +722,8 @@ class AssetLoader(object):
             elif self.selected_department_name == "rig":
                 self.createAssetFromScratchBtn.hide()
             elif self.selected_department_name == "anm":
-                self.createAssetFromScratchBtn.hide()
+                self.createAssetFromScratchBtn.show()
+                self.createAssetFromScratchBtn.setText("Create Animation Scene")
             elif self.selected_department_name == "lay":
                 self.createAssetFromScratchBtn.show()
                 self.createAssetFromScratchBtn.setText("Create Layout Scene")
@@ -1062,10 +1063,9 @@ class AssetLoader(object):
         self.CommentWidget.load_comments(self)
 
         # Set last publish label
-        if self.selected_asset.type != "lay" and self.selected_asset.type != "shd" and self.selected_asset.extension != "hipnc" and self.selected_asset.type != "sim":
+        if self.selected_asset.type not in ["lay", "shd", "hipnc", "sim", "anm"] and self.selected_asset.extension not in ["hipnc"]:
             asset_published = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
             self.update_last_published_time_lbl(asset_published)
-
 
         # Scroll to selected item
         self.versionList.scrollToItem(self.versionList.selectedItems()[0])
@@ -1329,7 +1329,7 @@ class AssetLoader(object):
         if self.selected_asset.type == "mod":
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
-            group_to_select = self.selected_asset.name + "_mod"
+
             if self.selected_asset.extension == "blend":
                 self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
             elif self.selected_asset.extension == "ma":
@@ -1362,7 +1362,6 @@ class AssetLoader(object):
 
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
-            self.publish_process.readyRead.connect(self.rara)
             self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame), rig_name_to_export])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.anim_out_path.replace(self.selected_project_path, ""),))
@@ -1404,7 +1403,7 @@ class AssetLoader(object):
             self.normalize_mod_scale_process = QtCore.QProcess(self)
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
             self.normalize_mod_scale_process.waitForFinished()
-            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path])
+            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
         elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
             self.update_thumbnail(False)
         elif self.selected_asset.type == "anm":
@@ -1863,56 +1862,23 @@ class AssetLoader(object):
             self.create_from_asset_dialog = QtGui.QDialog(self)
             self.Lib.apply_style(self, self.create_from_asset_dialog)
 
-            self.create_from_asset_dialog.setWindowTitle("Choose which asset to import")
+            self.create_from_asset_dialog.setWindowTitle("Choose which type of asset to import")
             self.create_from_asset_dialog_main_layout = QtGui.QHBoxLayout(self.create_from_asset_dialog)
 
             camBtn = QtGui.QPushButton("Camera", self.create_from_asset_dialog)
             layBtn = QtGui.QPushButton("Layout", self.create_from_asset_dialog)
+            rigBtn = QtGui.QPushButton("Rigs", self.create_from_asset_dialog)
 
-            camBtn.clicked.connect(self.create_from_asset_dialog.reject)
-            layBtn.clicked.connect(self.create_from_asset_dialog.accept)
+            camBtn.clicked.connect(self.import_cam_into_anm)
+            layBtn.clicked.connect(self.add_assets_into_anim)
+            rigBtn.clicked.connect(self.add_rigs_to_anim)
 
             self.create_from_asset_dialog_main_layout.addWidget(camBtn)
             self.create_from_asset_dialog_main_layout.addWidget(layBtn)
+            self.create_from_asset_dialog_main_layout.addWidget(rigBtn)
 
             self.create_from_asset_dialog.exec_()
 
-            if self.create_from_asset_dialog.result() == 0:
-                self.import_cam_into_anm()
-                return
-
-            all_layout_scene = []
-            for asset in self.assets:
-                if asset.type == "lay" and asset.extension == "hipnc":
-                    all_layout_scene.append(asset)
-
-            dialog = QtGui.QDialog(self)
-            dialog.setWindowTitle("Please choose a layout scene")
-            layout = QtGui.QVBoxLayout(dialog)
-
-            listwidget = QtGui.QListWidget(dialog)
-
-            for asset in all_layout_scene:
-                item = QtGui.QListWidgetItem("Sequence: {0} | Shot: {1} | Name: {2}".format(asset.sequence, asset.shot, asset.name))
-                item.setData(QtCore.Qt.UserRole, asset)
-                listwidget.addItem(item)
-
-            acceptBtn = QtGui.QPushButton("Select layout scene", dialog)
-            acceptBtn.clicked.connect(dialog.accept)
-
-            layout.addWidget(listwidget)
-            layout.addWidget(acceptBtn)
-
-            dialog.exec_()
-
-            if dialog.result() == 0:
-                return
-
-
-            selected_scene = listwidget.selectedItems()[0]
-            self.selected_layout_asset = selected_scene.data(QtCore.Qt.UserRole).toPyObject()
-
-            AddAssetsToAnimWindow(self)
         elif self.selected_asset.type == "lay":
             AddAssetsToLayoutWindow(self)
 
@@ -1955,6 +1921,44 @@ class AssetLoader(object):
 
         self.cursor.execute('''INSERT INTO camera_in_anim(asset_id, has_camera) VALUES(?,?)''', (self.selected_asset.id, 1,))
         self.db.commit()
+
+    def add_assets_into_anim(self):
+        self.create_from_asset_dialog.close()
+        all_layout_scene = []
+        for asset in self.assets:
+            if asset.type == "lay" and asset.extension == "hipnc":
+                all_layout_scene.append(asset)
+
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Please choose a layout scene")
+        layout = QtGui.QVBoxLayout(dialog)
+
+        listwidget = QtGui.QListWidget(dialog)
+
+        for asset in all_layout_scene:
+            item = QtGui.QListWidgetItem("Sequence: {0} | Shot: {1} | Name: {2}".format(asset.sequence, asset.shot, asset.name))
+            item.setData(QtCore.Qt.UserRole, asset)
+            listwidget.addItem(item)
+
+        acceptBtn = QtGui.QPushButton("Select layout scene", dialog)
+        acceptBtn.clicked.connect(dialog.accept)
+
+        layout.addWidget(listwidget)
+        layout.addWidget(acceptBtn)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        selected_scene = listwidget.selectedItems()[0]
+        self.selected_layout_asset = selected_scene.data(QtCore.Qt.UserRole).toPyObject()
+
+        AddAssetsToAnimWindow(self)
+
+    def add_rigs_to_anim(self):
+        self.create_from_asset_dialog.close()
+        AddRigsToAnimWindow(self)
 
     def import_obj_into_scene(self):
         if "lowres" in self.selected_asset.name:
@@ -2049,6 +2053,8 @@ class AssetLoader(object):
             self.create_lay_asset_from_scratch(asset_name)
         elif self.selected_department_name == "sim":
             self.create_sim_asset_from_scratch(asset_name)
+        elif self.selected_department_name == "anm":
+            self.create_anm_asset_from_scratch(asset_name)
 
     def create_asset_from_asset(self):
         if self.selected_asset.type == "mod" or (self.selected_asset.type == "lay" and self.selected_asset.extension == "hda" and self.selected_asset.version != "out"):
@@ -2206,7 +2212,6 @@ class AssetLoader(object):
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.readyRead.connect(self.plao)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, camera_asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_cam_into_lay.py", self.selected_asset.full_path.replace("\\", "/"), camera_asset.full_path.replace("\\", "/"), selected_shot])
@@ -2313,7 +2318,6 @@ class AssetLoader(object):
 
             # Create HDA associated to modeling scene
             self.houdini_hda_process = QtCore.QProcess(self)
-            self.houdini_hda_process.readyRead.connect(self.plao)
             self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, main_hda_asset))
             self.houdini_hda_process.waitForFinished()
             self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
@@ -2359,10 +2363,6 @@ class AssetLoader(object):
             self.houdini_hda_process.waitForFinished()
             self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
 
-    def plao(self):
-        while self.houdini_hda_process.canReadLine():
-            print(self.houdini_hda_process.readLine())
-
     def create_lay_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
@@ -2384,6 +2384,13 @@ class AssetLoader(object):
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, sim_asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_sim_from_scratch.py", sim_asset.full_path])
+
+    def create_anm_asset_from_scratch(self, asset_name):
+        asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "ma", "anm", "01", [], "", "", "", self.username)
+        asset.add_asset_to_db()
+
+        shutil.copy(self.cur_path_one_folder_up + "\\_NEF\\maya.ma", asset.full_path)
+        self.asset_creation_finished(asset)
 
     def asset_creation_finished(self, asset):
 
@@ -2417,17 +2424,11 @@ class AssetLoader(object):
 
     def create_default_asset_thumbnail(self, asset):
         self.thumb_process = QtCore.QProcess(self)
-        self.thumb_process.readyRead.connect(self.rara)
         self.thumb_process.waitForFinished()
         asset_filename = asset.path.replace("\\assets\\" + asset.type + "\\", "")
         export_path = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset_filename.replace("_" + asset.version + ".", "_out.").replace("." + asset.extension, ".png")
         export_path = asset.default_thumb
         self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.cur_path + "\\lib\\thumb_creator.py", asset.name, self.cur_path + "\\media\\default_asset_thumb\\" + asset.type + ".png", export_path, self.cur_path + "\\media\\ProximaNova-Regular.otf"])
-
-    def rara(self):
-        while self.publish_process.canReadLine():
-            out = self.publish_process.readLine()
-            print(out)
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):
@@ -2513,7 +2514,6 @@ class AnimSceneChooser(QtGui.QDialog):
         hda_process.finished.connect(partial(self.create_abc, asset))
         hda_process.waitForFinished()
         hda_process.start(self.main.houdini_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\houdini_update_hda_from_abc.py", alembic_publish_asset.full_path.replace("\\", "/"), alembic_publish_asset.name, (self.main.selected_project_path + hda_layout_asset[0]).replace("\\", "/")])
-
 
     def create_abc(self, asset):
         self.publish_process = QtCore.QProcess(self)
@@ -2854,6 +2854,161 @@ class AddAssetsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         self.main.Lib.message_box(self.main, type="info", text="Assets have been succesfully imported/removed into/from layout scene!")
         #self.houdini_hda_process.kill()
         #self.maya_ref_process.kill()
+
+    def readydata(self):
+        while self.maya_ref_process.canReadLine():
+            out = self.maya_ref_process.readLine()
+            print(out)
+
+class AddRigsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
+    def __init__(self, main):
+        super(AddRigsToAnimWindow, self).__init__()
+
+        self.main = main
+
+        # Initialize the guis
+        self.add_assets_layout = self.setupUi(self)
+        self.main.Lib.apply_style(self.main, self)
+
+        self.setWindowTitle("Add/remove rigs to/from animation scene")
+        self.addAssetsToLayoutBtn.setText("Add/remove rigs to/from animation scene")
+
+        # Connections
+        self.availableAssetsListWidget.setDragEnabled(False)
+        self.assetsToAddListWidget.setDragEnabled(False)
+        self.availableAssetsListWidget.doubleClicked.connect(self.add_asset_to_list)
+        self.assetsToAddListWidget.doubleClicked.connect(self.remove_asset_from_list)
+
+        self.addAssetBtn.clicked.connect(self.add_asset_to_list)
+        self.removeAssetBtn.clicked.connect(self.remove_asset_from_list)
+        self.addAssetsToLayoutBtn.clicked.connect(self.add_remove_assets_to_anim)
+
+        self.assets_in_anim = []
+        self.assets_not_in_layout_db = []
+        self.assets_in_layout_db = []
+
+        # GET ALL RIG ASSETS
+        self.all_rig_assets_id = self.main.cursor.execute('''SELECT asset_id FROM assets WHERE asset_type="rig" AND asset_version="out"''').fetchall()  # Get IDs of all rig assets
+
+        # GET ALL RIG ASSETS WHICH ARE IN ANIM SCENE
+        self.assets_in_anim_id = self.main.cursor.execute('''SELECT asset_id FROM rigs_in_anim WHERE anim_asset_id=?''', (int(self.main.selected_asset.id),)).fetchall()  # Get IDs of rig assets in anim
+
+        # Convert [(1,), (2,), (3)] to [1, 2, 3]
+        if len(self.all_rig_assets_id) > 0:
+            self.all_rig_assets_id = [i[0] for i in self.all_rig_assets_id]
+
+        # Convert [(1,), (2,), (3)] to [1, 2, 3]
+        if len(self.assets_in_anim_id) > 0:
+            self.assets_in_anim_id = [i[0] for i in self.assets_in_anim_id]
+
+        # Get assets not in layout by substracting assets in layout from all layout assets
+        self.assets_not_in_layout_id = list(set(self.all_rig_assets_id) - set(self.assets_in_anim_id))
+
+        # Get assets from IDs
+        self.assets_in_layout = [self.main.Asset(self.main, i, get_infos_from_id=True) for i in self.assets_in_anim_id]
+        self.assets_not_in_layout = [self.main.Asset(self.main, i, get_infos_from_id=True) for i in self.assets_not_in_layout_id]
+
+        for asset in self.assets_not_in_layout:
+            last_rig_version_id = self.main.cursor.execute('''SELECT MAX(asset_id) FROM assets WHERE asset_name=? AND asset_type="rig" AND asset_version!="out"''', (asset.name,)).fetchone()
+            last_rig_asset = self.main.Asset(self.main, last_rig_version_id[0], get_infos_from_id=True)
+            img = last_rig_asset.default_media_user
+
+            item = QtGui.QListWidgetItem(asset.name)
+            if os.path.isfile(img):
+                item.setIcon(QtGui.QIcon(img))
+            else:
+                item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                img = self.main.no_img_found
+
+            item.setData(QtCore.Qt.UserRole, (asset, img))
+
+            self.availableAssetsListWidget.addItem(item)
+
+        for asset in self.assets_in_layout:
+            if asset.type != "rig":
+                continue
+            last_rig_version_id = self.main.cursor.execute('''SELECT MAX(asset_id) FROM assets WHERE asset_name=? AND asset_type="rig" AND asset_version!="out"''', (asset.name,)).fetchone()
+            last_rig_asset = self.main.Asset(self.main, last_rig_version_id[0], get_infos_from_id=True)
+            img = last_rig_asset.default_media_user
+
+            item = QtGui.QListWidgetItem(asset.name)
+            if os.path.isfile(img):
+                item.setIcon(QtGui.QIcon(img))
+            else:
+                item.setIcon(QtGui.QIcon(self.main.no_img_found))
+                img = self.main.no_img_found
+
+            item.setData(QtCore.Qt.UserRole, (asset, img))
+
+            self.assetsToAddListWidget.addItem(item)
+
+
+        self.exec_()
+
+    def add_asset_to_list(self):
+        for asset in self.availableAssetsListWidget.selectedItems():
+            selected_asset_item = asset
+            selected_asset = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            selected_asset_img = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
+
+            # Create listwidget item from selected asset
+            item = QtGui.QListWidgetItem(selected_asset.name)
+            item.setIcon(QtGui.QIcon(selected_asset_img))
+            item.setData(QtCore.Qt.UserRole, (selected_asset, selected_asset_img))
+
+            # Add item to right list
+            self.assetsToAddListWidget.addItem(item)
+
+            # Remove item from left list
+            self.availableAssetsListWidget.takeItem(self.availableAssetsListWidget.row(asset))
+
+    def remove_asset_from_list(self):
+        for asset in self.assetsToAddListWidget.selectedItems():
+            selected_asset_item = asset
+            selected_asset = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[0]
+            selected_asset_img = selected_asset_item.data(QtCore.Qt.UserRole).toPyObject()[1]
+
+            # Create listwidget item from selected asset
+            item = QtGui.QListWidgetItem(selected_asset.name)
+            item.setIcon(QtGui.QIcon(selected_asset_img))
+            item.setData(QtCore.Qt.UserRole, (selected_asset, selected_asset_img))
+
+            # Add item to right list
+            self.availableAssetsListWidget.addItem(item)
+
+            # Remove item from left list
+            self.assetsToAddListWidget.takeItem(self.assetsToAddListWidget.row(asset))
+
+    def add_remove_assets_to_anim(self):
+        self.rigs_to_add = []
+        for i in xrange(self.assetsToAddListWidget.count()):
+            item_to_add = self.assetsToAddListWidget.item(i)
+            asset = item_to_add.data(QtCore.Qt.UserRole).toPyObject()[0]
+            self.rigs_to_add.append(asset.full_path.replace("\\", "/"))
+            # Add entry to assets in layout database
+            self.main.cursor.execute('''INSERT INTO rigs_in_anim(asset_id, anim_asset_id) VALUES(?,?)''', (asset.id, self.main.selected_asset.id,))
+            self.main.db.commit()
+
+        self.rigs_to_remove = []
+        for i in xrange(self.availableAssetsListWidget.count()):
+            item_to_add = self.availableAssetsListWidget.item(i)
+            asset = item_to_add.data(QtCore.Qt.UserRole).toPyObject()[0]
+            self.rigs_to_remove.append(asset.full_path.replace("\\", "/"))
+
+        self.maya_rig_process = QtCore.QProcess(self)
+        self.maya_rig_process.readyRead.connect(self.raraaa)
+        self.maya_rig_process.finished.connect(self.maya_process_finished)
+        self.maya_rig_process.waitForFinished()
+        self.maya_rig_process.start(self.main.maya_batch_path, [self.main.cur_path + "\\lib\\software_scripts\\maya_add_remove_rig_from_anm.py", self.main.selected_asset.full_path, "|".join(self.rigs_to_add), "|".join(self.rigs_to_remove)])
+
+    def raraaa(self):
+        while self.maya_rig_process.canReadLine():
+            print(self.maya_rig_process.readLine())
+
+    def maya_process_finished(self, asset_id):
+        self.main.Lib.message_box(self.main, type="info", text="Rigs have been succesfully imported/removed into/from layout scene!")
+        # self.houdini_hda_process.kill()
+        # self.maya_ref_process.kill()
 
     def readydata(self):
         while self.maya_ref_process.canReadLine():

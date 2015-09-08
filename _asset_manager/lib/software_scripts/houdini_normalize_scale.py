@@ -1,4 +1,5 @@
 import sys
+print("1")
 
 obj_path = sys.argv[-1].replace("\\", "/")
 print(obj_path)

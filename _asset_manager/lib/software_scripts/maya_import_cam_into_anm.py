@@ -20,7 +20,7 @@ namespace = namespace.replace("-", "_")
 all_references = mc.ls(references=True)
 for ref in all_references:
     if "cam" in ref:
-        ref_path = mc.referenceQuery(ref,filename=True)
+        ref_path = mc.referenceQuery(ref, filename=True)
         mc.file(ref_path, removeReference=True)
 
 
