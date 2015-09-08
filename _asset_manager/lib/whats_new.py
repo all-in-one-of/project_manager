@@ -210,6 +210,11 @@ class WhatsNew(object):
 
     def filter_feed_entries(self):
 
+        if self.showOnlyMeWhatsNew.checkState() == 2:
+            self.whatsNewFilterByMemberComboBox.setEnabled(False)
+        else:
+            self.whatsNewFilterByMemberComboBox.setEnabled(True)
+
         # Create a list which store which checkbox is checked (ex: ["publish", "asset"])
         checkbox_states = []
 
@@ -225,6 +230,8 @@ class WhatsNew(object):
             checkbox_states.append("comment")
         if self.showImportantMessagesCheckBox.checkState():
             checkbox_states.append("important")
+        if self.whatsNewFilterByMemberComboBox.currentText() != "None":
+            checkbox_states.append(str(self.whatsNewFilterByMemberComboBox.currentText()))
 
         for feed_entry, type, members_concerned, created_by in self.log_widgets:
             # Current feed entry type is checked
@@ -237,7 +244,13 @@ class WhatsNew(object):
                     else:
                         feed_entry.hide()
                 elif self.showOnlyMeWhatsNew.checkState() == 0:
-                    feed_entry.show()
+                    if self.whatsNewFilterByMemberComboBox.currentText() != "None":
+                        if created_by in checkbox_states:
+                            feed_entry.show()
+                        else:
+                            feed_entry.hide()
+                    else:
+                        feed_entry.show()
             # Current feed entry type is unchecked, hide entry even if user is concerned.
             else:
                 feed_entry.hide()

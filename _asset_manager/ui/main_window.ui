@@ -4151,6 +4151,9 @@
                 <item>
                  <widget class="QComboBox" name="whatsNewFilterByMemberComboBox">
                   <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="editable">
                    <bool>false</bool>
                   </property>
                   <item>
@@ -4160,77 +4163,72 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Chloé</string>
+                    <string>costiguy</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Christopher</string>
+                    <string>cgonnord</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Edwin</string>
+                    <string>erodrigue</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Étienne</string>
+                    <string>jberger</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Jeremy</string>
+                    <string>lgregoire</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Laurence</string>
+                    <string>lclavet</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Louis-Philippe</string>
+                    <string>mbeaudoin</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Mathieu</string>
+                    <string>mroz</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Maxime</string>
+                    <string>obolduc</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Olivier</string>
+                    <string>slachapelle</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Simon</string>
+                    <string>thoudon</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Thibault</string>
+                    <string>vdelbroucq</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Valentin</string>
+                    <string>yjobin</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Yann</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Yi</string>
+                    <string>yshan</string>
                    </property>
                   </item>
                  </widget>

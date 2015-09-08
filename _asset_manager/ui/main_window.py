@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 08 09:24:04 2015
+# Created: Tue Sep 08 09:37:19 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1593,9 +1593,9 @@ class Ui_Form(object):
         self.showAllNewsCheckBox.setObjectName(_fromUtf8("showAllNewsCheckBox"))
         self.horizontalLayout_20.addWidget(self.showAllNewsCheckBox)
         self.whatsNewFilterByMemberComboBox = QtGui.QComboBox(self.whatsNewFilterFrame)
-        self.whatsNewFilterByMemberComboBox.setEnabled(False)
+        self.whatsNewFilterByMemberComboBox.setEnabled(True)
+        self.whatsNewFilterByMemberComboBox.setEditable(False)
         self.whatsNewFilterByMemberComboBox.setObjectName(_fromUtf8("whatsNewFilterByMemberComboBox"))
-        self.whatsNewFilterByMemberComboBox.addItem(_fromUtf8(""))
         self.whatsNewFilterByMemberComboBox.addItem(_fromUtf8(""))
         self.whatsNewFilterByMemberComboBox.addItem(_fromUtf8(""))
         self.whatsNewFilterByMemberComboBox.addItem(_fromUtf8(""))
@@ -2096,21 +2096,20 @@ class Ui_Form(object):
         self.showOnlyMeWhatsNew.setText(_translate("Form", "Show only news concerning me", None))
         self.showAllNewsCheckBox.setText(_translate("Form", "Show All News", None))
         self.whatsNewFilterByMemberComboBox.setItemText(0, _translate("Form", "None", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(1, _translate("Form", "Chloé", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(2, _translate("Form", "Christopher", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(3, _translate("Form", "Edwin", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(4, _translate("Form", "Étienne", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(5, _translate("Form", "Jeremy", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(6, _translate("Form", "Laurence", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(7, _translate("Form", "Louis-Philippe", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(8, _translate("Form", "Mathieu", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(9, _translate("Form", "Maxime", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(10, _translate("Form", "Olivier", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(11, _translate("Form", "Simon", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(12, _translate("Form", "Thibault", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(13, _translate("Form", "Valentin", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(14, _translate("Form", "Yann", None))
-        self.whatsNewFilterByMemberComboBox.setItemText(15, _translate("Form", "Yi", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(1, _translate("Form", "costiguy", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(2, _translate("Form", "cgonnord", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(3, _translate("Form", "erodrigue", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(4, _translate("Form", "jberger", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(5, _translate("Form", "lgregoire", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(6, _translate("Form", "lclavet", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(7, _translate("Form", "mbeaudoin", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(8, _translate("Form", "mroz", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(9, _translate("Form", "obolduc", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(10, _translate("Form", "slachapelle", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(11, _translate("Form", "thoudon", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(12, _translate("Form", "vdelbroucq", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(13, _translate("Form", "yjobin", None))
+        self.whatsNewFilterByMemberComboBox.setItemText(14, _translate("Form", "yshan", None))
         self.showNewPublishesCheckBox.setText(_translate("Form", "Show Publishes", None))
         self.showNewAssetsCheckBox.setText(_translate("Form", "Show New Assets", None))
         self.showNewTasksCheckBox.setText(_translate("Form", "Show New Tasks", None))
