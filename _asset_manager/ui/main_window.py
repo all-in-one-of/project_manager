@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 08 08:40:34 2015
+# Created: Tue Sep 08 09:15:00 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -568,7 +568,7 @@ class Ui_Form(object):
         self.tmTableWidget.setShowGrid(False)
         self.tmTableWidget.setGridStyle(QtCore.Qt.SolidLine)
         self.tmTableWidget.setObjectName(_fromUtf8("tmTableWidget"))
-        self.tmTableWidget.setColumnCount(12)
+        self.tmTableWidget.setColumnCount(13)
         self.tmTableWidget.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.tmTableWidget.setHorizontalHeaderItem(0, item)
@@ -594,6 +594,8 @@ class Ui_Form(object):
         self.tmTableWidget.setHorizontalHeaderItem(10, item)
         item = QtGui.QTableWidgetItem()
         self.tmTableWidget.setHorizontalHeaderItem(11, item)
+        item = QtGui.QTableWidgetItem()
+        self.tmTableWidget.setHorizontalHeaderItem(12, item)
         self.tmTableWidget.horizontalHeader().setDefaultSectionSize(100)
         self.tmTableWidget.horizontalHeader().setMinimumSectionSize(10)
         self.tmTableWidget.horizontalHeader().setStretchLastSection(False)
@@ -1970,6 +1972,8 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Asset", None))
         item = self.tmTableWidget.horizontalHeaderItem(11)
         item.setText(_translate("Form", "Confirm", None))
+        item = self.tmTableWidget.horizontalHeaderItem(12)
+        item.setText(_translate("Form", "Remind", None))
         self.tmCopyDaysBtn.setText(_translate("Form", "Copy Days", None))
         self.tmCopyBidTimesBtn.setText(_translate("Form", "Copy Bid Times", None))
         self.tmShowBidCurveBtn.setText(_translate("Form", "Show bid curve", None))

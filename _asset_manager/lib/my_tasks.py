@@ -7,10 +7,9 @@ import operator
 class MyTasks(object):
 
     def __init__(self):
-        self.mt_departments = {"Script": 0, "Storyboard": 1, "References": 2, "Concepts": 3, "Modeling": 4, "Texturing": 5,
-                            "Rigging": 6, "Animation": 7, "Simulation": 8, "Shading": 9, "Layout": 10,
-                            "DMP": 11, "Compositing": 12, "Editing": 13, "RnD": 14}
-
+        self.mt_departments = {"Misc": 0, "Script": 1, "Storyboard": 2, "References": 3, "Concepts": 4, "Modeling": 5, "Texturing": 6,
+                            "Rigging": 7, "Animation": 8, "Simulation": 9, "Shading": 10, "Camera": 11, "Lighting": 12, "Layout": 13,
+                            "DMP": 14, "Compositing": 15, "Editing": 16, "RnD": 17}
 
         self.mt_status = {"Ready to Start": 0, "In Progress": 1, "On Hold": 2, "Waiting for Approval": 3, "Retake": 4}
 

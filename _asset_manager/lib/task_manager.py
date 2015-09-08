@@ -16,8 +16,8 @@ class TaskManager(object):
     def __init__(self):
 
         self.tm_departments = {"Misc": 0, "Script": 1, "Storyboard": 2, "References": 3, "Concepts": 4, "Modeling": 5, "Texturing": 6,
-                            "Rigging": 7, "Animation": 8, "Simulation": 9, "Shading": 10, "Camera": 11, "Lighting": 12, "Layout": 13,
-                            "DMP": 11, "Compositing": 12, "Editing": 13, "RnD": 14}
+                               "Rigging": 7, "Animation": 8, "Simulation": 9, "Shading": 10, "Camera": 11, "Lighting": 12, "Layout": 13,
+                               "DMP": 14, "Compositing": 15, "Editing": 16, "RnD": 17}
 
         self.tm_departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
                                          "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
@@ -143,7 +143,6 @@ class TaskManager(object):
             self.tmTableWidget.setItem(0, 1, task_description_item)
             self.widgets[str(inversed_index) + ":1"] = task_description_item
 
-
             # Adding department combo boxes
             combo_box = QtGui.QComboBox()
             combo_box.addItems(["Misc", "Script", "Storyboard", "References", "Concepts", "Modeling", "Texturing",
@@ -183,7 +182,6 @@ class TaskManager(object):
             self.set_calendar(date_end_edit)
             self.tmTableWidget.setCellWidget(0, 5, date_end_edit)
             self.widgets[str(inversed_index) + ":5"] = date_end_edit
-
 
             # Adding days left
             date_start = QtCore.QDate.currentDate()
@@ -246,6 +244,12 @@ class TaskManager(object):
             confirm_button.clicked.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 11, confirm_button)
             self.widgets[str(inversed_index) + ":11"] = confirm_button
+
+            # Add remind task button
+            remind_button = QtGui.QPushButton("Remind")
+            remind_button.clicked.connect(self.update_tasks)
+            self.tmTableWidget.setCellWidget(0, 12, remind_button)
+            self.widgets[str(inversed_index) + ":12"] = remind_button
 
             # If hide done checkbox is checked and current task is done, hide it
             if self.tmHideDoneCheckBox.isChecked():
@@ -318,8 +322,8 @@ class TaskManager(object):
         task = self.Task(self, task_id)
         task.get_infos_from_id()
 
-        # If clicked widget is a pushbutton, then confirm/unconfirm task
-        if type(clicked_widget) == QtGui.QPushButton:
+        # If clicked widget is column 11, then confirm/unconfirm task
+        if widget_row_column == 11:
             if task.confirmation == "0":
                 clicked_widget.setText("UnConfirm")
                 task_id_widget.setBackground(QtGui.QColor(152, 205, 0))
@@ -351,6 +355,17 @@ class TaskManager(object):
 
 
             return
+
+        elif widget_row_column == 12:
+            email = self.cursor.execute('''SELECT email FROM preferences WHERE username=?''', (task.assignation,)).fetchone()[0]
+
+            subject = QtCore.QString("Task Reminder")
+            subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8')
+
+            message = QtCore.QString(u"This is a reminder to let you know that you have a pending {0} task: {1} (You have {2} days left to complete it)".format(task.department, task.description, task_time_left_widget.text()))
+            message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
+
+            self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=[email], subject=subject, message=message, username=self.members[self.username])
 
         if task_description != task.description: task.change_description(task_description)
         if task_department != task.department: task.change_department(task_department)

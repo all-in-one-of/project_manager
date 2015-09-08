@@ -1585,6 +1585,11 @@
                     <string>Confirm</string>
                    </property>
                   </column>
+                  <column>
+                   <property name="text">
+                    <string>Remind</string>
+                   </property>
+                  </column>
                  </widget>
                 </item>
                </layout>
