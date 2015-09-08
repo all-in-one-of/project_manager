@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Sep 06 19:43:05 2015
+# Created: Tue Sep 08 08:40:34 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -601,9 +601,24 @@ class Ui_Form(object):
         self.tmTableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_27.addWidget(self.tmTableWidget)
         self.verticalLayout_11.addWidget(self.tmMainFrame)
-        self.tmShowBidCurveBtn = QtGui.QPushButton(self.tmTab)
+        self.frame_4 = QtGui.QFrame(self.tmTab)
+        self.frame_4.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame_4.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_4.setObjectName(_fromUtf8("frame_4"))
+        self.horizontalLayout_4 = QtGui.QHBoxLayout(self.frame_4)
+        self.horizontalLayout_4.setSpacing(3)
+        self.horizontalLayout_4.setMargin(0)
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
+        self.tmCopyDaysBtn = QtGui.QPushButton(self.frame_4)
+        self.tmCopyDaysBtn.setObjectName(_fromUtf8("tmCopyDaysBtn"))
+        self.horizontalLayout_4.addWidget(self.tmCopyDaysBtn)
+        self.tmCopyBidTimesBtn = QtGui.QPushButton(self.frame_4)
+        self.tmCopyBidTimesBtn.setObjectName(_fromUtf8("tmCopyBidTimesBtn"))
+        self.horizontalLayout_4.addWidget(self.tmCopyBidTimesBtn)
+        self.tmShowBidCurveBtn = QtGui.QPushButton(self.frame_4)
         self.tmShowBidCurveBtn.setObjectName(_fromUtf8("tmShowBidCurveBtn"))
-        self.verticalLayout_11.addWidget(self.tmShowBidCurveBtn)
+        self.horizontalLayout_4.addWidget(self.tmShowBidCurveBtn)
+        self.verticalLayout_11.addWidget(self.frame_4)
         self.Tabs.addTab(self.tmTab, _fromUtf8(""))
         self.myTasksTab = QtGui.QWidget()
         self.myTasksTab.setObjectName(_fromUtf8("myTasksTab"))
@@ -1806,8 +1821,7 @@ class Ui_Form(object):
         Form.setTabOrder(self.tmAddTaskBtn, self.tmRemoveTaskBtn)
         Form.setTabOrder(self.tmRemoveTaskBtn, self.tmCompleteTaskBtn)
         Form.setTabOrder(self.tmCompleteTaskBtn, self.tmTableWidget)
-        Form.setTabOrder(self.tmTableWidget, self.tmShowBidCurveBtn)
-        Form.setTabOrder(self.tmShowBidCurveBtn, self.mtFilterBySequenceComboBox)
+        Form.setTabOrder(self.tmTableWidget, self.mtFilterBySequenceComboBox)
         Form.setTabOrder(self.mtFilterBySequenceComboBox, self.mtFilterByShotComboBox)
         Form.setTabOrder(self.mtFilterByShotComboBox, self.mtFilterByDeptComboBox)
         Form.setTabOrder(self.mtFilterByDeptComboBox, self.mtFilterByStatusComboBox)
@@ -1956,6 +1970,8 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Asset", None))
         item = self.tmTableWidget.horizontalHeaderItem(11)
         item.setText(_translate("Form", "Confirm", None))
+        self.tmCopyDaysBtn.setText(_translate("Form", "Copy Days", None))
+        self.tmCopyBidTimesBtn.setText(_translate("Form", "Copy Bid Times", None))
         self.tmShowBidCurveBtn.setText(_translate("Form", "Show bid curve", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tmTab), _translate("Form", "Task Manager", None))
         self.mtFilterByGroupBox.setTitle(_translate("Form", "Filter by", None))

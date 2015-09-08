@@ -1591,10 +1591,42 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="tmShowBidCurveBtn">
-               <property name="text">
-                <string>Show bid curve</string>
+              <widget class="QFrame" name="frame_4">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
                </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <property name="spacing">
+                 <number>3</number>
+                </property>
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="tmCopyDaysBtn">
+                  <property name="text">
+                   <string>Copy Days</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="tmCopyBidTimesBtn">
+                  <property name="text">
+                   <string>Copy Bid Times</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="tmShowBidCurveBtn">
+                  <property name="text">
+                   <string>Show bid curve</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -4695,7 +4727,6 @@
   <tabstop>tmRemoveTaskBtn</tabstop>
   <tabstop>tmCompleteTaskBtn</tabstop>
   <tabstop>tmTableWidget</tabstop>
-  <tabstop>tmShowBidCurveBtn</tabstop>
   <tabstop>mtFilterBySequenceComboBox</tabstop>
   <tabstop>mtFilterByShotComboBox</tabstop>
   <tabstop>mtFilterByDeptComboBox</tabstop>

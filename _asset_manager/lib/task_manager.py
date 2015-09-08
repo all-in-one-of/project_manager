@@ -6,6 +6,7 @@ import operator
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
+import pyperclip as clipboard
 
 
 from random import randint
@@ -71,6 +72,9 @@ class TaskManager(object):
         self.tmFilterByStatusComboBox.addItems(self.status.keys())
         self.tmFilterByMemberComboBox.addItem("None")
         self.tmFilterByMemberComboBox.addItems(sorted(self.members.values()))
+
+        self.tmCopyDaysBtn.clicked.connect(self.copy_days)
+        self.tmCopyBidTimesBtn.clicked.connect(self.copy_bid_times)
 
         self.tm_load_sequences()
 
@@ -602,3 +606,24 @@ class TaskManager(object):
         plt.gcf().autofmt_xdate()
         plt.show()
 
+    def copy_days(self):
+        d1 = datetime.datetime(2015,07,11)
+        d2 = datetime.datetime.now()
+        total_days = (d2-d1).days
+
+        bid_log_days = self.cursor.execute('''SELECT bid_log_day FROM bid_log WHERE project_name=? LIMIT ?''', (self.selected_project_name, total_days,)).fetchall()
+        bid_log_days = [i[0] for i in bid_log_days]
+        bid_log_days = "\n".join(bid_log_days)
+
+        clipboard.copy(bid_log_days)
+
+    def copy_bid_times(self):
+        d1 = datetime.datetime(2015, 07, 11)
+        d2 = datetime.datetime.now()
+        total_days = (d2 - d1).days
+
+        bid_log_amounts = self.cursor.execute('''SELECT bid_log_amount FROM bid_log WHERE project_name=? LIMIT ?''', (self.selected_project_name, total_days,)).fetchall()
+        bid_log_amounts = [i[0] for i in bid_log_amounts]
+        bid_log_amounts = "\n".join(bid_log_amounts)
+
+        clipboard.copy(bid_log_amounts)
