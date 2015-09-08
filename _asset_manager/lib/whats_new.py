@@ -294,7 +294,7 @@ class WhatsNew(object):
                 return
 
             for asset, asset_item in self.assets.items():
-                asset_item.setHidden(False)
+
                 if asset_id == asset.id:
                     asset_item.setHidden(False)
                 else:

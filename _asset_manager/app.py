@@ -273,10 +273,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
-        self.check_news_thread = CheckNews(self)
-        self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
+        # self.check_news_thread = CheckNews(self)
+        # self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
+        # self.check_news_thread.daemon = True
+        # self.check_news_thread.start()
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
