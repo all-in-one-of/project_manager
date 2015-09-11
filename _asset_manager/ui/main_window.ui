@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>7</number>
+            <number>2</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -291,27 +291,7 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Modeling</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Texturing</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Rigging</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
                     <string>Animation</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Layout</string>
                    </property>
                   </item>
                   <item>
@@ -321,17 +301,7 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Shading</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Lighting</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Simulation</string>
+                    <string>Compositing</string>
                    </property>
                   </item>
                   <item>
@@ -341,7 +311,37 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Compositing</string>
+                    <string>Layout</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Lighting</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Modeling</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Rigging</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Shading</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Simulation</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Texturing</string>
                    </property>
                   </item>
                  </widget>

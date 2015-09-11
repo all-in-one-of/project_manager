@@ -828,6 +828,9 @@ class AssetLoader(object):
             media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.advanced_media])
 
     def versionList_Clicked(self):
+
+        self.statusLbl.setText("Status: Idle...")
+
         # If user press arrow key in a tab other than Asset Loader, don't do anything
         current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
         if current_tab_text != "Asset Loader":
@@ -889,7 +892,6 @@ class AssetLoader(object):
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
 
-
         elif self.selected_asset.type == "rig":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
@@ -898,9 +900,7 @@ class AssetLoader(object):
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
             self.publishBtn.show()
-            if self.username in ["thoudon", "lclavet"]:
-                self.createAssetFromAssetBtn.show()
-                self.createAssetFromAssetBtn.setText("Create Animation from Rig")
+            self.createAssetFromAssetBtn.hide()
 
         elif self.selected_asset.type == "anm":
             self.renderLine.hide()
@@ -1323,8 +1323,8 @@ class AssetLoader(object):
             self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
             self.db.commit()
 
-            # Update last publish time
-            self.selected_asset.change_last_publish()
+        # Update last publish time
+        self.selected_asset.change_last_publish()
 
         if self.selected_asset.type == "mod":
             self.publish_process = QtCore.QProcess(self)
@@ -1356,13 +1356,9 @@ class AssetLoader(object):
             start_frame = framerange[0]
             end_frame = framerange[1]
 
-            associated_righ_path = self.cursor.execute('''SELECT asset_path FROM assets WHERE asset_name=? AND asset_extension="ma" AND asset_type="rig" AND asset_version="out"''', (self.selected_asset.name,)).fetchone()[0]
-            associated_rig_filename = associated_righ_path.split("\\")[-1].replace(".ma", "")
-            rig_name_to_export = "|{0}:{1}_rig".format(associated_rig_filename, self.selected_asset.name)
-
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
-            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame), rig_name_to_export])
+            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_anm_as_alembic.py", self.selected_asset.full_path.replace("\\", "/"), self.selected_asset.anim_out_path.replace("\\", "/"), str(start_frame), str(end_frame)])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.anim_out_path.replace(self.selected_project_path, ""),))
             self.db.commit()

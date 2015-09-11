@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 08 14:16:39 2015
+# Created: Thu Sep 10 15:35:38 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1784,7 +1784,7 @@ class Ui_Form(object):
         self.gridLayout_6.addWidget(self.assetManagerFrame, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.Tabs.setCurrentIndex(7)
+        self.Tabs.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(Form)
         
         return Form
@@ -1890,17 +1890,17 @@ class Ui_Form(object):
         self.addShotBtn.setText(_translate("Form", "+", None))
         self.label_4.setText(_translate("Form", "Department:", None))
         self.departmentList.setItemText(0, _translate("Form", "All", None))
-        self.departmentList.setItemText(1, _translate("Form", "Modeling", None))
-        self.departmentList.setItemText(2, _translate("Form", "Texturing", None))
-        self.departmentList.setItemText(3, _translate("Form", "Rigging", None))
-        self.departmentList.setItemText(4, _translate("Form", "Animation", None))
+        self.departmentList.setItemText(1, _translate("Form", "Animation", None))
+        self.departmentList.setItemText(2, _translate("Form", "Camera", None))
+        self.departmentList.setItemText(3, _translate("Form", "Compositing", None))
+        self.departmentList.setItemText(4, _translate("Form", "DMP", None))
         self.departmentList.setItemText(5, _translate("Form", "Layout", None))
-        self.departmentList.setItemText(6, _translate("Form", "Camera", None))
-        self.departmentList.setItemText(7, _translate("Form", "Shading", None))
-        self.departmentList.setItemText(8, _translate("Form", "Lighting", None))
-        self.departmentList.setItemText(9, _translate("Form", "Simulation", None))
-        self.departmentList.setItemText(10, _translate("Form", "DMP", None))
-        self.departmentList.setItemText(11, _translate("Form", "Compositing", None))
+        self.departmentList.setItemText(6, _translate("Form", "Lighting", None))
+        self.departmentList.setItemText(7, _translate("Form", "Modeling", None))
+        self.departmentList.setItemText(8, _translate("Form", "Rigging", None))
+        self.departmentList.setItemText(9, _translate("Form", "Shading", None))
+        self.departmentList.setItemText(10, _translate("Form", "Simulation", None))
+        self.departmentList.setItemText(11, _translate("Form", "Texturing", None))
         self.createAssetFromScratchBtn.setText(_translate("Form", "Create Asset from Scratch", None))
         self.assetList.setSortingEnabled(True)
         self.versionList.setSortingEnabled(True)

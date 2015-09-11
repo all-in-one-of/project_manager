@@ -110,12 +110,12 @@ class PeopleTab(object):
 
                 gradient = QtGui.QLinearGradient(p1, p2)
                 gradient.setColorAt(0, QtCore.Qt.transparent)
-                gradient.setColorAt(1, QtGui.QColor(0, 0, 0, 180))
+                gradient.setColorAt(1, QtGui.QColor(0, 0, 0, 225))
 
                 painter = QtGui.QPainter(image)
                 painter.fillRect(0, 0, image.width(), image.height(), gradient)
 
-                gradient.setColorAt(0, QtGui.QColor(0, 0, 0, 180))
+                gradient.setColorAt(0, QtGui.QColor(0, 0, 0, 225))
                 gradient.setColorAt(1, QtCore.Qt.transparent)
                 painter.fillRect(0, 0, image.width(), image.height(), gradient)
 
