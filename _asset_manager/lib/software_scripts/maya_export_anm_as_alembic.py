@@ -7,8 +7,8 @@ import maya.mel as mel
 
 file_path = sys.argv[1]
 export_path = sys.argv[2]
-frame_start = int(sys.argv[3])
-frame_end = int(sys.argv[4])
+frame_start = str(sys.argv[3])
+frame_end = str(sys.argv[4])
 
 mc.loadPlugin("AbcExport")
 mc.file(file_path, o=True)
@@ -23,5 +23,5 @@ for object in all_objects:
 objects_to_export = ["-root " + i for i in objects_to_export]
 objects_to_export = " ".join(objects_to_export)
 
-abc_export_string = '-frameRange 1001 1010 -noNormals -uvWrite ' + objects_to_export + ' -file C:/temp/test.abc'
+abc_export_string = '-frameRange ' + frame_start + ' ' + frame_end + ' -noNormals -uvWrite ' + objects_to_export + ' -file ' + export_path
 mc.AbcExport(j=abc_export_string)

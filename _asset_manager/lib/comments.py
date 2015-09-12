@@ -176,7 +176,7 @@ class CommentWidget(object):
 
     def add_comment_log_entry(self, asset, type):
         # Add Log Entry
-        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "comment", "{0} added a new comment on {1} {2}.".format(self.members[self.username], type, asset.name), datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry = self.LogEntry(self, 0, asset.id, [], [], self.username, "", "comment", "{0} added a new comment on {1} {2}.".format(self.members[self.username], type, asset.id), datetime.now().strftime("%d/%m/%Y at %H:%M"))
         log_entry.add_log_to_database()
 
     def delete_comment(self, comment_author, comment_text, comment_time):
