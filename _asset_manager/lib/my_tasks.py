@@ -19,6 +19,8 @@ class MyTasks(object):
                            "mroz": 7, "obolduc": 8, "slachapelle": 9, "thoudon": 10,
                            "vdelbroucq": 11, "yjobin": 12, "yshan": 13}
 
+        self.mt_task_priority_dic = {"High": 0, "Default": 1, "Low": 2}
+
         self.mt_item_added = False
         self.mtTableWidget.setStyleSheet("color: black;")
 
@@ -82,6 +84,8 @@ class MyTasks(object):
             end = task[9]
             bid = task[10]
             confirmation = task[11]
+            priority = task[12]
+
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -94,9 +98,10 @@ class MyTasks(object):
             if end == None: end = ""
             if bid == None: bid = ""
             if confirmation == None: confirmation = ""
+            if priority == None: priority = ""
 
             task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department,
-                             status, assignation, end, bid, confirmation)
+                             status, assignation, end, bid, confirmation, priority)
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
@@ -199,6 +204,16 @@ class MyTasks(object):
             asset_item.setText(str(task.asset_id))
             self.mtTableWidget.setItem(0, 10, asset_item)
             self.mt_widgets[str(inversed_index) + ":10"] = asset_item
+
+            # Adding task priority
+            priority_combobox = QtGui.QComboBox()
+            priority_combobox.addItems(["High", "Default", "Low"])
+            priority_combobox.setCurrentIndex(self.mt_task_priority_dic[task.priority])
+            priority_combobox.currentIndexChanged.connect(self.mt_update_tasks)
+            priority_combobox.setEnabled(False)
+            self.change_cell_status_color(priority_combobox, task.priority)
+            self.mtTableWidget.setCellWidget(0, 11, priority_combobox)
+            self.mt_widgets[str(inversed_index) + ":11"] = priority_combobox
 
             # If hide done checkbox is checked and current task is done, hide it
             if self.mtHideDoneCheckBox.isChecked():

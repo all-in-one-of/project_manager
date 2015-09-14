@@ -1484,6 +1484,13 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QPushButton" name="tmShowBidPerUserBtn">
+                     <property name="text">
+                      <string>Show Bid per user</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <spacer name="horizontalSpacer">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
@@ -1588,6 +1595,11 @@
                   <column>
                    <property name="text">
                     <string>Remind</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>Priority</string>
                    </property>
                   </column>
                  </widget>
@@ -2131,6 +2143,11 @@
                <column>
                 <property name="text">
                  <string>Asset</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Priority</string>
                 </property>
                </column>
               </widget>

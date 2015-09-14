@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Thu Sep 10 15:35:38 2015
+# Created: Sun Sep 13 19:23:13 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -561,6 +561,9 @@ class Ui_Form(object):
         self.tmCompleteTaskBtn = QtGui.QPushButton(self.tmTaskManagementFrame)
         self.tmCompleteTaskBtn.setObjectName(_fromUtf8("tmCompleteTaskBtn"))
         self.horizontalLayout_32.addWidget(self.tmCompleteTaskBtn)
+        self.tmShowBidPerUserBtn = QtGui.QPushButton(self.tmTaskManagementFrame)
+        self.tmShowBidPerUserBtn.setObjectName(_fromUtf8("tmShowBidPerUserBtn"))
+        self.horizontalLayout_32.addWidget(self.tmShowBidPerUserBtn)
         spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_32.addItem(spacerItem6)
         self.verticalLayout_27.addWidget(self.tmTaskManagementFrame)
@@ -568,7 +571,7 @@ class Ui_Form(object):
         self.tmTableWidget.setShowGrid(False)
         self.tmTableWidget.setGridStyle(QtCore.Qt.SolidLine)
         self.tmTableWidget.setObjectName(_fromUtf8("tmTableWidget"))
-        self.tmTableWidget.setColumnCount(13)
+        self.tmTableWidget.setColumnCount(14)
         self.tmTableWidget.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.tmTableWidget.setHorizontalHeaderItem(0, item)
@@ -596,6 +599,8 @@ class Ui_Form(object):
         self.tmTableWidget.setHorizontalHeaderItem(11, item)
         item = QtGui.QTableWidgetItem()
         self.tmTableWidget.setHorizontalHeaderItem(12, item)
+        item = QtGui.QTableWidgetItem()
+        self.tmTableWidget.setHorizontalHeaderItem(13, item)
         self.tmTableWidget.horizontalHeader().setDefaultSectionSize(100)
         self.tmTableWidget.horizontalHeader().setMinimumSectionSize(10)
         self.tmTableWidget.horizontalHeader().setStretchLastSection(False)
@@ -790,7 +795,7 @@ class Ui_Form(object):
         self.mtTableWidget.setShowGrid(False)
         self.mtTableWidget.setGridStyle(QtCore.Qt.SolidLine)
         self.mtTableWidget.setObjectName(_fromUtf8("mtTableWidget"))
-        self.mtTableWidget.setColumnCount(11)
+        self.mtTableWidget.setColumnCount(12)
         self.mtTableWidget.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.mtTableWidget.setHorizontalHeaderItem(0, item)
@@ -814,6 +819,8 @@ class Ui_Form(object):
         self.mtTableWidget.setHorizontalHeaderItem(9, item)
         item = QtGui.QTableWidgetItem()
         self.mtTableWidget.setHorizontalHeaderItem(10, item)
+        item = QtGui.QTableWidgetItem()
+        self.mtTableWidget.setHorizontalHeaderItem(11, item)
         self.mtTableWidget.horizontalHeader().setDefaultSectionSize(100)
         self.mtTableWidget.horizontalHeader().setStretchLastSection(True)
         self.mtTableWidget.verticalHeader().setVisible(False)
@@ -1933,6 +1940,7 @@ class Ui_Form(object):
         self.tmAddTaskBtn.setText(_translate("Form", "Add Task(s)", None))
         self.tmRemoveTaskBtn.setText(_translate("Form", "Remove Task(s)", None))
         self.tmCompleteTaskBtn.setText(_translate("Form", "Complete Task(s)", None))
+        self.tmShowBidPerUserBtn.setText(_translate("Form", "Show Bid per user", None))
         self.tmTableWidget.setSortingEnabled(False)
         item = self.tmTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Form", "ID", None))
@@ -1960,6 +1968,8 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Confirm", None))
         item = self.tmTableWidget.horizontalHeaderItem(12)
         item.setText(_translate("Form", "Remind", None))
+        item = self.tmTableWidget.horizontalHeaderItem(13)
+        item.setText(_translate("Form", "Priority", None))
         self.tmCopyDaysBtn.setText(_translate("Form", "Copy Days", None))
         self.tmCopyBidTimesBtn.setText(_translate("Form", "Copy Bid Times", None))
         self.tmShowBidCurveBtn.setText(_translate("Form", "Show bid curve", None))
@@ -2001,6 +2011,8 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Shot", None))
         item = self.mtTableWidget.horizontalHeaderItem(10)
         item.setText(_translate("Form", "Asset", None))
+        item = self.mtTableWidget.horizontalHeaderItem(11)
+        item.setText(_translate("Form", "Priority", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.myTasksTab), _translate("Form", "Tasks", None))
         self.sequencesReferenceLbl.setText(_translate("Form", "Sequences", None))
         self.seqReferenceList.setSortingEnabled(False)

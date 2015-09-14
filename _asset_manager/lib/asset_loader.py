@@ -2312,12 +2312,6 @@ class AssetLoader(object):
             self.houdini_hda_process.waitForFinished()
             self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda_for_houdini.py", asset.name, asset.obj_path, asset.full_path])
 
-            # Create HDA associated to modeling scene
-            self.houdini_hda_process = QtCore.QProcess(self)
-            self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, main_hda_asset))
-            self.houdini_hda_process.waitForFinished()
-            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
-
         else:
             # Create modeling scene asset
             asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", extension, "mod", "01", [], "", "", "", self.username)
@@ -2353,11 +2347,18 @@ class AssetLoader(object):
             shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
             shading_hda_asset.add_asset_to_db()
 
-            # Create HDA associated to modeling scene
-            self.houdini_hda_process = QtCore.QProcess(self)
-            self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
-            self.houdini_hda_process.waitForFinished()
-            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name])
+        # Create HDA associated to modeling scene
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.readyRead.connect(self.fafa)
+        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
+
+    def fafa(self):
+        while self.houdini_hda_process.canReadLine():
+            print(self.houdini_hda_process.readLine())
+
+
 
     def create_lay_asset_from_scratch(self, asset_name):
 

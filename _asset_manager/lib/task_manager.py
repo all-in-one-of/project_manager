@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
 import pyperclip as clipboard
+from operator import itemgetter
 
 
 from random import randint
@@ -26,6 +27,8 @@ class TaskManager(object):
 
         self.status = {"Ready to Start": 0, "In Progress": 1, "On Hold": 2, "Waiting for Approval": 3, "Retake": 4,
                        "Done": 5}
+
+        self.task_priority_dic = {"High": 0, "Default": 1, "Low": 2}
 
         self.members_id = {"costiguy": 0, "cgonnord": 1, "erodrigue": 2, "jberger": 3, "lgregoire": 4,
                            "lclavet": 5, "mbeaudoin": 6,
@@ -77,6 +80,8 @@ class TaskManager(object):
 
         self.tm_load_sequences()
 
+        self.tmShowBidPerUserBtn.clicked.connect(self.show_bid_per_user)
+
         self.add_tasks_from_database()
 
     def add_tasks_from_database(self):
@@ -108,6 +113,7 @@ class TaskManager(object):
             end = task[9]
             bid = task[10]
             confirmation = task[11]
+            priority = task[12]
             if id == None: id = ""
             if project_name == None: project_name = ""
             if sequence_name == None: sequence_name = ""
@@ -120,8 +126,9 @@ class TaskManager(object):
             if end == None: end = ""
             if bid == None: bid = ""
             if confirmation == None: confirmation = ""
+            if priority == None: priority = ""
 
-            task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, end, bid, confirmation)
+            task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, end, bid, confirmation, priority)
 
             # Adding tasks id
             task_id_item = QtGui.QTableWidgetItem()
@@ -249,6 +256,15 @@ class TaskManager(object):
             remind_button.clicked.connect(self.update_tasks)
             self.tmTableWidget.setCellWidget(0, 12, remind_button)
             self.widgets[str(inversed_index) + ":12"] = remind_button
+
+            # Add priority
+            combo_box = QtGui.QComboBox()
+            combo_box.addItems(["High", "Default", "Low"])
+            combo_box.setCurrentIndex(self.task_priority_dic[task.priority])
+            combo_box.currentIndexChanged.connect(self.update_tasks)
+            self.change_cell_status_color(combo_box, task.priority)
+            self.tmTableWidget.setCellWidget(0, 13, combo_box)
+            self.widgets[str(inversed_index) + ":13"] = combo_box
 
             # If hide done checkbox is checked and current task is done, hide it
             if self.tmHideDoneCheckBox.isChecked():
@@ -398,8 +414,13 @@ class TaskManager(object):
         if task_shot != task.shot: task.change_shot(task_shot)
         if task_asset_id != task.asset_id: task.change_asset_id(task_asset_id)
 
+        task_priority_widget = self.widgets[str(widget_row_index) + ":13"]
+        task_priority = str(task_priority_widget.currentText())
+        if task_priority != task.priority: task.change_priority(task_priority)
+
         self.calculate_days_left(task_end_widget, task_time_left_widget)
         self.change_cell_status_color(task_status_widget, task.status)
+        self.change_cell_status_color(task_priority_widget, task.priority)
 
     def add_task(self, item_added=None, asset_id=0):
 
@@ -560,6 +581,7 @@ class TaskManager(object):
         QDateEdit.dateChanged.connect(self.update_tasks)
 
     def change_cell_status_color(self, cell_item, task_status):
+        task_status = str(task_status)
 
         if task_status == "Ready to Start":
             cell_item.setStyleSheet("background-color: #872d2c;")
@@ -573,6 +595,12 @@ class TaskManager(object):
             cell_item.setStyleSheet("background-color: #872d2c")
         elif task_status == "Done":
             cell_item.setStyleSheet("background-color: #4b4b4b;")
+        elif task_status == "High":
+            cell_item.setStyleSheet("background-color: #d84848;")
+        elif task_status == "Default":
+            cell_item.setStyleSheet("background-color: #e8c14c;")
+        elif task_status == "Low":
+            cell_item.setStyleSheet("background-color: #4296d7;")
 
     def tm_load_sequences(self):
         current_project = str(self.projectList.currentText())
@@ -641,3 +669,34 @@ class TaskManager(object):
         bid_log_amounts = "\n".join(bid_log_amounts)
 
         clipboard.copy(bid_log_amounts)
+
+    def show_bid_per_user(self):
+        dialog = QtGui.QDialog(self)
+        dialog.setWindowTitle("Bid per User")
+        self.Lib.apply_style(self, dialog)
+        dialog.setMinimumWidth(150)
+        layout = QtGui.QGridLayout(dialog)
+
+        total_bids = []
+
+        for i, member in enumerate(self.members_id.keys()):
+            total_user_bid = self.cursor.execute('''SELECT sum(task_bid) FROM tasks WHERE task_assignation=?''', (member,)).fetchone()[0]
+            if total_user_bid == None:
+                total_user_bid = 0
+            total_bids.append((self.members[member], total_user_bid))
+
+        total_bids = sorted(total_bids, key=itemgetter(1), reverse=True)
+
+        for i, item in enumerate(total_bids):
+            user_label = QtGui.QLabel(dialog)
+            user_label.setText(item[0] + ":")
+            total_user_bid_label = QtGui.QLabel(dialog)
+            total_user_bid_label.setText(str(item[1]))
+            layout.addWidget(user_label, i, 0)
+            layout.addWidget(total_user_bid_label, i, 1)
+
+        dialog.exec_()
+
+
+
+

@@ -2,7 +2,7 @@
 # coding=utf-8
 
 class Task(object):
-    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_id="", task_description="", task_department="", task_status="", task_assignation="", task_end="", task_bid="", task_confirmation=0):
+    def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_id="", task_description="", task_department="", task_status="", task_assignation="", task_end="", task_bid="", task_confirmation=0, task_priority="default"):
         self.id = id
         self.main = main
         self.project = project_name
@@ -20,14 +20,15 @@ class Task(object):
         self.end = task_end
         self.bid = task_bid
         self.confirmation = task_confirmation
+        self.priority = task_priority
 
     def print_task(self):
-        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.end, self.bid, self.confirmation)
+        return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.end, self.bid, self.confirmation, self.priority)
 
     def add_task_to_db(self):
         self.main.cursor.execute(
-            '''INSERT INTO tasks(project_name, sequence_name, shot_number, asset_id, task_description, task_department, task_status, task_assignation, task_end, task_bid, task_confirmation) VALUES(?,?,?,?,?,?,?,?,?,?,?)''',
-            (self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.end, self.bid, self.confirmation))
+            '''INSERT INTO tasks(project_name, sequence_name, shot_number, asset_id, task_description, task_department, task_status, task_assignation, task_end, task_bid, task_confirmation, task_priority) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''',
+            (self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.end, self.bid, self.confirmation, self.priority))
         self.id = self.main.cursor.lastrowid
         self.main.db.commit()
 
@@ -101,6 +102,12 @@ class Task(object):
         self.main.db.commit()
         self.confirmation = new_confirmation
 
+    def change_priority(self, new_priority):
+        if self.priority == new_priority: return
+        self.main.cursor.execute('''UPDATE tasks SET task_priority=? WHERE task_id=?''', (new_priority, self.id,))
+        self.main.db.commit()
+        self.priority = new_priority
+
     def add_comment(self, author, comment, time, type):
         self.main.cursor.execute('''INSERT INTO comments(asset_id, comment_author, comment_text, comment_time, comment_type, comment_image) VALUES(?,?,?,?,?,?)''', (self.id, author, comment, time, type, ""))
         self.main.db.commit()
@@ -126,6 +133,7 @@ class Task(object):
         end = task[9]
         bid = task[10]
         confirmation = task[11]
+        priority = task[12]
 
         self.project = project_name
         try:
@@ -142,3 +150,4 @@ class Task(object):
         self.end = end
         self.bid = bid
         self.confirmation = confirmation
+        self.priority = priority
