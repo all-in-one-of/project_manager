@@ -131,15 +131,22 @@ class TaskManager(object):
             task = self.Task(self, id, project_name, sequence_name, shot_number, asset_id, description, department, status, assignation, end, bid, confirmation, priority)
 
             # Adding tasks id
+            number_of_comments = self.cursor.execute('''SELECT asset_id FROM comments WHERE comment_type="task" AND asset_id=?''', (task.id,)).fetchall()
             task_id_item = QtGui.QTableWidgetItem()
             task_id_item.setData(QtCore.Qt.UserRole, task)
             task_id_item.setText(str(task.id))
             task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
             task_id_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
             if task.confirmation == "0":
-                task_id_item.setBackground(QtGui.QColor(135, 45, 44))
+                if len(number_of_comments) > 0:
+                    task_id_item.setBackground(QtGui.QColor(226, 79, 77))
+                else:
+                    task_id_item.setBackground(QtGui.QColor(135, 45, 44))
             else:
-                task_id_item.setBackground(QtGui.QColor(152, 205, 0))
+                if len(number_of_comments) > 0:
+                    task_id_item.setBackground(QtGui.QColor(189, 255, 0))
+                else:
+                    task_id_item.setBackground(QtGui.QColor(152, 205, 0))
             self.tmTableWidget.setItem(0, 0, task_id_item)
             self.widgets[str(inversed_index) + ":0"] = task_id_item
 
@@ -680,7 +687,7 @@ class TaskManager(object):
         total_bids = []
 
         for i, member in enumerate(self.members_id.keys()):
-            total_user_bid = self.cursor.execute('''SELECT sum(task_bid) FROM tasks WHERE task_assignation=?''', (member,)).fetchone()[0]
+            total_user_bid = self.cursor.execute('''SELECT sum(task_bid) FROM tasks WHERE task_assignation=? AND task_status!="Done"''', (member,)).fetchone()[0]
             if total_user_bid == None:
                 total_user_bid = 0
             total_bids.append((self.members[member], total_user_bid))

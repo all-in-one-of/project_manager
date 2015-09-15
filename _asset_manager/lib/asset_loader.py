@@ -118,7 +118,6 @@ class AssetLoader(object):
         self.connect(self.departmentList, QtCore.SIGNAL('department_arrow_key_pressed'), self.departmentList_Clicked)
         self.connect(self.seqList, QtCore.SIGNAL('seq_arrow_key_pressed'), self.seqList_Clicked)
         self.connect(self.shotList, QtCore.SIGNAL('shot_arrow_key_pressed'), self.shotList_Clicked)
-        self.usernameAdminComboBox.currentIndexChanged.connect(self.change_username)
 
         # Connect the buttons
         self.addRemoveAssetAsFavoriteBtn.clicked.connect(self.change_favorite_state)
@@ -1077,6 +1076,7 @@ class AssetLoader(object):
         number_of_days_since_last_publish = day_today - asset_published.last_publish_as_date
         number_of_days_since_last_publish = number_of_days_since_last_publish.days
 
+        self.lastPublishedLbl.setStyleSheet("color: black;")
         if number_of_days_since_last_publish == 0:
             number_of_days_since_last_publish = "today"
         elif number_of_days_since_last_publish > 7:
@@ -1298,6 +1298,8 @@ class AssetLoader(object):
 
     def publish_asset(self):
 
+        self.blockSignals(True)
+
         if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
             # Publish comment GUI
             dialog = QtGui.QDialog(self)
@@ -1397,17 +1399,21 @@ class AssetLoader(object):
         if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
             # Normalize modeling scale
             self.normalize_mod_scale_process = QtCore.QProcess(self)
+            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
             self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
             self.normalize_mod_scale_process.waitForFinished()
             self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
         elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
+            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
             self.update_thumbnail(False)
         elif self.selected_asset.type == "anm":
+            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
             self.update_thumbnail(False)
         else:
+            self.statusLbl.setText("Status: Idle...")
             self.Lib.message_box(self, type="info", text="Successfully published asset!")
 
-        self.statusLbl.setText("Status: Published finished.")
+        self.blockSignals(False)
 
     def update_thumbnail(self, ask_window=True):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:

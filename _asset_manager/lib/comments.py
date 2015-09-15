@@ -100,6 +100,7 @@ class CommentWidget(object):
         edit_frame_layout.setSpacing(0)
         add_img_button = QtGui.QPushButton(edit_frame)
         comment_image = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id,)).fetchone()
+
         if comment_image == None:
             add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon_disabled.png"))
             add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_id))
@@ -109,7 +110,7 @@ class CommentWidget(object):
                 add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_id))
             else:
                 add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon.png"))
-                add_img_button.clicked.connect(partial(self.show_comment_img, comment_id))
+            add_img_button.clicked.connect(partial(self.show_comment_img, comment_id))
         add_img_button.setIconSize(QtCore.QSize(24, 24))
         add_img_button.setMaximumSize(24, 24)
         add_img_button.setToolTip("Use Ctrl to delete or Alt to replace image. Use shift to open image in Windows Explorer")
@@ -146,9 +147,14 @@ class CommentWidget(object):
             comment_frame_layout.addWidget(comment_text_edit)
             if comment_author != "default":
                 comment_frame_layout.addWidget(edit_frame)
+            else:
+                edit_frame.setHidden(True)
+
         elif self.cur_alignment == "right":
             if comment_author != "default":
                 comment_frame_layout.addWidget(edit_frame)
+            else:
+                edit_frame.setHidden(True)
             comment_frame_layout.addWidget(comment_text_edit)
             comment_frame_layout.addWidget(author_picture_lbl)
 

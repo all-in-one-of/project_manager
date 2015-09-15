@@ -274,7 +274,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.load_whats_new(self)
 
         # self.check_news_thread = CheckNews(self)
-        # self.connect(self.check_news_thread, QtCore.SIGNAL("refresh_all"), self.refresh_all)
+        # self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.Lib.check_last_active)
         # self.check_news_thread.daemon = True
         # self.check_news_thread.start()
 
@@ -383,6 +383,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Christopher":
@@ -682,7 +684,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 if __name__ == "__main__":
 
-    log_to_file = True
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()

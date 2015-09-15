@@ -702,10 +702,10 @@ class CheckNews(QtCore.QThread):
     def run(self):
         while True:
             if self.main.isHidden():
-                self.emit(QtCore.SIGNAL("refresh_all"))
-                time.sleep(15)
+                self.emit(QtCore.SIGNAL("check_last_active"))
+                time.sleep(60)
             else:
-                time.sleep(15)
+                time.sleep(60)
 
 if __name__ == "__main__":
     test = Lib()

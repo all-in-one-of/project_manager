@@ -104,11 +104,15 @@ class MyTasks(object):
                              status, assignation, end, bid, confirmation, priority)
 
             # Adding tasks id
+            number_of_comments = self.cursor.execute('''SELECT asset_id FROM comments WHERE comment_type="task" AND asset_id=?''', (task.id,)).fetchall()
             task_id_item = QtGui.QTableWidgetItem()
             task_id_item.setData(QtCore.Qt.UserRole, task)
             task_id_item.setText(str(task.id))
             task_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
             task_id_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            if len(number_of_comments) > 0:
+                task_id_item.setBackground(QtGui.QColor(189, 255, 0))
+
             self.mtTableWidget.setItem(0, 0, task_id_item)
             self.mt_widgets[str(inversed_index) + ":0"] = task_id_item
 

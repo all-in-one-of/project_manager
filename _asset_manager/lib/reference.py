@@ -118,7 +118,7 @@ class ReferenceTab(object):
         progressBar.setMaximum(len(ref_all_references_assets))
 
         self.references = []
-
+        self.blockSignals(True)
         for i, ref in enumerate(ref_all_references_assets):
             id = ref[0]
             project_name = ref[1]
@@ -174,6 +174,7 @@ class ReferenceTab(object):
         dialog.close()
 
         self.load_filter_by_tags_list()
+        self.blockSignals(False)
 
     def ref_filter_references(self):
         '''Filter references by sequence / shot / tags'''

@@ -10,12 +10,14 @@ class PeopleTab(object):
 
     def __init__(self):
 
+        if self.username not in ["thoudon", "lclavet"]:
+            self.sendEmailToEveryoneBtn.hide()
 
         self.email = ""
         self.cell = ""
 
         self.sendEmailBtn.clicked.connect(self.send_email_clicked)
-
+        self.sendEmailToEveryoneBtn.clicked.connect(self.send_email_to_everyone_clicked)
 
         self.profilPicLblList = [
                                  self.profilePicLbl_01,
@@ -192,6 +194,38 @@ class PeopleTab(object):
             addr_list.append(self.members_mail[13])
         if self.rtremblayProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[14])
+
+        self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
+
+    def send_email_to_everyone_clicked(self):
+
+        result = self.Lib.message_box(self, type="warning", yes_button_text="Send", text="You're about to send an E-Mail to everyone, are you sure?")
+
+        if str(result) == str(1024):
+            return
+
+        subject = self.emailObjectLineEdit.text()
+        subject = unicode(self.utf8_codec.fromUnicode(subject), 'utf-8')
+
+        message = self.emailMessageTextEdit.toPlainText()
+        message = unicode(self.utf8_codec.fromUnicode(message), 'utf-8')
+
+        addr_list = []
+        addr_list.append(self.members_mail[0])
+        addr_list.append(self.members_mail[1])
+        addr_list.append(self.members_mail[2])
+        addr_list.append(self.members_mail[3])
+        addr_list.append(self.members_mail[4])
+        addr_list.append(self.members_mail[5])
+        addr_list.append(self.members_mail[6])
+        addr_list.append(self.members_mail[7])
+        addr_list.append(self.members_mail[8])
+        addr_list.append(self.members_mail[9])
+        addr_list.append(self.members_mail[10])
+        addr_list.append(self.members_mail[11])
+        addr_list.append(self.members_mail[12])
+        addr_list.append(self.members_mail[13])
+        addr_list.append(self.members_mail[14])
 
         self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
 

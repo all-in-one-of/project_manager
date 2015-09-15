@@ -3229,6 +3229,13 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_24">
                 <item>
+                 <widget class="QPushButton" name="deleteUnecessaryFoldersBtn">
+                  <property name="text">
+                   <string>Delete Unecessary Folders</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QLabel" name="chooseAThemeLbl">
                   <property name="text">
                    <string>Choose a theme:</string>
@@ -3252,20 +3259,6 @@
                     <string>Plastique</string>
                    </property>
                   </item>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="receiveDailyMailCheckBox">
-                  <property name="text">
-                   <string>Receive daily mail with news</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="receiveMailOnNewTaskCheckBox">
-                  <property name="text">
-                   <string>Receive a mail everytime a new task is assigned to me</string>
-                  </property>
                  </widget>
                 </item>
                 <item>
@@ -3296,86 +3289,6 @@
                 <property name="margin">
                  <number>0</number>
                 </property>
-                <item>
-                 <widget class="QComboBox" name="usernameAdminComboBox">
-                  <property name="editable">
-                   <bool>false</bool>
-                  </property>
-                  <property name="frame">
-                   <bool>true</bool>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>costiguy</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>cgonnord</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>erodrigue</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>jberger</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>lgregoire</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>lclavet</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>mbeaudoin</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>mroz</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>obolduc</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>slachapelle</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>thoudon</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>vdelbroucq</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>yjobin</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>yshan</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
                </layout>
               </widget>
              </item>
@@ -4100,6 +4013,13 @@
                   </layout>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="sendEmailToEveryoneBtn">
+                  <property name="text">
+                   <string>Send E-Mail to everyone</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -4754,9 +4674,6 @@
   <tabstop>addTagBtn</tabstop>
   <tabstop>removeSelectedTagsBtn</tabstop>
   <tabstop>themePrefComboBox</tabstop>
-  <tabstop>receiveDailyMailCheckBox</tabstop>
-  <tabstop>receiveMailOnNewTaskCheckBox</tabstop>
-  <tabstop>usernameAdminComboBox</tabstop>
   <tabstop>rtremblayProfilCheckBox</tabstop>
   <tabstop>erodrigueProfilCheckBox</tabstop>
   <tabstop>cgonnordProfilCheckBox</tabstop>
