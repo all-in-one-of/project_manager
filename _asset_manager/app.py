@@ -390,49 +390,65 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Jeremy":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Laurence":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
         elif self.members[self.username] == "Louis-Philippe":
-            pass
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
         elif self.members[self.username] == "Mathieu":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Maxime":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Olivier":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Simon":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Thibault":
@@ -441,17 +457,22 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         elif self.members[self.username] == "Yann":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
         elif self.members[self.username] == "Yi":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
 
         elif self.members[self.username] == "Valentin":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Preferences"])
 
     def get_tabs_id_from_name(self):
         self.tabs_list = {}
@@ -515,7 +536,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         elif current_tab_text == "People":
             self.statusLbl.setText("Status: Refreshing People tab...")
             self.repaint()
-            self.Lib.check_last_active(self)
             self.PeopleTab.get_online_status(self)
             self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
             self.db.commit()
@@ -647,15 +667,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             if "mari" in tasks.lower():
                 self.Lib.message_box(self, type="error", text="Please save your work and close Mari before closing the Manager!")
                 return
-            elif "maya" in tasks.lower():
-                self.Lib.message_box(self, type="error", text="Please save your work and close Maya before closing the Manager!")
-                return
             elif "houdin" in tasks.lower():
                 self.Lib.message_box(self, type="error", text="Please save your work and close Houdini before closing the Manager!")
                 return
 
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
-        self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
         self.db.commit()
         self.Lib.switch_mari_cache(self, "perso")
         self.save_tags_list()
@@ -701,7 +717,7 @@ class CheckNews(QtCore.QThread):
 
 if __name__ == "__main__":
 
-    log_to_file = False
+    log_to_file = True
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()

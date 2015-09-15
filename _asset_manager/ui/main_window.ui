@@ -3229,6 +3229,13 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_24">
                 <item>
+                 <widget class="QPushButton" name="batchUpdateThumbnailsBtn">
+                  <property name="text">
+                   <string>Batch Update Thumbnails</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="deleteUnecessaryFoldersBtn">
                   <property name="text">
                    <string>Delete Unecessary Folders</string>

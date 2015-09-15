@@ -20,7 +20,6 @@ from ui.add_assets_to_layout import Ui_addAssetsToLayoutWidget
 
 class AssetLoader(object):
     def __init__(self):
-
         self.favorite_icon = QtGui.QIcon(self.cur_path + "/media/favorite.png")
         self.unfavorite_icon = QtGui.QIcon(self.cur_path + "/media/unfavorite.png")
         self.comment_icon = QtGui.QIcon(self.cur_path + "/media/comment.png")
@@ -148,16 +147,15 @@ class AssetLoader(object):
 
         self.createAssetFromAssetBtn.hide()
 
-
         # Create right click menu on asset list
         self.assetList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.assetList.connect(self.assetList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_right_click_menu)
         self.shotList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.shotList.connect(self.shotList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_shot_right_click_menu)
 
+        self.batchUpdateThumbnailsBtn.clicked.connect(self.batch_update_thumbnails)
+
         self.icon_display_type = "user"
-
-
 
     def show_right_click_menu(self, QPos):
         # Create a menu
@@ -2363,14 +2361,9 @@ class AssetLoader(object):
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.readyRead.connect(self.fafa)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
-
-    def fafa(self):
-        while self.houdini_hda_process.canReadLine():
-            print(self.houdini_hda_process.readLine())
 
     def create_lay_asset_from_scratch(self, asset_name):
 
@@ -2438,6 +2431,11 @@ class AssetLoader(object):
         export_path = os.path.split(asset.full_path)[0] + "\\.thumb\\" + asset_filename.replace("_" + asset.version + ".", "_out.").replace("." + asset.extension, ".png")
         export_path = asset.default_thumb
         self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.cur_path + "\\lib\\thumb_creator.py", asset.name, self.cur_path + "\\media\\default_asset_thumb\\" + asset.type + ".png", export_path, self.cur_path + "\\media\\ProximaNova-Regular.otf"])
+
+    def batch_update_thumbnails(self):
+        for asset in self.assets.keys():
+            if asset.type in ["mod", "shd"]:
+                print(asset.name)
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 15 11:38:09 2015
+# Created: Tue Sep 15 15:12:31 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1249,6 +1249,9 @@ class Ui_Form(object):
         self.userPrefFrame.setObjectName(_fromUtf8("userPrefFrame"))
         self.verticalLayout_24 = QtGui.QVBoxLayout(self.userPrefFrame)
         self.verticalLayout_24.setObjectName(_fromUtf8("verticalLayout_24"))
+        self.batchUpdateThumbnailsBtn = QtGui.QPushButton(self.userPrefFrame)
+        self.batchUpdateThumbnailsBtn.setObjectName(_fromUtf8("batchUpdateThumbnailsBtn"))
+        self.verticalLayout_24.addWidget(self.batchUpdateThumbnailsBtn)
         self.deleteUnecessaryFoldersBtn = QtGui.QPushButton(self.userPrefFrame)
         self.deleteUnecessaryFoldersBtn.setObjectName(_fromUtf8("deleteUnecessaryFoldersBtn"))
         self.verticalLayout_24.addWidget(self.deleteUnecessaryFoldersBtn)
@@ -2042,6 +2045,7 @@ class Ui_Form(object):
         self.addTagBtn.setText(_translate("Form", "Add tag", None))
         self.removeSelectedTagsBtn.setText(_translate("Form", "Remove selected tags", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tagsManagerTab), _translate("Form", "Tags Manager", None))
+        self.batchUpdateThumbnailsBtn.setText(_translate("Form", "Batch Update Thumbnails", None))
         self.deleteUnecessaryFoldersBtn.setText(_translate("Form", "Delete Unecessary Folders", None))
         self.chooseAThemeLbl.setText(_translate("Form", "Choose a theme:", None))
         self.themePrefComboBox.setItemText(0, _translate("Form", "Dark (Default)", None))

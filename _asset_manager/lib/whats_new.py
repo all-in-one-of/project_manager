@@ -297,9 +297,6 @@ class WhatsNew(object):
             asset_name = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (asset_id,)).fetchone()[0]
             first_version_id = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_version="01"''', (asset_name,)).fetchone()[0]
 
-
-
-
             for asset, asset_item in self.assets.items():
                 if first_version_id == asset.id:
                     asset_item.setHidden(False)
