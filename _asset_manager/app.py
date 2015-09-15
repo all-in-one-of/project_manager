@@ -53,7 +53,6 @@ from PyQt4 import QtGui, QtCore
 from ui.main_window import Ui_Form
 from lib.reference import ReferenceTab
 from lib.module import Lib
-from lib.module import CheckNews
 from lib.task_manager import TaskManager
 from lib.my_tasks import MyTasks
 from lib.task import Task
@@ -273,10 +272,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
-        # self.check_news_thread = CheckNews(self)
-        # self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.Lib.check_last_active)
-        # self.check_news_thread.daemon = True
-        # self.check_news_thread.start()
+        self.check_news_thread = CheckNews(self)
+        self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
+        self.check_news_thread.daemon = True
+        self.check_news_thread.start()
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -681,6 +680,25 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                 self.trayIcon.show()
                 self.tray_message = "Manager is in background mode."
                 self.trayIcon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
+
+    def check_last_active(self):
+        last_active = datetime.now().strftime("%d/%m/%Y at %H:%M")
+        self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (self.username,))
+        self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (last_active, self.username,))
+        self.db.commit()
+
+
+class CheckNews(QtCore.QThread):
+    def __init__(self, main):
+        QtCore.QThread.__init__(self)
+        self.main = main
+
+    def run(self):
+        while True:
+            print("Checking last active")
+            self.emit(QtCore.SIGNAL("check_last_active"))
+            time.sleep(60)
+
 
 if __name__ == "__main__":
 

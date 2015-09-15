@@ -509,27 +509,6 @@ class Lib(object):
 
         self.message_box(type="info", text="Mail successfully sent!")
 
-    def check_last_active(self):
-        for member in self.members.keys():
-            last_active = self.cursor.execute('''SELECT last_active FROM preferences WHERE username=?''', (member,)).fetchone()
-            self.last_active = last_active[0]
-            now = datetime.now()
-            date = self.last_active.split(" ")[0]
-            time = self.last_active.split(" ")[-1]
-            day = date.split("/")[0]
-            month = date.split("/")[1]
-            year = date.split("/")[2]
-            hour = time.split(":")[0]
-            minutes = time.split(":")[1]
-            self.last_active_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
-
-            last_active_period = relativedelta.relativedelta(now, self.last_active_as_date)
-
-            if last_active_period.days > 0 or last_active_period.hours > 0 or last_active_period.minutes >= 2:
-                self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (member,))
-            else:
-                self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (member,))
-
     def switch_mari_cache(self, cache_location):
         if cache_location == "perso":
             mari_cache_path = self.cursor.execute('''SELECT mari_cache_path FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
@@ -694,18 +673,7 @@ class DesktopWidget(QtGui.QWidget):
         elif task_status == "Done":
             cell_item.setStyleSheet("background-color: #4b4b4b;")
 
-class CheckNews(QtCore.QThread):
-    def __init__(self, main):
-        QtCore.QThread.__init__(self)
-        self.main = main
 
-    def run(self):
-        while True:
-            if self.main.isHidden():
-                self.emit(QtCore.SIGNAL("check_last_active"))
-                time.sleep(60)
-            else:
-                time.sleep(60)
 
 if __name__ == "__main__":
     test = Lib()

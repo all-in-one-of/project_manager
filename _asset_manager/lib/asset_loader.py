@@ -157,6 +157,8 @@ class AssetLoader(object):
 
         self.icon_display_type = "user"
 
+
+
     def show_right_click_menu(self, QPos):
         # Create a menu
         menu = QtGui.QMenu("Menu", self)
@@ -1333,15 +1335,15 @@ class AssetLoader(object):
             self.publish_process.finished.connect(self.publish_process_finished)
 
             if self.selected_asset.extension == "blend":
-                self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path])
+                self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path.replace("\\", "/")])
             elif self.selected_asset.extension == "ma":
-                self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path])
+                self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path.replace("\\", "/")])
             elif self.selected_asset.extension == "scn":
-                self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path])
+                self.publish_process.start(self.softimage_batch_path, ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path", self.selected_asset.obj_path.replace("\\", "/")])
             elif self.selected_asset.extension == "hda":
                 self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_mod_from_mod.py", self.selected_asset.full_path])
 
-            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace(self.selected_project_path, ""),))
+            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.obj_path.replace("\\", "/").replace(self.selected_project_path, ""),))
             self.db.commit()
 
         elif self.selected_asset.type == "rig":
@@ -2364,8 +2366,6 @@ class AssetLoader(object):
         while self.houdini_hda_process.canReadLine():
             print(self.houdini_hda_process.readLine())
 
-
-
     def create_lay_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
@@ -3017,4 +3017,5 @@ class AddRigsToAnimWindow(QtGui.QDialog, Ui_addAssetsToLayoutWidget):
         while self.maya_ref_process.canReadLine():
             out = self.maya_ref_process.readLine()
             print(out)
+
 
