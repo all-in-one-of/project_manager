@@ -695,7 +695,6 @@ class CheckNews(QtCore.QThread):
 
     def run(self):
         while True:
-            print("Checking last active")
             self.emit(QtCore.SIGNAL("check_last_active"))
             time.sleep(60)
 

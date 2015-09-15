@@ -1559,11 +1559,12 @@ class AssetLoader(object):
                 self.Lib.squarify_image(self, image_path=thumbnail_first_frame)
             os.remove("H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "." + str(i).zfill(4) + ".jpg")
 
-        selected_version_item.setIcon(QtGui.QIcon(thumbnail_first_frame))
-        selected_asset_item.setIcon(QtGui.QIcon(thumbnail_first_frame))
-
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
+        self.blockSignals(True)
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+        self.blockSignals(False)
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
     def create_mov_from_flipbook(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
@@ -1583,11 +1584,14 @@ class AssetLoader(object):
                 self.Lib.squarify_image(self, image_path=thumb_first_frame)
             os.remove("H:/tmp/playblast." + str(i).zfill(4) + ".jpg")
 
-        selected_version_item.setIcon(QtGui.QIcon(thumb_first_frame.replace(".jpg", ".png")))
-        selected_asset_item.setIcon(QtGui.QIcon(thumb_first_frame.replace(".jpg", ".png")))
-
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
+
+        self.blockSignals(True)
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+        self.blockSignals(False)
+
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
     def create_mov_from_turn(self, asset, selected_version_item, selected_asset_item):
@@ -1613,8 +1617,10 @@ class AssetLoader(object):
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
 
-        selected_version_item.setIcon(QtGui.QIcon(movie_path_geo.replace("_full.mp4", "_full.jpg")))
-        selected_asset_item.setIcon(QtGui.QIcon(movie_path_geo.replace("_full.mp4", "_full.jpg")))
+        self.blockSignals(True)
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+        self.blockSignals(False)
 
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 

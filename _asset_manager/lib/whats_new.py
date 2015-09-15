@@ -294,15 +294,19 @@ class WhatsNew(object):
                 self.Lib.message_box(self, type="error", text="This asset does not exist. It must have been deleted!")
                 return
 
-            #Unhide all assets
-            for asset, asset_item in self.assets.items():
-               asset_item.setHidden(True)
-            self.Tabs.setCurrentWidget(self.Tabs.widget(0))
+            asset_name = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_id=?''', (asset_id,)).fetchone()[0]
+            first_version_id = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=? AND asset_version="01"''', (asset_name,)).fetchone()[0]
+
+
+
 
             for asset, asset_item in self.assets.items():
-                if asset_id == asset.id:
+                if first_version_id == asset.id:
                     asset_item.setHidden(False)
-                    return
+                else:
+                    asset_item.setHidden(True)
+
+            self.Tabs.setCurrentWidget(self.Tabs.widget(0))
 
 
         elif asset_type == "task":

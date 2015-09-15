@@ -24,6 +24,9 @@ from functools import partial
 
 class Lib(object):
 
+    def __init__(self):
+        pass
+
     def create_thumbnails(self, obj_path="", thumbs_to_create="", version="", selected_version_item="", selected_asset_item=""):
         self.updateThumbBtn.setEnabled(False)
         self.full_obj_path = obj_path
@@ -109,9 +112,12 @@ class Lib(object):
         if len(self.thumbs_to_create) > 0:
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version, selected_asset_item, selected_version_item)
         else:
-            if version != "01":
-                selected_asset_item.setIcon(QtGui.QIcon(thumb_filename))
-            selected_version_item.setIcon(QtGui.QIcon(thumb_filename))
+
+            self.blockSignals(True)
+            self.AssetLoader.load_all_assets_for_first_time(self)
+            self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
+            self.blockSignals(False)
+
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
             self.message_box(type="info", text="Successfully created thumbnails")
@@ -541,14 +547,15 @@ class Lib(object):
 
         return None
 
-    def delete_unecessary_folders(self, folder_path=None, folders_to_delete=[]):
+    def delete_unecessary_folders(self, folder_path="Z:/Groupes-cours/NAND999-A15-N01/Nature/assets", folders_to_delete=["backup"]):
         if folder_path == None:
             return
 
         for folder in folders_to_delete:
             folders = [x[0] for x in os.walk(folder_path) if folder in x[0].split("\\")[-1]]
             for folder in folders:
-                shutil.rmtree(folder, ignore_errors=True)
+                print(folder)
+                #shutil.rmtree(folder, ignore_errors=True)
 
 class DesktopWidget(QtGui.QWidget):
 
