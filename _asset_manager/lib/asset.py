@@ -265,7 +265,11 @@ class Asset(object):
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
 
     def remove_comment(self, author, comment, time):
+        comment_img = self.main.cursor.execute('''SELECT comment_image FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time)).fetchone()
         self.main.cursor.execute('''DELETE FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time))
+        print(comment_img)
+        if comment_img != None:
+            os.remove(comment_img)
         self.main.db.commit()
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
 

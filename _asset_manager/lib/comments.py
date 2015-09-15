@@ -8,6 +8,7 @@ from datetime import datetime
 import os
 import shutil
 import webbrowser
+import subprocess
 
 class CommentWidget(object):
 
@@ -107,7 +108,7 @@ class CommentWidget(object):
                 add_img_button.clicked.connect(partial(self.show_comment_img, comment_id))
             add_img_button.setIconSize(QtCore.QSize(24, 24))
             add_img_button.setMaximumSize(24, 24)
-            add_img_button.setToolTip("Use Ctrl to delete or Alt to replace image")
+            add_img_button.setToolTip("Use Ctrl to delete or Alt to replace image. Use shift to open image in Windows Explorer")
             update_button = QtGui.QPushButton(edit_frame)
             update_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\add_task_to_asset.png"))
             update_button.setIconSize(QtCore.QSize(24, 24))
@@ -223,6 +224,8 @@ class CommentWidget(object):
         self.load_comments()
 
     def show_comment_img(self, comment_id):
+        comment_img_path = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id,)).fetchone()
+
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.AltModifier:
             self.add_img_to_comment(comment_id)
             return
@@ -230,6 +233,8 @@ class CommentWidget(object):
             self.cursor.execute('''UPDATE comments SET comment_image="" WHERE comment_id=?''', (comment_id,))
             self.load_comments()
             return
+        elif QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            subprocess.Popen(r'explorer /select,' + str(comment_img_path[0]))
+            return
 
-        comment_img_path = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id, )).fetchone()
         subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", comment_img_path[0]])

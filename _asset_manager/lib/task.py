@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import os
+
 class Task(object):
     def __init__(self, main, id=0, project_name="", sequence_name="", shot_number="", asset_id="", task_description="", task_department="", task_status="", task_assignation="", task_end="", task_bid="", task_confirmation=0, task_priority="default"):
         self.id = id
@@ -21,6 +23,12 @@ class Task(object):
         self.bid = task_bid
         self.confirmation = task_confirmation
         self.priority = task_priority
+
+
+        project_path = self.main.cursor.execute('''SELECT project_path FROM projects WHERE project_name=?''', (self.project,)).fetchone()
+        if project_path != None:
+            self.comments_folder = project_path[0] + "\\assets\\.msc\\task_comment_images"
+            self.comment_filename = project_path[0] + "\\assets\\.msc\\task_comment_images\\{0}".format(self.asset_id)
 
     def print_task(self):
         return "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.asset_id, self.description, self.department, self.status, self.assignation, self.end, self.bid, self.confirmation, self.priority)
@@ -113,7 +121,10 @@ class Task(object):
         self.main.db.commit()
 
     def remove_comment(self, author, comment, time):
+        comment_img = self.main.cursor.execute('''SELECT comment_image FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time)).fetchone()
         self.main.cursor.execute('''DELETE FROM comments WHERE comment_author=? AND comment_text=? AND comment_time=?''', (author, comment, time))
+        if len(comment_img) > 0:
+            os.remove(comment_img[0])
         self.main.db.commit()
 
     def edit_comment(self, new_comment, comment_author, old_comment, comment_time):

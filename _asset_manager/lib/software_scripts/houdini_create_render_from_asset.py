@@ -22,7 +22,7 @@ geo_node = hou.node("/obj/geo")
 print("5")
 object_merge_node = hou.node("/obj/geo/object_merge")
 print("6")
-object_merge_node.parm("objpath1").set("../../" + hda_name + "/layout/OUT_ASSET")
+object_merge_node.parm("objpath1").set("../../" + hda_name + "/modeling/layout/OUT")
 print("7")
 
 mantra_node = hou.node("/out/out_render")

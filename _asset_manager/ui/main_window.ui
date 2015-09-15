@@ -32,7 +32,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>MaNADger 3.0</string>
+   <string>maNADger 3.0</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>

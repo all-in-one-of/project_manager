@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Sep 13 19:23:13 2015
+# Created: Mon Sep 14 08:58:19 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1656,7 +1656,7 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 536))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 100, 30))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
@@ -1886,7 +1886,7 @@ class Ui_Form(object):
         Form.setTabOrder(self.addNewBlogPostTextEdit, self.addNewBlogPostBtn)
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(_translate("Form", "MaNADger 3.0", None))
+        Form.setWindowTitle(_translate("Form", "maNADger 3.0", None))
         self.assignedToFilterLbl_2.setText(_translate("Form", "Filter by name:", None))
         self.assetFilter.setPlaceholderText(_translate("Form", "asset name", None))
         self.label.setText(_translate("Form", "Project:", None))

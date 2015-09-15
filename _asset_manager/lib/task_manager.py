@@ -434,7 +434,7 @@ class TaskManager(object):
         number_of_rows_to_add = self.tmNbrOfRowsToAddSpinBox.value()
 
         for i in xrange(number_of_rows_to_add):
-            task = self.Task(self, 0, self.selected_project_name, "xxx", "xxxx", asset_id, "", "Script", "Ready to Start", u"costiguy", self.today, "0", "0")
+            task = self.Task(self, 0, self.selected_project_name, "xxx", "xxxx", asset_id, "", "Script", "Ready to Start", u"costiguy", self.today, "0", "0", "Default")
             task.add_task_to_db()
 
         self.add_tasks_from_database()
