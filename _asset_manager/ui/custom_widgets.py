@@ -13,6 +13,9 @@ class ThibListWidget(QtGui.QListWidget):
         super(ThibListWidget, self).__init__()
         self.keylist = []
 
+    def dragEnterEvent(self, event):
+        return
+
     def wheelEvent(self, event):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() + (int(-event.delta() * 3)))

@@ -487,33 +487,48 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def refresh_all(self):
         self.blockSignals(True)
 
-        current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
-        print(current_tab_text)
-        return
-        self.statusLbl.setText("Status: Refreshing assets...")
-
-        self.AssetLoader.load_all_assets_for_first_time(self)
-        self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
-
-        self.Lib.check_last_active(self)
-        self.PeopleTab.get_online_status(self)
-        self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
-        self.db.commit()
-        self.setup_tags()
+        #Default refreshes
         self.mt_item_added = True
         self.item_added = True
+        self.setup_tags()
 
-        self.statusLbl.setText("Status: Refreshing tasks...")
-        MyTasks.mt_add_tasks_from_database(self)
-        TaskManager.add_tasks_from_database(self)
+        #Get current tab text
+        current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
 
-        self.statusLbl.setText("Status: Refreshing references...")
+        if current_tab_text == "Asset Loader":
+            self.statusLbl.setText("Status: Refreshing Asset Loader tab...")
+            self.repaint()
+            self.AssetLoader.load_all_assets_for_first_time(self)
+            self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
 
-        if len(self.ref_assets_instances) > 1:
-            self.ReferenceTab.refresh_reference_list(self)
+        elif current_tab_text == "Task Manager":
+            self.statusLbl.setText("Status: Refreshing Task Manager tab...")
+            self.repaint()
+            TaskManager.add_tasks_from_database(self)
 
-        self.statusLbl.setText("Status: Refreshing what's new...")
-        self.WhatsNew.load_whats_new(self)
+        elif current_tab_text == "Tasks":
+            self.statusLbl.setText("Status: Refreshing Tasks tab...")
+            self.repaint()
+            MyTasks.mt_add_tasks_from_database(self)
+
+        elif current_tab_text == "People":
+            self.statusLbl.setText("Status: Refreshing People tab...")
+            self.repaint()
+            self.Lib.check_last_active(self)
+            self.PeopleTab.get_online_status(self)
+            self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username,))
+            self.db.commit()
+
+        elif current_tab_text == "Images Manager":
+            self.statusLbl.setText("Status: Refreshing Images Manager tab...")
+            self.repaint()
+            if len(self.ref_assets_instances) > 1:
+                self.ReferenceTab.refresh_reference_list(self)
+
+        elif "What's New" in current_tab_text:
+            self.statusLbl.setText("Status: Refreshing What's New tab...")
+            self.repaint()
+            self.WhatsNew.load_whats_new(self)
 
         self.statusLbl.setText("Status: Idle...")
         self.blockSignals(False)

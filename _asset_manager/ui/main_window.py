@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Mon Sep 14 08:58:19 2015
+# Created: Tue Sep 15 09:54:51 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -165,7 +165,7 @@ class Ui_Form(object):
         self.assetList = ThibListWidget(self.assetAndVersionFrame)
         self.assetList.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.assetList.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.assetList.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        self.assetList.setDragDropMode(QtGui.QAbstractItemView.NoDragDrop)
         self.assetList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.assetList.setIconSize(QtCore.QSize(188, 188))
         self.assetList.setMovement(QtGui.QListView.Free)
@@ -1656,7 +1656,7 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 100, 30))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 536))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
