@@ -485,13 +485,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             shutil.copy(self.db_path, backup_database_filename)
 
     def refresh_all(self):
+        self.blockSignals(True)
 
-        if self.number_of_refreshes == 0:
-            self.number_of_refreshes += 1
-            return
-
+        current_tab_text = self.Tabs.tabText(self.Tabs.currentIndex())
+        print(current_tab_text)
+        return
         self.statusLbl.setText("Status: Refreshing assets...")
-        self.repaint()
 
         self.AssetLoader.load_all_assets_for_first_time(self)
         self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
@@ -517,7 +516,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.load_whats_new(self)
 
         self.statusLbl.setText("Status: Idle...")
-        self.repaint()
+        self.blockSignals(False)
 
     def change_theme(self):
         if self.themePrefComboBox.currentIndex() == 0:

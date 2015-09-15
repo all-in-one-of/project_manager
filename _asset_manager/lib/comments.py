@@ -93,22 +93,28 @@ class CommentWidget(object):
 
         comment_text_edit = QtGui.QTextEdit(self.comment_frame)
         comment_text_edit.setReadOnly(True)
-        if comment_author == self.username:
-            edit_frame = QtGui.QFrame(self.comment_frame)
-            edit_frame_layout = QtGui.QVBoxLayout(edit_frame)
-            edit_frame_layout.setContentsMargins(2, 0, 0, 0)
-            edit_frame_layout.setSpacing(0)
-            add_img_button = QtGui.QPushButton(edit_frame)
-            comment_image = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id,)).fetchone()[0]
-            if len(comment_image) < 1:
+
+        edit_frame = QtGui.QFrame(self.comment_frame)
+        edit_frame_layout = QtGui.QVBoxLayout(edit_frame)
+        edit_frame_layout.setContentsMargins(2, 0, 0, 0)
+        edit_frame_layout.setSpacing(0)
+        add_img_button = QtGui.QPushButton(edit_frame)
+        comment_image = self.cursor.execute('''SELECT comment_image FROM comments WHERE comment_id=?''', (comment_id,)).fetchone()
+        if comment_image == None:
+            add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon_disabled.png"))
+            add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_id))
+        elif comment_image != None:
+            if len(comment_image[0]) < 1:
                 add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon_disabled.png"))
                 add_img_button.clicked.connect(partial(self.add_img_to_comment, comment_id))
             else:
                 add_img_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\custom_media_icon.png"))
                 add_img_button.clicked.connect(partial(self.show_comment_img, comment_id))
-            add_img_button.setIconSize(QtCore.QSize(24, 24))
-            add_img_button.setMaximumSize(24, 24)
-            add_img_button.setToolTip("Use Ctrl to delete or Alt to replace image. Use shift to open image in Windows Explorer")
+        add_img_button.setIconSize(QtCore.QSize(24, 24))
+        add_img_button.setMaximumSize(24, 24)
+        add_img_button.setToolTip("Use Ctrl to delete or Alt to replace image. Use shift to open image in Windows Explorer")
+
+        if comment_author == self.username:
             update_button = QtGui.QPushButton(edit_frame)
             update_button.setIcon(QtGui.QIcon(self.cur_path + "\\media\\add_task_to_asset.png"))
             update_button.setIconSize(QtCore.QSize(24, 24))
@@ -124,7 +130,9 @@ class CommentWidget(object):
             delete_button.clicked.connect(partial(self.delete_comment, comment_author, comment_text, comment_time))
             delete_button.setAutoDefault(False)
             delete_button.setDefault(False)
-            edit_frame_layout.addWidget(add_img_button)
+
+        edit_frame_layout.addWidget(add_img_button)
+        if comment_author == self.username:
             edit_frame_layout.addWidget(update_button)
             edit_frame_layout.addWidget(delete_button)
 
@@ -136,11 +144,14 @@ class CommentWidget(object):
         if self.cur_alignment == "left":
             comment_frame_layout.addWidget(author_picture_lbl)
             comment_frame_layout.addWidget(comment_text_edit)
-            if comment_author == self.username: comment_frame_layout.addWidget(edit_frame)
+            if comment_author != "default":
+                comment_frame_layout.addWidget(edit_frame)
         elif self.cur_alignment == "right":
-            if comment_author == self.username: comment_frame_layout.addWidget(edit_frame)
+            if comment_author != "default":
+                comment_frame_layout.addWidget(edit_frame)
             comment_frame_layout.addWidget(comment_text_edit)
             comment_frame_layout.addWidget(author_picture_lbl)
+
 
         self.comments_gridLayout.addWidget(self.comment_frame)
 
