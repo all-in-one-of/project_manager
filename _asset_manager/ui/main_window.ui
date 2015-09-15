@@ -4006,7 +4006,7 @@
                    <item>
                     <widget class="QPushButton" name="sendEmailBtn">
                      <property name="text">
-                      <string>Send E-mail</string>
+                      <string>Send E-mail to selected people</string>
                      </property>
                     </widget>
                    </item>
@@ -4014,9 +4014,16 @@
                  </widget>
                 </item>
                 <item>
+                 <widget class="QPushButton" name="sendEmailToEveryoneButRobinBtn">
+                  <property name="text">
+                   <string>Send E-Mail to team (Robin not included)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="sendEmailToEveryoneBtn">
                   <property name="text">
-                   <string>Send E-Mail to everyone</string>
+                   <string>Send E-Mail to everyone (Robin included)</string>
                   </property>
                  </widget>
                 </item>

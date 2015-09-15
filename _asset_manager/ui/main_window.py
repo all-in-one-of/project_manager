@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 15 11:25:32 2015
+# Created: Tue Sep 15 11:38:09 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1552,6 +1552,9 @@ class Ui_Form(object):
         self.sendEmailBtn.setObjectName(_fromUtf8("sendEmailBtn"))
         self.verticalLayout_38.addWidget(self.sendEmailBtn)
         self.verticalLayout_36.addWidget(self.frame_5)
+        self.sendEmailToEveryoneButRobinBtn = QtGui.QPushButton(self.peopleInfoFrame)
+        self.sendEmailToEveryoneButRobinBtn.setObjectName(_fromUtf8("sendEmailToEveryoneButRobinBtn"))
+        self.verticalLayout_36.addWidget(self.sendEmailToEveryoneButRobinBtn)
         self.sendEmailToEveryoneBtn = QtGui.QPushButton(self.peopleInfoFrame)
         self.sendEmailToEveryoneBtn.setObjectName(_fromUtf8("sendEmailToEveryoneBtn"))
         self.verticalLayout_36.addWidget(self.sendEmailToEveryoneBtn)
@@ -2064,8 +2067,9 @@ class Ui_Form(object):
         self.cellInfoLbl.setText(_translate("Form", "Cell: xxx-xxxx-xxxx", None))
         self.lastActiveLbl.setText(_translate("Form", "Last active: a long time ago...", None))
         self.emailObjectLineEdit.setPlaceholderText(_translate("Form", "object...", None))
-        self.sendEmailBtn.setText(_translate("Form", "Send E-mail", None))
-        self.sendEmailToEveryoneBtn.setText(_translate("Form", "Send E-Mail to everyone", None))
+        self.sendEmailBtn.setText(_translate("Form", "Send E-mail to selected people", None))
+        self.sendEmailToEveryoneButRobinBtn.setText(_translate("Form", "Send E-Mail to team (Robin not included)", None))
+        self.sendEmailToEveryoneBtn.setText(_translate("Form", "Send E-Mail to everyone (Robin included)", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.peopleTab), _translate("Form", "People", None))
         self.showOnlyMeWhatsNew.setText(_translate("Form", "Show only news concerning me", None))
         self.showAllNewsCheckBox.setText(_translate("Form", "Show All News", None))

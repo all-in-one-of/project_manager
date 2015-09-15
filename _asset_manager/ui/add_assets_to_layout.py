@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\add_assets_to_layout.ui'
 #
-# Created: Sun Aug 23 15:46:12 2015
+# Created: Tue Sep 15 11:36:27 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
