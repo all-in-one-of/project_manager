@@ -1415,12 +1415,9 @@ class AssetLoader(object):
 
         self.blockSignals(False)
 
-    def update_thumbnail(self, ask_window=True):
+    def update_thumbnail(self, ask_window=True, batch_update=False):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             return
-
-        selected_version_item = self.versionList.selectedItems()[0]
-        selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
 
         if self.selected_asset.type == "mod":
             if ask_window:
@@ -1429,10 +1426,10 @@ class AssetLoader(object):
                 dialog_main_layout = QtGui.QVBoxLayout(dialog)
 
                 checkbox_full = QtGui.QCheckBox("Single image (Full Resolution Render)", dialog)
-                if not os.path.isfile(self.selected_asset.full_media): # If full don't exist, set checkbox to true
+                if not os.path.isfile(self.selected_asset.full_media):  # If full don't exist, set checkbox to true
                     checkbox_full.setCheckState(2)
                 checkbox_turn = QtGui.QCheckBox("Turntable (video)", dialog)
-                if not os.path.isfile(self.selected_asset.advanced_media): # If turn don't exist, set checkbox to true
+                if not os.path.isfile(self.selected_asset.advanced_media):  # If turn don't exist, set checkbox to true
                     checkbox_turn.setCheckState(2)
 
                 create_btn = QtGui.QPushButton("Start!", dialog)
@@ -1457,17 +1454,16 @@ class AssetLoader(object):
                     thumbs_to_create = "full"
                 else:
                     thumbs_to_create = "fullturn"
-            selected_version_item = self.versionList.selectedItems()[0]
-            selected_asset_item = self.Lib.get_asset_item_from_version_asset(self, self.selected_asset)
-            self.Lib.create_thumbnails(self, self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version, selected_version_item, selected_asset_item)
+
+            self.create_thumbnails(self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version)
 
         elif self.selected_asset.type == "anm":
 
-            anim_has_camera = self.cursor.execute('''SELECT has_camera FROM camera_in_anim WHERE asset_id=?''', (self.selected_asset.id, )).fetchone()
+            anim_has_camera = self.cursor.execute('''SELECT has_camera FROM camera_in_anim WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
             if anim_has_camera == None:
                 return
 
-            shots = (self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, ))).fetchall()
+            shots = (self.cursor.execute('''SELECT frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=? AND shot_number=?''', (self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot,))).fetchall()
             start_frame = str(shots[0][0])
             end_frame = str(shots[0][1])
             self.i = 0
@@ -1477,7 +1473,7 @@ class AssetLoader(object):
             asset = self.selected_asset
 
             self.update_thumb_process = QtCore.QProcess(self)
-            self.update_thumb_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_playblast, start_frame, end_frame, asset))
             self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
             self.update_thumb_process.waitForFinished()
             self.update_thumb_process.start("C:/Program Files/Autodesk/Maya2015/bin/Render.exe", ["-r", "hw2", "-s", start_frame, "-e", end_frame, self.selected_asset.full_path])
@@ -1496,7 +1492,7 @@ class AssetLoader(object):
             asset = self.selected_asset
 
             self.update_thumb_process = QtCore.QProcess(self)
-            self.update_thumb_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame, asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_flipbook, start_frame, end_frame, asset))
             self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
             self.update_thumb_process.waitForFinished()
             self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_flipbook.py", associated_hip_scene, self.selected_asset.name, start_frame, end_frame])
@@ -1509,38 +1505,35 @@ class AssetLoader(object):
             asset = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
 
             self.update_thumb_process = QtCore.QProcess(self)
-            self.update_thumb_process.finished.connect(partial(self.create_mov_from_turn, self.selected_asset, selected_version_item, selected_asset_item))
+            self.update_thumb_process.finished.connect(partial(self.create_mov_from_turn, self.selected_asset))
             self.update_thumb_process.readyRead.connect(self.update_thumb_ready_read)
             self.update_thumb_process.waitForFinished()
-            self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
+            if self.batch_thumbnail == True:
+                process = subprocess.Popen([self.houdini_batch_path, self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
+                process.wait()
+                self.create_mov_from_turn(self.selected_asset)
+            else:
+                self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
 
         elif self.selected_asset.type == "rig":
 
             self.Lib.take_screenshot(self, path=self.selected_asset.full_media)
             self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
 
-            if self.selected_asset.version == "01":
-                self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.full_media))
-            self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.full_media))
+
 
         elif self.selected_asset.type == "tex":
 
             self.Lib.take_screenshot(self, path=self.selected_asset.full_media, software="mari")
             self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
 
-            if self.selected_asset.version == "01":
-                self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.full_media))
-            self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.full_media))
+
 
         elif self.selected_asset.type == "lay":
             self.Lib.take_screenshot(self, path=self.selected_asset.full_media)
             self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
 
-            if self.selected_asset.version == "01":
-                self.assetList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.full_media))
-            self.versionList.selectedItems()[0].setIcon(QtGui.QIcon(self.selected_asset.full_media))
-
-    def create_mov_from_playblast(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
+    def create_mov_from_playblast(self, start_frame, end_frame, asset):
         file_sequence = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + ".%04d.jpg"
         movie_path = "H:/" + asset.path.replace("\\assets\\anm\\", "").replace(".ma", "") + "_full.mp4"
 
@@ -1565,7 +1558,7 @@ class AssetLoader(object):
         self.blockSignals(False)
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
-    def create_mov_from_flipbook(self, start_frame, end_frame, asset, selected_version_item, selected_asset_item):
+    def create_mov_from_flipbook(self, start_frame, end_frame, asset):
         file_sequence = "H:/tmp/playblast.%04d.jpg"
         movie_path = "H:/tmp/" + asset.path.replace("\\assets\\cam\\", "").replace(".hda", "") + "_full.mp4"
 
@@ -1592,7 +1585,7 @@ class AssetLoader(object):
 
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
-    def create_mov_from_turn(self, asset, selected_version_item, selected_asset_item):
+    def create_mov_from_turn(self, asset):
         all_files = glob("H:/tmp/*")
         all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
 
@@ -1619,10 +1612,12 @@ class AssetLoader(object):
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()
         self.blockSignals(False)
+        if self.batch_thumbnail == True:
+            pass
+        else:
+            self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
-        self.Lib.message_box(self, type="info", text="Successfully created playblast!")
-
-    def create_img_from_tex(self, asset, selected_version_item, selected_asset_item):
+    def create_img_from_tex(self, asset):
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
 
@@ -1630,6 +1625,116 @@ class AssetLoader(object):
         selected_asset_item.setIcon(QtGui.QIcon(asset.default_media_user))
 
         self.Lib.message_box(self, type="info", text="Successfully created playblast!")
+
+    def create_thumbnails(self, obj_path="", thumbs_to_create="", version=""):
+
+        self.updateThumbBtn.setEnabled(False)
+        self.full_obj_path = obj_path
+        self.obj_name = obj_path[obj_path.find("_mod_") + len("_mod_"):obj_path.rfind("_out")]
+        self.obj_tmp_path = "H:\\tmp\\" + obj_path.split("\\")[-1]
+        self.type = type
+        self.version = version
+        self.i = 0
+
+        self.thumbnailProgressBar.show()
+        self.thumbnailProgressBar.setValue(0)
+
+        self.thumbs_to_create = thumbs_to_create
+
+
+        if "full" in self.thumbs_to_create:
+            self.type = "full"
+            self.sampling = 500
+            self.resolution = 250
+            self.thumbs_to_create = thumbs_to_create.replace("full", "")
+        elif "turn" in self.thumbs_to_create:
+            self.type = "turn"
+            self.sampling = 150
+            self.resolution = 150
+            self.thumbs_to_create = thumbs_to_create.replace("turn", "")
+
+        if self.type == "full":
+            self.thumbnailProgressBar.setMaximum(67 + int(self.sampling))
+        elif self.type == "turn":
+            self.thumbnailProgressBar.setMaximum(1171 + (int(self.sampling) * 20))
+
+        if os.path.getsize(self.full_obj_path) < 100:
+            self.thumbnailProgressBar.hide()
+            return
+
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            self.thumbnailProgressBar.hide()
+            self.updateThumbBtn.setEnabled(True)
+            self.message_box(type="info", text="Successfully created thumbnails")
+            return
+
+        if self.batch_thumbnail == True:
+            process = subprocess.Popen(["C:/Program Files/Blender Foundation/Blender/blender.exe", "-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+                                                                                                   "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
+                                                                                                   str(self.resolution), self.version
+                                                                                                   ])
+            process.wait()
+            self.create_thumbnail_finished(version)
+        else:
+            self.create_thumbnail_process = QtCore.QProcess(self)
+            self.create_thumbnail_process.readyReadStandardOutput.connect(self.create_thumbnail_new_data)
+            self.create_thumbnail_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
+            self.create_thumbnail_process.finished.connect(partial(self.create_thumbnail_finished, version))
+            self.create_thumbnail_process.start("C:/Program Files/Blender Foundation/Blender/blender.exe", ["-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
+                                                                                                            "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
+                                                                                                            str(self.resolution), self.version
+                                                                                                            ])
+
+    def create_thumbnail_new_data(self):
+        while self.create_thumbnail_process.canReadLine():
+            self.i += 1
+            out = self.create_thumbnail_process.readLine()
+            self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.value() + 1)
+            hue = self.fit_range(self.i, 0, self.thumbnailProgressBar.maximum(), 0, 76)
+            self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
+
+    def create_thumbnail_finished(self, version):
+        thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
+        if self.type == "full":
+            filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
+            self.compress_image(filename, int(1920 * float(self.resolution) / 100), 100)
+
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
+            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
+
+        elif self.type == "turn":
+            file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")
+            movie_path = self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4")
+            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", file_sequence, "-vcodec", "libx264", "-b", "800k", "-crf", "0", "-y", "-r", "24", movie_path])
+
+            turn_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_advanced.mp4")
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4"), turn_filename)
+            os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_advanced.mp4"))
+            for i in range(24):
+                os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_" + str(i).zfill(2) + ".jpg"))
+
+        try:
+            self.create_thumbnail_process.kill()
+        except:
+            pass
+
+        self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
+
+        if len(self.thumbs_to_create) > 0:
+            self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
+        else:
+
+            self.blockSignals(True)
+            self.AssetLoader.load_all_assets_for_first_time(self)
+            self.AssetLoader.load_assets_from_selected_seq_shot_dept(self)
+            self.blockSignals(False)
+
+            self.thumbnailProgressBar.hide()
+            self.updateThumbBtn.setEnabled(True)
+            if self.batch_thumbnail == True:
+                pass
+            else:
+                self.message_box(type="info", text="Successfully created thumbnails")
 
     def update_thumb_ready_read(self):
         while self.update_thumb_process.canReadLine():
@@ -2433,9 +2538,22 @@ class AssetLoader(object):
         self.thumb_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/WinPython/python-2.7.9.amd64/python.exe", [self.cur_path + "\\lib\\thumb_creator.py", asset.name, self.cur_path + "\\media\\default_asset_thumb\\" + asset.type + ".png", export_path, self.cur_path + "\\media\\ProximaNova-Regular.otf"])
 
     def batch_update_thumbnails(self):
-        for asset in self.assets.keys():
-            if asset.type in ["mod", "shd"]:
-                print(asset.name)
+
+        self.batch_thumbnail = True
+
+        for asset, asset_item in self.assets.items():
+            if asset.type in ["shd"]:
+                max_asset_id = self.cursor.execute('''SELECT MAX(asset_version), asset_id FROM assets WHERE asset_name=? AND asset_version != "out" AND asset_type="shd"''', (asset.name,)).fetchone()
+                if max_asset_id[0] != None:
+                    self.selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
+                    self.selected_asset.print_asset()
+                    self.update_thumbnail(ask_window=False)
+                    print("Finished Thumbnail")
+                    print("#######################################################################")
+
+        self.batch_thumbnail = False
+
+
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):
