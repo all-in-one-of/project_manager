@@ -156,6 +156,7 @@ class AssetLoader(object):
         self.batchUpdateThumbnailsBtn.clicked.connect(self.batch_update_thumbnails)
 
         self.icon_display_type = "user"
+        self.batch_thumbnail = False
 
     def show_right_click_menu(self, QPos):
         # Create a menu
@@ -798,7 +799,7 @@ class AssetLoader(object):
                 subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
             self.statusLbl.setText("Status: Idle...")
         elif self.selected_asset.type == "shd":
-            media_process.start(self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", [self.selected_asset.full_media])
+            media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.first_media])
 
         elif self.selected_asset.type in ["anm", "cam"]:
             media_process.start(self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", [self.selected_asset.advanced_media])
@@ -1644,13 +1645,21 @@ class AssetLoader(object):
 
         if "full" in self.thumbs_to_create:
             self.type = "full"
-            self.sampling = 500
-            self.resolution = 250
+            if self.batch_thumbnail == True:
+                self.sampling = 500
+                self.resolution = 250
+            else:
+                self.sampling = 250
+                self.resolution = 150
             self.thumbs_to_create = thumbs_to_create.replace("full", "")
         elif "turn" in self.thumbs_to_create:
             self.type = "turn"
-            self.sampling = 150
-            self.resolution = 150
+            if self.batch_thumbnail == True:
+                self.sampling = 150
+                self.resolution = 150
+            else:
+                self.sampling = 50
+                self.resolution = 100
             self.thumbs_to_create = thumbs_to_create.replace("turn", "")
 
         if self.type == "full":
@@ -2550,6 +2559,18 @@ class AssetLoader(object):
                     self.update_thumbnail(ask_window=False)
                     print("Finished Thumbnail")
                     print("#######################################################################")
+
+        for asset, asset_item in self.assets.items():
+            if asset.type in ["mod"]:
+                max_asset_id = self.cursor.execute('''SELECT MAX(asset_version), asset_id FROM assets WHERE asset_name=? AND asset_version != "out" AND asset_type="mod"''', (asset.name,)).fetchone()
+                if max_asset_id[0] != None:
+                    self.selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
+                    self.selected_asset.print_asset()
+                    self.update_thumbnail(ask_window=False)
+                    print("Finished Thumbnail")
+                    print("#######################################################################")
+
+
 
         self.batch_thumbnail = False
 
