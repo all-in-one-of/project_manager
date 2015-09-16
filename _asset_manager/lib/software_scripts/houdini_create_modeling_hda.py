@@ -48,6 +48,9 @@ print("66")
 file_highres_node.parm("file").set(obj_path)
 file_lowres_node.parm("file").set(obj_path.replace("_out.obj", "-lowres_out.obj"))
 print("77")
+
+
+
 # MATERIAL NODE
 # Shopnet / Copnet
 shopnet_node = asset_node.createNode("shopnet")
@@ -65,20 +68,22 @@ material_node.moveToGoodPosition()
 print("99")
 
 
-# LAYOUT NODE
-layout_node = asset_node.createNode("geo")
-layout_node.node("file1").destroy()
-layout_node.setName("layout")
-layout_node.moveToGoodPosition()
-print("100")
 
-# Create Subnet and HDA for Layout Node
-layout_hda_path = main_hda_path.replace("_lay_" + asset_name + "_out", "_lay_" + asset_name + "-lay_out")
-layout_hda_node = asset_node.collapseIntoSubnet([layout_node])
-layout_hda_node = layout_hda_node.createDigitalAsset(asset_name.replace("-", "_") + "_lay", layout_hda_path, asset_name.replace("-", "_") + "_lay", ignore_external_references=True)
-layout_hda_node.setName("layout")
-layout_hda_node.moveToGoodPosition()
-layout_hda_node.setColor(hou.Color((0.867, 0, 0)))
+#
+# # LAYOUT NODE
+# layout_node = asset_node.createNode("geo")
+# layout_node.node("file1").destroy()
+# layout_node.setName("layout")
+# layout_node.moveToGoodPosition()
+# print("100")
+#
+# # Create Subnet and HDA for Layout Node
+# layout_hda_path = main_hda_path.replace("_lay_" + asset_name + "_out", "_lay_" + asset_name + "-lay_out")
+# layout_hda_node = asset_node.collapseIntoSubnet([layout_node])
+# layout_hda_node = layout_hda_node.createDigitalAsset(asset_name.replace("-", "_") + "_lay", layout_hda_path, asset_name.replace("-", "_") + "_lay", ignore_external_references=True)
+# layout_hda_node.setName("layout")
+# layout_hda_node.moveToGoodPosition()
+# layout_hda_node.setColor(hou.Color((0.867, 0, 0)))
 
 
 asset_node.type().definition().updateFromNode(asset_node)
