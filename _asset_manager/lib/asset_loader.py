@@ -1418,6 +1418,7 @@ class AssetLoader(object):
 
     def update_thumbnail(self, ask_window=True, batch_update=False):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+            self.statusLbl.setText("Status: Idle...")
             return
 
         if self.selected_asset.type == "mod":
@@ -1968,7 +1969,7 @@ class AssetLoader(object):
             shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + tex_path)
 
         self.load_all_assets_for_first_time()
-
+        self.load_assets_from_selected_seq_shot_dept()
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
 
@@ -2473,7 +2474,6 @@ class AssetLoader(object):
             shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
             shading_hda_asset.add_asset_to_db()
 
-        print("haha")
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.readyRead.connect(self.ldld)
