@@ -98,6 +98,7 @@ class AssetLoader(object):
 
         # Connect the filter textboxes
         self.assetFilter.textChanged.connect(self.filterList_textChanged)
+        self.assetFilter.returnPressed.connect(self.filterList_textChanged)
 
         # Connect the lists
         self.projectList.currentIndexChanged .connect(self.projectList_Clicked)
@@ -799,7 +800,7 @@ class AssetLoader(object):
                 subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
             self.statusLbl.setText("Status: Idle...")
         elif self.selected_asset.type == "shd":
-            media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.first_media])
+            media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.full_media])
 
         elif self.selected_asset.type in ["anm", "cam"]:
             media_process.start(self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", [self.selected_asset.advanced_media])
@@ -817,6 +818,9 @@ class AssetLoader(object):
                 subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.first_media])
             else:
                 subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
+            self.statusLbl.setText("Status: Idle...")
+        elif self.selected_asset.type in ["shd"]:
+            subprocess.Popen(["H:/DJView/bin/djv_view.exe", self.selected_asset.advanced_media])
             self.statusLbl.setText("Status: Idle...")
         else:
             if not os.path.isfile(self.selected_asset.advanced_media):
