@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>5</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -389,7 +389,7 @@
                    <enum>QFrame::StyledPanel</enum>
                   </property>
                   <property name="dragDropMode">
-                   <enum>QAbstractItemView::NoDragDrop</enum>
+                   <enum>QAbstractItemView::DragDrop</enum>
                   </property>
                   <property name="selectionMode">
                    <enum>QAbstractItemView::SingleSelection</enum>
@@ -3214,9 +3214,9 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="preferencesTab">
+           <widget class="QWidget" name="miscTab">
             <attribute name="title">
-             <string>Preferences</string>
+             <string>Misc</string>
             </attribute>
             <layout class="QVBoxLayout" name="verticalLayout_7">
              <item>

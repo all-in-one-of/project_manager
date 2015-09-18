@@ -1397,28 +1397,30 @@ class AssetLoader(object):
             log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
-        if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
-            # Normalize modeling scale
-            self.normalize_mod_scale_process = QtCore.QProcess(self)
-            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
-            self.normalize_mod_scale_process.waitForFinished()
-            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
-        elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
-            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            self.update_thumbnail(False)
-        elif self.selected_asset.type == "anm":
-            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            self.update_thumbnail(False)
+            if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
+                # Normalize modeling scale
+                self.normalize_mod_scale_process = QtCore.QProcess(self)
+                self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
+                self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
+                self.normalize_mod_scale_process.waitForFinished()
+                self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
+            elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
+                self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
+                self.update_thumbnail(False)
+            elif self.selected_asset.type == "anm":
+                self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
+                self.update_thumbnail(False)
+            else:
+                self.statusLbl.setText("Status: Idle...")
+                self.Lib.message_box(self, type="info", text="Successfully published asset!")
         else:
-            self.statusLbl.setText("Status: Idle...")
-            self.Lib.message_box(self, type="info", text="Successfully published asset!")
+            self.Lib.message_box(self, type="info", text="Successfully created thumbnails")
 
         self.blockSignals(False)
 
     def update_thumbnail(self, ask_window=True, batch_update=False):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-            self.statusLbl.setText("Status: Idle...")
+            self.Lib.message_box(self, type="info", text="Successfull")
             return
 
         if self.selected_asset.type == "mod":
@@ -1675,7 +1677,7 @@ class AssetLoader(object):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
-            self.message_box(type="info", text="Successfully created thumbnails")
+            self.Lib.message_box(self, type="info", text="Successfully created thumbnails")
             return
 
         if self.batch_thumbnail == True:

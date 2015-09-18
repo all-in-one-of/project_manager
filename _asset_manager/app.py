@@ -383,7 +383,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Christopher":
@@ -391,14 +391,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Jeremy":
@@ -406,7 +406,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Laurence":
@@ -414,17 +414,17 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
         elif self.members[self.username] == "Louis-Philippe":
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
         elif self.members[self.username] == "Mathieu":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Maxime":
@@ -432,7 +432,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Olivier":
@@ -440,7 +440,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Simon":
@@ -448,7 +448,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Thibault":
@@ -457,14 +457,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         elif self.members[self.username] == "Yann":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
         elif self.members[self.username] == "Yi":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
 
         elif self.members[self.username] == "Valentin":
@@ -472,7 +472,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Preferences"])
+            self.Tabs.removeTab(self.tabs_list["Misc"])
 
     def get_tabs_id_from_name(self):
         self.tabs_list = {}
@@ -661,16 +661,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.trayIcon.show()
 
     def terminate_program(self):
-        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
-            # Check if a software is still open and ask user to close it before closing the manager
-            tasks = subprocess.check_output(['tasklist'])
-            if "mari" in tasks.lower():
-                self.Lib.message_box(self, type="error", text="Please save your work and close Mari before closing the Manager!")
-                return
-            elif "houdin" in tasks.lower():
-                self.Lib.message_box(self, type="error", text="Please save your work and close Houdini before closing the Manager!")
-                return
-
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.db.commit()
         self.Lib.switch_mari_cache(self, "perso")
