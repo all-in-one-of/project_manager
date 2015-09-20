@@ -9,81 +9,74 @@ import socket
 
 import sqlite3
 import time
-from threading import Thread
+import threading
 from PyQt4 import QtGui, QtCore
 
 class Monitoring(QtGui.QWidget):
     def __init__(self):
         super(Monitoring, self).__init__()
 
+        self.button = QtGui.QPushButton("test")
+        self.layout = QtGui.QHBoxLayout(self)
+        self.layout.addWidget(self.button)
+        #self.show()
+
+        self.computer_id = socket.gethostname()
+        self.get_classroom_from_id()
+        self.today = time.strftime("%d/%m/%Y", time.gmtime())
+
         self.db_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering.sqlite"
+        self.db_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/pub.sqlite"
+
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
 
-        self.today = time.strftime("%d/%m/%Y", time.gmtime())
+        self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()
+        if self.computer_status == None:
+            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, scene_path) VALUES(?,?,?,?)''', (self.computer_id, self.classroom, "Idle", ""))
+            self.db.commit()
 
-        self.computer_id = socket.gethostname()
+        self.check_status()
 
-        self.cursor.execute('''''')
+    def check_status(self):
+        self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+        while self.computer_status == "Idle":
+            print("Computer is idle...")
+            self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+            time.sleep(2)
 
-        self.thread = StartRendering(self, working_seconds_for_today, idle_seconds_for_today)
-        self.connect(self.thread, QtCore.SIGNAL("change_background_color"), self.change_background_color)
-        self.connect(self.thread, QtCore.SIGNAL("add_to_db"), self.add_to_db)
+        self.start_render()
 
 
+    def start_render(self):
+        p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/hython.exe", "H:/01-NAD/_pipeline/_utilities/_asset_manager/lib/software_scripts/houdini_start_render.py",
+                              "Z:/Groupes-cours/NAND999-A15-N01/pub/assets/lay/pub_prk_xxxx_lay_parkingLayout_01.hipnc", "1002"], stdout=subprocess.PIPE)
+        for line in p.stdout:
+            print(line)
+        while self.computer_status == "Rendering":
+            print("Computer is rendering...")
+            self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+            time.sleep(2)
 
+        self.check_status()
 
-class StartRendering(QtCore.QThread):
-    def __init__(self, gui, working_seconds_for_today, idle_seconds_for_today):
-        super(StartRendering, self).__init__()
-
-        self.gui = gui
-
-        self.bg_red = False
-        self.positions = []
-        self.pos_x = 0
-        self.idle_seconds = 0
-        self.idle_minutes = 0
-        self.timer_seconds = 0
-        self.timer_minutes = 0
-
-        self.total_working_seconds = int(working_seconds_for_today)
-        self.total_idle_seconds = int(idle_seconds_for_today)
-
-        self.seconds_before_adding = 4
-
-        self.t = threading.Thread(target=self.working_timer)
-        self.t.daemon = True
-        self.t.start()
-
-    def working_timer(self):
-
-        idle_time = self.get_idle_duration()
-        if self.idle_minutes >= 3:
-            self.emit(QtCore.SIGNAL("change_background_color"), "black")
-            self.timer_seconds = 0
-            self.timer_minutes = 0
-            self.gui.nbr_of_breaks += 1
-            self.emit(QtCore.SIGNAL("add_to_db"), "break")
-
-        self.idle_minutes = 0
-        self.idle_seconds = 0
-
-        while idle_time <= 1:
-            idle_time = self.get_idle_duration()
-            self.total_working_seconds += 1
-            self.timer_seconds += 1
-            self.add_minutes()
-            self.gui.timerLbl.setText(
-                "Working for: {0}:{1}".format(str(self.timer_minutes).zfill(2), str(self.timer_seconds).zfill(2)))
-            if self.timer_minutes >= 30:
-                self.emit(QtCore.SIGNAL("change_background_color"), "red")
-
-            time.sleep(1)
-
-        self.idle_timer()
+    def get_classroom_from_id(self):
+        if self.computer_id.split("-")[0] == "320":
+            self.classroom = "Prod-4"
+        elif self.computer_id.split("-")[0] == "326":
+            self.classroom = "Prod-1,2,3"
+        elif self.computer_id.split("-")[0] == "328":
+            self.classroom = "Debevec"
+        elif self.computer_id.split("-")[0] == "336":
+            self.classroom = "Evans"
+        elif self.computer_id.split("-")[0] == "337":
+            self.classroom = "Sutherland"
+        elif self.computer_id.split("-")[0] == "338":
+            self.classroom = "Gouraud"
+        else:
+            self.classroom = "Unknown"
 
 
 app = QtGui.QApplication([])
-Monitoring()
+window = Monitoring()
 app.exec_()
