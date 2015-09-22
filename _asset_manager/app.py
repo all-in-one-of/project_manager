@@ -54,6 +54,7 @@ from ui.main_window import Ui_Form
 from lib.reference import ReferenceTab
 from lib.module import Lib
 from lib.task_manager import TaskManager
+from lib.render_tab import RenderTab
 from lib.my_tasks import MyTasks
 from lib.task import Task
 from lib.comments import CommentWidget
@@ -63,11 +64,15 @@ from lib.asset_loader import AssetLoader
 from lib.reference_moodboard import Moodboard_Creator
 from lib.log import LogEntry
 from lib.people import PeopleTab
+from lib.batch_monitoring import Monitoring
 
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab, RenderTab):
     def __init__(self):
         super(Main, self).__init__()
+
+        self.is_slave = sys.argv[-1]
+        #self.is_slave = "-slave"
 
         self.username = os.getenv('USERNAME')
 
@@ -76,6 +81,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.ReferenceTab = ReferenceTab
         self.Lib = Lib
         self.TaskManager = TaskManager
+        self.RenderTab = RenderTab
         self.MyTasks = MyTasks
         self.WhatsNew = WhatsNew
         self.CommentWidget = CommentWidget
@@ -95,7 +101,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         self.db_to_load = ""
 
-        if sys.argv[-1] == "-slave":
+        if self.is_slave == "-slave":
             self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
         else:
             if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
@@ -269,6 +275,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         AssetLoader.__init__(self)
         self.ReferenceTab.__init__(self)
         self.TaskManager.__init__(self)
+        self.RenderTab.__init__(self)
         self.CommentWidget.__init__(self)
         self.MyTasks.__init__(self)
         self.WhatsNew.__init__(self)
@@ -276,12 +283,15 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.load_whats_new(self)
 
 
+        if self.is_slave == "-slave":
+            Monitoring()
 
-
-        self.check_news_thread = CheckNews(self)
-        self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
+        else:
+            self.check_news_thread = CheckNews(self)
+            self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
+            self.check_news_thread.daemon = True
+            self.check_news_thread.start()
+            self.show()
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -563,6 +573,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.repaint()
             MyTasks.mt_add_tasks_from_database(self)
 
+        elif current_tab_text == "Render":
+            self.statusLbl.setText("Status: Refreshing Render tab...")
+            self.repaint()
+            RenderTab.add_computers_from_database(self)
+
         elif current_tab_text == "People":
             self.statusLbl.setText("Status: Refreshing People tab...")
             self.repaint()
@@ -749,7 +764,7 @@ class CheckNews(QtCore.QThread):
 
 if __name__ == "__main__":
 
-    log_to_file = True
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()
@@ -768,7 +783,6 @@ if __name__ == "__main__":
         app.setQuitOnLastWindowClosed(False)
 
         window = Main()
-        window.show()
 
         sys.exit(app.exec_())
     else:
@@ -777,7 +791,6 @@ if __name__ == "__main__":
             app.setQuitOnLastWindowClosed(False)
 
             window = Main()
-            window.show()
 
             sys.exit(app.exec_())
         except Exception as e:

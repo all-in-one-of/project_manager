@@ -7,6 +7,10 @@ import subprocess
 
 import socket
 
+from datetime import date
+from datetime import datetime
+from dateutil import relativedelta
+
 import sqlite3
 import time
 import threading
@@ -14,12 +18,6 @@ from PyQt4 import QtGui, QtCore
 
 class Monitoring(QtGui.QWidget):
     def __init__(self):
-        super(Monitoring, self).__init__()
-
-        self.button = QtGui.QPushButton("test")
-        self.layout = QtGui.QHBoxLayout(self)
-        self.layout.addWidget(self.button)
-        #self.show()
 
         self.computer_id = socket.gethostname()
         self.get_classroom_from_id()
@@ -33,7 +31,7 @@ class Monitoring(QtGui.QWidget):
 
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()
         if self.computer_status == None:
-            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, scene_path) VALUES(?,?,?,?)''', (self.computer_id, self.classroom, "Idle", ""))
+            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, scene_path, seq, shot, last_active, rendered_frames, current_frame) VALUES(?,?,?,?,?,?,?,?,?,?)''', (self.computer_id, self.classroom, "Idle", "---", "---", "---", "---", "0", "0"))
             self.db.commit()
 
         self.check_status()
@@ -42,7 +40,10 @@ class Monitoring(QtGui.QWidget):
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
         while self.computer_status == "Idle":
             print("Computer is idle...")
+            last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+            self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id, ))
             self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+            self.db.commit()
             time.sleep(2)
 
         self.start_render()
@@ -53,6 +54,7 @@ class Monitoring(QtGui.QWidget):
                               "Z:/Groupes-cours/NAND999-A15-N01/pub/assets/lay/pub_prk_xxxx_lay_parkingLayout_01.hipnc", "1002"], stdout=subprocess.PIPE)
         for line in p.stdout:
             print(line)
+
         while self.computer_status == "Rendering":
             print("Computer is rendering...")
             self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
@@ -75,8 +77,3 @@ class Monitoring(QtGui.QWidget):
             self.classroom = "Gouraud"
         else:
             self.classroom = "Unknown"
-
-
-app = QtGui.QApplication([])
-window = Monitoring()
-app.exec_()
