@@ -425,8 +425,7 @@ class Lib(object):
             mari_cache_path = self.cursor.execute('''SELECT mari_cache_path FROM preferences WHERE username=?''', (self.username,)).fetchone()[0]
         elif cache_location == "server":
             mari_cache_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex"
-        elif cache_location == "home":
-            mari_cache_path = "H:/mari_cache_tmp_synthese"
+
 
         os.remove("H:/.mari/TheFoundry/CacheLocations.ini")
         mari_cachelocation_file = open("H:/.mari/TheFoundry/CacheLocations.ini", "a")

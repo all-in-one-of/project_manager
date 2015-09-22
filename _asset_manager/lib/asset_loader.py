@@ -952,6 +952,9 @@ class AssetLoader(object):
                 self.renderLine.hide()
                 self.openRealLayoutScene.hide()
                 self.createVersionBtn.hide()
+            if self.username in ["mbeaudoin"]:
+                self.openRealLayoutScene.show()
+                self.importIntoSceneBtn.show()
             self.publishBtn.hide()
             self.loadObjInGplayBtn.hide()
 
@@ -1404,8 +1407,8 @@ class AssetLoader(object):
             if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
                 # Normalize modeling scale
                 self.normalize_mod_scale_process = QtCore.QProcess(self)
-                self.statusLbl.setText("Status: Publish finished.")
                 self.normalize_mod_scale_process.waitForFinished()
+                self.normalize_mod_scale_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully published asset!"))
                 self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
             else:
                 self.statusLbl.setText("Status: Idle...")
@@ -1628,7 +1631,6 @@ class AssetLoader(object):
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
-
 
     def create_img_from_tex(self, asset):
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
@@ -1910,14 +1912,11 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "tex":
             texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
-            self.Lib.switch_mari_cache(self, "home")
-            if os.path.isdir("H:/mari_cache_tmp_synthese/" + texture_project_path):
-                shutil.rmtree("H:/mari_cache_tmp_synthese/" + texture_project_path)
-            shutil.copytree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path, "H:/mari_cache_tmp_synthese/" + texture_project_path)
+            self.Lib.switch_mari_cache(self, "server")
 
             self.mari_open_asset_process = QtCore.QProcess(self)
             self.mari_open_asset_process.finished.connect(partial(self.mari_finished, texture_project_path))
-            self.mari_open_asset_process.start(self.mari_path, [])
+            self.mari_open_asset_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
 
         self.statusLbl.setText("Status: Idle...")
 
@@ -1927,17 +1926,10 @@ class AssetLoader(object):
                 os.remove(file_to_remove)
 
     def mari_finished(self, texture_project_path):
-        self.statusLbl.setText("Status: publishing mari asset (UI will Freeze, don't click!)")
         self.mari_open_asset_process.kill()
-        time.sleep(1)
+
         self.Lib.switch_mari_cache(self, "perso")
 
-        shutil.rmtree("Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
-        shutil.move("H:/mari_cache_tmp_synthese/" + texture_project_path, "Z:/Groupes-cours/NAND999-A15-N01/Nature/tex/" + texture_project_path)
-
-        self.show()
-        self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-        self.activateWindow()
         self.statusLbl.setText("Status: Idle...")
 
     def open_real_layout_scene(self):
@@ -2562,25 +2554,47 @@ class AssetLoader(object):
 
         self.batch_thumbnail = True
 
+
+        # Shading
+
+        shading_asset_list = []
         for asset, asset_item in self.assets.items():
             if asset.type in ["shd"]:
                 max_asset_id = self.cursor.execute('''SELECT MAX(asset_version), asset_id FROM assets WHERE asset_name=? AND asset_version != "out" AND asset_type="shd"''', (asset.name,)).fetchone()
                 if max_asset_id[0] != None:
-                    self.selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
-                    self.selected_asset.print_asset()
-                    self.update_thumbnail(ask_window=False)
-                    print("Finished Thumbnail")
-                    print("#######################################################################")
+                    selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
+                    shading_asset_list.append(selected_asset)
 
+        for asset in shading_asset_list:
+            if not os.path.isfile(asset.full_media):
+                open(asset.full_media, "a")
+
+        shading_asset_list.sort(key=lambda x: os.path.getmtime(x.full_media))
+
+        for asset in shading_asset_list:
+            self.selected_asset = asset
+            self.update_thumbnail(ask_window=False)
+
+
+        # Modeling
+
+        modeling_asset_list = []
         for asset, asset_item in self.assets.items():
             if asset.type in ["mod"]:
                 max_asset_id = self.cursor.execute('''SELECT MAX(asset_version), asset_id FROM assets WHERE asset_name=? AND asset_version != "out" AND asset_type="mod"''', (asset.name,)).fetchone()
                 if max_asset_id[0] != None:
-                    self.selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
-                    self.selected_asset.print_asset()
-                    self.update_thumbnail(ask_window=False)
-                    print("Finished Thumbnail")
-                    print("#######################################################################")
+                    selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
+                    modeling_asset_list.append(selected_asset)
+
+        for asset in modeling_asset_list:
+            if not os.path.isfile(asset.full_media):
+                open(asset.full_media, "a")
+
+        modeling_asset_list.sort(key=lambda x: os.path.getmtime(x.full_media))
+
+        for asset in modeling_asset_list:
+            self.selected_asset = asset
+            self.update_thumbnail(ask_window=False)
 
 
 

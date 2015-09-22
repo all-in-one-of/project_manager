@@ -34,7 +34,7 @@ class MariExportManager(gui.QDialog):
 
         if "pub_" in obj_name.lower():
             self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\pub\\assets\\tex\\"
-        elif "nature_" in obj_name.lower():
+        elif "nat_" in obj_name.lower():
             self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\assets\\tex\\"
 
         obj_name = obj_name[obj_name.find("_mod_") + len("_mod_"):obj_name.rfind("_")]
