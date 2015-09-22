@@ -153,6 +153,8 @@ class AssetLoader(object):
         self.assetList.connect(self.assetList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_right_click_menu)
         self.shotList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.shotList.connect(self.shotList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_shot_right_click_menu)
+        self.versionList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.versionList.connect(self.versionList, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.show_right_click_menu_version)
 
         self.batchUpdateThumbnailsBtn.clicked.connect(self.batch_update_thumbnails)
 
@@ -181,6 +183,34 @@ class AssetLoader(object):
 
         # Show the context menu.
         menu.exec_(self.assetList.mapToGlobal(QPos))
+
+    def show_right_click_menu_version(self, QPos):
+        # Create a menu
+        menu = QtGui.QMenu("Menu", self)
+        if self.selected_asset.type == "mod":
+            show_full_media = menu.addAction("Show clay render")
+            show_advanced_media = menu.addAction("Show Turntable")
+            show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
+            show_full_media.triggered.connect(self.versionList_simple_view)
+            show_advanced_media.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
+            show_advanced_media.triggered.connect(self.versionList_advanced_view)
+        elif self.selected_asset.type == "shd":
+            show_full_media = menu.addAction("Show Turntable (Geo)")
+            show_advanced_media = menu.addAction("Show Turntable (HDR)")
+            show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
+            show_full_media.triggered.connect(self.versionList_simple_view)
+            show_advanced_media.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
+            show_advanced_media.triggered.connect(self.versionList_advanced_view)
+        elif self.selected_asset.type == "anm":
+            show_full_media = menu.addAction("Show playblast")
+            show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
+            show_full_media.triggered.connect(self.versionList_advanced_view)
+
+
+
+        # Show the context menu
+        menu.exec_(self.versionList.mapToGlobal(QPos))
+
 
     def change_icon_display(self):
         if self.icon_display_type == "user":
