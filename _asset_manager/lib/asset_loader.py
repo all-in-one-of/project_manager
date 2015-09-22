@@ -1410,10 +1410,8 @@ class AssetLoader(object):
                 self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
             elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
                 self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-                self.update_thumbnail(False)
             elif self.selected_asset.type == "anm":
                 self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-                self.update_thumbnail(False)
             else:
                 self.statusLbl.setText("Status: Idle...")
                 self.Lib.message_box(self, type="info", text="Successfully published asset!")
@@ -2585,7 +2583,6 @@ class AssetLoader(object):
 
 
         self.batch_thumbnail = False
-
 
 
 class AnimSceneChooser(QtGui.QDialog):
