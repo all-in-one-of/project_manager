@@ -95,34 +95,37 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         self.db_to_load = ""
 
-        if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
-            # Project selection GUI
-            projectDialog = QtGui.QDialog(self)
-            projectDialog.setWindowTitle("Select a project")
-            projectDialog.setMinimumWidth(175)
-
-            layout = QtGui.QVBoxLayout(projectDialog)
-
-            pubBtn = QtGui.QPushButton("Pub")
-            natureBtn = QtGui.QPushButton("Nature")
-
-            pubBtn.clicked.connect(projectDialog.accept)
-            natureBtn.clicked.connect(projectDialog.reject)
-
-            layout.addWidget(pubBtn)
-            layout.addWidget(natureBtn)
-
-            projectDialog.move(960, 540)
-            projectDialog.setWindowFlags(projectDialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-            result = projectDialog.exec_()
-
-            if result == 0:
-                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
-            elif result == 1:
-                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
-
+        if sys.argv[-1] == "-slave":
+            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
         else:
-            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
+            if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
+                # Project selection GUI
+                projectDialog = QtGui.QDialog(self)
+                projectDialog.setWindowTitle("Select a project")
+                projectDialog.setMinimumWidth(175)
+
+                layout = QtGui.QVBoxLayout(projectDialog)
+
+                pubBtn = QtGui.QPushButton("Pub")
+                natureBtn = QtGui.QPushButton("Nature")
+
+                pubBtn.clicked.connect(projectDialog.accept)
+                natureBtn.clicked.connect(projectDialog.reject)
+
+                layout.addWidget(pubBtn)
+                layout.addWidget(natureBtn)
+
+                projectDialog.move(960, 540)
+                projectDialog.setWindowFlags(projectDialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+                result = projectDialog.exec_()
+
+                if result == 0:
+                    self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
+                elif result == 1:
+                    self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
+
+            else:
+                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
@@ -272,6 +275,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
+
+
+
         self.check_news_thread = CheckNews(self)
         self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
         self.check_news_thread.daemon = True
@@ -384,6 +390,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Christopher":
@@ -392,6 +400,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
@@ -399,6 +409,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Jeremy":
@@ -407,6 +419,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Laurence":
@@ -415,6 +429,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Louis-Philippe":
             self.Tabs.removeTab(self.tabs_list["Misc"])
@@ -425,6 +441,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Maxime":
@@ -433,6 +451,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Olivier":
@@ -441,6 +461,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Simon":
@@ -449,6 +471,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Thibault":
@@ -458,6 +482,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Yi":
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
@@ -465,6 +491,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
 
         elif self.members[self.username] == "Valentin":
@@ -473,6 +501,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
 
     def get_tabs_id_from_name(self):
         self.tabs_list = {}
@@ -688,8 +718,20 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                 self.trayIcon.showMessage('Still running...', self.tray_message, QtGui.QSystemTrayIcon.Information, 1000)
 
     def check_last_active(self):
+        for user in self.members.keys():
+            last_active = datetime.now().strftime("%d/%m/%Y at %H:%M")
+            last_active_datetime = datetime.strptime(last_active, '%d/%m/%Y at %H:%M')
+
+            last_active_db = self.cursor.execute('''SELECT last_active FROM preferences WHERE username=?''', (user, )).fetchone()[0]
+            last_active_db_datetime = datetime.strptime(last_active_db, '%d/%m/%Y at %H:%M')
+
+            time_difference = last_active_datetime - last_active_db_datetime
+            if time_difference.seconds > 600:
+                self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (user,))
+            else:
+                self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (user,))
+
         last_active = datetime.now().strftime("%d/%m/%Y at %H:%M")
-        self.cursor.execute('''UPDATE preferences SET is_online=1 WHERE username=?''', (self.username,))
         self.cursor.execute('''UPDATE preferences SET last_active=? WHERE username=?''', (last_active, self.username,))
         self.db.commit()
 

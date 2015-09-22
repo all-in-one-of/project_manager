@@ -2488,8 +2488,8 @@ class AssetLoader(object):
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
 
     def ldld(self):
-        while self.houdini_hda_process.canReadLine():
-            print(self.houdini_hda_process.readLine())
+        while self.publish_process.canReadLine():
+            print(self.publish_process.readLine())
 
     def create_lay_asset_from_scratch(self, asset_name):
 
