@@ -1590,33 +1590,45 @@ class AssetLoader(object):
         all_files = glob("H:/tmp/*")
         all_files = [i.replace("\\", "/") for i in all_files if "turn_" in i]
 
-        turn_folder = os.path.split(asset.full_path)[0].replace("\\", "/") + "/.thumb/"  # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
-        filename_path = asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4")  # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
-        filename_path_geo = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_full")
-        filename_path_hdr = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_advanced")
-        movie_path_geo = (turn_folder + filename_path_geo).replace("\\", "/")
-        movie_path_hdr = (turn_folder + filename_path_hdr).replace("\\", "/")
+        if len(all_files) > 24:
+            turn_folder = os.path.split(asset.full_path)[0].replace("\\", "/") + "/.thumb/"  # Ex: H:\01-NAD\_pipeline\test_project_files\assets\shd\.turn
+            filename_path = asset.path.replace("\\assets\\shd\\", "").replace(".hda", ".mp4")  # Ex: nat_xxx_xxxx_shd_flippy_01.mp4
+            filename_path_geo = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_full")
+            filename_path_hdr = filename_path.replace(asset.name + "_" + asset.version, asset.name + "_" + asset.version + "_advanced")
+            movie_path_geo = (turn_folder + filename_path_geo).replace("\\", "/")
+            movie_path_hdr = (turn_folder + filename_path_hdr).replace("\\", "/")
 
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_geo.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_geo])
-        subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
+            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_geo.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_geo])
+            subprocess.call([self.cur_path_one_folder_up + "\\_soft\\ffmpeg\\ffmpeg.exe", "-i", "H:/tmp/turn_hdr.%04d.jpg", "-vcodec", "libx264", "-y", "-r", "24", movie_path_hdr])
 
-        for i, each_file in enumerate(all_files):
-            if i == 3:
-                shutil.move(each_file, movie_path_geo.replace("_full.mp4", "_full.jpg"))
+            for i, each_file in enumerate(all_files):
+                if i == 3:
+                    shutil.move(each_file, movie_path_geo.replace("_full.mp4", "_full.jpg"))
+                else:
+                    os.remove(each_file)
+
+
+            self.blockSignals(True)
+            self.load_all_assets_for_first_time()
+            self.load_assets_from_selected_seq_shot_dept()
+            self.blockSignals(False)
+
+
+
+            if self.batch_thumbnail == True:
+                pass
             else:
-                os.remove(each_file)
+                self.Lib.message_box(self, type="info", text="Successfully created turntable!")
+        else:
+            if self.batch_thumbnail == True:
+                pass
+            else:
+                self.Lib.message_box(self, type="info", text="Couldn't create turntable, there must be no shader...")
+
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
         self.thumbnailProgressBar.hide()
 
-        self.blockSignals(True)
-        self.load_all_assets_for_first_time()
-        self.load_assets_from_selected_seq_shot_dept()
-        self.blockSignals(False)
-        if self.batch_thumbnail == True:
-            pass
-        else:
-            self.Lib.message_box(self, type="info", text="Successfully created playblast!")
 
     def create_img_from_tex(self, asset):
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())

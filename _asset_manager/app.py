@@ -163,13 +163,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
         self.departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
-                                         "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
-                                         "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp", "Rendering":"rdr",
-                                         "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
+                                      "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
+                                      "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp", "Rendering":"rdr",
+                                      "Compositing": "cmp", "Editing": "edt", "RnD": "rnd"}
         self.departments_longname = {"spt": "Script", "stb": "Storyboard", "ref": "References", "cam": "Camera", "cpt": "Concepts", "lgt": "Lighting",
-                                      "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
-                                      "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP", "rdr":"Rendering",
-                                      "cmp": "Compositing", "edt": "Editing", "rnd": "RnD"}
+                                     "mod": "Modeling", "tex": "Texturing", "rig": "Rigging", "anm": "Animation",
+                                     "sim": "Simulation", "shd": "Shading", "lay": "Layout", "dmp": "DMP", "rdr":"Rendering",
+                                     "cmp": "Compositing", "edt": "Editing", "rnd": "RnD"}
 
         refresh_icon = QtGui.QIcon(self.cur_path + "\\media\\refresh.png")
         self.refreshAllBtn.setIcon(refresh_icon)
@@ -182,6 +182,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Lib.setup_user_session(self)
             self.cursor.execute('''UPDATE preferences SET is_setup=1 WHERE username=?''', (self.username,))
             self.db.commit()
+
+        # Clear temp folder
+        if os.path.isdir("H:/tmp"):
+            shutil.rmtree("H:/tmp")
+
+        os.makedirs("H:/tmp")
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()
