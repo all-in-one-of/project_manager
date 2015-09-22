@@ -3566,14 +3566,7 @@
                    <item>
                     <widget class="QPushButton" name="changeSeqBtn">
                      <property name="text">
-                      <string>Change Sequence</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="changeShotBtn">
-                     <property name="text">
-                      <string>Change Shot</string>
+                      <string>Change Sequence / Shot</string>
                      </property>
                     </widget>
                    </item>

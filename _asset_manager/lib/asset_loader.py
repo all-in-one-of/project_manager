@@ -1170,14 +1170,14 @@ class AssetLoader(object):
                 asset = self.assetList.item(i).data(QtCore.Qt.UserRole).toPyObject()
 
                 if "*" in asset_filter_str:
-                    asset_filter_str = asset_filter_str.replace("*", ".*")
+                    asset_filter_str = asset_filter_str.replace("*", ".*").lower()
                     r = re.compile(asset_filter_str)
-                    if not r.match(asset.name):
+                    if not r.match(asset.name.lower()):
                         self.assetList.setItemHidden(self.assetList.item(i), True)
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), False)
                 else:
-                    if not asset_filter_str in asset.name:
+                    if not asset_filter_str.lower() in asset.name.lower():
                         self.assetList.setItemHidden(self.assetList.item(i), True)
                     else:
                         self.assetList.setItemHidden(self.assetList.item(i), False)
@@ -1404,19 +1404,14 @@ class AssetLoader(object):
             if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
                 # Normalize modeling scale
                 self.normalize_mod_scale_process = QtCore.QProcess(self)
-                self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-                self.normalize_mod_scale_process.finished.connect(lambda ask_window: self.update_thumbnail(False))
+                self.statusLbl.setText("Status: Publish finished.")
                 self.normalize_mod_scale_process.waitForFinished()
                 self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
-            elif self.selected_asset.type == "mod" and "lowres" in self.selected_asset.name:
-                self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            elif self.selected_asset.type == "anm":
-                self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
             else:
                 self.statusLbl.setText("Status: Idle...")
                 self.Lib.message_box(self, type="info", text="Successfully published asset!")
         else:
-            self.Lib.message_box(self, type="info", text="Successfully created thumbnails")
+            self.Lib.message_box(self, type="info", text="Successfully published asset")
 
         self.blockSignals(False)
 
@@ -2480,14 +2475,9 @@ class AssetLoader(object):
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.readyRead.connect(self.ldld)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
-
-    def ldld(self):
-        while self.publish_process.canReadLine():
-            print(self.publish_process.readLine())
 
     def create_lay_asset_from_scratch(self, asset_name):
 
