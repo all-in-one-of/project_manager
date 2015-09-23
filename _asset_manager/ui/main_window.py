@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 22 09:19:50 2015
+# Created: Tue Sep 22 23:09:22 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -170,8 +170,8 @@ class Ui_Form(object):
         self.assetList.setIconSize(QtCore.QSize(188, 188))
         self.assetList.setMovement(QtGui.QListView.Static)
         self.assetList.setProperty("isWrapping", True)
-        self.assetList.setResizeMode(QtGui.QListView.Adjust)
-        self.assetList.setSpacing(5)
+        self.assetList.setResizeMode(QtGui.QListView.Fixed)
+        self.assetList.setSpacing(0)
         self.assetList.setViewMode(QtGui.QListView.IconMode)
         self.assetList.setUniformItemSizes(False)
         self.assetList.setWordWrap(True)
@@ -1391,9 +1391,6 @@ class Ui_Form(object):
         self.changeSeqBtn = QtGui.QPushButton(self.frame_7)
         self.changeSeqBtn.setObjectName(_fromUtf8("changeSeqBtn"))
         self.horizontalLayout_12.addWidget(self.changeSeqBtn)
-        self.changeShotBtn = QtGui.QPushButton(self.frame_7)
-        self.changeShotBtn.setObjectName(_fromUtf8("changeShotBtn"))
-        self.horizontalLayout_12.addWidget(self.changeShotBtn)
         self.verticalLayout_39.addWidget(self.frame_7)
         self.verticalLayout_4.addWidget(self.rdrFilterByGroupBox)
         self.renderTableWidget = QtGui.QTableWidget(self.renderTab)
@@ -1792,7 +1789,7 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 100, 30))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 536))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
@@ -2209,8 +2206,7 @@ class Ui_Form(object):
         self.rdrHideDoneCheckBox.setText(_translate("Form", "Hide Done", None))
         self.startRenderBtn.setText(_translate("Form", "Start render", None))
         self.stopRenderBtn.setText(_translate("Form", "Stop render", None))
-        self.changeSeqBtn.setText(_translate("Form", "Change Sequence", None))
-        self.changeShotBtn.setText(_translate("Form", "Change Shot", None))
+        self.changeSeqBtn.setText(_translate("Form", "Change Sequence / Shot", None))
         self.renderTableWidget.setSortingEnabled(False)
         item = self.renderTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Form", "ID", None))

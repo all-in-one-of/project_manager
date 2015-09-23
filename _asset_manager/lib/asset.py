@@ -165,6 +165,8 @@ class Asset(object):
             if self.version != "out":
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
                 self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+            else:
+                break
         self.full_path = self.project_path + self.path
         self.main.cursor.execute('''INSERT INTO assets(project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (self.project, self.sequence, self.shot, self.name, self.path, self.extension, self.type, self.version, ",".join(self.tags), self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes,))
         self.id = self.main.cursor.lastrowid

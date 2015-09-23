@@ -890,7 +890,7 @@ class AssetLoader(object):
             else:
                 if self.username in ["thoudon", "lclavet"]:
                     self.createAssetFromAssetBtn.show()
-                    self.createAssetFromAssetBtn.setText("Create Rig or Texture from Modeling")
+                    self.createAssetFromAssetBtn.setText("Create Rig, Texture or Low-Res from Modeling")
                 self.hasUvSeparator.show()
                 self.hasUvToggleBtn.show()
             self.publishBtn.show()
@@ -1114,7 +1114,7 @@ class AssetLoader(object):
         number_of_days_since_last_publish = day_today - asset_published.last_publish_as_date
         number_of_days_since_last_publish = number_of_days_since_last_publish.days
 
-        self.lastPublishedLbl.setStyleSheet("color: black;")
+        self.lastPublishedLbl.setStyleSheet("color: #3c3c3c;")
         if number_of_days_since_last_publish == 0:
             number_of_days_since_last_publish = "today"
         elif number_of_days_since_last_publish > 7:
@@ -1438,7 +1438,7 @@ class AssetLoader(object):
                 # Normalize modeling scale
                 self.normalize_mod_scale_process = QtCore.QProcess(self)
                 self.normalize_mod_scale_process.waitForFinished()
-                self.normalize_mod_scale_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully published asset!"))
+                self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
                 self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
             else:
                 self.statusLbl.setText("Status: Idle...")
@@ -1446,7 +1446,13 @@ class AssetLoader(object):
         else:
             self.Lib.message_box(self, type="info", text="Successfully published asset")
 
+        self.versionList_Clicked()
+
         self.blockSignals(False)
+
+    def normalize_modeling_finished(self):
+        self.versionList_Clicked()
+        self.Lib.message_box(self, type="info", text="Successfully published asset!")
 
     def update_thumbnail(self, ask_window=True, batch_update=False):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
@@ -2226,12 +2232,15 @@ class AssetLoader(object):
 
             rigBtn = QtGui.QPushButton("Rig", self.create_from_asset_dialog)
             texBtn = QtGui.QPushButton("Tex", self.create_from_asset_dialog)
+            lowBtn = QtGui.QPushButton("LowRes", self.create_from_asset_dialog)
 
             rigBtn.clicked.connect(self.create_rig_asset_from_mod)
             texBtn.clicked.connect(self.create_tex_asset_from_mod)
+            lowBtn.clicked.connect(self.create_lowres_from_mod)
 
             self.create_from_asset_dialog_main_layout.addWidget(rigBtn)
             self.create_from_asset_dialog_main_layout.addWidget(texBtn)
+            self.create_from_asset_dialog_main_layout.addWidget(lowBtn)
 
             self.create_from_asset_dialog.exec_()
 
@@ -2459,10 +2468,7 @@ class AssetLoader(object):
             obj_asset.add_asset_to_db()
             shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
 
-            # Create default lowres publish cube (obj)
-            obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], asset.id, "", "", self.username)
-            obj_lowres_asset.add_asset_to_db()
-            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
+            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path.replace("_" + obj_asset.name + "_", "_" + obj_asset.name + "-lowres_"))
 
             # Add publish obj as dependency to main asset
             asset.change_dependency(obj_asset.id)
@@ -2478,26 +2484,15 @@ class AssetLoader(object):
             asset.add_asset_to_db()
             shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset.full_path)
 
-            # Create low res modeling scene asset
-            asset_low_res = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", extension, "mod", "01", [], "", "", "", self.username)
-            asset_low_res.add_asset_to_db()
-            shutil.copy(self.NEF_folder + "\\" + selected_software + "." + extension, asset_low_res.full_path)
-
             # Create default publish cube (obj)
             obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
             obj_asset.add_asset_to_db()
             shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path)
-
-            # Create default lowres publish cube (obj)
-            obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name + "-lowres", "", "obj", "mod", "out", [], asset_low_res.id, "", "", self.username)
-            obj_lowres_asset.add_asset_to_db()
-            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_lowres_asset.full_path)
+            shutil.copy(self.NEF_folder + "\\default_cube.obj", obj_asset.full_path.replace("_" + obj_asset.name + "_", "_" + obj_asset.name + "-lowres_"))
 
             # Add publish obj as dependency to main asset
             asset.change_dependency(obj_asset.id)
 
-            # Add publish obj as dependency to main asset
-            asset_low_res.change_dependency(obj_lowres_asset.id)
 
             # Create main HDA database entry
             main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
@@ -2542,6 +2537,42 @@ class AssetLoader(object):
         shutil.copy(self.cur_path_one_folder_up + "\\_NEF\\maya.ma", asset.full_path)
         self.asset_creation_finished(asset)
 
+    def create_lowres_from_mod(self):
+
+        self.create_from_asset_dialog.close()
+
+        does_low_res_exists = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (self.selected_asset.name + "-lowres", )).fetchone()
+        if does_low_res_exists != None:
+            self.Lib.message_box(self, type="error", text="There's already a LowRes asset for this modeling")
+            return
+
+        # Create low res modeling scene asset
+        asset_low_res = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name + "-lowres", "", self.selected_asset.extension, "mod", "01", [], "", "", "", self.username)
+        asset_low_res.add_asset_to_db()
+        if self.selected_asset.extension == "blend":
+            selected_software = "blender"
+        elif self.selected_asset.extension == "ma":
+            selected_software = "maya"
+        elif self.selected_asset.extension == "scn":
+            selected_software = "softimage"
+        elif self.selected_asset.extension == "c4d":
+            selected_software = "cinema4d"
+        elif self.selected_asset.extension == "hda":
+            selected_software = "houdini"
+        shutil.copy(self.NEF_folder + "\\" + selected_software + "." + self.selected_asset.extension, asset_low_res.full_path)
+
+        # Create default lowres publish cube (obj)
+        obj_lowres_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name + "-lowres", "", "obj", "mod", "out", [], asset_low_res.id, "", "", self.username)
+        obj_lowres_asset.add_asset_to_db()
+        asset_low_res.change_dependency(obj_lowres_asset.id)
+
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+
+        self.Lib.message_box(self, type="info", text="Successfully created LowRes modeling asset")
+
+
+
     def asset_creation_finished(self, asset):
 
         # Reload assets
@@ -2584,7 +2615,6 @@ class AssetLoader(object):
 
         self.batch_thumbnail = True
 
-
         # Shading
 
         shading_asset_list = []
@@ -2625,8 +2655,6 @@ class AssetLoader(object):
         for asset in modeling_asset_list:
             self.selected_asset = asset
             self.update_thumbnail(ask_window=False)
-
-
 
         self.batch_thumbnail = False
 
