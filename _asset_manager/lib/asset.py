@@ -4,6 +4,7 @@
 import os
 import time
 from datetime import datetime
+from datetime import date
 import subprocess
 from PyQt4 import QtGui, QtCore
 from glob import glob
@@ -58,23 +59,35 @@ class Asset(object):
         if self.version == "out":
             if last_publish == "" or last_publish == None:
                 self.last_publish = self.main.members[self.main.username] + datetime.now().strftime(" on %d/%m/%Y at %H:%M")
-                self.last_publish_as_date = datetime.now()
+                self.last_publish_as_date = date(2010, 01, 01)
             else:
                 self.last_publish = last_publish
-                date = last_publish.split(" ")[2]
-                day = date.split("/")[0]
-                month = date.split("/")[1]
-                year = date.split("/")[2]
+                last_publish_date = last_publish.split(" ")[2]
+                day = last_publish_date.split("/")[0]
+                month = last_publish_date.split("/")[1]
+                year = last_publish_date.split("/")[2]
                 time = last_publish.split(" ")[-1]
                 hour = time.split(":")[0]
                 minutes = time.split(":")[1]
                 self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
         else:
-            published_by = last_publish.split(" ")[0]
-            if len(published_by) == 0:
-                published_by = self.main.members[self.main.username]
-            self.last_publish = published_by + datetime.now().strftime(" on %d/%m/%Y at %H:%M")
-            self.last_publish_as_date = self.last_publish_as_date = datetime.now()
+            if last_publish == "" or last_publish == None:
+                self.last_publish = self.main.members[self.main.username] + datetime.now().strftime(" on %d/%m/%Y at %H:%M")
+                self.last_publish_as_date = date(2010, 01, 01)
+            else:
+                published_by = last_publish.split(" ")[0]
+                if len(published_by) == 0:
+                    published_by = self.main.members[self.main.username]
+
+                self.last_publish = last_publish
+                last_publish_date = last_publish.split(" ")[2]
+                day = last_publish_date.split("/")[0]
+                month = last_publish_date.split("/")[1]
+                year = last_publish_date.split("/")[2]
+                time = last_publish.split(" ")[-1]
+                hour = time.split(":")[0]
+                minutes = time.split(":")[1]
+                self.last_publish_as_date = datetime(int(year), int(month), int(day), int(hour), int(minutes))
 
         self.number_of_publishes = number_of_publishes
         self.creator = creator

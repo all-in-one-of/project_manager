@@ -21,6 +21,9 @@ class RenderTab(object):
 
         self.changeSeqBtn.clicked.connect(self.change_sequence_on_selected_computers)
 
+        self.setToIFDBtn.clicked.connect(self.change_to_ifd)
+        self.setToMantraBtn.clicked.connect(self.change_to_mantra)
+
 
         self.add_computers_from_database()
 
@@ -107,10 +110,9 @@ class RenderTab(object):
                 status_item.setBackground(QtGui.QColor(253, 179, 20))
             elif status == "Rendering":
                 status_item.setBackground(QtGui.QColor(135, 45, 44))
-            self.renderTableWidget.setItem(0, 7, status_item)
+            self.renderTableWidget.setItem(0, 8, status_item)
 
             self.renderTableWidget.resizeColumnsToContents()
-
 
     def start_render_on_selected_computers(self):
         selected_items = self.renderTableWidget.selectedItems()
@@ -144,7 +146,6 @@ class RenderTab(object):
 
         self.db.commit()
 
-
     def change_sequence_on_selected_computers(self):
 
         dialog = QtGui.QDialog(self)
@@ -167,15 +168,14 @@ class RenderTab(object):
         self.seqListWidget.addItems(seqList)
 
         for seq, shots in self.shots.items():
-            item = QtGui.QListWidgetItem("None")
-            item.setData(QtCore.Qt.UserRole, seq)
-            self.shotListWidget.addItem(item)
-            for shot in shots:
-                item = QtGui.QListWidgetItem(shot)
-                item.setData(QtCore.Qt.UserRole, seq)
-                self.shotListWidget.addItem(item)
+            for shot in sorted(shots):
+                if shot != "xxxx":
+                    item = QtGui.QListWidgetItem(shot)
+                    item.setData(QtCore.Qt.UserRole, seq)
+                    self.shotListWidget.addItem(item)
 
         change_seq_shot_btn = QtGui.QPushButton("Change Sequence and Shot", dialog)
+        change_seq_shot_btn.clicked.connect(dialog.accept)
 
         layout.addWidget(seqLbl, 0, 0)
         layout.addWidget(shotLbl, 0, 1)
@@ -186,24 +186,59 @@ class RenderTab(object):
         self.seqListWidget.setCurrentRow(0)
         self.filter_shots_based_on_sequence()
 
-        dialog.exec_()
+        result = dialog.exec_()
+
+        if result == 0:
+            return
+
+        selected_items = self.renderTableWidget.selectedItems()
+
+        print(self.render_selected_sequence)
+        print(self.render_selected_shot)
+
+
+        for item in selected_items:
+
+            id = self.renderTableWidget.item(item.row(), 0).text()
+            computer_id = self.renderTableWidget.item(item.row(), 1).text()
+
+            # Change sequence
+            self.cursor.execute('''UPDATE computers SET seq=? WHERE computer_id=? AND id=?''', (str(self.render_selected_sequence), str(computer_id), str(id), ))
+
+            sequence_item = QtGui.QTableWidgetItem()
+            sequence_item.setText(self.render_selected_sequence)
+            sequence_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            sequence_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(item.row(), 3, sequence_item)
+
+
+            # Change shot
+            self.cursor.execute('''UPDATE computers SET shot=? WHERE computer_id=? AND id=?''', (self.render_selected_shot, str(computer_id), str(id), ))
+
+            shot_item = QtGui.QTableWidgetItem()
+            shot_item.setText(self.render_selected_shot)
+            shot_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            shot_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(item.row(), 4, shot_item)
+
+        self.db.commit()
 
     def filter_shots_based_on_sequence(self):
-        self.selected_sequence = self.seqListWidget.selectedItems()[0]
-        self.selected_sequence = str(self.selected_sequence.text())
+        self.render_selected_sequence = self.seqListWidget.selectedItems()[0]
+        self.render_selected_sequence = str(self.render_selected_sequence.text())
 
         for i in xrange(0, self.shotListWidget.count()):
             seq_from_shot = self.shotListWidget.item(i).data(QtCore.Qt.UserRole).toPyObject()
-            if seq_from_shot == self.selected_sequence:
+            if seq_from_shot == self.render_selected_sequence:
                 self.shotListWidget.item(i).setHidden(False)
             else:
                 self.shotListWidget.item(i).setHidden(True)
 
     def shot_list_clicked(self):
-        self.selected_shot = self.shotListWidget.selectedItems()[0]
-        self.selected_shot = str(self.selected_shot.text())
-        if self.selected_shot == "None":
-            self.selected_shot = "xxxx"
+        self.render_selected_shot = self.shotListWidget.selectedItems()[0]
+        self.render_selected_shot = str(self.render_selected_shot.text())
+        if self.render_selected_shot == "None":
+            self.render_selected_shot = "xxxx"
 
 
 
@@ -253,3 +288,37 @@ class RenderTab(object):
         #
         # self.db.commit()
         #
+
+    def change_to_ifd(self):
+
+        selected_items = self.renderTableWidget.selectedItems()
+
+        for item in selected_items:
+            id = self.renderTableWidget.item(item.row(), 0).text()
+            computer_id = self.renderTableWidget.item(item.row(), 1).text()
+
+            # Change sequence
+            self.cursor.execute('''UPDATE computers SET ifd="1" WHERE computer_id=? AND id=?''', (str(self.render_selected_sequence), str(computer_id), str(id),))
+
+            ifd_item = QtGui.QTableWidgetItem()
+            ifd_item.setText(self.render_selected_sequence)
+            ifd_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            ifd_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(item.row(), 7, ifd_item)
+
+    def change_to_mantra(self):
+
+        selected_items = self.renderTableWidget.selectedItems()
+
+        for item in selected_items:
+            id = self.renderTableWidget.item(item.row(), 0).text()
+            computer_id = self.renderTableWidget.item(item.row(), 1).text()
+
+            # Change sequence
+            self.cursor.execute('''UPDATE computers SET ifd="0" WHERE computer_id=? AND id=?''', (str(self.render_selected_sequence), str(computer_id), str(id),))
+
+            ifd_item = QtGui.QTableWidgetItem()
+            ifd_item.setText(self.render_selected_sequence)
+            ifd_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            ifd_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(item.row(), 7, ifd_item)

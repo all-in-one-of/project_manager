@@ -36,6 +36,8 @@ import sys
 import os
 import subprocess
 
+import socket
+
 import sqlite3
 import time
 import shutil
@@ -67,12 +69,12 @@ from lib.people import PeopleTab
 from lib.batch_monitoring import Monitoring
 
 
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab, RenderTab):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab, RenderTab, Monitoring):
     def __init__(self):
         super(Main, self).__init__()
 
-        self.is_slave = sys.argv[-1]
-        #self.is_slave = "-slave"
+        #self.is_slave = sys.argv[-1]
+        self.is_slave = "-slave"
 
         self.username = os.getenv('USERNAME')
 
@@ -91,6 +93,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.LogEntry = LogEntry
         self.Moodboard_Creator = Moodboard_Creator
         self.PeopleTab = PeopleTab
+        self.Monitoring = Monitoring
 
         # Initialize the guis
         self.Form = self.setupUi(self)
@@ -147,6 +150,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Global Variables
         self.i = 0
+        self.computer_id = socket.gethostname()
         self.ref_assets_instances = []
         self.selected_asset = None
         self.utf8_codec = QtCore.QTextCodec.codecForName("utf-8")
@@ -220,6 +224,9 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         hue = self.fit_range(remaining_days, 0, total_days, 0, 76)
         self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
+        if self.username not in ["lclavet", "costiguy"]:
+            self.deadlineFrame.hide()
+
         # Setup disk usage progress bar
         disk_usage = self.Lib.get_folder_space(self)
         disk_usage = int(float(disk_usage) * 1000) # Multiply disk usage by 1000. Ex: 1.819 to 1819
@@ -286,11 +293,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.MyTasks.__init__(self)
         self.WhatsNew.__init__(self)
         self.PeopleTab.__init__(self)
+        self.Monitoring.__init__(self)
         self.WhatsNew.load_whats_new(self)
 
 
         if self.is_slave == "-slave":
-            Monitoring()
+            self.Monitoring.initialize_slave(self)
 
         else:
             self.check_news_thread = CheckNews(self)

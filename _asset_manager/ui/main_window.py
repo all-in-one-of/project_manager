@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Sep 22 23:09:22 2015
+# Created: Thu Sep 24 17:28:16 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1392,6 +1392,20 @@ class Ui_Form(object):
         self.changeSeqBtn.setObjectName(_fromUtf8("changeSeqBtn"))
         self.horizontalLayout_12.addWidget(self.changeSeqBtn)
         self.verticalLayout_39.addWidget(self.frame_7)
+        self.frame_8 = QtGui.QFrame(self.rdrFilterByGroupBox)
+        self.frame_8.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame_8.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_8.setObjectName(_fromUtf8("frame_8"))
+        self.horizontalLayout_13 = QtGui.QHBoxLayout(self.frame_8)
+        self.horizontalLayout_13.setMargin(3)
+        self.horizontalLayout_13.setObjectName(_fromUtf8("horizontalLayout_13"))
+        self.setToIFDBtn = QtGui.QPushButton(self.frame_8)
+        self.setToIFDBtn.setObjectName(_fromUtf8("setToIFDBtn"))
+        self.horizontalLayout_13.addWidget(self.setToIFDBtn)
+        self.setToMantraBtn = QtGui.QPushButton(self.frame_8)
+        self.setToMantraBtn.setObjectName(_fromUtf8("setToMantraBtn"))
+        self.horizontalLayout_13.addWidget(self.setToMantraBtn)
+        self.verticalLayout_39.addWidget(self.frame_8)
         self.verticalLayout_4.addWidget(self.rdrFilterByGroupBox)
         self.renderTableWidget = QtGui.QTableWidget(self.renderTab)
         self.renderTableWidget.setShowGrid(False)
@@ -2207,6 +2221,8 @@ class Ui_Form(object):
         self.startRenderBtn.setText(_translate("Form", "Start render", None))
         self.stopRenderBtn.setText(_translate("Form", "Stop render", None))
         self.changeSeqBtn.setText(_translate("Form", "Change Sequence / Shot", None))
+        self.setToIFDBtn.setText(_translate("Form", "Set to IFD", None))
+        self.setToMantraBtn.setText(_translate("Form", "Set to Mantra", None))
         self.renderTableWidget.setSortingEnabled(False)
         item = self.renderTableWidget.horizontalHeaderItem(0)
         item.setText(_translate("Form", "ID", None))

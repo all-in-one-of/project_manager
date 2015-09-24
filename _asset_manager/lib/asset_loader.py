@@ -211,7 +211,6 @@ class AssetLoader(object):
         # Show the context menu
         menu.exec_(self.versionList.mapToGlobal(QPos))
 
-
     def change_icon_display(self):
         if self.icon_display_type == "user":
             for asset, asset_item in self.assets.items():
@@ -639,7 +638,7 @@ class AssetLoader(object):
             self.shotList.addItem("None")
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
-            shots = [i[0] for i in shots]
+            shots = [i[0] for i in shots if i[0] != "xxxx"]
             shots = sorted(shots)
             [(self.shotList.addItem(shot), self.shotReferenceList.addItem(shot)) for shot in shots]
 
@@ -2615,7 +2614,7 @@ class AssetLoader(object):
 
         self.batch_thumbnail = True
 
-        # Shading
+        # # Shading
 
         shading_asset_list = []
         for asset, asset_item in self.assets.items():
@@ -2623,17 +2622,15 @@ class AssetLoader(object):
                 max_asset_id = self.cursor.execute('''SELECT MAX(asset_version), asset_id FROM assets WHERE asset_name=? AND asset_version != "out" AND asset_type="shd"''', (asset.name,)).fetchone()
                 if max_asset_id[0] != None:
                     selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
-                    shading_asset_list.append(selected_asset)
+                    shading_asset_list.append((selected_asset, selected_asset.last_publish_as_date))
+
+        shading_asset_list.sort(key=lambda x: x[1], reverse=True)
 
         for asset in shading_asset_list:
-            if not os.path.isfile(asset.full_media):
-                open(asset.full_media, "a")
-
-        shading_asset_list.sort(key=lambda x: os.path.getmtime(x.full_media))
-
-        for asset in shading_asset_list:
-            self.selected_asset = asset
-            self.update_thumbnail(ask_window=False)
+            time_difference = asset[1] - datetime.now()
+            if abs(time_difference.days) > 2:
+                self.selected_asset = asset[0]
+                self.update_thumbnail(ask_window=False)
 
 
         # Modeling
@@ -2644,17 +2641,17 @@ class AssetLoader(object):
                 max_asset_id = self.cursor.execute('''SELECT MAX(asset_version), asset_id FROM assets WHERE asset_name=? AND asset_version != "out" AND asset_type="mod"''', (asset.name,)).fetchone()
                 if max_asset_id[0] != None:
                     selected_asset = self.Asset(self, max_asset_id[1], get_infos_from_id=True)
-                    modeling_asset_list.append(selected_asset)
+                    modeling_asset_list.append((selected_asset, selected_asset.last_publish_as_date))
+
+        modeling_asset_list.sort(key=lambda x: x[1], reverse=True)
+
 
         for asset in modeling_asset_list:
-            if not os.path.isfile(asset.full_media):
-                open(asset.full_media, "a")
+            time_difference = asset[1] - datetime.now()
+            if abs(time_difference.days) > 2:
+                self.selected_asset = asset[0]
+                self.update_thumbnail(ask_window=False)
 
-        modeling_asset_list.sort(key=lambda x: os.path.getmtime(x.full_media))
-
-        for asset in modeling_asset_list:
-            self.selected_asset = asset
-            self.update_thumbnail(ask_window=False)
 
         self.batch_thumbnail = False
 
