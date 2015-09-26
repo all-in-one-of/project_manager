@@ -24,6 +24,8 @@ class RenderTab(object):
         self.setToIFDBtn.clicked.connect(self.change_to_ifd)
         self.setToMantraBtn.clicked.connect(self.change_to_mantra)
 
+        self.changeResolutionBtn.clicked.connect(self.change_resolution)
+        self.changeSamplingBtn.clicked.connect(self.change_sampling)
 
         self.add_computers_from_database()
 
@@ -48,6 +50,9 @@ class RenderTab(object):
             last_active = computer[7]
             rendered_frames = computer[8]
             current_frame = computer[9]
+            ifd = computer[10]
+            resolution = computer[11]
+            sampling = computer[12]
 
             if id == None: id = ""
             if computer_id == None: computer_id = ""
@@ -59,6 +64,9 @@ class RenderTab(object):
             if last_active == None: last_active = ""
             if rendered_frames == None: rendered_frames = ""
             if current_frame == None: current_frame = ""
+            if ifd == None: ifd = ""
+            if resolution == None: resolution = ""
+            if sampling == None: sampling = ""
 
             id_item = QtGui.QTableWidgetItem()
             id_item.setText(str(id))
@@ -102,6 +110,24 @@ class RenderTab(object):
             current_frame_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.renderTableWidget.setItem(0, 6, current_frame_item)
 
+            ifd_item = QtGui.QTableWidgetItem()
+            ifd_item.setText(str(ifd))
+            ifd_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            ifd_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(0, 7, ifd_item)
+
+            resolution_item = QtGui.QTableWidgetItem()
+            resolution_item.setText(str(resolution))
+            resolution_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            resolution_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(0, 8, resolution_item)
+
+            sampling_item = QtGui.QTableWidgetItem()
+            sampling_item.setText(str(sampling))
+            sampling_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            sampling_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(0, 9, sampling_item)
+
             status_item = QtGui.QTableWidgetItem()
             status_item.setText(str(status))
             status_item.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -109,10 +135,12 @@ class RenderTab(object):
             if status == "Idle":
                 status_item.setBackground(QtGui.QColor(253, 179, 20))
             elif status == "Rendering":
-                status_item.setBackground(QtGui.QColor(135, 45, 44))
-            self.renderTableWidget.setItem(0, 8, status_item)
+                status_item.setBackground(QtGui.QColor(216, 72, 72))
+            self.renderTableWidget.setItem(0, 10, status_item)
+
 
             self.renderTableWidget.resizeColumnsToContents()
+            self.tmTableWidget.horizontalHeader().setResizeMode(10, QtGui.QHeaderView.Stretch)
 
     def start_render_on_selected_computers(self):
         selected_items = self.renderTableWidget.selectedItems()
@@ -126,7 +154,7 @@ class RenderTab(object):
             status_item.setTextAlignment(QtCore.Qt.AlignCenter)
             status_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             status_item.setBackground(QtGui.QColor(135, 45, 44))
-            self.renderTableWidget.setItem(item.row(), 7, status_item)
+            self.renderTableWidget.setItem(item.row(), 10, status_item)
 
         self.db.commit()
 
@@ -142,7 +170,7 @@ class RenderTab(object):
             status_item.setTextAlignment(QtCore.Qt.AlignCenter)
             status_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             status_item.setBackground(QtGui.QColor(253, 179, 20))
-            self.renderTableWidget.setItem(item.row(), 7, status_item)
+            self.renderTableWidget.setItem(item.row(), 10, status_item)
 
         self.db.commit()
 
@@ -294,31 +322,69 @@ class RenderTab(object):
         selected_items = self.renderTableWidget.selectedItems()
 
         for item in selected_items:
-            id = self.renderTableWidget.item(item.row(), 0).text()
             computer_id = self.renderTableWidget.item(item.row(), 1).text()
 
             # Change sequence
-            self.cursor.execute('''UPDATE computers SET ifd="1" WHERE computer_id=? AND id=?''', (str(self.render_selected_sequence), str(computer_id), str(id),))
+            self.cursor.execute('''UPDATE computers SET ifd="1" WHERE computer_id=?''', (str(computer_id), ))
 
             ifd_item = QtGui.QTableWidgetItem()
-            ifd_item.setText(self.render_selected_sequence)
+            ifd_item.setText("1")
             ifd_item.setTextAlignment(QtCore.Qt.AlignCenter)
             ifd_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.renderTableWidget.setItem(item.row(), 7, ifd_item)
+
+        self.db.commit()
 
     def change_to_mantra(self):
 
         selected_items = self.renderTableWidget.selectedItems()
 
         for item in selected_items:
-            id = self.renderTableWidget.item(item.row(), 0).text()
             computer_id = self.renderTableWidget.item(item.row(), 1).text()
 
             # Change sequence
-            self.cursor.execute('''UPDATE computers SET ifd="0" WHERE computer_id=? AND id=?''', (str(self.render_selected_sequence), str(computer_id), str(id),))
+            self.cursor.execute('''UPDATE computers SET ifd="0" WHERE computer_id=?''', (str(computer_id), ))
 
             ifd_item = QtGui.QTableWidgetItem()
-            ifd_item.setText(self.render_selected_sequence)
+            ifd_item.setText("0")
             ifd_item.setTextAlignment(QtCore.Qt.AlignCenter)
             ifd_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.renderTableWidget.setItem(item.row(), 7, ifd_item)
+
+        self.db.commit()
+
+    def change_resolution(self):
+        selected_items = self.renderTableWidget.selectedItems()
+        resolution_value = self.resolutionSpinBox.value()
+
+        for item in selected_items:
+            computer_id = self.renderTableWidget.item(item.row(), 1).text()
+
+            # Change sequence
+            self.cursor.execute('''UPDATE computers SET resolution=? WHERE computer_id=?''', (resolution_value, str(computer_id),))
+
+            resolution_item = QtGui.QTableWidgetItem()
+            resolution_item.setText(str(resolution_value))
+            resolution_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            resolution_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(item.row(), 8, resolution_item)
+
+        self.db.commit()
+
+    def change_sampling(self):
+        selected_items = self.renderTableWidget.selectedItems()
+        sampling_value = self.samplingSpinBox.value()
+
+        for item in selected_items:
+            computer_id = self.renderTableWidget.item(item.row(), 1).text()
+
+            # Change sequence
+            self.cursor.execute('''UPDATE computers SET sampling=? WHERE computer_id=?''', (sampling_value, str(computer_id),))
+
+            sampling_item = QtGui.QTableWidgetItem()
+            sampling_item.setText(str(sampling_value))
+            sampling_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            sampling_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderTableWidget.setItem(item.row(), 9, sampling_item)
+
+        self.db.commit()

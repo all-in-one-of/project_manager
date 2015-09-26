@@ -73,8 +73,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def __init__(self):
         super(Main, self).__init__()
 
-        #self.is_slave = sys.argv[-1]
-        self.is_slave = "-slave"
+        self.is_slave = sys.argv[-1]
+        #self.is_slave = "-slave"
 
         self.username = os.getenv('USERNAME')
 
@@ -94,6 +94,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Moodboard_Creator = Moodboard_Creator
         self.PeopleTab = PeopleTab
         self.Monitoring = Monitoring
+
 
         # Initialize the guis
         self.Form = self.setupUi(self)
@@ -145,7 +146,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         if self.db_path != "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite":
             self.backup_database()
 
-        self.db = sqlite3.connect(self.db_path, check_same_thread=False)
+        self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30000)
         self.cursor = self.db.cursor()
 
         # Global Variables
@@ -224,7 +225,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         hue = self.fit_range(remaining_days, 0, total_days, 0, 76)
         self.deadlineProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
-        if self.username not in ["lclavet", "costiguy"]:
+        if self.username not in ["thoudon", "lclavet", "costiguy"]:
             self.deadlineFrame.hide()
 
         # Setup disk usage progress bar
@@ -720,10 +721,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.trayIcon.show()
 
     def terminate_program(self):
+        print(str(self.computer_id))
+        self.cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (str(self.computer_id),))
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.db.commit()
         self.Lib.switch_mari_cache(self, "perso")
-        self.save_tags_list()
         self.close()
         app.exit()
 

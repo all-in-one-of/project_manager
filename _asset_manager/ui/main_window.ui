@@ -3570,21 +3570,13 @@
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="frame_8">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_13">
-                   <property name="margin">
-                    <number>3</number>
-                   </property>
+                   <item>
+                    <widget class="QPushButton" name="setToMantraBtn">
+                     <property name="text">
+                      <string>Set to Mantra</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item>
                     <widget class="QPushButton" name="setToIFDBtn">
                      <property name="text">
@@ -3593,9 +3585,45 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="setToMantraBtn">
+                    <widget class="QSpinBox" name="resolutionSpinBox">
+                     <property name="suffix">
+                      <string/>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="changeResolutionBtn">
                      <property name="text">
-                      <string>Set to Mantra</string>
+                      <string>Change Resolution</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="samplingSpinBox">
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>20</number>
+                     </property>
+                     <property name="value">
+                      <number>3</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="changeSamplingBtn">
+                     <property name="text">
+                      <string>Change Sampling</string>
                      </property>
                     </widget>
                    </item>
@@ -3614,7 +3642,7 @@
                 <enum>Qt::SolidLine</enum>
                </property>
                <property name="sortingEnabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <attribute name="horizontalHeaderDefaultSectionSize">
                 <number>100</number>
@@ -3664,6 +3692,21 @@
                <column>
                 <property name="text">
                  <string>Current Frame</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>IFD</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Resolution</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Sampling</string>
                 </property>
                </column>
                <column>
