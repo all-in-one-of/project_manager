@@ -26,7 +26,7 @@ class Monitoring(object):
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()
         if self.computer_status == None:
             self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, scene_path, seq, shot, last_active, rendered_frames, current_frame, ifd, resolution, sampling) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''',
-                                (self.computer_id, self.classroom, "Idle", "---", "---", "---", "---", "0", "0", "0", "1", "3"))
+                                (self.computer_id, self.classroom, "Idle", "---", "---", "---", "---", "0", "0", "0", "100", "3"))
             self.db.commit()
 
         self.check_status()
@@ -52,7 +52,6 @@ class Monitoring(object):
         resolution = self.cursor.execute('''SELECT resolution FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
         resolutionX = int(1920.0 * (float(resolution) / 100.0))
         resolutionY = int(1080.0 * (float(resolution) / 100.0))
-        print(resolutionX, resolutionY)
         sampling = self.cursor.execute('''SELECT sampling FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
         first_frame = self.cursor.execute('''SELECT frame_start FROM shots WHERE sequence_name=? AND shot_number=?''', (sequence, shot,)).fetchone()[0]
         last_frame = self.cursor.execute('''SELECT frame_end FROM shots WHERE sequence_name=? AND shot_number=?''', (sequence, shot,)).fetchone()[0]
@@ -80,12 +79,10 @@ class Monitoring(object):
             p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/hython.exe", self.cur_path + "\\lib\\software_scripts\\houdini_create_ifd.py", str(last_frame), str(layout_file), str(shot)], stdout=subprocess.PIPE)
             p.wait()
             for line in p.stdout:
-                last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-                self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
                 if "No more frames to render" in line:
                     self.cursor.execute('''UPDATE computers SET ifd=0 WHERE computer_id=?''', (str(self.computer_id), ))
+                    self.db.commcit()
                 print(line)
-            print("Finished IFD")
         else:
 
             print("Rendering frame #" + str(frames_left_to_render[0]))
@@ -96,12 +93,10 @@ class Monitoring(object):
             p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling) ,"-f", "Z:/Groupes-cours/NAND999-A15-N01/pub/assets/rdr/" + sequence + "/" + sequence + "." + str(frames_left_to_render[0]) + ".ifd"], stdout=subprocess.PIPE)
             p.wait()
             for line in p.stdout:
-                last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-                self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
                 print(line)
 
             print("Finished frame")
-            rendered_frames_for_computer = self.cursor.execute('''SELECT rendered_frames WHERE computer_id=?''', (str(self.computer_id),)).fetchone()[0]
+            rendered_frames_for_computer = self.cursor.execute('''SELECT rendered_frames FROM computers WHERE computer_id=?''', (str(self.computer_id),)).fetchone()[0]
             rendered_frames_for_computer = rendered_frames_for_computer  + "," + str(frames_left_to_render[0])
 
             self.cursor.execute('''UPDATE computers SET current_frame=? WHERE computer_id=?''', (frames_left_to_render[0], (self.computer_id),))

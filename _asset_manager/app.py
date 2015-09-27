@@ -146,7 +146,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         if self.db_path != "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite":
             self.backup_database()
 
-        self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30000)
+        self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
         self.cursor = self.db.cursor()
 
         # Global Variables
