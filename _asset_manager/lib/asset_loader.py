@@ -1433,21 +1433,25 @@ class AssetLoader(object):
             log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
-            if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
-                # Normalize modeling scale
-                self.normalize_mod_scale_process = QtCore.QProcess(self)
-                self.normalize_mod_scale_process.waitForFinished()
-                self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
-                self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
-            else:
-                self.statusLbl.setText("Status: Idle...")
-                self.Lib.message_box(self, type="info", text="Successfully published asset!")
+        if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
+            # Normalize modeling scale
+            self.normalize_mod_scale_process = QtCore.QProcess(self)
+            self.normalize_mod_scale_process.waitForFinished()
+            self.normalize_mod_scale_process.readyRead.connect(self.ldld)
+            self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
+            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
         else:
-            self.Lib.message_box(self, type="info", text="Successfully published asset")
+            self.statusLbl.setText("Status: Idle...")
+            self.Lib.message_box(self, type="info", text="Successfully published asset!")
 
         self.versionList_Clicked()
 
         self.blockSignals(False)
+
+    def ldld(self):
+        while self.normalize_mod_scale_process.canReadLine():
+            print(self.normalize_mod_scale_process.readLine())
+
 
     def normalize_modeling_finished(self):
         self.versionList_Clicked()

@@ -721,7 +721,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.trayIcon.show()
 
     def terminate_program(self):
-        print(str(self.computer_id))
         self.cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (str(self.computer_id),))
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.db.commit()
@@ -780,7 +779,7 @@ class CheckNews(QtCore.QThread):
 
 if __name__ == "__main__":
 
-    log_to_file = False
+    log_to_file = True
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()
