@@ -73,8 +73,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def __init__(self):
         super(Main, self).__init__()
 
-        self.is_slave = sys.argv[-1]
-        #self.is_slave = "-slave"
+        #self.is_slave = sys.argv[-1]
+        self.is_slave = "-slave"
 
         self.username = os.getenv('USERNAME')
 
@@ -95,7 +95,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.PeopleTab = PeopleTab
         self.Monitoring = Monitoring
 
-
         # Initialize the guis
         self.Form = self.setupUi(self)
         self.Form.center_window()
@@ -106,7 +105,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.db_to_load = ""
 
         if self.is_slave == "-slave":
-            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
+            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
+            self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
+            self.cursor = self.db.cursor()
+            self.Monitoring.initialize_slave(self)
+            return
         else:
             if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
                 # Project selection GUI
@@ -143,7 +146,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
-        if self.db_path != "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite":
+        if self.db_path not in ["H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"]:
             self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
@@ -298,15 +301,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.load_whats_new(self)
 
 
-        if self.is_slave == "-slave":
-            self.Monitoring.initialize_slave(self)
 
-        else:
-            self.check_news_thread = CheckNews(self)
-            self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
-            self.check_news_thread.daemon = True
-            self.check_news_thread.start()
-            self.show()
+        # self.check_news_thread = CheckNews(self)
+        # self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
+        # self.check_news_thread.daemon = True
+        # self.check_news_thread.start()
+        self.show()
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -779,7 +779,7 @@ class CheckNews(QtCore.QThread):
 
 if __name__ == "__main__":
 
-    log_to_file = True
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()

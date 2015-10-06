@@ -4,6 +4,8 @@
 import sys
 import os
 import subprocess
+import socket
+from glob import glob
 
 from datetime import date
 from datetime import datetime
@@ -19,33 +21,110 @@ class Monitoring(object):
         pass
 
     def initialize_slave(self):
+        self.computer_id = socket.gethostname()
+
         print("Successfully started slave on computer #" + self.computer_id)
 
         self.get_classroom_from_id()
 
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()
+
         if self.computer_status == None:
-            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, scene_path, seq, shot, last_active, rendered_frames, current_frame, ifd, resolution, sampling) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''',
-                                (self.computer_id, self.classroom, "Idle", "---", "---", "---", "---", "0", "0", "0", "100", "3"))
+            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, rendered_ifd, current_ifd) VALUES(?,?,?,?,?)''',
+                                (self.computer_id, self.classroom, "idle", "", ""))
             self.db.commit()
+        elif type(self.computer_status) == type(()):
+            if self.computer_status[0] == "rendering":
+                self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id,))
+                self.db.commit()
 
-        self.check_status()
+        t1 = threading.Thread(target=self.status_check, args=[])
+        t1.start()
 
-    def check_status(self):
+    def status_check(self):
+
+        print("Checking Status")
+
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
 
-        while self.computer_status == "Idle":
-            print("Computer is idle...")
-            last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-            self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id, ))
-            self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
-            self.cursor.execute('''UPDATE computers SET current_frame="0" WHERE computer_id=?''', (str(self.computer_id),))
-            self.db.commit()
-            time.sleep(2)
+        if self.computer_status != "rendering":
+            while self.computer_status == "idle":
+                print("Computer is idle...")
+                last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+                self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+                if self.computer_status == "logout":
+                    print("Logging out")
 
-        self.start_render()
+                time.sleep(2)
+
+            # Update status to rendering
+            self.cursor.execute('''UPDATE computers SET status="rendering" WHERE computer_id=?''', (self.computer_id,))
+            self.db.commit()
+            self.computer_status = "rendering"
+
+        time.sleep(2)
+        t2 = threading.Thread(target=self.start_render, args=[])
+        t2.start()
 
     def start_render(self):
+        all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
+        all_jobs = sorted(all_jobs, key=lambda x: x[2])
+        current_job = all_jobs[0]
+        current_seq = current_job[1].split("\\")[-1]
+
+        if current_job[2] < 100:
+
+            rendered_frames = self.cursor.execute('''SELECT rendered_ifd FROM computers''').fetchall()
+            rendered_frames = list(sum(rendered_frames, ()))
+            rendered_frames = [i.split(",") for i in rendered_frames]
+            rendered_frames = list(sum(rendered_frames, []))
+
+            current_frames = self.cursor.execute('''SELECT current_ifd FROM computers''').fetchall()
+            current_frames = [i[0] for i in current_frames]
+
+            all_rendered_frames = rendered_frames + current_frames
+
+            resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
+            resolutionX = int(1920.0 * (float(resolution) / 100.0))
+            resolutionY = int(1080.0 * (float(resolution) / 100.0))
+            sampling = self.cursor.execute('''SELECT sampling FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
+
+            ifd_path = current_job[1]
+
+
+            ifd_files = glob(ifd_path + "\\*")
+            ifd_files = [i for i in ifd_files if ".ifd" in i]
+
+            ifd_files = [os.path.split(i)[-1].split(".")[1] for i in ifd_files]
+
+            frames_to_render = list(set(ifd_files) - set(all_rendered_frames))
+            if len(frames_to_render) == 0:
+                print("No more frames to render for IFD {0}".format(ifd_path))
+                self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0], ))
+                self.db.commit()
+
+            else:
+                print("Start render for frame #" + frames_to_render[0])
+                self.cursor.execute('''UPDATE computers SET current_ifd=? WHERE computer_id=?''', (frames_to_render[0], self.computer_id, ))
+                self.db.commit()
+
+                p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-V", "3", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling) ,"-f", current_job[1] + "\\" + current_seq + "." + frames_to_render[0] + ".ifd"], stdout=subprocess.PIPE)
+
+                while self.computer_status == "rendering":
+                    print("Rendering frame #" + frames_to_render[0])
+                    self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+                    time.sleep(2)
+
+                if self.computer_status == "stop":
+                    p.kill()
+                elif self.computer_status == "logout":
+                    print("Logging out")
+            self.status_check()
+        else:
+            print("No more job")
+            self.status_check()
+
+    def start_render_old(self):
         sequence = self.cursor.execute('''SELECT seq FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
         shot = str(self.cursor.execute('''SELECT shot FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0])
         ifd = self.cursor.execute('''SELECT ifd FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
@@ -59,14 +138,6 @@ class Monitoring(object):
         layout_file = self.cursor.execute('''SELECT layout_scene FROM sequences WHERE sequence_name=?''', (str(sequence), )).fetchone()[0]
 
         render_path = self.selected_project_path + "\\assets\\rdr\\" + sequence
-
-        rendered_frames = self.cursor.execute('''SELECT rendered_frames FROM computers WHERE seq=? AND shot=?''', (sequence, shot, )).fetchall()
-        rendered_frames = list(sum(rendered_frames, ()))
-        rendered_frames = [i.split(",") for i in rendered_frames]
-        rendered_frames = list(sum(rendered_frames, []))
-
-        current_frames = self.cursor.execute('''SELECT current_frame FROM computers WHERE seq=? AND shot=?''', (sequence, shot, )).fetchall()
-        current_frames = [i[0] for i in current_frames]
 
         all_rendered_frames = current_frames + rendered_frames
         all_rendered_frames = [int(i) for i in all_rendered_frames]
@@ -118,5 +189,7 @@ class Monitoring(object):
             self.classroom = "Sutherland"
         elif self.computer_id.split("-")[0] == "338":
             self.classroom = "Gouraud"
+        elif self.computer_id.split("-")[0] == "346":
+            self.classroom = "Catmull"
         else:
             self.classroom = "Unknown"

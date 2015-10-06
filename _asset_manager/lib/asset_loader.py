@@ -1437,25 +1437,20 @@ class AssetLoader(object):
             # Normalize modeling scale
             self.normalize_mod_scale_process = QtCore.QProcess(self)
             self.normalize_mod_scale_process.waitForFinished()
-            self.normalize_mod_scale_process.readyRead.connect(self.ldld)
             self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
             self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
         else:
-            self.statusLbl.setText("Status: Idle...")
-            self.Lib.message_box(self, type="info", text="Successfully published asset!")
+            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
+            if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+                self.update_thumbnail(False)
 
         self.versionList_Clicked()
 
         self.blockSignals(False)
 
-    def ldld(self):
-        while self.normalize_mod_scale_process.canReadLine():
-            print(self.normalize_mod_scale_process.readLine())
-
-
     def normalize_modeling_finished(self):
         self.versionList_Clicked()
-        self.Lib.message_box(self, type="info", text="Successfully published asset!")
+        self.update_thumbnail(False)
 
     def update_thumbnail(self, ask_window=True, batch_update=False):
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
@@ -1493,10 +1488,7 @@ class AssetLoader(object):
                 if checkbox_turn.isChecked():
                     thumbs_to_create += "turn"
             else:
-                if "-lowres" in self.selected_asset.name:
-                    thumbs_to_create = "full"
-                else:
-                    thumbs_to_create = "fullturn"
+                thumbs_to_create = "full"
 
             self.create_thumbnails(self.selected_asset.obj_path, thumbs_to_create, self.selected_asset.version)
 
