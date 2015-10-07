@@ -6,6 +6,7 @@ import os
 import subprocess
 import socket
 from glob import glob
+import atexit
 
 from datetime import date
 from datetime import datetime
@@ -18,7 +19,11 @@ from PyQt4 import QtGui, QtCore
 
 class Monitoring(object):
     def __init__(self):
-        pass
+        os.system("C:/Windows/System32/hserver.exe -S licenseserver")
+
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
+        self.db = sqlite3.connect(self.db_path, timeout=30.0)
+        self.cursor = self.db.cursor()
 
     def initialize_slave(self):
         self.computer_id = socket.gethostname()
@@ -30,50 +35,61 @@ class Monitoring(object):
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()
 
         if self.computer_status == None:
-            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, rendered_ifd, current_ifd) VALUES(?,?,?,?,?)''',
-                                (self.computer_id, self.classroom, "idle", "", ""))
+            last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, rendered_ifd, current_ifd, last_active) VALUES(?,?,?,?,?,?)''',
+                                (self.computer_id, self.classroom, "idle", "", "", last_active))
             self.db.commit()
         elif type(self.computer_status) == type(()):
             if self.computer_status[0] == "rendering":
                 self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id,))
                 self.db.commit()
+            last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+            self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
+            self.db.commit()
+        self.check_status()
 
-        t1 = threading.Thread(target=self.status_check, args=[])
-        t1.start()
-
-    def status_check(self):
-
+    def check_status(self):
         print("Checking Status")
-
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
 
         if self.computer_status != "rendering":
-            while self.computer_status == "idle":
+            i = 0
+            while True:
                 print("Computer is idle...")
-                last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+                if i == 10:
+                    last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+                    self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
+                    self.db.commit()
+
                 self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
                 if self.computer_status == "logout":
-                    print("Logging out")
+                    os.system("shutdown -l")
 
-                time.sleep(2)
+                if self.computer_status == "start":
+                    break
+
+                i += 1
+                time.sleep(6)
 
             # Update status to rendering
             self.cursor.execute('''UPDATE computers SET status="rendering" WHERE computer_id=?''', (self.computer_id,))
             self.db.commit()
             self.computer_status = "rendering"
 
-        time.sleep(2)
-        t2 = threading.Thread(target=self.start_render, args=[])
-        t2.start()
+        self.start_render()
 
     def start_render(self):
+        print("Starting Render")
+        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
+
         all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
         all_jobs = sorted(all_jobs, key=lambda x: x[2])
         current_job = all_jobs[0]
         current_seq = current_job[1].split("\\")[-1]
 
         if current_job[2] < 100:
-
             rendered_frames = self.cursor.execute('''SELECT rendered_ifd FROM computers''').fetchall()
             rendered_frames = list(sum(rendered_frames, ()))
             rendered_frames = [i.split(",") for i in rendered_frames]
@@ -91,90 +107,88 @@ class Monitoring(object):
 
             ifd_path = current_job[1]
 
-
             ifd_files = glob(ifd_path + "\\*")
             ifd_files = [i for i in ifd_files if ".ifd" in i]
-
             ifd_files = [os.path.split(i)[-1].split(".")[1] for i in ifd_files]
 
-            frames_to_render = list(set(ifd_files) - set(all_rendered_frames))
+            frames_to_render = sorted(list(set(ifd_files) - set(all_rendered_frames)))
+            frame_to_render = frames_to_render[0]
+
             if len(frames_to_render) == 0:
                 print("No more frames to render for IFD {0}".format(ifd_path))
-                self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0], ))
+                self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0],))
                 self.db.commit()
-
             else:
-                print("Start render for frame #" + frames_to_render[0])
-                self.cursor.execute('''UPDATE computers SET current_ifd=? WHERE computer_id=?''', (frames_to_render[0], self.computer_id, ))
+                print("Start render for frame #" + frame_to_render)
+                
+                self.cursor.execute('''UPDATE computers SET current_ifd=? WHERE computer_id=?''', (frame_to_render, self.computer_id,))
                 self.db.commit()
 
-                p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-V", "3", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling) ,"-f", current_job[1] + "\\" + current_seq + "." + frames_to_render[0] + ".ifd"], stdout=subprocess.PIPE)
+                ifd_file = current_job[1] + "\\" + current_seq + "." + frame_to_render + ".ifd"
 
+                p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
+
+                tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                while True:
+                    print("Waiting for render to start")
+                    tasks = subprocess.check_output(['tasklist']).split("\r\n")
+
+                    if "mantra" in str(tasks):
+                        break
+                    else:
+                        time.sleep(1)
+
+                i = 0
                 while self.computer_status == "rendering":
                     print("Rendering frame #" + frames_to_render[0])
                     self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
-                    time.sleep(2)
+                    
+                    if self.computer_status == "stop":
+                        p.kill()
+                        self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id, ))
+                        self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
+                        self.db.commit()
+                        time.sleep(2)
+                        try:
+                            os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
+                        except:
+                            print("Failed to remove exr")
+                    elif self.computer_status == "logout":
+                        print("Logging out")
+                        self.cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (self.computer_id, ))
+                        self.db.commit()
+                        time.sleep(2)
+                        try:
+                            os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
+                        except:
+                            print("Failed to remove exr")
+                        os.system("shutdown -l")
+                        
 
-                if self.computer_status == "stop":
-                    p.kill()
-                elif self.computer_status == "logout":
-                    print("Logging out")
-            self.status_check()
-        else:
-            print("No more job")
-            self.status_check()
+                    # Check if render is finished (finished if mantra is not running)
+                    tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                    if not "mantra" in str(tasks):
+                        rendered_frames_for_computer = self.cursor.execute('''SELECT rendered_ifd FROM computers WHERE computer_id=?''', (str(self.computer_id),)).fetchone()[0]
+                        if len(rendered_frames_for_computer) == 0:
+                            rendered_frames_for_computer = str(frame_to_render)
+                        else:
+                            rendered_frames_for_computer = rendered_frames_for_computer  + "," + str(frame_to_render)
 
-    def start_render_old(self):
-        sequence = self.cursor.execute('''SELECT seq FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
-        shot = str(self.cursor.execute('''SELECT shot FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0])
-        ifd = self.cursor.execute('''SELECT ifd FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
-        resolution = self.cursor.execute('''SELECT resolution FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
-        resolutionX = int(1920.0 * (float(resolution) / 100.0))
-        resolutionY = int(1080.0 * (float(resolution) / 100.0))
-        sampling = self.cursor.execute('''SELECT sampling FROM computers WHERE computer_id=?''', (str(self.computer_id), )).fetchone()[0]
-        first_frame = self.cursor.execute('''SELECT frame_start FROM shots WHERE sequence_name=? AND shot_number=?''', (sequence, shot,)).fetchone()[0]
-        last_frame = self.cursor.execute('''SELECT frame_end FROM shots WHERE sequence_name=? AND shot_number=?''', (sequence, shot,)).fetchone()[0]
+                        self.cursor.execute('''UPDATE computers SET rendered_ifd=? WHERE computer_id=?''', (rendered_frames_for_computer, (self.computer_id),))
+                        self.db.commit()
+                        os.system('taskkill /f /im mpc-hc.exe')
+                        break
 
-        layout_file = self.cursor.execute('''SELECT layout_scene FROM sequences WHERE sequence_name=?''', (str(sequence), )).fetchone()[0]
+                    if i == 10:
+                        last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+                        self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
+                        self.db.commit()
 
-        render_path = self.selected_project_path + "\\assets\\rdr\\" + sequence
+                    i += 1
+                    time.sleep(6)
+                
+            self.check_status()
 
-        all_rendered_frames = current_frames + rendered_frames
-        all_rendered_frames = [int(i) for i in all_rendered_frames]
-        all_rendered_frames = sorted(all_rendered_frames)
-
-        all_frames_to_render = list(range(first_frame, last_frame))
-        frames_left_to_render = sorted(list(set(all_frames_to_render) - set(all_rendered_frames)))
-
-        if int(ifd) == 1:
-            p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/hython.exe", self.cur_path + "\\lib\\software_scripts\\houdini_create_ifd.py", str(last_frame), str(layout_file), str(shot)], stdout=subprocess.PIPE)
-            p.wait()
-            for line in p.stdout:
-                if "No more frames to render" in line:
-                    self.cursor.execute('''UPDATE computers SET ifd=0 WHERE computer_id=?''', (str(self.computer_id), ))
-                    self.db.commcit()
-                print(line)
-        else:
-
-            print("Rendering frame #" + str(frames_left_to_render[0]))
-
-            self.cursor.execute('''UPDATE computers SET current_frame=? WHERE computer_id=?''', (frames_left_to_render[0], str(self.computer_id),))
-            self.db.commit()
-
-            p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling) ,"-f", "Z:/Groupes-cours/NAND999-A15-N01/pub/assets/rdr/" + sequence + "/" + sequence + "." + str(frames_left_to_render[0]) + ".ifd"], stdout=subprocess.PIPE)
-            p.wait()
-            for line in p.stdout:
-                print(line)
-
-            print("Finished frame")
-            rendered_frames_for_computer = self.cursor.execute('''SELECT rendered_frames FROM computers WHERE computer_id=?''', (str(self.computer_id),)).fetchone()[0]
-            rendered_frames_for_computer = rendered_frames_for_computer  + "," + str(frames_left_to_render[0])
-
-            self.cursor.execute('''UPDATE computers SET current_frame=? WHERE computer_id=?''', (frames_left_to_render[0], (self.computer_id),))
-            self.cursor.execute('''UPDATE computers SET rendered_frames=? WHERE computer_id=?''', (rendered_frames_for_computer, (self.computer_id),))
-            self.db.commit()
-
-        self.check_status()
 
     def get_classroom_from_id(self):
         if self.computer_id.split("-")[0] == "320":
@@ -193,3 +207,7 @@ class Monitoring(object):
             self.classroom = "Catmull"
         else:
             self.classroom = "Unknown"
+
+if __name__ == "__main__":
+    test = Monitoring()
+    test.initialize_slave()

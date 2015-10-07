@@ -68,13 +68,9 @@ from lib.log import LogEntry
 from lib.people import PeopleTab
 from lib.batch_monitoring import Monitoring
 
-
-class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab, RenderTab, Monitoring):
+class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab, RenderTab):
     def __init__(self):
         super(Main, self).__init__()
-
-        #self.is_slave = sys.argv[-1]
-        self.is_slave = "-slave"
 
         self.username = os.getenv('USERNAME')
 
@@ -93,7 +89,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.LogEntry = LogEntry
         self.Moodboard_Creator = Moodboard_Creator
         self.PeopleTab = PeopleTab
-        self.Monitoring = Monitoring
 
         # Initialize the guis
         self.Form = self.setupUi(self)
@@ -104,41 +99,34 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         self.db_to_load = ""
 
-        if self.is_slave == "-slave":
-            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
-            self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
-            self.cursor = self.db.cursor()
-            self.Monitoring.initialize_slave(self)
-            return
-        else:
-            if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
-                # Project selection GUI
-                projectDialog = QtGui.QDialog(self)
-                projectDialog.setWindowTitle("Select a project")
-                projectDialog.setMinimumWidth(175)
+        if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
+            # Project selection GUI
+            projectDialog = QtGui.QDialog(self)
+            projectDialog.setWindowTitle("Select a project")
+            projectDialog.setMinimumWidth(175)
 
-                layout = QtGui.QVBoxLayout(projectDialog)
+            layout = QtGui.QVBoxLayout(projectDialog)
 
-                pubBtn = QtGui.QPushButton("Pub")
-                natureBtn = QtGui.QPushButton("Nature")
+            pubBtn = QtGui.QPushButton("Pub")
+            natureBtn = QtGui.QPushButton("Nature")
 
-                pubBtn.clicked.connect(projectDialog.accept)
-                natureBtn.clicked.connect(projectDialog.reject)
+            pubBtn.clicked.connect(projectDialog.accept)
+            natureBtn.clicked.connect(projectDialog.reject)
 
-                layout.addWidget(pubBtn)
-                layout.addWidget(natureBtn)
+            layout.addWidget(pubBtn)
+            layout.addWidget(natureBtn)
 
-                projectDialog.move(960, 540)
-                projectDialog.setWindowFlags(projectDialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-                result = projectDialog.exec_()
+            projectDialog.move(960, 540)
+            projectDialog.setWindowFlags(projectDialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+            result = projectDialog.exec_()
 
-                if result == 0:
-                    self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
-                elif result == 1:
-                    self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
-
-            else:
+            if result == 0:
                 self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
+            elif result == 1:
+                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
+
+        else:
+            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
@@ -297,10 +285,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.MyTasks.__init__(self)
         self.WhatsNew.__init__(self)
         self.PeopleTab.__init__(self)
-        self.Monitoring.__init__(self)
         self.WhatsNew.load_whats_new(self)
-
-
 
         # self.check_news_thread = CheckNews(self)
         # self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
