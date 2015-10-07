@@ -6,7 +6,7 @@ import os
 import subprocess
 import socket
 from glob import glob
-import atexit
+import ctypes
 
 from datetime import date
 from datetime import datetime
@@ -27,7 +27,7 @@ class Monitoring(object):
 
     def initialize_slave(self):
         self.computer_id = socket.gethostname()
-
+        ctypes.windll.user32.SetCursorPos(960, 540)
         print("Successfully started slave on computer #" + self.computer_id)
 
         self.get_classroom_from_id()
@@ -36,8 +36,8 @@ class Monitoring(object):
 
         if self.computer_status == None:
             last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, rendered_ifd, current_ifd, last_active) VALUES(?,?,?,?,?,?)''',
-                                (self.computer_id, self.classroom, "idle", "", "", last_active))
+            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, current_ifd, last_active) VALUES(?,?,?,?,?)''',
+                                (self.computer_id, self.classroom, "idle", "", last_active))
             self.db.commit()
         elif type(self.computer_status) == type(()):
             if self.computer_status[0] == "rendering":
@@ -51,13 +51,18 @@ class Monitoring(object):
     def check_status(self):
         print("Checking Status")
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
+        os.system('taskkill /f /im mpc-hc.exe')
         subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
 
         if self.computer_status != "rendering":
             i = 0
             while True:
                 print("Computer is idle...")
-
+                ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+                ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+                time.sleep(2)
+                ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+                ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
                 if i == 10:
                     last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
                     self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
@@ -82,6 +87,7 @@ class Monitoring(object):
 
     def start_render(self):
         print("Starting Render")
+        os.system('taskkill /f /im mpc-hc.exe')
         subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
 
         all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
@@ -90,15 +96,16 @@ class Monitoring(object):
         current_seq = current_job[1].split("\\")[-1]
 
         if current_job[2] < 100:
-            rendered_frames = self.cursor.execute('''SELECT rendered_ifd FROM computers''').fetchall()
+            rendered_frames = self.cursor.execute('''SELECT frame FROM rendered_frames WHERE seq=?''', (current_seq, )).fetchall()
             rendered_frames = list(sum(rendered_frames, ()))
-            rendered_frames = [i.split(",") for i in rendered_frames]
-            rendered_frames = list(sum(rendered_frames, []))
+            rendered_frames = [str(i) for i in rendered_frames]
 
             current_frames = self.cursor.execute('''SELECT current_ifd FROM computers''').fetchall()
             current_frames = [i[0] for i in current_frames]
+            current_frames = [str(i) for i in current_frames]
 
             all_rendered_frames = rendered_frames + current_frames
+            print(all_rendered_frames)
 
             resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
             resolutionX = int(1920.0 * (float(resolution) / 100.0))
@@ -141,6 +148,11 @@ class Monitoring(object):
                 i = 0
                 while self.computer_status == "rendering":
                     print("Rendering frame #" + frames_to_render[0])
+                    ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+                    ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+                    time.sleep(2)
+                    ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+                    ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
                     self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
                     
                     if self.computer_status == "stop":
@@ -153,6 +165,8 @@ class Monitoring(object):
                             os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
                         except:
                             print("Failed to remove exr")
+                        self.check_status()
+
                     elif self.computer_status == "logout":
                         print("Logging out")
                         self.cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (self.computer_id, ))
@@ -168,13 +182,7 @@ class Monitoring(object):
                     # Check if render is finished (finished if mantra is not running)
                     tasks = subprocess.check_output(['tasklist']).split("\r\n")
                     if not "mantra" in str(tasks):
-                        rendered_frames_for_computer = self.cursor.execute('''SELECT rendered_ifd FROM computers WHERE computer_id=?''', (str(self.computer_id),)).fetchone()[0]
-                        if len(rendered_frames_for_computer) == 0:
-                            rendered_frames_for_computer = str(frame_to_render)
-                        else:
-                            rendered_frames_for_computer = rendered_frames_for_computer  + "," + str(frame_to_render)
-
-                        self.cursor.execute('''UPDATE computers SET rendered_ifd=? WHERE computer_id=?''', (rendered_frames_for_computer, (self.computer_id),))
+                        self.cursor.execute('''INSERT INTO rendered_frames(seq, frame) VALUES(?,?)''', (current_seq, frame_to_render, ))
                         self.db.commit()
                         os.system('taskkill /f /im mpc-hc.exe')
                         break
