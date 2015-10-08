@@ -58,15 +58,12 @@ class Monitoring(object):
             i = 0
             while True:
                 print("Computer is idle...")
-                ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
-                ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
-                time.sleep(2)
-                ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
-                ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+                self.mouse_click()
                 if i == 10:
                     last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
                     self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
                     self.db.commit()
+                    i = 0
 
                 self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
                 if self.computer_status == "logout":
@@ -105,7 +102,6 @@ class Monitoring(object):
             current_frames = [str(i) for i in current_frames]
 
             all_rendered_frames = rendered_frames + current_frames
-            print(all_rendered_frames)
 
             resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
             resolutionX = int(1920.0 * (float(resolution) / 100.0))
@@ -119,13 +115,15 @@ class Monitoring(object):
             ifd_files = [os.path.split(i)[-1].split(".")[1] for i in ifd_files]
 
             frames_to_render = sorted(list(set(ifd_files) - set(all_rendered_frames)))
-            frame_to_render = frames_to_render[0]
 
             if len(frames_to_render) == 0:
                 print("No more frames to render for IFD {0}".format(ifd_path))
                 self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0],))
+                self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id, ))
+                self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
                 self.db.commit()
             else:
+                frame_to_render = frames_to_render[0]
                 print("Start render for frame #" + frame_to_render)
                 
                 self.cursor.execute('''UPDATE computers SET current_ifd=? WHERE computer_id=?''', (frame_to_render, self.computer_id,))
@@ -147,12 +145,8 @@ class Monitoring(object):
 
                 i = 0
                 while self.computer_status == "rendering":
-                    print("Rendering frame #" + frames_to_render[0])
-                    ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
-                    ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
-                    time.sleep(2)
-                    ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
-                    ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+                    print("Rendering frame #" + frame_to_render)
+                    self.mouse_click()
                     self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
                     
                     if self.computer_status == "stop":
@@ -191,11 +185,24 @@ class Monitoring(object):
                         last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
                         self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
                         self.db.commit()
+                        i = 0
 
                     i += 1
                     time.sleep(6)
-                
-            self.check_status()
+        else:
+            self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id, ))
+            self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
+            self.db.commit()
+
+        self.check_status()
+
+
+    def mouse_click(self, seconds_between_clicks=2):
+        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+        time.sleep(2)
+        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
 
 
     def get_classroom_from_id(self):

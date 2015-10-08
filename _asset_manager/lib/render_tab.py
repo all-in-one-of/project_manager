@@ -41,7 +41,8 @@ class RenderTab(object):
 
             time_difference = current_time_datetime - last_active_datetime
             if time_difference.seconds > 1000:
-                self.render_cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (computer[0], ))
+                pass
+                #self.render_cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (computer[0], ))
 
         self.render_db.commit()
 
