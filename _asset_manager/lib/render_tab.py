@@ -36,7 +36,7 @@ class RenderTab(object):
             current_time = datetime.now().strftime("%d/%m/%Y %H:%M")
             current_time_datetime = datetime.strptime(current_time, '%d/%m/%Y %H:%M')
 
-            last_active = computer[5]
+            last_active = computer[4]
             last_active_datetime = datetime.strptime(last_active, '%d/%m/%Y %H:%M')
 
             time_difference = current_time_datetime - last_active_datetime
@@ -55,14 +55,12 @@ class RenderTab(object):
             computer_id = computer[0]
             classroom = computer[1]
             status = computer[2]
-            rendered_frames = computer[3]
-            current_frame = computer[4]
-            last_active = computer[5]
+            current_frame = computer[3]
+            last_active = computer[4]
 
             if computer_id == None: computer_id = ""
             if classroom == None: classroom = ""
             if status == None: status = ""
-            if rendered_frames == None: rendered_frames = ""
             if current_frame == None: current_frame = ""
             if last_active == None: last_active = ""
 
@@ -83,12 +81,6 @@ class RenderTab(object):
             classroom_item.setTextAlignment(QtCore.Qt.AlignCenter)
             classroom_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.renderTableWidget.setItem(0, 2, classroom_item)
-
-            rendered_frames_item = QtGui.QTableWidgetItem()
-            rendered_frames_item.setText(str(rendered_frames))
-            rendered_frames_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            rendered_frames_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            self.renderTableWidget.setItem(0, 3, rendered_frames_item)
 
             current_frame_item = QtGui.QTableWidgetItem()
             current_frame_item.setText(str(current_frame))

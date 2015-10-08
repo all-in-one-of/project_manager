@@ -706,7 +706,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.trayIcon.show()
 
     def terminate_program(self):
-        self.cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (str(self.computer_id),))
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.db.commit()
         self.Lib.switch_mari_cache(self, "perso")
