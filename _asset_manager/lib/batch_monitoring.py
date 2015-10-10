@@ -22,7 +22,7 @@ class Monitoring(object):
         os.system("C:/Windows/System32/hserver.exe -S licenseserver")
 
         self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
-        self.db = sqlite3.connect(self.db_path, timeout=30.0)
+        self.db = sqlite3.connect(self.db_path, timeout=60.0)
         self.cursor = self.db.cursor()
 
     def initialize_slave(self):
@@ -36,12 +36,14 @@ class Monitoring(object):
 
         if self.computer_status == None:
             last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+            
             self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, current_ifd, last_active) VALUES(?,?,?,?,?)''',
                                 (self.computer_id, self.classroom, "idle", "", last_active))
             self.db.commit()
         elif type(self.computer_status) == type(()):
             if self.computer_status[0] == "rendering":
                 self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id,))
+                self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id,))
                 self.db.commit()
             last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
             self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
@@ -52,14 +54,14 @@ class Monitoring(object):
         print("Checking Status")
         self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
         os.system('taskkill /f /im mpc-hc.exe')
-        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
+        #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
 
         if self.computer_status != "rendering":
             i = 0
             while True:
                 print("Computer is idle...")
                 self.mouse_click()
-                if i == 10:
+                if i == 100:
                     last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
                     self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
                     self.db.commit()
@@ -85,7 +87,7 @@ class Monitoring(object):
     def start_render(self):
         print("Starting Render")
         os.system('taskkill /f /im mpc-hc.exe')
-        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
+        #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
 
         all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
         all_jobs = sorted(all_jobs, key=lambda x: x[2])
@@ -181,7 +183,7 @@ class Monitoring(object):
                         os.system('taskkill /f /im mpc-hc.exe')
                         break
 
-                    if i == 10:
+                    if i == 100:
                         last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
                         self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
                         self.db.commit()
