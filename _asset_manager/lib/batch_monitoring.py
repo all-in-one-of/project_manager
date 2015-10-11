@@ -36,7 +36,7 @@ class Monitoring(object):
 
         if self.computer_status == None:
             last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-            
+
             self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, current_ifd, last_active) VALUES(?,?,?,?,?)''',
                                 (self.computer_id, self.classroom, "idle", "", last_active))
             self.db.commit()
@@ -60,6 +60,7 @@ class Monitoring(object):
             i = 0
             while True:
                 print("Computer is idle...")
+                print(i)
                 self.mouse_click()
                 if i == 100:
                     last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -196,6 +197,9 @@ class Monitoring(object):
             self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
             self.db.commit()
 
+        last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
+        self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
+        self.db.commit()
         self.check_status()
 
 

@@ -577,6 +577,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.statusLbl.setText("Status: Refreshing Render tab...")
             self.repaint()
             RenderTab.add_computers_from_database(self)
+            RenderTab.add_jobs_from_database(self)
+            RenderTab.add_frames_from_database(self)
 
         elif current_tab_text == "People":
             self.statusLbl.setText("Status: Refreshing People tab...")
