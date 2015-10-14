@@ -20,70 +20,41 @@ from PyQt4 import QtGui, QtCore
 class Monitoring(object):
     def __init__(self):
         os.system("C:/Windows/System32/hserver.exe -S licenseserver")
-
+        self.computer_id = socket.gethostname()
+        self.get_classroom_from_id()
+        print("Successfully started slave on computer #" + self.computer_id)
         self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
         self.db = sqlite3.connect(self.db_path, timeout=60.0)
         self.cursor = self.db.cursor()
-
-    def initialize_slave(self):
-        self.computer_id = socket.gethostname()
         ctypes.windll.user32.SetCursorPos(960, 540)
-        print("Successfully started slave on computer #" + self.computer_id)
-
-        self.get_classroom_from_id()
-
-        self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()
-
-        if self.computer_status == None:
-            last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-
-            self.cursor.execute('''INSERT INTO computers(computer_id, classroom, status, current_ifd, last_active) VALUES(?,?,?,?,?)''',
-                                (self.computer_id, self.classroom, "idle", "", last_active))
-            self.db.commit()
-        elif type(self.computer_status) == type(()):
-            if self.computer_status[0] == "rendering":
-                self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id,))
-                self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id,))
-                self.db.commit()
-            last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-            self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
-            self.db.commit()
-        self.check_status()
 
     def check_status(self):
-        print("Checking Status")
-        self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
-        os.system('taskkill /f /im mpc-hc.exe')
-        #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
+        self.get_computers_list()
 
-        if self.computer_status != "rendering":
-            i = 0
+        i = 0
+        if self.status == "idle":
             while True:
                 print("Computer is idle...")
-                print(i)
+                self.get_computer_status()
                 self.mouse_click()
-                if i == 100:
-                    last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-                    self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
-                    self.db.commit()
-                    i = 0
-
-                self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
-                if self.computer_status == "logout":
-                    os.system("shutdown -l")
-
-                if self.computer_status == "start":
-                    break
-
+                if self.status == "start":
+                    self.start_render()
                 i += 1
-                time.sleep(6)
+                if i > 100:
+                    self.update_computer_last_active()
+                    i = 0
+                time.sleep(5)
+        elif self.status == "start":
+            self.change_computer_status(status="idle")
+            self.check_status()
+        elif self.status == "rendering":
+            self.start_render()
+                
 
-            # Update status to rendering
-            self.cursor.execute('''UPDATE computers SET status="rendering" WHERE computer_id=?''', (self.computer_id,))
-            self.db.commit()
-            self.computer_status = "rendering"
+        elif self.status == "logout":
+            os.system("shutdown -l")
 
-        self.start_render()
+
 
     def start_render(self):
         print("Starting Render")
@@ -96,15 +67,18 @@ class Monitoring(object):
         current_seq = current_job[1].split("\\")[-1]
 
         if current_job[2] < 100:
-            rendered_frames = self.cursor.execute('''SELECT frame FROM rendered_frames WHERE seq=?''', (current_seq, )).fetchall()
-            rendered_frames = list(sum(rendered_frames, ()))
-            rendered_frames = [str(i) for i in rendered_frames]
 
-            current_frames = self.cursor.execute('''SELECT current_ifd FROM computers''').fetchall()
-            current_frames = [i[0] for i in current_frames]
-            current_frames = [str(i) for i in current_frames]
+            self.change_computer_status(status="rendering")
 
-            all_rendered_frames = rendered_frames + current_frames
+            rendering_frames = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\*")
+            rendered_frames = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\*")
+            rendering_frames = [os.path.split(i)[1] for i in rendering_frames]
+            rendered_frames = [os.path.split(i)[1] for i in rendered_frames]
+
+            all_frames = rendered_frames + rendering_frames
+            all_frames = [(i.split("_")[0], i.split("_")[1]) for i in all_frames]
+            all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
+
 
             resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
             resolutionX = int(1920.0 * (float(resolution) / 100.0))
@@ -117,29 +91,33 @@ class Monitoring(object):
             ifd_files = [i for i in ifd_files if ".ifd" in i]
             ifd_files = [os.path.split(i)[-1].split(".")[1] for i in ifd_files]
 
-            frames_to_render = sorted(list(set(ifd_files) - set(all_rendered_frames)))
+            frames_to_render = sorted(list(set(ifd_files) - set(all_rendered_frames_for_current_sequence)))
 
             if len(frames_to_render) == 0:
                 print("No more frames to render for IFD {0}".format(ifd_path))
-                self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0],))
-                self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id, ))
-                self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
-                self.db.commit()
+                self.change_computer_status(status="idle")
+                self.change_computer_frame(frame="0")
+
             else:
                 frame_to_render = frames_to_render[0]
                 print("Start render for frame #" + frame_to_render)
-                
-                self.cursor.execute('''UPDATE computers SET current_ifd=? WHERE computer_id=?''', (frame_to_render, self.computer_id,))
-                self.db.commit()
+                open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
+                self.change_computer_frame(frame=frame_to_render)
 
                 ifd_file = current_job[1] + "\\" + current_seq + "." + frame_to_render + ".ifd"
 
                 p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
 
-                tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                try:
+                    tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                except:
+                    tasks = ""
                 while True:
                     print("Waiting for render to start")
-                    tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                    try:
+                        tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                    except:
+                        tasks = ""
 
                     if "mantra" in str(tasks):
                         break
@@ -147,16 +125,16 @@ class Monitoring(object):
                         time.sleep(1)
 
                 i = 0
-                while self.computer_status == "rendering":
+                while self.status == "rendering":
                     print("Rendering frame #" + frame_to_render)
                     self.mouse_click()
-                    self.computer_status = self.cursor.execute('''SELECT status FROM computers WHERE computer_id=?''', (self.computer_id,)).fetchone()[0]
-                    
-                    if self.computer_status == "stop":
+                    self.get_computer_status()
+
+                    if self.status == "stop":
                         p.kill()
-                        self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id, ))
-                        self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
-                        self.db.commit()
+                        self.change_computer_status(status="idle")
+                        self.change_computer_frame(frame="0")
+
                         time.sleep(2)
                         try:
                             os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
@@ -164,44 +142,116 @@ class Monitoring(object):
                             print("Failed to remove exr")
                         self.check_status()
 
-                    elif self.computer_status == "logout":
+                    elif self.status == "logout":
                         print("Logging out")
-                        self.cursor.execute('''DELETE FROM computers WHERE computer_id=?''', (self.computer_id, ))
-                        self.db.commit()
                         time.sleep(2)
                         try:
                             os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
                         except:
                             print("Failed to remove exr")
                         os.system("shutdown -l")
-                        
 
                     # Check if render is finished (finished if mantra is not running)
-                    tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                    try:
+                        tasks = subprocess.check_output(['tasklist']).split("\r\n")
+                    except:
+                        tasks = "mantra"
                     if not "mantra" in str(tasks):
-                        self.cursor.execute('''INSERT INTO rendered_frames(seq, frame) VALUES(?,?)''', (current_seq, frame_to_render, ))
-                        self.db.commit()
+                        open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
+                        try:
+                            os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render))
+                        except:
+                            pass
                         os.system('taskkill /f /im mpc-hc.exe')
                         break
 
                     if i == 100:
-                        last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-                        self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
-                        self.db.commit()
+                        self.update_computer_last_active()
                         i = 0
 
                     i += 1
                     time.sleep(6)
         else:
-            self.cursor.execute('''UPDATE computers SET status="idle" WHERE computer_id=?''', (self.computer_id, ))
-            self.cursor.execute('''UPDATE computers SET current_ifd="" WHERE computer_id=?''', (self.computer_id, ))
-            self.db.commit()
+            self.change_computer_status(status="idle")
+            self.change_computer_frame(frame="0")
 
-        last_active = datetime.now().strftime("%d/%m/%Y %H:%M")
-        self.cursor.execute('''UPDATE computers SET last_active=? WHERE computer_id=?''', (last_active, self.computer_id,))
-        self.db.commit()
+        self.update_computer_last_active()
         self.check_status()
 
+    def get_computers_list(self):
+        self.all_computers = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\*")
+        self.all_computers = [os.path.split(i)[-1] for i in self.all_computers]
+        self.all_computers_id = [i.split("_")[0] for i in self.all_computers]
+        self.computers = []
+        self.current_rendering_frames = []
+        for computer in self.all_computers:
+            id = computer.split("_")[0]
+            classroom = computer.split("_")[1]
+            frame = computer.split("_")[2]
+            status = computer.split("_")[3]
+            last_active = computer.split("_")[4]
+            self.current_rendering_frames.append(frame)
+            self.computers.append((id, classroom, frame, status, last_active))
+
+        if not self.computer_id in self.all_computers_id:
+            last_active = datetime.now().strftime("%d-%m-%Y-%Hh%M")
+            open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\{0}_{1}_{2}_{3}_{4}".format(self.computer_id, self.classroom, "0", "idle", last_active), "a+")
+            self.current_frame = "0"
+            self.status = "idle"
+            self.last_active = last_active
+        else:
+            cur_computer = [i for i in self.computers if self.computer_id == i[0]]
+            self.current_frame = cur_computer[0][2]
+            self.status = cur_computer[0][3]
+            self.last_active = cur_computer[0][4]
+
+    def get_computer_status(self):
+        self.all_computers = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\*")
+        for computer in self.all_computers:
+            folder_path = os.path.split(computer)[0]
+            file_path = os.path.split(computer)[1]
+            if file_path.split("_")[0] == self.computer_id:
+                self.status = file_path.split("_")[3]
+
+    def change_computer_status(self, status):
+        self.all_computers = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\*")
+        for computer in self.all_computers:
+            folder_path = os.path.split(computer)[0]
+            file_path =  os.path.split(computer)[1]
+            if file_path.split("_")[0] == self.computer_id:
+                id = file_path.split("_")[0]
+                classroom = file_path.split("_")[1]
+                frame = file_path.split("_")[2]
+                last_active = file_path.split("_")[4]
+                os.rename(computer, folder_path + "\\{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, status, last_active))
+        self.status = status
+
+    def change_computer_frame(self, frame):
+        self.all_computers = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\*")
+        for computer in self.all_computers:
+            folder_path = os.path.split(computer)[0]
+            file_path = os.path.split(computer)[1]
+            if file_path.split("_")[0] == self.computer_id:
+                id = file_path.split("_")[0]
+                classroom = file_path.split("_")[1]
+                status = file_path.split("_")[3]
+                last_active = file_path.split("_")[4]
+                os.rename(computer, folder_path + "\\{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, status, last_active))
+        self.current_frame = frame
+
+    def update_computer_last_active(self):
+        self.all_computers = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\*")
+        for computer in self.all_computers:
+            folder_path = os.path.split(computer)[0]
+            file_path = os.path.split(computer)[1]
+            if file_path.split("_")[0] == self.computer_id:
+                id = file_path.split("_")[0]
+                classroom = file_path.split("_")[1]
+                frame = file_path.split("_")[2]
+                status = file_path.split("_")[3]
+                last_active = datetime.now().strftime("%d-%m-%Y-%Hh%M")
+                os.rename(computer, folder_path + "\\{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, status, last_active))
+        self.last_active = last_active
 
     def mouse_click(self, seconds_between_clicks=2):
         ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
@@ -231,4 +281,4 @@ class Monitoring(object):
 
 if __name__ == "__main__":
     test = Monitoring()
-    test.initialize_slave()
+    test.check_status()
