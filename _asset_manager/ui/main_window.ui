@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>0</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -3340,7 +3340,7 @@
                     <widget class="QFrame" name="ifdFrame">
                      <property name="minimumSize">
                       <size>
-                       <width>800</width>
+                       <width>600</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -3507,6 +3507,16 @@
                         <column>
                          <property name="text">
                           <string>Frame</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Render Time</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Computer ID</string>
                          </property>
                         </column>
                        </widget>

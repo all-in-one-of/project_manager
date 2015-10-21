@@ -104,10 +104,18 @@ class RenderTab(object):
             self.renderedFramesTableWidget.insertRow(0)
 
             sequence = frame.split("_")[0]
+            try:
+                render_time = frame.split("_")[2]
+                computer_id = frame.split("_")[3]
+            except:
+                render_time = "0"
+                computer_id = "0"
             frame = frame.split("_")[1]
 
             if sequence == None: sequence = ""
             if frame == None: frame = ""
+            if render_time == None: render_time = ""
+            if computer_id == None: computer_id = ""
 
             sequence_item = QtGui.QTableWidgetItem()
             sequence_item.setText(str(sequence))
@@ -120,6 +128,18 @@ class RenderTab(object):
             frame_item.setTextAlignment(QtCore.Qt.AlignCenter)
             frame_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             self.renderedFramesTableWidget.setItem(0, 1, frame_item)
+
+            render_time_item = QtGui.QTableWidgetItem()
+            render_time_item.setText(str(render_time))
+            render_time_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            render_time_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderedFramesTableWidget.setItem(0, 2, render_time_item)
+
+            computer_id_item = QtGui.QTableWidgetItem()
+            computer_id_item.setText(str(computer_id))
+            computer_id_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            computer_id_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            self.renderedFramesTableWidget.setItem(0, 3, computer_id_item)
 
     def add_computers_from_database(self):
         for i in reversed(xrange(self.renderTableWidget.rowCount())):
@@ -204,6 +224,8 @@ class RenderTab(object):
                 status_item.setBackground(QtGui.QColor(115, 179, 90))
             else:
                 idle_computers_number += 1
+                status_item.setBackground(QtGui.QColor(253, 179, 20))
+
             self.renderTableWidget.setItem(0, 4, status_item)
 
             self.renderTableWidget.horizontalHeader().setResizeMode(4, QtGui.QHeaderView.Stretch)
@@ -221,7 +243,7 @@ class RenderTab(object):
         for item in selected_items:
             computer_id = self.renderTableWidget.item(item.row(), 0).text()
             for computer in all_computers:
-                if computer.split("_")[0] == computer_id:
+                if str(computer.split("_")[0]).lower() == str(computer_id).lower():
                     id = computer.split("_")[0]
                     classroom = computer.split("_")[1]
                     frame = computer.split("_")[2]
@@ -246,12 +268,12 @@ class RenderTab(object):
         for item in selected_items:
             computer_id = self.renderTableWidget.item(item.row(), 0).text()
             for computer in all_computers:
-                if computer.split("_")[0] == computer_id:
+                if str(computer.split("_")[0]).lower() == str(computer_id).lower():
                     id = computer.split("_")[0]
                     classroom = computer.split("_")[1]
                     frame = computer.split("_")[2]
                     last_active = computer.split("_")[4]
-                    os.rename(rendering_folder + computer, rendering_folder + "{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, "stop", last_active))
+                    os.rename(rendering_folder + computer, rendering_folder + "{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, "idle", last_active))
 
             status_item = QtGui.QTableWidgetItem()
             status_item.setText("Idle")
@@ -270,7 +292,7 @@ class RenderTab(object):
         for item in selected_items:
             computer_id = self.renderTableWidget.item(item.row(), 0).text()
             for computer in all_computers:
-                if computer.split("_")[0] == computer_id:
+                if str(computer.split("_")[0]).lower() == str(computer_id).lower():
                     id = computer.split("_")[0]
                     classroom = computer.split("_")[1]
                     frame = computer.split("_")[2]
@@ -331,8 +353,12 @@ class RenderTab(object):
             seq = str(seq.text())
             frame = self.renderedFramesTableWidget.item(item.row(), 1)
             frame = str(frame.text())
+            render_time = self.renderedFramesTableWidget.item(item.row(), 2)
+            render_time = str(render_time.text())
+            computer_id = self.renderedFramesTableWidget.item(item.row(), 3)
+            computer_id = str(computer_id.text())
             try:
-                os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}".format(seq, frame))
+                os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}_{2}_{3}".format(seq, frame, render_time, computer_id))
             except:
                 pass
 
@@ -349,15 +375,15 @@ class RenderTab(object):
             id = self.renderTableWidget.item(item.row(), 0)
             id = str(id.text())
             for computer in all_computers:
-                if computer.split("_")[0] == computer_id:
+                if str(computer.split("_")[0]).lower() == str(computer_id).lower():
                     os.remove(rendering_folder + computer)
 
         self.add_computers_from_database()
 
     def check_frames_integrity(self):
-        all_frames = self.render_cursor.execute('''SELECT * FROM rendered_frames''').fetchall()
-        all_frames = [str(i[1]) + ":" + str(i[2]) for i in all_frames]
-        all_frames = sorted(list(set(all_frames)))
+        rendered_frames_folder = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\"
+        all_frames = glob(rendered_frames_folder + "*")
+        all_frames = [os.path.split(i)[-1] for i in all_frames]
 
         success_frames = []
 
@@ -404,16 +430,6 @@ class RenderTab(object):
             print("Checking frame #" + str(frame_number))
             dialog.repaint()
 
-
-        self.render_cursor.execute('''DELETE FROM rendered_frames''')
-        self.render_db.commit()
-
-        for frame in success_frames:
-            seq = frame.split(":")[0]
-            frame_number = frame.split(":")[1]
-            self.render_cursor.execute('''INSERT INTO rendered_frames(seq, frame) VALUES(?,?)''', (seq, frame_number, ))
-
-        self.render_db.commit()
         self.add_frames_from_database()
 
         dialog.repaint()

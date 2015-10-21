@@ -889,7 +889,7 @@ class AssetLoader(object):
             else:
                 if self.username in ["thoudon", "lclavet"]:
                     self.createAssetFromAssetBtn.show()
-                    self.createAssetFromAssetBtn.setText("Create Rig, Texture or Low-Res from Modeling")
+                    self.createAssetFromAssetBtn.setText("Create Rig, Texture, Shading or Low-Res from Modeling")
                 self.hasUvSeparator.show()
                 self.hasUvToggleBtn.show()
             self.publishBtn.show()
@@ -1908,7 +1908,7 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "shd":
             process = QtCore.QProcess(self)
-            process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
+            process.start(self.houdini_path, [self.selected_asset.full_path.replace("\\", "/")])
 
         elif self.selected_asset.type == "sim":
             process = QtCore.QProcess(self)
@@ -2227,14 +2227,17 @@ class AssetLoader(object):
 
             rigBtn = QtGui.QPushButton("Rig", self.create_from_asset_dialog)
             texBtn = QtGui.QPushButton("Tex", self.create_from_asset_dialog)
+            shdBtn = QtGui.QPushButton("Shading", self.create_from_asset_dialog)
             lowBtn = QtGui.QPushButton("LowRes", self.create_from_asset_dialog)
 
             rigBtn.clicked.connect(self.create_rig_asset_from_mod)
             texBtn.clicked.connect(self.create_tex_asset_from_mod)
+            shdBtn.clicked.connect(self.create_shd_asset_from_mod)
             lowBtn.clicked.connect(self.create_lowres_from_mod)
 
             self.create_from_asset_dialog_main_layout.addWidget(rigBtn)
             self.create_from_asset_dialog_main_layout.addWidget(texBtn)
+            self.create_from_asset_dialog_main_layout.addWidget(shdBtn)
             self.create_from_asset_dialog_main_layout.addWidget(lowBtn)
 
             self.create_from_asset_dialog.exec_()
@@ -2488,20 +2491,15 @@ class AssetLoader(object):
             # Add publish obj as dependency to main asset
             asset.change_dependency(obj_asset.id)
 
-
             # Create main HDA database entry
-            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
+            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "ass", "out", [], asset.id, "", "", self.username)
             main_hda_asset.add_asset_to_db()
-
-            # Create shading HDA database entry
-            shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
-            shading_hda_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, shading_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
 
     def create_lay_asset_from_scratch(self, asset_name):
 
@@ -2566,7 +2564,17 @@ class AssetLoader(object):
 
         self.Lib.message_box(self, type="info", text="Successfully created LowRes modeling asset")
 
+    def create_shd_asset_from_mod(self):
+        self.create_from_asset_dialog.close()
 
+        # Create shading HDA database entry
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "hip", "shd", "01", [], "", "", "", self.username)
+        shading_hda_asset.add_asset_to_db()
+        main_hda_path = shading_hda_asset.full_path.replace("\\shd\\", "\\ass\\").replace("_shd_", "_ass_").replace("_01.", "_out.").replace(".hip", ".hda")
+
+        self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.waitForFinished()
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_shd_from_mod.py", main_hda_path, shading_hda_asset.full_path, shading_hda_asset.name])
 
     def asset_creation_finished(self, asset):
 
@@ -2650,7 +2658,6 @@ class AssetLoader(object):
 
 
         self.batch_thumbnail = False
-
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Mon Oct 12 10:59:24 2015
+# Created: Thu Oct 15 18:13:36 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1297,7 +1297,7 @@ class Ui_Form(object):
         self.horizontalLayout_13.setMargin(2)
         self.horizontalLayout_13.setObjectName(_fromUtf8("horizontalLayout_13"))
         self.ifdFrame = QtGui.QFrame(self.ifd_and_frames_frame)
-        self.ifdFrame.setMinimumSize(QtCore.QSize(800, 0))
+        self.ifdFrame.setMinimumSize(QtCore.QSize(600, 0))
         self.ifdFrame.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.ifdFrame.setFrameShape(QtGui.QFrame.NoFrame)
         self.ifdFrame.setFrameShadow(QtGui.QFrame.Plain)
@@ -1359,12 +1359,16 @@ class Ui_Form(object):
         self.renderedFramesTableWidget.setShowGrid(False)
         self.renderedFramesTableWidget.setGridStyle(QtCore.Qt.SolidLine)
         self.renderedFramesTableWidget.setObjectName(_fromUtf8("renderedFramesTableWidget"))
-        self.renderedFramesTableWidget.setColumnCount(2)
+        self.renderedFramesTableWidget.setColumnCount(4)
         self.renderedFramesTableWidget.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.renderedFramesTableWidget.setHorizontalHeaderItem(0, item)
         item = QtGui.QTableWidgetItem()
         self.renderedFramesTableWidget.setHorizontalHeaderItem(1, item)
+        item = QtGui.QTableWidgetItem()
+        self.renderedFramesTableWidget.setHorizontalHeaderItem(2, item)
+        item = QtGui.QTableWidgetItem()
+        self.renderedFramesTableWidget.setHorizontalHeaderItem(3, item)
         self.renderedFramesTableWidget.horizontalHeader().setDefaultSectionSize(100)
         self.renderedFramesTableWidget.horizontalHeader().setMinimumSectionSize(10)
         self.renderedFramesTableWidget.horizontalHeader().setStretchLastSection(True)
@@ -2238,6 +2242,10 @@ class Ui_Form(object):
         item.setText(_translate("Form", "Sequence", None))
         item = self.renderedFramesTableWidget.horizontalHeaderItem(1)
         item.setText(_translate("Form", "Frame", None))
+        item = self.renderedFramesTableWidget.horizontalHeaderItem(2)
+        item.setText(_translate("Form", "Render Time", None))
+        item = self.renderedFramesTableWidget.horizontalHeaderItem(3)
+        item.setText(_translate("Form", "Computer ID", None))
         self.deleteSelectedFramesBtn.setText(_translate("Form", "Delete Selected Frames on Database", None))
         self.checkFramesIntegrityBtn.setText(_translate("Form", "Check frames integrity", None))
         self.renderTableWidget.setSortingEnabled(True)

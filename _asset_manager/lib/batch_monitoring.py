@@ -12,6 +12,7 @@ from datetime import date
 from datetime import datetime
 from dateutil import relativedelta
 
+
 import sqlite3
 import time
 import threading
@@ -30,6 +31,8 @@ class Monitoring(object):
 
     def check_status(self):
         self.get_computers_list()
+        os.system('taskkill /f /im mpc-hc.exe')
+        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
 
         i = 0
         if self.status == "idle":
@@ -49,17 +52,15 @@ class Monitoring(object):
             self.check_status()
         elif self.status == "rendering":
             self.start_render()
-                
-
         elif self.status == "logout":
+            self.change_computer_status(status="idle")
+            self.change_computer_frame(frame="0")
             os.system("shutdown -l")
-
-
 
     def start_render(self):
         print("Starting Render")
         os.system('taskkill /f /im mpc-hc.exe')
-        #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
+        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
 
         all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
         all_jobs = sorted(all_jobs, key=lambda x: x[2])
@@ -79,7 +80,6 @@ class Monitoring(object):
             all_frames = [(i.split("_")[0], i.split("_")[1]) for i in all_frames]
             all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
 
-
             resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
             resolutionX = int(1920.0 * (float(resolution) / 100.0))
             resolutionY = int(1080.0 * (float(resolution) / 100.0))
@@ -95,14 +95,16 @@ class Monitoring(object):
 
             if len(frames_to_render) == 0:
                 print("No more frames to render for IFD {0}".format(ifd_path))
-                self.change_computer_status(status="idle")
-                self.change_computer_frame(frame="0")
+                self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0],))
+                self.db.commit()
 
             else:
                 frame_to_render = frames_to_render[0]
                 print("Start render for frame #" + frame_to_render)
+                a = datetime.now().replace(microsecond=0)
+
                 open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
-                self.change_computer_frame(frame=frame_to_render)
+                self.change_computer_frame(frame=current_seq + "-" + frame_to_render)
 
                 ifd_file = current_job[1] + "\\" + current_seq + "." + frame_to_render + ".ifd"
 
@@ -144,6 +146,8 @@ class Monitoring(object):
 
                     elif self.status == "logout":
                         print("Logging out")
+                        self.change_computer_status(status="idle")
+                        self.change_computer_frame(frame="0")
                         time.sleep(2)
                         try:
                             os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
@@ -157,7 +161,10 @@ class Monitoring(object):
                     except:
                         tasks = "mantra"
                     if not "mantra" in str(tasks):
-                        open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
+                        b = datetime.now().replace(microsecond=0)
+                        render_time = b-a
+                        render_time = str(render_time).replace(":", "-")
+                        open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}_{2}_{3}".format(current_seq, frame_to_render, str(render_time), str(self.computer_id).lower()), "a+")
                         try:
                             os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render))
                         except:
@@ -171,9 +178,6 @@ class Monitoring(object):
 
                     i += 1
                     time.sleep(6)
-        else:
-            self.change_computer_status(status="idle")
-            self.change_computer_frame(frame="0")
 
         self.update_computer_last_active()
         self.check_status()
