@@ -1433,16 +1433,16 @@ class AssetLoader(object):
             log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
-        if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
-            # Normalize modeling scale
-            self.normalize_mod_scale_process = QtCore.QProcess(self)
-            self.normalize_mod_scale_process.waitForFinished()
-            self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
-            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
-        else:
-            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
-                self.update_thumbnail(False)
+        # if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
+        #     # Normalize modeling scale
+        #     self.normalize_mod_scale_process = QtCore.QProcess(self)
+        #     self.normalize_mod_scale_process.waitForFinished()
+        #     self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
+        #     self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
+        # else:
+        self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
+        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+            self.update_thumbnail(False)
 
         self.versionList_Clicked()
 
@@ -1748,13 +1748,17 @@ class AssetLoader(object):
             self.thumbnailProgressBar.setStyleSheet("QProgressBar::chunk {background-color: hsl(" + str(hue) + ", 255, 205);}")
 
     def create_thumbnail_finished(self, version):
-        thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
+        img_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full.jpg")
+        thumb_filename = os.path.split(self.full_obj_path)[0] + "\\.thumb\\" + os.path.split(self.full_obj_path)[1].replace("out.obj", self.version + "_full-thumb.jpg")
         if self.type == "full":
             filename = self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg")
             self.compress_image(filename, int(1920 * float(self.resolution) / 100), 100)
 
+            shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), img_filename)
             shutil.copy(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"), thumb_filename)
             os.remove(self.obj_tmp_path.replace("out.obj", self.version + "_full.jpg"))
+
+            self.compress_image(thumb_filename, int(240 * float(self.resolution) / 100), 70)
 
         elif self.type == "turn":
             file_sequence = self.obj_tmp_path.replace("out.obj", self.version + "_%02d.jpg")

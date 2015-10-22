@@ -117,9 +117,9 @@ class Asset(object):
         if self.version == "01":
             # Variable to use for the version list, to display first version thumbnail instead of the last version's thumbnail (which is used for the assetList)
             self.first_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, extension)
-            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.last_version, extension)
+            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full-thumb.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.last_version, extension)
         else:
-            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, extension)
+            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full-thumb.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, extension)
 
         # Create full media variable to use when user press spacebar.
         # If asset is of type mod, tex or rig, it's the same as the default media user

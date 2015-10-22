@@ -98,35 +98,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.setMaximumSize(1453, 923)
 
         self.db_to_load = ""
-
-        if self.username in ["thoudon", "mroz", "lgregoire", "cgonnord"]:
-            # Project selection GUI
-            projectDialog = QtGui.QDialog(self)
-            projectDialog.setWindowTitle("Select a project")
-            projectDialog.setMinimumWidth(175)
-
-            layout = QtGui.QVBoxLayout(projectDialog)
-
-            pubBtn = QtGui.QPushButton("Pub")
-            natureBtn = QtGui.QPushButton("Nature")
-
-            pubBtn.clicked.connect(projectDialog.accept)
-            natureBtn.clicked.connect(projectDialog.reject)
-
-            layout.addWidget(pubBtn)
-            layout.addWidget(natureBtn)
-
-            projectDialog.move(960, 540)
-            projectDialog.setWindowFlags(projectDialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-            result = projectDialog.exec_()
-
-            if result == 0:
-                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
-            elif result == 1:
-                self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database projet pub
-
-        else:
-            self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database nature
 
 
         if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
