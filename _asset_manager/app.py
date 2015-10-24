@@ -68,6 +68,8 @@ from lib.log import LogEntry
 from lib.people import PeopleTab
 from lib.batch_monitoring import Monitoring
 
+from shotgun_api3 import Shotgun
+
 class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager, MyTasks, WhatsNew, Asset, LogEntry, Task, AssetLoader, Moodboard_Creator, PeopleTab, RenderTab):
     def __init__(self):
         super(Main, self).__init__()
@@ -90,6 +92,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.Moodboard_Creator = Moodboard_Creator
         self.PeopleTab = PeopleTab
 
+        sg_url = "http://nad.shotgunstudio.com"
+        sg_script_name = "ThibaultGenericScript"
+        sg_key = "e014f12acda4074561022f165e8cd1913af2ba4903324a72edbb21430abbb2dc"
+        self.sg_project_id = 146
+
+        self.sg = Shotgun(sg_url, sg_script_name, sg_key)
+
         # Initialize the guis
         self.Form = self.setupUi(self)
         self.Form.center_window()
@@ -98,16 +107,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.setMaximumSize(1453, 923)
 
         self.db_to_load = ""
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\pub.sqlite"  # Database nature
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database nature
 
 
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+        #if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             # Database Setup
-            self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
+        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
-        if self.db_path not in ["H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"]:
-            self.backup_database()
+        #if self.db_path not in ["H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"]:
+            #self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
         self.cursor = self.db.cursor()

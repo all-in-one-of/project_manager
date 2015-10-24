@@ -1778,6 +1778,13 @@ class AssetLoader(object):
 
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
 
+        # Upload thumbnail to Shotgun
+        print(self.obj_name)
+        print(img_filename)
+        sg_asset = self.sg.find_one("Asset", [["code", "is", self.obj_name]])
+        print(sg_asset["id"])
+        self.sg.upload_thumbnail("Asset", sg_asset["id"], img_filename)
+
         if len(self.thumbs_to_create) > 0:
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
         else:
@@ -2505,6 +2512,19 @@ class AssetLoader(object):
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
 
+
+        # Create shotgun asset
+        sequence = self.sg.find("Sequence", [["code","is",self.selected_sequence_name]])
+        shot = self.sg.find("Shot", [["code","is",self.selected_shot_number],["sg_sequence","is",sequence]])
+
+        data = {
+            'project': {'type': 'Project', 'id': self.sg_project_id},
+            'code': asset_name,
+            'shots':shot,
+            'sequences':sequence
+        }
+        self.sg.create("Asset", data)
+
     def create_lay_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
@@ -2572,13 +2592,18 @@ class AssetLoader(object):
         self.create_from_asset_dialog.close()
 
         # Create shading HDA database entry
-        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, self.selected_asset.name, "", "hip", "shd", "01", [], "", "", "", self.username)
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", "hip", "shd", "01", [], "", "", "", self.username)
         shading_hda_asset.add_asset_to_db()
         main_hda_path = shading_hda_asset.full_path.replace("\\shd\\", "\\ass\\").replace("_shd_", "_ass_").replace("_01.", "_out.").replace(".hip", ".hda")
 
         self.houdini_hda_process = QtCore.QProcess(self)
+        self.houdini_hda_process.readyRead.connect(self.blblbl)
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_shd_from_mod.py", main_hda_path, shading_hda_asset.full_path, shading_hda_asset.name])
+
+    def blblbl(self):
+        while self.houdini_hda_process.canReadLine():
+            print(self.houdini_hda_process.readLine())
 
     def asset_creation_finished(self, asset):
 
