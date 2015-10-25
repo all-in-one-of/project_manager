@@ -476,7 +476,7 @@ class ReferenceTab(object):
         # Create seq and shot combo box
         self.change_ref_seq_combobox = QtGui.QComboBox()
         self.change_ref_seq_combobox.addItem("All")
-        self.change_ref_seq_combobox.addItems([str(i[0]) for i in self.sequences])
+        self.change_ref_seq_combobox.addItems([str(i) for i in self.sequences])
         self.change_ref_shot_combobox = QtGui.QComboBox()
         self.change_ref_shot_combobox.addItem("None")
 

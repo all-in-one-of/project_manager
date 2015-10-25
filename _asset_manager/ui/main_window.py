@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Oct 25 15:07:56 2015
+# Created: Sun Oct 25 15:11:12 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1903,8 +1903,8 @@ class Ui_Form(object):
         self.horizontalLayout_52.addWidget(self.TabFrame)
         self.CommentsFrame = QtGui.QFrame(self.assetManagerFrame)
         self.CommentsFrame.setEnabled(True)
-        self.CommentsFrame.setMinimumSize(QtCore.QSize(400, 0))
-        self.CommentsFrame.setMaximumSize(QtCore.QSize(400, 16777215))
+        self.CommentsFrame.setMinimumSize(QtCore.QSize(0, 0))
+        self.CommentsFrame.setMaximumSize(QtCore.QSize(0, 16777215))
         self.CommentsFrame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.CommentsFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.CommentsFrame.setObjectName(_fromUtf8("CommentsFrame"))
@@ -1922,7 +1922,7 @@ class Ui_Form(object):
         self.commentsScrollArea.setWidgetResizable(True)
         self.commentsScrollArea.setObjectName(_fromUtf8("commentsScrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 362, 856))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 16, 840))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.commentsScrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_5.addWidget(self.commentsScrollArea)

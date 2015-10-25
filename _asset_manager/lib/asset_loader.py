@@ -269,11 +269,9 @@ class AssetLoader(object):
         if is_asset_uved == None:
             self.cursor.execute('''INSERT INTO uved_assets(asset_id, has_uv, username) VALUES(?,?,?)''', (self.selected_asset.id, 1, self.username))
             self.db.commit()
-            self.hasUvToggleBtn.setIcon(self.has_uv_icon)
         else:
             self.cursor.execute('''DELETE FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id,))
             self.db.commit()
-            self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
 
     def add_project(self):
 
@@ -488,7 +486,7 @@ class AssetLoader(object):
         # Create seq and shot combo box
         self.change_ref_seq_combobox = QtGui.QComboBox()
         self.change_ref_seq_combobox.addItem("All")
-        self.change_ref_seq_combobox.addItems([str(i[0]) for i in self.sequences])
+        self.change_ref_seq_combobox.addItems([seq for seq in self.sequences])
         self.change_ref_shot_combobox = QtGui.QComboBox()
         self.change_ref_shot_combobox.addItem("None")
 
@@ -517,17 +515,24 @@ class AssetLoader(object):
         if change_dialog.result() == 0:
             return
 
-        # Get selected references and change seq shot
-        selected_references = self.referenceThumbListWidget.selectedItems()
+        # Get selected asset and change seq shot
         selected_sequence = str(self.change_ref_seq_combobox.currentText())
         selected_shot = str(self.change_ref_shot_combobox.currentText())
         if selected_sequence == "All": selected_sequence = "xxx"
         if selected_shot == "None": selected_shot = "xxxx"
 
-        for ref in selected_references:
-            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
-            asset.change_sequence(selected_sequence)
-            asset.change_shot(selected_shot)
+        self.selected_asset.change_sequence(selected_sequence)
+        self.selected_asset.change_shot(selected_shot)
+
+        sequence = self.sg.find_one("Sequence", [["code","is",selected_sequence]])
+        if len(sequence) > 0:
+            shot = self.sg.find_one("Shot", [["sg_sequence","is",sequence],["code","is",selected_shot]])
+        else:
+            sequence = ''
+            shot = ''
+
+        sg_asset = self.sg.find_one("Asset", [["code","is",self.selected_asset.name]])
+        self.sg.update("Asset", sg_asset["id"], {'shots': [shot], 'sequences': [sequence]})
 
     def change_seq_shot_filter_shots(self):
         '''
@@ -645,7 +650,7 @@ class AssetLoader(object):
             sequence = self.sg.find_one("Sequence", [["code","is",seq]])
             shots = self.sg.find("Shot", [["sg_sequence","is",sequence]], ["code"])
             shots = [shot["code"] for shot in shots]
-            self.shots[str(seq[0])] = [str(shot[0]) for shot in shots]
+            self.shots[str(seq)] = [str(shot) for shot in shots]
 
         # Populate the sequences and shots lists
         self.seqList.clear()
@@ -677,7 +682,6 @@ class AssetLoader(object):
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
         self.importIntoSceneBtn.setDisabled(True)
-        self.hasUvToggleBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.openRealLayoutScene.setDisabled(True)
         self.deleteAssetBtn.setDisabled(True)
@@ -694,13 +698,13 @@ class AssetLoader(object):
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
         else:
-            shots = self.cursor.execute('''SELECT shot_number FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, self.selected_sequence_name,)).fetchall()
+            shots = self.shots[self.selected_sequence_name]
             self.shotList.clear()
             self.shotList.addItem("All")
             self.shotList.addItem("None")
             self.shotReferenceList.clear()
             self.shotReferenceList.addItem("None")
-            shots = [i[0] for i in shots if i[0] != "xxxx"]
+            shots = [i for i in shots if i != "xxxx"]
             shots = sorted(shots)
             [(self.shotList.addItem(shot), self.shotReferenceList.addItem(shot)) for shot in shots]
 
@@ -714,7 +718,6 @@ class AssetLoader(object):
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
         self.importIntoSceneBtn.setDisabled(True)
-        self.hasUvToggleBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.openRealLayoutScene.setDisabled(True)
         self.deleteAssetBtn.setDisabled(True)
@@ -792,7 +795,6 @@ class AssetLoader(object):
         self.createVersionBtn.setDisabled(True)
         self.publishBtn.setDisabled(True)
         self.loadObjInGplayBtn.setDisabled(True)
-        self.hasUvToggleBtn.setDisabled(True)
         self.updateThumbBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.openRealLayoutScene.setDisabled(True)
@@ -854,7 +856,6 @@ class AssetLoader(object):
         self.createVersionBtn.setDisabled(False)
         self.loadAssetBtn.setDisabled(False)
         self.importIntoSceneBtn.setDisabled(False)
-        self.hasUvToggleBtn.setDisabled(False)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(False)
         self.updateThumbBtn.setDisabled(False)
         self.deleteAssetBtn.setDisabled(False)
@@ -946,14 +947,12 @@ class AssetLoader(object):
             self.importIntoSceneBtn.show()
             self.loadObjInGplayBtn.show()
             if "lowres" in self.selected_asset.name:
-                self.hasUvToggleBtn.hide()
                 self.createAssetFromAssetBtn.hide()
             else:
                 if self.username in ["thoudon", "lclavet"]:
                     self.createAssetFromAssetBtn.show()
                     self.createAssetFromAssetBtn.setText("Create Rig, Texture, Shading or Low-Res from Modeling")
                 self.hasUvSeparator.show()
-                self.hasUvToggleBtn.show()
             self.publishBtn.show()
             self.loadObjInGplayBtn.setDisabled(False)
 
@@ -961,7 +960,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "cam":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -971,7 +969,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "lgt":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -981,7 +978,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "tex":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -990,7 +986,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "rig":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
@@ -1000,7 +995,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "anm":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.show()
@@ -1010,7 +1004,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "sim":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -1020,7 +1013,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "shd":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
@@ -1029,7 +1021,6 @@ class AssetLoader(object):
 
 
         elif self.selected_asset.type == "lay":
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             if self.username in ["thoudon", "lclavet"]:
                 self.createAssetFromAssetBtn.show()
@@ -1053,7 +1044,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "dmp":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -1063,7 +1053,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "cmp":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -1073,7 +1062,6 @@ class AssetLoader(object):
         elif self.selected_asset.type == "rdr":
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
-            self.hasUvToggleBtn.hide()
             self.hasUvSeparator.hide()
             self.createAssetFromAssetBtn.hide()
             self.importIntoSceneBtn.hide()
@@ -1127,15 +1115,6 @@ class AssetLoader(object):
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         else:
             self.addRemoveAssetAsFavoriteBtn.setIcon(self.favorite_icon)
-
-        # Set is Uved button state
-        is_asset_uved = self.cursor.execute('''SELECT * FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
-        if is_asset_uved == None:
-            self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
-        else:
-            self.hasUvToggleBtn.setIcon(self.has_uv_icon)
-
-        # Set comment icon to enabled
 
         # Set publish icon to enabled
         self.publishBtn.setIcon(self.publish_icon)
@@ -1734,7 +1713,7 @@ class AssetLoader(object):
 
         self.updateThumbBtn.setEnabled(False)
         self.full_obj_path = obj_path
-        self.obj_name = obj_path[obj_path.find("_mod_") + len("_mod_"):obj_path.rfind("_out")]
+        self.obj_name = obj_path.split("\\")[-1].split("_")[0]
         self.obj_tmp_path = "H:\\tmp\\" + obj_path.split("\\")[-1]
         self.type = type
         self.version = version
@@ -2056,6 +2035,10 @@ class AssetLoader(object):
         asset_name = self.selected_asset.name
         asset_name_lowres = asset_name + "-lowres"
 
+        # Delete asset on shotgun
+        sg_asset = self.sg.find_one("Asset", [["code","is",asset_name]])
+        self.sg.delete("Asset", sg_asset["id"])
+
         assets = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (asset_name,)).fetchall()
         assets_lowres = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (asset_name_lowres,)).fetchall()
 
@@ -2075,6 +2058,8 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
+
+
 
     def import_into_scene(self):
         if self.selected_asset == None:

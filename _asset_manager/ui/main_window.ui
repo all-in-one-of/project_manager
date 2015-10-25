@@ -4860,13 +4860,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>400</width>
+          <width>0</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>400</width>
+          <width>0</width>
           <height>16777215</height>
          </size>
         </property>
@@ -4907,8 +4907,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>362</width>
-              <height>856</height>
+              <width>16</width>
+              <height>840</height>
              </rect>
             </property>
            </widget>
