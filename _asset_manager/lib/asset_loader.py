@@ -48,14 +48,12 @@ class AssetLoader(object):
         self.loadAssociatedLayoutSceneBtn.setIcon(self.load_asset_icon)
         self.loadAssociatedLayoutSceneBtn.setIconSize(QtCore.QSize(16, 16))
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
-        self.hasUvToggleBtn.setIcon(self.has_uv_disabled_icon)
         self.deleteAssetBtn.setIcon(self.delete_asset_icon)
         self.openRealLayoutScene.setIcon(self.open_real_layout_scene_icon)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
         self.importIntoSceneBtn.setDisabled(True)
-        self.hasUvToggleBtn.setDisabled(True)
         self.loadObjInGplayBtn.setDisabled(True)
         self.deleteAssetBtn.setDisabled(True)
         self.openRealLayoutScene.setDisabled(True)
@@ -67,7 +65,6 @@ class AssetLoader(object):
             self.deleteAssetLine.hide()
             self.deleteAssetBtn.hide()
 
-        self.hasUvToggleBtn.hide()
         self.hasUvSeparator.hide()
         self.importIntoSceneBtn.hide()
         self.renderLine.hide()
@@ -126,14 +123,9 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
         self.openRealLayoutScene.clicked.connect(self.open_real_layout_scene)
         self.loadAssociatedLayoutSceneBtn.clicked.connect(self.open_associated_layout_scene)
+        self.changeAssetSeqShotBtn.clicked.connect(self.change_seq_shot)
 
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
-
-        self.hasUvToggleBtn.clicked.connect(self.change_uv_state)
-
-        self.addProjectBtn.clicked.connect(self.add_project)
-        self.addSequenceBtn.clicked.connect(self.add_sequence)
-        self.addShotBtn.clicked.connect(self.add_shot)
 
         self.updateThumbBtn.clicked.connect(partial(self.update_thumbnail, True))
         self.loadAssetBtn.clicked.connect(self.load_asset)
@@ -480,6 +472,75 @@ class AssetLoader(object):
 
         self.Lib.message_box(self, type="info", text="Successfully created shot " + shot_number)
 
+    def change_seq_shot(self):
+        '''
+        Change sequence and shot for selected references
+        '''
+        # Create the change seq shot dialog
+        change_dialog = QtGui.QDialog()
+        change_dialog.setWindowTitle("Change Sequence / Shot")
+        change_dialog.setMinimumWidth(200)
+        self.Lib.apply_style(self, change_dialog)
+
+        # Create main layout
+        main_layout = QtGui.QVBoxLayout(change_dialog)
+
+        # Create seq and shot combo box
+        self.change_ref_seq_combobox = QtGui.QComboBox()
+        self.change_ref_seq_combobox.addItem("All")
+        self.change_ref_seq_combobox.addItems([str(i[0]) for i in self.sequences])
+        self.change_ref_shot_combobox = QtGui.QComboBox()
+        self.change_ref_shot_combobox.addItem("None")
+
+        # Create accept button
+        apply_btn = QtGui.QPushButton("Accept")
+
+        # Create labels
+        sequence_lbl = QtGui.QLabel("Sequence Name:")
+        shot_lbl = QtGui.QLabel("Shot Number:")
+
+        # Add widgets to layout
+        main_layout.addWidget(sequence_lbl)
+        main_layout.addWidget(self.change_ref_seq_combobox)
+        main_layout.addWidget(shot_lbl)
+        main_layout.addWidget(self.change_ref_shot_combobox)
+        main_layout.addWidget(apply_btn)
+
+        # Connect the widgets to the functions
+        apply_btn.clicked.connect(change_dialog.accept)
+        self.change_ref_seq_combobox.currentIndexChanged.connect(self.ref_change_seq_shot_filter_shots)
+
+        # Execute the QDialog
+        change_dialog.exec_()
+
+        # If user close dialog, return
+        if change_dialog.result() == 0:
+            return
+
+        # Get selected references and change seq shot
+        selected_references = self.referenceThumbListWidget.selectedItems()
+        selected_sequence = str(self.change_ref_seq_combobox.currentText())
+        selected_shot = str(self.change_ref_shot_combobox.currentText())
+        if selected_sequence == "All": selected_sequence = "xxx"
+        if selected_shot == "None": selected_shot = "xxxx"
+
+        for ref in selected_references:
+            asset = ref.data(QtCore.Qt.UserRole).toPyObject()
+            asset.change_sequence(selected_sequence)
+            asset.change_shot(selected_shot)
+
+    def change_seq_shot_filter_shots(self):
+        '''
+        Add shots based on what sequence was clicked on the ref_change_seq_shot layout
+        '''
+        selected_sequence_name = str(self.change_ref_seq_combobox.currentText())
+
+        # Add shots to shot list and shot creation list
+        self.change_ref_shot_combobox.clear()
+        self.change_ref_shot_combobox.addItem("None")
+        if selected_sequence_name != "All":
+            [self.change_ref_shot_combobox.addItem(shot) for shot in self.shots[selected_sequence_name]]
+
     def load_all_assets_for_first_time(self):
         '''
         Add all assets from selected project. Only run once to rebuild assets objects from Asset class.
@@ -573,17 +634,18 @@ class AssetLoader(object):
         self.selected_project_shortname = str(self.cursor.execute('''SELECT project_shortname FROM projects WHERE project_name=?''', (self.selected_project_name,)).fetchone()[0])
 
         # Query the sequences associated with the project
-        self.sequences = (self.cursor.execute('''SELECT DISTINCT sequence_name FROM sequences WHERE project_name=?''', (self.selected_project_name,))).fetchall()
+        self.sequences = self.sg.find("Sequence", [['project', 'is', {'type': 'Project', 'id': self.sg_project_id}]], ["code"])
+        self.sequences = [seq["code"] for seq in self.sequences]
         self.sequences = sorted(self.sequences)
+
 
         # Query the shots associated with each sequence
         self.shots = {}
-        self.shots_framerange = {}
         for seq in self.sequences:
-            shots = (self.cursor.execute('''SELECT shot_number, frame_start, frame_end FROM shots WHERE project_name=? AND sequence_name=?''', (self.selected_project_name, seq[0],))).fetchall()
+            sequence = self.sg.find_one("Sequence", [["code","is",seq]])
+            shots = self.sg.find("Shot", [["sg_sequence","is",sequence]], ["code"])
+            shots = [shot["code"] for shot in shots]
             self.shots[str(seq[0])] = [str(shot[0]) for shot in shots]
-            for shot in shots:
-                self.shots_framerange[str(seq[0]) + "-" + str(shot[0])] = (shot[1], shot[2])
 
         # Populate the sequences and shots lists
         self.seqList.clear()
@@ -595,7 +657,7 @@ class AssetLoader(object):
         self.shotList.clear()
         self.shotReferenceList.clear()
         self.shotReferenceList.addItem("None")
-        [(self.seqList.addItem(sequence[0]), self.seqReferenceList.addItem(sequence[0])) for sequence in self.sequences]
+        [(self.seqList.addItem(sequence), self.seqReferenceList.addItem(sequence)) for sequence in self.sequences]
 
         # Select "All" from sequence list and "None" from shot list
         self.seqList.setCurrentIndex(0)
@@ -1391,9 +1453,13 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "anm":
             # Get frame range from selected shot
-            framerange = self.shots_framerange[self.selected_asset.sequence + "-" + self.selected_asset.shot]
-            start_frame = framerange[0]
-            end_frame = framerange[1]
+            sequence = self.sg.find_one("Sequence", [["code","is",self.selected_asset.sequence]])
+            shot_id = self.sg.find_one("Shot", [["sg_sequence","is",sequence],["code","is",self.selected_asset.shot]], ["id"])
+            sg_cut_in = self.sg.find_one("Shot", [["id", "is", shot_id["id"]]], ["sg_cut_in"])
+            sg_cut_out = self.sg.find_one("Shot", [["id", "is", shot_id["id"]]], ["sg_cut_out"])
+            start_frame = sg_cut_in["sg_cut_in"]
+            end_frame = sg_cut_out["sg_cut_out"]
+
 
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.finished.connect(self.publish_process_finished)
@@ -1404,9 +1470,12 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "cam":
             # Get frame range from selected shot
-            framerange = self.shots_framerange[self.selected_asset.sequence + "-" + self.selected_asset.shot]
-            start_frame = str(framerange[0])
-            end_frame = str(framerange[1])
+            sequence = self.sg.find_one("Sequence", [["code", "is", self.selected_asset.sequence]])
+            shot_id = self.sg.find_one("Shot", [["sg_sequence", "is", sequence], ["code", "is", self.selected_asset.shot]], ["id"])
+            sg_cut_in = self.sg.find_one("Shot", [["id", "is", shot_id["id"]]], ["sg_cut_in"])
+            sg_cut_out = self.sg.find_one("Shot", [["id", "is", shot_id["id"]]], ["sg_cut_out"])
+            start_frame = sg_cut_in["sg_cut_in"]
+            end_frame = sg_cut_out["sg_cut_out"]
 
             export_path = str(self.selected_asset.full_path.replace("_" + self.selected_asset.version + ".", "_out.").replace(".hda", ".abc").replace("\\", "/"))
             hda_path = str(self.selected_asset.full_path.replace("\\", "/"))
@@ -1433,16 +1502,11 @@ class AssetLoader(object):
             log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
-        # if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
-        #     # Normalize modeling scale
-        #     self.normalize_mod_scale_process = QtCore.QProcess(self)
-        #     self.normalize_mod_scale_process.waitForFinished()
-        #     self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
-        #     self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
-        # else:
+
         self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
         if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
-            self.update_thumbnail(False)
+            if self.selected_asset.type != "rig":
+                self.update_thumbnail(False)
 
         self.versionList_Clicked()
 
@@ -1551,18 +1615,12 @@ class AssetLoader(object):
                 self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
 
         elif self.selected_asset.type == "rig":
-
             self.Lib.take_screenshot(self, path=self.selected_asset.full_media)
             self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
 
-
-
         elif self.selected_asset.type == "tex":
-
             self.Lib.take_screenshot(self, path=self.selected_asset.full_media, software="mari")
             self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
-
-
 
         elif self.selected_asset.type == "lay":
             self.Lib.take_screenshot(self, path=self.selected_asset.first_media)
@@ -2513,9 +2571,16 @@ class AssetLoader(object):
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_modeling_hda.py", self.cur_path_one_folder_up, main_hda_asset.full_path, main_hda_asset.obj_path, asset_name, main_hda_asset.obj_path.replace(".obj", ".hdanc")])
 
 
-        # Create shotgun asset
+        # SHOTGUN
+        #Retrieve sequence and shot in Shotgun
         sequence = self.sg.find("Sequence", [["code","is",self.selected_sequence_name]])
-        shot = self.sg.find("Shot", [["code","is",self.selected_shot_number],["sg_sequence","is",sequence]])
+
+        # Check if sequence exists
+        if len(sequence) > 0:
+            shot = self.sg.find("Shot", [["code","is",self.selected_shot_number],["sg_sequence","is",sequence]])
+        else:
+            sequence = []
+            shot = []
 
         data = {
             'project': {'type': 'Project', 'id': self.sg_project_id},
@@ -2523,6 +2588,8 @@ class AssetLoader(object):
             'shots':shot,
             'sequences':sequence
         }
+
+        # Create main asset in shotgun
         self.sg.create("Asset", data)
 
     def create_lay_asset_from_scratch(self, asset_name):

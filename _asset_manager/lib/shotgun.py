@@ -11,9 +11,6 @@ sg = Shotgun(url, script_name, key)
 #print(test)
 
 
-
-
-
 # data = {
 #     'project': {'type':'Project','id':project_id},
 #     'code':'Test',

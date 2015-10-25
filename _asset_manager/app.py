@@ -122,6 +122,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.cursor = self.db.cursor()
 
         # Global Variables
+        self.projectList.hide()
         self.i = 0
         self.computer_id = socket.gethostname()
         self.ref_assets_instances = []
@@ -260,13 +261,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         # Initialize modules and connections
         AssetLoader.__init__(self)
         self.ReferenceTab.__init__(self)
-        self.TaskManager.__init__(self)
         self.RenderTab.__init__(self)
         self.CommentWidget.__init__(self)
-        self.MyTasks.__init__(self)
         self.WhatsNew.__init__(self)
         self.PeopleTab.__init__(self)
         self.WhatsNew.load_whats_new(self)
+        self.check_last_active()
 
         # self.check_news_thread = CheckNews(self)
         # self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
@@ -376,6 +376,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         if self.members[self.username] == "Chloe":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -386,6 +388,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Christopher":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -395,6 +399,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Etienne":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -405,6 +411,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Jeremy":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -415,6 +423,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Laurence":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -424,9 +434,13 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Louis-Philippe":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
 
         elif self.members[self.username] == "Mathieu":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -437,6 +451,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Maxime":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -447,6 +463,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Olivier":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -457,6 +475,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Simon":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -467,9 +487,14 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Thibault":
-            pass
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
 
         elif self.members[self.username] == "Yann":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
@@ -477,6 +502,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Yi":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
@@ -487,6 +514,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         elif self.members[self.username] == "Valentin":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])

@@ -584,8 +584,6 @@ class DesktopWidget(QtGui.QWidget):
         elif task_status == "Done":
             cell_item.setStyleSheet("background-color: #4b4b4b;")
 
-
-
 if __name__ == "__main__":
     test = Lib()
     test.switch_mari_cache("server")

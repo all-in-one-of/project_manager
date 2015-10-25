@@ -92,7 +92,7 @@ class Asset(object):
         self.number_of_publishes = number_of_publishes
         self.creator = creator
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
-        self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+        self.path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
 
         # Get the last version of the asset (Ex: if an asset has 5 version, last_version is equal to "05")
@@ -116,10 +116,10 @@ class Asset(object):
 
         if self.version == "01":
             # Variable to use for the version list, to display first version thumbnail instead of the last version's thumbnail (which is used for the assetList)
-            self.first_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, extension)
-            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full-thumb.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.last_version, extension)
+            self.first_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full.{3}".format(self.type, self.name, self.version, extension)
+            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full-thumb.{3}".format(self.type, self.name, self.last_version, extension)
         else:
-            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full-thumb.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, extension)
+            self.default_media_user = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full-thumb.{3}".format(self.type, self.name, self.version, extension)
 
         # Create full media variable to use when user press spacebar.
         # If asset is of type mod, tex or rig, it's the same as the default media user
@@ -127,22 +127,17 @@ class Asset(object):
         if self.type in ["mod", "tex", "rig"]:
             self.full_media = self.default_media_user
         elif self.type in ["anm", "sim", "shd", "cam"]:
-            self.full_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.full_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full.{3}".format(self.type, self.name, self.version, "mp4")
         else:
-            self.full_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_full.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+            self.full_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full.{3}".format(self.type, self.name, self.version, "mp4")
 
         # Advanced media displayed when user press on ctrl + spacebar
-        self.advanced_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_{3}_{0}_{4}_{5}_advanced.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, "mp4")
+        self.advanced_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_advanced.{3}".format(self.type, self.name, self.version, "mp4")
 
-        self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("anm", self.project_shortname, self.sequence, self.shot, self.name, "out", "abc")
-        self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("lay", self.project_shortname, self.sequence, self.shot, self.name, "out", "hda")
-        self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("mod", self.project_shortname, self.sequence, self.shot, self.name, "out", "obj")
-        self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format("rig", self.project_shortname, self.sequence, self.shot, self.name, "out", "ma")
-
-        # print(self.name, self.type, self.version)
-        # print(self.default_media_user)
-        # print(self.advanced_media)
-        # print("####################################")
+        self.anim_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}.{3}".format("anm", self.name, "out", "abc")
+        self.main_hda_path = self.project_path + "\\assets\\{0}\\{1}_{2}.{3}".format("lay", self.name, "out", "hda")
+        self.obj_path = self.project_path + "\\assets\\{0}\\{1}_{2}.{3}".format("mod", self.name, "out", "obj")
+        self.rig_out_path = self.project_path + "\\assets\\{0}\\{1}_{2}.{3}".format("rig", self.name, "out", "ma")
 
         self.comments_folder = self.project_path + "\\assets\\{0}\\.comments".format(self.type)
         self.comment_filename = self.project_path + "\\assets\\{0}\\.comments\\{0}_{1}".format(self.type, self.name)
@@ -153,18 +148,18 @@ class Asset(object):
         print "| -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} | -{} |".format(self.id, self.project, self.sequence, self.shot, self.name, self.path, self.type, self.version, self.tags, self.dependency, self.last_access, self.last_publish, self.creator, self.number_of_publishes)
 
     def update_asset_path(self):
-        new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+        new_path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
         if int(self.version) > 1:  # If version is higher than 1, go back to level 1 and increment until there is no existing file with version
             self.change_version_if_asset_already_exists(str(1).zfill(2))
-            new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+            new_path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
             while os.path.isfile(self.project_path + new_path): # Increment version until there is no file already existing with same version
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+                new_path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
 
         elif int(self.version) == 1: # If asset is at version 1, increment its version until there is no file already existing with same version
             while os.path.isfile(self.project_path + new_path):
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-                new_path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+                new_path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
 
         os.rename(self.full_path, self.project_path + new_path)
         os.rename(self.full_path.replace("." + self.extension, "_thumb." + self.extension), self.project_path + new_path.replace("." + self.extension, "_thumb." + self.extension))
@@ -177,7 +172,7 @@ class Asset(object):
         while os.path.isfile(self.project_path + self.path):
             if self.version != "out":
                 self.change_version_if_asset_already_exists(str(int(self.version) + 1).zfill(2))
-                self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+                self.path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
             else:
                 break
         self.full_path = self.project_path + self.path
@@ -188,6 +183,10 @@ class Asset(object):
     def remove_asset_from_db(self):
         try:
             os.remove(self.full_path)
+        except:
+            pass
+        try:
+            os.remove(self.obj_path)
         except:
             pass
         try:
