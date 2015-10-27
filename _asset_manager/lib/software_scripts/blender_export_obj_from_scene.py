@@ -14,4 +14,4 @@ try:
 except:
     bpy.ops.object.select_all(action='SELECT')
 
-bpy.ops.export_scene.obj(filepath=export_path, use_selection=True, use_materials=False, use_mesh_modifiers=False, use_vertex_groups=True, use_blen_objects=False, group_by_object=True)
+bpy.ops.export_scene.obj(filepath=export_path, use_selection=True, use_materials=False, use_mesh_modifiers=True, use_vertex_groups=True, use_blen_objects=False, group_by_object=True)

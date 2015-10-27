@@ -359,7 +359,7 @@
                    <bool>true</bool>
                   </property>
                   <property name="resizeMode">
-                   <enum>QListView::Fixed</enum>
+                   <enum>QListView::Adjust</enum>
                   </property>
                   <property name="spacing">
                    <number>0</number>
@@ -4593,7 +4593,7 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>1043</width>
+                  <width>1443</width>
                   <height>536</height>
                  </rect>
                 </property>

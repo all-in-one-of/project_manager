@@ -61,7 +61,9 @@ class AssetLoader(object):
         if self.username in ["thoudon", "lclavet"]:
             self.deleteAssetBtn.show()
             self.deleteAssetLine.show()
+            self.changeAssetSeqShotBtn.show()
         else:
+            self.changeAssetSeqShotBtn.hide()
             self.deleteAssetLine.hide()
             self.deleteAssetBtn.hide()
 
@@ -2037,7 +2039,10 @@ class AssetLoader(object):
 
         # Delete asset on shotgun
         sg_asset = self.sg.find_one("Asset", [["code","is",asset_name]])
-        self.sg.delete("Asset", sg_asset["id"])
+        try:
+            self.sg.delete("Asset", sg_asset["id"])
+        except:
+            pass
 
         assets = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (asset_name,)).fetchall()
         assets_lowres = self.cursor.execute('''SELECT asset_id FROM assets WHERE asset_name=?''', (asset_name_lowres,)).fetchall()
@@ -2338,11 +2343,6 @@ class AssetLoader(object):
         self.process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_as_reference.py", obj_path, file_export])
 
     def create_tex_asset_from_mod(self):
-        is_uved = self.cursor.execute('''SELECT * FROM uved_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchone()
-        if is_uved == None:
-            self.Lib.message_box(self, type="error", text="Selected model has no UV. You can't create a texture asset for an asset without UV.")
-            return
-
         is_asset_tex_already_existing = self.cursor.execute('''SELECT * FROM assets WHERE asset_type="tex" AND asset_name=?''', (self.selected_asset.name,)).fetchone()
         if is_asset_tex_already_existing != None:
             self.Lib.message_box(self, type="error", text="A texture scene already exists for this asset.")

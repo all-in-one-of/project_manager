@@ -7,7 +7,7 @@ class LogEntry(object):
         self.id = id
         self.dependancy = dependancy
         if len(viewed_by) == 0:
-            self.viewed_by = ["obolduc", "vdelbroucq", "lclavet", "costiguy", "yshan", "jberger", "lgregoire", "yjobin", "cgonnord", "mroz", "slachapelle", "thoudon", "erodrigue", "mbeaudoin"]
+            self.viewed_by = ["obolduc", "vdelbroucq", "lclavet", "acorbin", "costiguy", "yshan", "jberger", "lgregoire", "yjobin", "cgonnord", "mroz", "slachapelle", "thoudon", "erodrigue", "mbeaudoin"]
         elif "," in viewed_by:
             self.viewed_by = viewed_by.split(",")
         elif type(viewed_by) == list:

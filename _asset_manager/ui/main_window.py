@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Oct 25 15:11:12 2015
+# Created: Mon Oct 26 19:21:52 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -155,7 +155,7 @@ class Ui_Form(object):
         self.assetList.setIconSize(QtCore.QSize(188, 188))
         self.assetList.setMovement(QtGui.QListView.Static)
         self.assetList.setProperty("isWrapping", True)
-        self.assetList.setResizeMode(QtGui.QListView.Fixed)
+        self.assetList.setResizeMode(QtGui.QListView.Adjust)
         self.assetList.setSpacing(0)
         self.assetList.setViewMode(QtGui.QListView.IconMode)
         self.assetList.setUniformItemSizes(False)
@@ -1795,7 +1795,7 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1043, 536))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 100, 30))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)

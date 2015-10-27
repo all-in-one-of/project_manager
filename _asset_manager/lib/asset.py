@@ -92,7 +92,10 @@ class Asset(object):
         self.number_of_publishes = number_of_publishes
         self.creator = creator
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
-        self.path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
+        if self.type == "ref":
+            self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+        else:
+            self.path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
         self.full_path = self.project_path + self.path
 
         # Get the last version of the asset (Ex: if an asset has 5 version, last_version is equal to "05")

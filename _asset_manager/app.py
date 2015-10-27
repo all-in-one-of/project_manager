@@ -107,16 +107,16 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.setMaximumSize(1453, 923)
 
         self.db_to_load = ""
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\db.sqlite"  # Database nature
+        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\nature.sqlite"  # Database nature
 
 
-        #if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             # Database Setup
-        self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
+            self.db_path = "H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite"  # Copie de travail
 
         # Backup database
-        #if self.db_path not in ["H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"]:
-            #self.backup_database()
+        if self.db_path not in ["H:\\01-NAD\\_pipeline\\_utilities\\_database\\db.sqlite", "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"]:
+            self.backup_database()
 
         self.db = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
         self.cursor = self.db.cursor()
@@ -135,7 +135,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.number_of_refreshes = 0
-        self.members = {"costiguy": "Chloe", "cgonnord": "Christopher",
+        self.members = {"acorbin":"Alexandre", "costiguy": "Chloe", "cgonnord": "Christopher",
                         "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
@@ -366,9 +366,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
     def remove_tabs_based_on_members(self):
 
         if not (self.username == "thoudon" or self.username == "lclavet"):
-            self.addProjectBtn.hide()
-            self.addSequenceBtn.hide()
-            self.addShotBtn.hide()
             self.adminPrefFrame.hide()
             self.createAssetFromScratchBtn.hide()
 
@@ -775,7 +772,7 @@ class CheckNews(QtCore.QThread):
 
 if __name__ == "__main__":
 
-    log_to_file = False
+    log_to_file = True
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()
