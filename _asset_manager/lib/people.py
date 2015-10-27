@@ -22,10 +22,9 @@ class PeopleTab(object):
         self.sendEmailToEveryoneButRobinBtn.clicked.connect(self.send_email_to_everyone_but_robin_clicked)
 
         self.profilPicLblList = [
-                                 self.profilePicLbl_01,
+                              self.profilePicLbl_01,
                               self.profilePicLbl_02,
                               self.profilePicLbl_04,
-                              self.profilePicLbl_05,
                               self.profilePicLbl_06,
                               self.profilePicLbl_07,
                               self.profilePicLbl_08,
@@ -36,9 +35,13 @@ class PeopleTab(object):
                               self.profilePicLbl_13,
                               self.profilePicLbl_14,
                               self.profilePicLbl_15,
-                              self.profilePicLbl]
+                              self.profilePicLbl_16,
+                              self.profilePicLbl,
+                              self.profilePicLbl_00,
+                              self.profilePicLbl_05]
 
         self.members_photos = [
+
                                self.cur_path + "\\media\\members_photos\\costiguy.jpg",
                                self.cur_path + "\\media\\members_photos\\cgonnord.jpg",
                                self.cur_path + "\\media\\members_photos\\erodrigue.jpg",
@@ -53,9 +56,13 @@ class PeopleTab(object):
                                self.cur_path + "\\media\\members_photos\\vdelbroucq.jpg",
                                self.cur_path + "\\media\\members_photos\\yjobin.jpg",
                                self.cur_path + "\\media\\members_photos\\yshan.jpg",
-                                self.cur_path + "\\media\\members_photos\\rtremblay.jpg"]
+                               self.cur_path + "\\media\\members_photos\\rtremblay.jpg",
+                               self.cur_path + "\\media\\members_photos\\acorbin.jpg",
+                               self.cur_path + "\\media\\members_photos\\fpasquarelli.jpg",]
 
-        self.members_mail = ["ostiguy.chloe@gmail.com",
+
+        self.members_mail = [
+                             "ostiguy.chloe@gmail.com",
                              "christopher.gonnord@gmail.com",
                              "etienne.rodrigue89@gmail.com",
                              "jeremy.berger3d@gmail.com",
@@ -63,13 +70,16 @@ class PeopleTab(object):
                              "clavet.lp@gmail.com",
                              "beaudoinmathieu@hotmail.com",
                              "maximeroz@gmail.com",
+                             "francis.pasquarelli@gmail.com",
                              "ol.bolduc@gmail.com",
                              "simonlachapelle@gmail.com",
                              "houdon.thibault@gmail.com",
                              "valentin.delbroucq@gmail.com",
                              "yannjobinphoto@gmail.com",
                              "yishan3d@gmail.com",
-                             "rtremblay@nad.ca"]
+                             "rtremblay@nad.ca",
+                             "3dalcor@gmail.com",
+                             "francis.pasquarelli@gmail.com"]
 
         # Add image to labels
         for i, lbl in enumerate(self.profilPicLblList):
@@ -87,10 +97,12 @@ class PeopleTab(object):
         # Get online status from database
         member_online_status = self.cursor.execute('''SELECT is_online FROM preferences''').fetchall()
         member_online_status = [i[0] for i in member_online_status]
+        print(member_online_status)
 
         # For each member, add online/offline icon on top of their profile picture depending on status
         for i, member_photo in enumerate(self.members_photos):
             if member_online_status[i] == 1:
+
                 image = QtGui.QImage(member_photo)
                 p1 = p2 = QtCore.QPoint()
                 p2.setY(image.height())
@@ -124,7 +136,6 @@ class PeopleTab(object):
                 painter.fillRect(0, 0, image.width(), image.height(), gradient)
 
                 painter.end()
-
 
             self.profilPicLblList[i].setPixmap(QtGui.QPixmap.fromImage(image))
 
@@ -196,6 +207,10 @@ class PeopleTab(object):
             addr_list.append(self.members_mail[13])
         if self.rtremblayProfilCheckBox.checkState() == 2:
             addr_list.append(self.members_mail[14])
+        if self.acorbinProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[15])
+        if self.fpasquarelliProfilCheckBox.checkState() == 2:
+            addr_list.append(self.members_mail[16])
 
         self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
 
@@ -228,6 +243,8 @@ class PeopleTab(object):
         addr_list.append(self.members_mail[12])
         addr_list.append(self.members_mail[13])
         addr_list.append(self.members_mail[14])
+        addr_list.append(self.members_mail[15])
+        addr_list.append(self.members_mail[16])
 
         self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
 
@@ -258,6 +275,8 @@ class PeopleTab(object):
         addr_list.append(self.members_mail[11])
         addr_list.append(self.members_mail[12])
         addr_list.append(self.members_mail[13])
+        addr_list.append(self.members_mail[15])
+        addr_list.append(self.members_mail[16])
 
         self.Lib.send_email(self, from_addr="nad.update@gmail.com", addr_list=addr_list, subject=subject, message=message, username=self.members[self.username])
 
@@ -270,6 +289,22 @@ class PeopleTab(object):
             else:
                 self.costiguyProfilCheckBox.setCheckState(2)
                 self.costiguyProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "acorbin":
+            if self.acorbinProfilCheckBox.checkState() == 2:
+                self.acorbinProfilCheckBox.setCheckState(0)
+                self.acorbinProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.acorbinProfilCheckBox.setCheckState(2)
+                self.acorbinProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
+
+        elif value.split("\\")[-1].replace(".jpg", "") == "fpasquarelli":
+            if self.fpasquarelliProfilCheckBox.checkState() == 2:
+                self.fpasquarelliProfilCheckBox.setCheckState(0)
+                self.fpasquarelliProfilCheckBox.setStyleSheet("color: black; font-weight: normal;")
+            else:
+                self.fpasquarelliProfilCheckBox.setCheckState(2)
+                self.fpasquarelliProfilCheckBox.setStyleSheet("color: #58a155; font-weight: bold;")
 
         elif value.split("\\")[-1].replace(".jpg", "") == "cgonnord":
             if self.cgonnordProfilCheckBox.checkState() == 2:

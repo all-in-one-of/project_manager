@@ -32,7 +32,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>maNADger 3.0</string>
+   <string>maNADger 4.0</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -3700,7 +3700,14 @@
                    <property name="margin">
                     <number>0</number>
                    </property>
-                   <item row="1" column="1">
+                   <item row="2" column="4">
+                    <widget class="QCheckBox" name="fpasquarelliProfilCheckBox">
+                     <property name="text">
+                      <string>Francis</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
                     <widget class="profilPicLabel" name="profilePicLbl_02">
                      <property name="minimumSize">
                       <size>
@@ -3728,7 +3735,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0">
+                   <item row="1" column="1">
                     <widget class="profilPicLabel" name="profilePicLbl_01">
                      <property name="minimumSize">
                       <size>
@@ -3756,7 +3763,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="2">
+                   <item row="1" column="3">
                     <widget class="profilPicLabel" name="profilePicLbl_04">
                      <property name="minimumSize">
                       <size>
@@ -3784,81 +3791,28 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="2">
+                   <item row="2" column="3">
                     <widget class="QCheckBox" name="erodrigueProfilCheckBox">
                      <property name="text">
                       <string>Étienne</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1">
+                   <item row="2" column="2">
                     <widget class="QCheckBox" name="cgonnordProfilCheckBox">
                      <property name="text">
                       <string>Chris</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="0">
+                   <item row="2" column="1">
                     <widget class="QCheckBox" name="costiguyProfilCheckBox">
                      <property name="text">
                       <string>Chloé</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="3">
-                    <widget class="profilPicLabel" name="profilePicLbl_05">
-                     <property name="minimumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>80</width>
-                       <height>80</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::Box</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Plain</enum>
-                     </property>
-                     <property name="lineWidth">
-                      <number>0</number>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QCheckBox" name="jbergerProfilCheckBox">
-                     <property name="text">
-                      <string>Jérémy</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="ProfilPicThirdRowFrame_2">
-                  <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_13">
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <property name="horizontalSpacing">
-                    <number>6</number>
-                   </property>
-                   <item row="1" column="2">
+                   <item row="1" column="5">
                     <widget class="profilPicLabel" name="profilePicLbl_06">
                      <property name="minimumSize">
                       <size>
@@ -3886,8 +3840,124 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="3">
+                   <item row="2" column="5">
+                    <widget class="QCheckBox" name="jbergerProfilCheckBox">
+                     <property name="text">
+                      <string>Jérémy</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="profilPicLabel" name="profilePicLbl_00">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QCheckBox" name="acorbinProfilCheckBox">
+                     <property name="text">
+                      <string>Alexandre</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="4">
+                    <widget class="profilPicLabel" name="profilePicLbl_05">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="ProfilPicThirdRowFrame_2">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_13">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
+                   <property name="horizontalSpacing">
+                    <number>6</number>
+                   </property>
+                   <item row="1" column="2">
                     <widget class="profilPicLabel" name="profilePicLbl_07">
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>80</height>
+                      </size>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Box</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="3">
+                    <widget class="profilPicLabel" name="profilePicLbl_08">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -3929,7 +3999,7 @@
                     </widget>
                    </item>
                    <item row="1" column="4">
-                    <widget class="profilPicLabel" name="profilePicLbl_08">
+                    <widget class="profilPicLabel" name="profilePicLbl_09">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -3971,7 +4041,7 @@
                     </widget>
                    </item>
                    <item row="1" column="5">
-                    <widget class="profilPicLabel" name="profilePicLbl_09">
+                    <widget class="profilPicLabel" name="profilePicLbl_10">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -3999,7 +4069,7 @@
                     </widget>
                    </item>
                    <item row="1" column="6">
-                    <widget class="profilPicLabel" name="profilePicLbl_10">
+                    <widget class="profilPicLabel" name="profilePicLbl_11">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -4056,7 +4126,7 @@
                     </widget>
                    </item>
                    <item row="0" column="6">
-                    <widget class="profilPicLabel" name="profilePicLbl_11">
+                    <widget class="profilPicLabel" name="profilePicLbl_12">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -4098,7 +4168,7 @@
                     </widget>
                    </item>
                    <item row="0" column="7">
-                    <widget class="profilPicLabel" name="profilePicLbl_12">
+                    <widget class="profilPicLabel" name="profilePicLbl_13">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -4126,7 +4196,7 @@
                     </widget>
                    </item>
                    <item row="0" column="8">
-                    <widget class="profilPicLabel" name="profilePicLbl_13">
+                    <widget class="profilPicLabel" name="profilePicLbl_14">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -4157,7 +4227,7 @@
                     </widget>
                    </item>
                    <item row="0" column="9">
-                    <widget class="profilPicLabel" name="profilePicLbl_14">
+                    <widget class="profilPicLabel" name="profilePicLbl_15">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>
@@ -4192,7 +4262,7 @@
                     </widget>
                    </item>
                    <item row="0" column="10">
-                    <widget class="profilPicLabel" name="profilePicLbl_15">
+                    <widget class="profilPicLabel" name="profilePicLbl_16">
                      <property name="minimumSize">
                       <size>
                        <width>80</width>

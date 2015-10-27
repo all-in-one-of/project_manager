@@ -33,7 +33,7 @@ class TaskManager(object):
         self.members_id = {"costiguy": 0, "cgonnord": 1, "erodrigue": 2, "jberger": 3, "lgregoire": 4,
                            "lclavet": 5, "mbeaudoin": 6,
                            "mroz": 7, "obolduc": 8, "slachapelle": 9, "thoudon": 10,
-                           "vdelbroucq": 11, "yjobin": 12, "yshan": 13, "acorbin": 14}
+                           "vdelbroucq": 11, "yjobin": 12, "yshan": 13, "acorbin": 14, "fpasquarelli":15}
 
         # The itemChanged signal connection of the QTableWidget is fired every time
         # an item changes on the tablewidget. Therefore whenever we're adding an entry to the tablewidget, the itemChanged

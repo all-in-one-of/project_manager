@@ -135,7 +135,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.screenshot_dir = self.cur_path_one_folder_up + "\\_database\\screenshots\\"
         self.no_img_found = self.cur_path + "\\media\\no_img_found.png"
         self.number_of_refreshes = 0
-        self.members = {"acorbin":"Alexandre", "costiguy": "Chloe", "cgonnord": "Christopher",
+        self.members = {"acorbin":"Alexandre", "fpasquarelli":"Francis", "costiguy": "Chloe", "cgonnord": "Christopher",
                         "erodrigue": "Etienne", "jberger": "Jeremy", "lgregoire": "Laurence",
                         "lclavet": "Louis-Philippe", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
@@ -268,10 +268,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.load_whats_new(self)
         self.check_last_active()
 
-        # self.check_news_thread = CheckNews(self)
-        # self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
-        # self.check_news_thread.daemon = True
-        # self.check_news_thread.start()
+        self.check_news_thread = CheckNews(self)
+        self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
+        self.check_news_thread.daemon = True
+        self.check_news_thread.start()
         self.show()
 
     def add_tag_to_tags_manager(self):
@@ -373,6 +373,29 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
 
         if self.members[self.username] == "Chloe":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
+
+        elif self.members[self.username] == "Francis":
+            self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Tags Manager"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Misc"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Render"])
+
+
+        elif self.members[self.username] == "Alexandre":
             self.Tabs.removeTab(self.tabs_list["Tasks"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Task Manager"])
@@ -767,12 +790,12 @@ class CheckNews(QtCore.QThread):
     def run(self):
         while True:
             self.emit(QtCore.SIGNAL("check_last_active"))
-            time.sleep(60)
+            time.sleep(300)
 
 
 if __name__ == "__main__":
 
-    log_to_file = True
+    log_to_file = False
     cur_path = os.path.dirname(os.path.realpath(__file__))
     cur_path_one_folder_up = cur_path.replace("\\_asset_manager", "")
     logger = logging.getLogger()

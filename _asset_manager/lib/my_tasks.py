@@ -17,7 +17,7 @@ class MyTasks(object):
                            "erodrigue": 2, "jberger": 3, "lgregoire": 4,
                            "lclavet": 5, "mbeaudoin": 6,
                            "mroz": 7, "obolduc": 8, "slachapelle": 9, "thoudon": 10,
-                           "vdelbroucq": 11, "yjobin": 12, "yshan": 13, "acorbin": 14}
+                           "vdelbroucq": 11, "yjobin": 12, "yshan": 13, "acorbin": 14, "fpasquarelli":15}
 
         self.mt_task_priority_dic = {"High": 0, "Default": 1, "Low": 2}
 
