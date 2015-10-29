@@ -1398,11 +1398,12 @@ class AssetLoader(object):
             dialog.exec_()
 
             if dialog.result() == 0:
+                self.publish_comment = ""
                 return
 
             # Add publish comment to database
-            publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
-            self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
+            self.publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
+            self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, self.publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
             self.db.commit()
 
         # Update last publish time
@@ -1483,11 +1484,17 @@ class AssetLoader(object):
             log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
-
-        self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
-            if self.selected_asset.type != "rig":
-                self.update_thumbnail(False)
+        if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
+            # Normalize modeling scale
+            self.normalize_mod_scale_process = QtCore.QProcess(self)
+            self.normalize_mod_scale_process.waitForFinished()
+            self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
+            self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
+        else:
+            self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
+            if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+                if self.selected_asset.type != "rig":
+                    self.update_thumbnail(False)
 
         self.versionList_Clicked()
 
@@ -1818,11 +1825,31 @@ class AssetLoader(object):
         self.thumbnailProgressBar.setValue(self.thumbnailProgressBar.maximum())
 
         # Upload thumbnail to Shotgun
-        print(self.obj_name)
-        print(img_filename)
         sg_asset = self.sg.find_one("Asset", [["code", "is", self.obj_name]])
-        print(sg_asset["id"])
         self.sg.upload_thumbnail("Asset", sg_asset["id"], img_filename)
+
+        # Create new shotgun version
+        sg_user = self.sg.find_one('HumanUser', [['login', 'is', self.sg_members[self.username]]])
+
+        sg_version = self.sg.find('Version', [["code", "contains", self.selected_asset.name + "_"]], ["code"])
+        versions = [version["code"] for version in sg_version]
+
+        if len(versions) == 0:
+            last_version_number = "0001"
+        else:
+            last_version = sorted(versions)[-1]
+            last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+
+        data = {
+            'project': {'type': 'Project', 'id': self.sg_project_id},
+            'code': self.selected_asset.name + "_" + last_version_number,
+            'entity': sg_asset,
+            'description': self.publish_comment,
+            'user': sg_user,
+            'sg_path_to_movie':img_filename,
+            'image': img_filename}
+
+        self.sg.create("Version", data)
 
         if len(self.thumbs_to_create) > 0:
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
@@ -2063,8 +2090,6 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
         # Hide all versions
         [version.setHidden(True) for version in self.versions]
-
-
 
     def import_into_scene(self):
         if self.selected_asset == None:

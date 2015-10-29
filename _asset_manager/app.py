@@ -140,6 +140,11 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
                         "lclavet": "Louis-Philippe", "mbeaudoin": "Mathieu",
                         "mroz": "Maxime", "obolduc": "Olivier", "slachapelle": "Simon", "thoudon": "Thibault",
                         "vdelbroucq": "Valentin", "yjobin": "Yann", "yshan": "Yi"}
+        self.sg_members = {"acorbin": "3dalcor", "fpasquarelli": "francis.pasquarelli", "costiguy": "ostiguy.chloe", "cgonnord": "christopher.gonnord",
+                           "erodrigue": "etienne.rodrigue89", "jberger": "jeremy.berger3d", "lgregoire": "lau-gregoire",
+                           "lclavet": "clavet.lp", "mbeaudoin": "beaudoinmathieu",
+                           "mroz": "maximeroz", "obolduc": "ol.bolduc", "slachapelle": "simonlachapelle", "thoudon": "houdon.thibault",
+                           "vdelbroucq": "valentin.delbroucq", "yjobin": "yannjobinphoto", "yshan": "yishan3d"}
         self.departments_shortname = {"Script": "spt", "Storyboard": "stb", "References": "ref", "Concepts": "cpt",
                                       "Modeling": "mod", "Texturing": "tex", "Rigging": "rig", "Animation": "anm",
                                       "Simulation": "sim", "Shading": "shd", "Camera": "cam", "Lighting": "lgt", "Layout": "lay", "DMP": "dmp", "Rendering":"rdr",

@@ -17,5 +17,5 @@ except:
     mc.select(all=True)
 mc.delete(constructionHistory=True)
 
-mc.file(export_path, force=True, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJexport", pr=True, es=True)
+mc.file(export_path, force=True, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJexport", es=True)
 

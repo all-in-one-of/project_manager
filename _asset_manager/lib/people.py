@@ -97,7 +97,6 @@ class PeopleTab(object):
         # Get online status from database
         member_online_status = self.cursor.execute('''SELECT is_online FROM preferences''').fetchall()
         member_online_status = [i[0] for i in member_online_status]
-        print(member_online_status)
 
         # For each member, add online/offline icon on top of their profile picture depending on status
         for i, member_photo in enumerate(self.members_photos):
