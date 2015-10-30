@@ -1834,7 +1834,8 @@ class AssetLoader(object):
         # Create new shotgun version
         sg_user = self.sg.find_one('HumanUser', [['login', 'is', self.sg_members[self.username]]])
 
-        sg_version = self.sg.find('Version', [["code", "contains", self.selected_asset.name + "_"]], ["code"])
+        project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
+        sg_version = self.sg.find('Version', [["code", "contains", self.obj_name + "_"], ["project","is",project]], ["code"])
         versions = [version["code"] for version in sg_version]
 
         if len(versions) == 0:
@@ -1845,7 +1846,7 @@ class AssetLoader(object):
 
         data = {
             'project': {'type': 'Project', 'id': self.sg_project_id},
-            'code': self.selected_asset.name + "_" + last_version_number,
+            'code': self.obj_name + "_" + last_version_number,
             'entity': sg_asset,
             'description': self.publish_comment,
             'user': sg_user,
@@ -2256,12 +2257,20 @@ class AssetLoader(object):
             software_combobox.addItems(["Blender", "Maya", "Softimage", "Cinema 4D", "Houdini"])
             dialog_main_layout.addWidget(software_combobox)
 
+            type_combobox = QtGui.QComboBox(dialog)
+            type_combobox.addItems(['Prop', 'Vehicle', 'Character', 'Environment', 'Matte Painting'])
+            dialog_main_layout.addWidget(type_combobox)
+
         name_line_edit = QtGui.QLineEdit()
         name_line_edit.setPlaceholderText("Please enter a name...")
         name_line_edit.returnPressed.connect(dialog.accept)
 
+        description_line_edit = QtGui.QLineEdit()
+        description_line_edit.setPlaceholderText('Please enter a description for the asset')
+        description_line_edit.returnPressed.connect(dialog.accept)
 
         dialog_main_layout.addWidget(name_line_edit)
+        dialog_main_layout.addWidget(description_line_edit)
 
         dialog.exec_()
         if dialog.result() == 0:
@@ -2286,6 +2295,10 @@ class AssetLoader(object):
         asset_name = self.Lib.normalize_str(self, asset_name)
         asset_name = asset_name_tmp = self.Lib.convert_to_camel_case(self, asset_name)
 
+        asset_description = unicode(self.utf8_codec.fromUnicode(description_line_edit.text()), 'utf-8')
+
+        selected_type = str(type_combobox.currentText())
+
         # If an asset with given name already exists, change asset name to "assetname-version" (ex: colonne-01) until no asset with given name exists
         version = 1
         all_assets_name = self.cursor.execute('''SELECT asset_name FROM assets WHERE asset_type != "ref"''').fetchall()
@@ -2299,7 +2312,7 @@ class AssetLoader(object):
         asset_name = asset_name_tmp
 
         if self.selected_department_name == "mod":
-            self.create_mod_asset_from_scratch(asset_name, extension, selected_software)
+            self.create_mod_asset_from_scratch(asset_name, extension, selected_software, asset_description, selected_type)
         elif self.selected_department_name == "lay":
             self.create_lay_asset_from_scratch(asset_name)
         elif self.selected_department_name == "sim":
@@ -2535,7 +2548,7 @@ class AssetLoader(object):
         self.cursor.execute('''INSERT INTO assets_in_layout(asset_id, layout_id) VALUES(?,?)''', (light_asset.id, self.selected_asset.id,))
         self.db.commit()
 
-    def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None):
+    def create_mod_asset_from_scratch(self, asset_name="", extension=None, selected_software=None, asset_description='', selected_type=''):
 
         if selected_software == "houdini":
             # Create modeling scene asset
@@ -2606,11 +2619,33 @@ class AssetLoader(object):
             'project': {'type': 'Project', 'id': self.sg_project_id},
             'code': asset_name,
             'shots':shot,
-            'sequences':sequence
+            'sequences':sequence,
+            'description':asset_description,
+            'sg_asset_type':selected_type
         }
 
         # Create main asset in shotgun
-        self.sg.create("Asset", data)
+        sg_asset = self.sg.create("Asset", data)
+
+        # Create associated shotgun tasks
+        sg_asset = self.sg.find_one("Asset", [["code", "is", asset_name]])
+        mod_step = self.sg.find_one('Step', [['code', 'is', 'Modeling']])
+        cpt_step = self.sg.find_one('Step', [['code', 'is', 'Concept']])
+        tex_step = self.sg.find_one('Step', [['code', 'is', 'Texturing']])
+        shd_step = self.sg.find_one('Step', [['code', 'is', 'Shading']])
+
+        data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'content': 'references', 'entity': sg_asset, 'step': cpt_step}
+        self.sg.create('Task', data)
+        data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'content': 'concepts', 'entity': sg_asset, 'step': cpt_step}
+        self.sg.create('Task', data)
+        data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'content': 'modeling', 'entity': sg_asset, 'step': mod_step}
+        self.sg.create('Task', data)
+        data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'content': 'UV', 'entity': sg_asset, 'step': mod_step}
+        self.sg.create('Task', data)
+        data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'content': 'texturing', 'entity': sg_asset, 'step': tex_step}
+        self.sg.create('Task', data)
+        data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'content': 'shading', 'entity': sg_asset, 'step': shd_step}
+        self.sg.create('Task', data)
 
         # Create PureRef Document
         shutil.copy(self.NEF_folder + "\\default.pur", "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/ref/pureref/" + asset_name + ".pur")
