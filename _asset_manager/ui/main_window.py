@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Tue Oct 27 10:58:18 2015
+# Created: Thu Oct 29 14:54:17 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -271,6 +271,13 @@ class Ui_Form(object):
         self.loadObjInGplayBtn.setIconSize(QtCore.QSize(32, 32))
         self.loadObjInGplayBtn.setObjectName(_fromUtf8("loadObjInGplayBtn"))
         self.horizontalLayout_2.addWidget(self.loadObjInGplayBtn)
+        self.loadObjInHeadusBtn = QtGui.QPushButton(self.smallActionIconFrame)
+        self.loadObjInHeadusBtn.setMinimumSize(QtCore.QSize(32, 32))
+        self.loadObjInHeadusBtn.setMaximumSize(QtCore.QSize(32, 32))
+        self.loadObjInHeadusBtn.setText(_fromUtf8(""))
+        self.loadObjInHeadusBtn.setIconSize(QtCore.QSize(32, 32))
+        self.loadObjInHeadusBtn.setObjectName(_fromUtf8("loadObjInHeadusBtn"))
+        self.horizontalLayout_2.addWidget(self.loadObjInHeadusBtn)
         self.hasUvSeparator = QtGui.QFrame(self.smallActionIconFrame)
         self.hasUvSeparator.setFrameShape(QtGui.QFrame.VLine)
         self.hasUvSeparator.setFrameShadow(QtGui.QFrame.Sunken)
@@ -1219,6 +1226,9 @@ class Ui_Form(object):
         self.removeSelectedTagsBtn = QtGui.QPushButton(self.tagsManagerTab)
         self.removeSelectedTagsBtn.setObjectName(_fromUtf8("removeSelectedTagsBtn"))
         self.verticalLayout_25.addWidget(self.removeSelectedTagsBtn)
+        self.saveTagsListBtn = QtGui.QPushButton(self.tagsManagerTab)
+        self.saveTagsListBtn.setObjectName(_fromUtf8("saveTagsListBtn"))
+        self.verticalLayout_25.addWidget(self.saveTagsListBtn)
         self.Tabs.addTab(self.tagsManagerTab, _fromUtf8(""))
         self.miscTab = QtGui.QWidget()
         self.miscTab.setObjectName(_fromUtf8("miscTab"))
@@ -2216,6 +2226,7 @@ class Ui_Form(object):
         self.addTagLineEdit.setPlaceholderText(_translate("Form", "lighting, statue, architecture, tree, character...", None))
         self.addTagBtn.setText(_translate("Form", "Add tag", None))
         self.removeSelectedTagsBtn.setText(_translate("Form", "Remove selected tags", None))
+        self.saveTagsListBtn.setText(_translate("Form", "Save Tags List", None))
         self.Tabs.setTabText(self.Tabs.indexOf(self.tagsManagerTab), _translate("Form", "Tags Manager", None))
         self.batchUpdateThumbnailsBtn.setText(_translate("Form", "Batch Update Thumbnails", None))
         self.deleteUnecessaryFoldersBtn.setText(_translate("Form", "Delete Unecessary Folders", None))

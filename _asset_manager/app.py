@@ -277,7 +277,55 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
         self.check_news_thread.daemon = True
         self.check_news_thread.start()
+
         self.show()
+
+        #self.check_shotgun_time_log()
+
+    def check_shotgun_time_log(self):
+        self.username = "mbeaudoin"
+        peoples = {"acorbin":"Alexandre Corbin", "costiguy":"Chloé Ostiguy", "cgonnord":"Christopher Gonnord", "erodrigue":"Etienne Rodrigue", "fpasquarelli":"Francis Pasquarelli", "jberger":"Jérémy Berger", "lgregoire":"Laurence Grégoire", "lclavet":"Louis-Philippe Clavet", "mbeaudoin":"Mathieu Beaudoin", "mroz":"Maxime Roz", "thoudon":"Thibault Houdon", "vdelbroucq":"Valentin Delbroucq", "yjobin":"Yann Jobin", "yshan":"Yi Shan"}
+        user = peoples[self.username]
+
+        project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
+        time_log = self.sg.find("TimeLog", [["date", "in_calendar_day", -1], ["project", "is", project]], ["user"])
+        people_logged = [log["user"]["name"] for log in time_log]
+        people_logged = list(set(people_logged))
+
+        if user not in people_logged:
+            time_log_window = QtGui.QDialog(self)
+            time_log_window.setWindowTitle("Add your time log entry")
+            layout = QtGui.QVBoxLayout(time_log_window)
+            descriptionLabel = QtGui.QLabel(time_log_window)
+            durationLabel = QtGui.QLabel(time_log_window)
+            descriptionLabel.setText("Description")
+            durationLabel.setText("Duration")
+            self.description = QtGui.QLineEdit(time_log_window)
+            self.duration = QtGui.QLineEdit(time_log_window)
+
+            addLogEntryBtn = QtGui.QPushButton(time_log_window)
+            addLogEntryBtn.setText("Add Time Log Entry")
+            addLogEntryBtn.clicked.connect(self.shotgun_add_time_log)
+
+            didntWorkBtn = QtGui.QPushButton(time_log_window)
+            didntWorkBtn.setText("I didn't work on this project yesterday.")
+
+            layout.addWidget(durationLabel)
+            layout.addWidget(self.duration)
+            layout.addWidget(descriptionLabel)
+            layout.addWidget(self.description)
+            layout.addWidget(addLogEntryBtn)
+            layout.addWidget(didntWorkBtn)
+
+            time_log_window.exec_()
+
+    def shotgun_add_empty_time_log(self):
+        pass
+
+    def shotgun_add_time_log(self):
+
+        print(self.description.text())
+        print(self.duration.text())
 
     def add_tag_to_tags_manager(self):
         # Check if a project is selected
@@ -460,6 +508,8 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         elif self.members[self.username] == "Louis-Philippe":
             self.Tabs.removeTab(self.tabs_list["Tasks"])
+            self.get_tabs_id_from_name()
+            self.Tabs.removeTab(self.tabs_list["Task Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
 

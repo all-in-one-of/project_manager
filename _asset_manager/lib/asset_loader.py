@@ -37,6 +37,7 @@ class AssetLoader(object):
         self.load_in_gplay_icon = QtGui.QIcon(self.cur_path + "/media/load_in_gplay.png")
         self.delete_asset_icon = QtGui.QIcon(self.cur_path + "/media/delete_asset.png")
         self.open_real_layout_scene_icon = QtGui.QIcon(self.cur_path + "/media/open_real_layout_scene.png")
+        self.load_in_headus_icon = QtGui.QIcon(self.cur_path + "/media/loaduv.png")
 
         self.updateThumbBtn.setIcon(self.update_thumb_icon)
         self.updateThumbBtn.setIconSize(QtCore.QSize(24, 24))
@@ -47,9 +48,11 @@ class AssetLoader(object):
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
         self.loadAssociatedLayoutSceneBtn.setIcon(self.load_asset_icon)
         self.loadAssociatedLayoutSceneBtn.setIconSize(QtCore.QSize(16, 16))
+        self.loadObjInHeadusBtn.setIconSize(QtCore.QSize(16, 16))
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
         self.deleteAssetBtn.setIcon(self.delete_asset_icon)
         self.openRealLayoutScene.setIcon(self.open_real_layout_scene_icon)
+        self.loadObjInHeadusBtn.setIcon(self.load_in_headus_icon)
         self.publishBtn.setDisabled(True)
         self.createVersionBtn.setDisabled(True)
         self.loadAssetBtn.setDisabled(True)
@@ -126,6 +129,7 @@ class AssetLoader(object):
         self.openRealLayoutScene.clicked.connect(self.open_real_layout_scene)
         self.loadAssociatedLayoutSceneBtn.clicked.connect(self.open_associated_layout_scene)
         self.changeAssetSeqShotBtn.clicked.connect(self.change_seq_shot)
+        self.loadObjInHeadusBtn.clicked.connect(self.load_obj_in_headus)
 
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
@@ -166,14 +170,9 @@ class AssetLoader(object):
             change_icon_display_action.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
         change_icon_display_action.triggered.connect(self.change_icon_display)
 
-        if self.username in ["thoudon", "lclavet"]:
-            add_task_to_asset = menu.addAction("Add task")
-            add_task_to_asset.setIcon(QtGui.QIcon(self.cur_path + "/media/add_task_to_asset.png"))
-            add_task_to_asset.triggered.connect(self.add_task_to_selected_asset)
-
-            get_asset_id = menu.addAction("Copy asset's ID to clipboard")
-            get_asset_id.setIcon(QtGui.QIcon(self.cur_path + "/media/copy_asset_id.png"))
-            get_asset_id.triggered.connect(self.get_asset_id)
+        load_pure_ref_action = menu.addAction("Load References")
+        load_pure_ref_action.setIcon(QtGui.QIcon(self.cur_path + "/media/eye_icon.png"))
+        load_pure_ref_action.triggered.connect(self.load_pure_ref)
 
         # Show the context menu.
         menu.exec_(self.assetList.mapToGlobal(QPos))
@@ -204,6 +203,10 @@ class AssetLoader(object):
 
         # Show the context menu
         menu.exec_(self.versionList.mapToGlobal(QPos))
+
+    def load_pure_ref(self):
+        pureref_process = QtCore.QProcess(self)
+        pureref_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/PureRef.exe", ["Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/ref/pureref/" + self.selected_asset.name + ".pur"])
 
     def change_icon_display(self):
         if self.icon_display_type == "user":
@@ -2033,6 +2036,13 @@ class AssetLoader(object):
             if os.path.isfile(file_to_remove):
                 os.remove(file_to_remove)
 
+    def load_obj_in_headus(self):
+        try:
+            self.load_uv_process = QtCore.QProcess(self)
+            self.load_uv_process.start("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/headus/howin32.exe", [self.selected_asset.obj_path])
+        except:
+            pass
+
     def mari_finished(self, texture_project_path):
         self.mari_open_asset_process.kill()
 
@@ -2601,6 +2611,9 @@ class AssetLoader(object):
 
         # Create main asset in shotgun
         self.sg.create("Asset", data)
+
+        # Create PureRef Document
+        shutil.copy(self.NEF_folder + "\\default.pur", "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/ref/pureref/" + asset_name + ".pur")
 
     def create_lay_asset_from_scratch(self, asset_name):
 

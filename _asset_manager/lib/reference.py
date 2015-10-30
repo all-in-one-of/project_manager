@@ -88,6 +88,7 @@ class ReferenceTab(object):
 
         # Tags setup
         self.setup_tags()
+        self.saveTagsListBtn.clicked.connect(self.save_tags_list)
 
     def ref_load_all_references(self):
         '''Load all references when clicking sequence for the first time'''
