@@ -279,6 +279,14 @@ class Asset(object):
         self.main.db.commit()
         self.dependency = new_dependency
 
+    def change_extension(self, new_extension):
+        new_path = self.path.replace('.' + self.extension, '.' + new_extension)
+        self.main.cursor.execute('''UPDATE assets SET asset_extension=? WHERE asset_id=?''', (new_extension, self.id,))
+        self.main.cursor.execute('''UPDATE assets SET asset_path=? WHERE asset_id=?''', (new_path, self.id,))
+        self.main.db.commit()
+        self.extension = new_extension
+        self.path = new_path
+
     def add_comment(self, author, comment, time, type):
         self.main.cursor.execute('''INSERT INTO comments(asset_id, comment_author, comment_text, comment_time, comment_type, comment_image) VALUES(?,?,?,?,?,?)''', (self.id, author, comment, time, type, ""))
         self.main.db.commit()

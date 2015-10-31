@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Thu Oct 29 14:54:17 2015
+# Created: Fri Oct 30 18:26:30 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -162,8 +162,17 @@ class Ui_Form(object):
         self.assetList.setWordWrap(True)
         self.assetList.setObjectName(_fromUtf8("assetList"))
         self.horizontalLayout_6.addWidget(self.assetList)
-        self.versionList = ThibListWidget(self.assetAndVersionFrame)
-        self.versionList.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.frame_7 = QtGui.QFrame(self.assetAndVersionFrame)
+        self.frame_7.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.frame_7.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame_7.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_7.setObjectName(_fromUtf8("frame_7"))
+        self.verticalLayout_39 = QtGui.QVBoxLayout(self.frame_7)
+        self.verticalLayout_39.setSpacing(3)
+        self.verticalLayout_39.setMargin(0)
+        self.verticalLayout_39.setObjectName(_fromUtf8("verticalLayout_39"))
+        self.versionList = ThibListWidget(self.frame_7)
+        self.versionList.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.versionList.setFrameShape(QtGui.QFrame.StyledPanel)
         self.versionList.setDragDropMode(QtGui.QAbstractItemView.NoDragDrop)
         self.versionList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
@@ -176,7 +185,11 @@ class Ui_Form(object):
         self.versionList.setUniformItemSizes(True)
         self.versionList.setWordWrap(True)
         self.versionList.setObjectName(_fromUtf8("versionList"))
-        self.horizontalLayout_6.addWidget(self.versionList)
+        self.verticalLayout_39.addWidget(self.versionList)
+        self.changeAssetSoftwareBtn = QtGui.QPushButton(self.frame_7)
+        self.changeAssetSoftwareBtn.setObjectName(_fromUtf8("changeAssetSoftwareBtn"))
+        self.verticalLayout_39.addWidget(self.changeAssetSoftwareBtn)
+        self.horizontalLayout_6.addWidget(self.frame_7)
         self.verticalLayout_2.addWidget(self.assetAndVersionFrame)
         self.changeAssetSeqShotBtn = QtGui.QPushButton(self.assetLoaderTab)
         self.changeAssetSeqShotBtn.setObjectName(_fromUtf8("changeAssetSeqShotBtn"))
@@ -2076,6 +2089,7 @@ class Ui_Form(object):
         self.createAssetFromScratchBtn.setText(_translate("Form", "Create Asset from Scratch", None))
         self.assetList.setSortingEnabled(True)
         self.versionList.setSortingEnabled(True)
+        self.changeAssetSoftwareBtn.setText(_translate("Form", "Change asset\'s software", None))
         self.changeAssetSeqShotBtn.setText(_translate("Form", "Change asset\'s sequence / shot", None))
         self.createAssetFromAssetBtn.setText(_translate("Form", "Create Asset from Asset", None))
         self.lastPublishedLbl.setText(_translate("Form", "Last published by: ", None))

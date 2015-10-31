@@ -130,6 +130,7 @@ class AssetLoader(object):
         self.loadAssociatedLayoutSceneBtn.clicked.connect(self.open_associated_layout_scene)
         self.changeAssetSeqShotBtn.clicked.connect(self.change_seq_shot)
         self.loadObjInHeadusBtn.clicked.connect(self.load_obj_in_headus)
+        self.changeAssetSoftwareBtn.clicked.connect(self.change_asset_software_01)
 
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
@@ -1773,9 +1774,9 @@ class AssetLoader(object):
 
         if self.batch_thumbnail == True:
             process = subprocess.Popen(["C:/Program Files/Blender Foundation/Blender/blender.exe", "-b", self.cur_path + "\\lib\\thumbnailer\\Thumbnailer.blend", "--python-text",
-                                                                                                   "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
-                                                                                                   str(self.resolution), self.version
-                                                                                                   ])
+                                        "ThumbScript", self.full_obj_path, self.type, str(self.sampling),
+                                        str(self.resolution), self.version
+                                        ])
             process.wait()
             self.create_thumbnail_finished(version)
         else:
@@ -2254,7 +2255,7 @@ class AssetLoader(object):
 
         if self.selected_department_name == "mod":
             software_combobox = QtGui.QComboBox(dialog)
-            software_combobox.addItems(["Blender", "Maya", "Softimage", "Cinema 4D", "Houdini"])
+            software_combobox.addItems(["Blender", "Maya", "Softimage", "Houdini"])
             dialog_main_layout.addWidget(software_combobox)
 
             type_combobox = QtGui.QComboBox(dialog)
@@ -2265,12 +2266,14 @@ class AssetLoader(object):
         name_line_edit.setPlaceholderText("Please enter a name...")
         name_line_edit.returnPressed.connect(dialog.accept)
 
-        description_line_edit = QtGui.QLineEdit()
-        description_line_edit.setPlaceholderText('Please enter a description for the asset')
-        description_line_edit.returnPressed.connect(dialog.accept)
+        if self.selected_department_name == "mod":
+            description_line_edit = QtGui.QLineEdit()
+            description_line_edit.setPlaceholderText('Please enter a description for the asset')
+            description_line_edit.returnPressed.connect(dialog.accept)
 
         dialog_main_layout.addWidget(name_line_edit)
-        dialog_main_layout.addWidget(description_line_edit)
+        if self.selected_department_name == "mod":
+            dialog_main_layout.addWidget(description_line_edit)
 
         dialog.exec_()
         if dialog.result() == 0:
@@ -2285,8 +2288,6 @@ class AssetLoader(object):
                 extension = "ma"
             elif selected_software == "softimage":
                 extension = "scn"
-            elif selected_software == "cinema4d":
-                extension = "c4d"
             elif selected_software == "houdini":
                 extension = "hda"
 
@@ -2295,9 +2296,9 @@ class AssetLoader(object):
         asset_name = self.Lib.normalize_str(self, asset_name)
         asset_name = asset_name_tmp = self.Lib.convert_to_camel_case(self, asset_name)
 
-        asset_description = unicode(self.utf8_codec.fromUnicode(description_line_edit.text()), 'utf-8')
-
-        selected_type = str(type_combobox.currentText())
+        if self.selected_department_name == "mod":
+            asset_description = unicode(self.utf8_codec.fromUnicode(description_line_edit.text()), 'utf-8')
+            selected_type = str(type_combobox.currentText())
 
         # If an asset with given name already exists, change asset name to "assetname-version" (ex: colonne-01) until no asset with given name exists
         version = 1
@@ -2810,8 +2811,97 @@ class AssetLoader(object):
                 self.selected_asset = asset[0]
                 self.update_thumbnail(ask_window=False)
 
-
         self.batch_thumbnail = False
+
+    def change_asset_software_01(self):
+        self.current_extension = os.path.splitext(self.selected_asset.full_path)[-1]
+        self.old_path = self.selected_asset.full_path
+
+        dialog = QtGui.QDialog(self)
+        self.Lib.apply_style(self, dialog)
+
+        dialog.setWindowTitle("Select a software")
+        dialog.setMinimumWidth(200)
+        dialog_main_layout = QtGui.QVBoxLayout(dialog)
+
+        if self.selected_asset.type == "mod":
+            software_combobox = QtGui.QComboBox(dialog)
+            if self.current_extension == '.blend':
+                software_combobox.addItems(["Maya", "Softimage"])
+            elif self.current_extension == '.ma':
+                software_combobox.addItems(["Blender", "Softimage"])
+            elif self.current_extension == '.scn':
+                software_combobox.addItems(["Blender", "Maya"])
+
+            dialog_main_layout.addWidget(software_combobox)
+        else:
+            return
+
+        acceptBtn = QtGui.QPushButton('Accept', dialog)
+        acceptBtn.clicked.connect(dialog.accept)
+        dialog_main_layout.addWidget(acceptBtn)
+
+        dialog.exec_()
+
+        if dialog.result() == 0:
+            return
+
+        self.selected_software = str(software_combobox.currentText()).lower()
+
+        # Publish asset first
+        self.publish_process = QtCore.QProcess(self)
+        self.publish_process.finished.connect(self.normalize_modeling_scale)
+
+        if self.current_extension == ".blend":
+            self.publish_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_export_obj_from_scene.py", "--", self.selected_asset.full_path, self.selected_asset.obj_path.replace("\\", "/")])
+        elif self.current_extension == ".ma":
+            self.publish_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_export_obj_from_scene.py", self.selected_asset.full_path, self.selected_asset.obj_path.replace("\\", "/")])
+        elif self.current_extension == ".scn":
+            self.publish_process.start(self.softimage_batch_path,
+                                       ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_export_obj_from_scene.py", "-main", "export_obj", "-args", "-file_path", self.selected_asset.full_path, "-export_path",
+                                        self.selected_asset.obj_path.replace("\\", "/")])
+
+    def normalize_modeling_scale(self):
+        # Normalize modeling scale
+        self.normalize_mod_scale_process = QtCore.QProcess(self)
+        self.normalize_mod_scale_process.waitForFinished()
+        self.normalize_mod_scale_process.finished.connect(self.change_asset_software_02)
+        self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
+
+
+    def change_asset_software_02(self):
+        self.import_obj_process = QtCore.QProcess(self)
+
+        if self.selected_software == "blender":
+            new_path = self.selected_asset.full_path.replace(self.current_extension, '.blend')
+            shutil.copy(self.NEF_folder + "\\blender.blend", new_path)
+            self.import_obj_process.finished.connect(self.change_asset_software_03)
+            self.import_obj_process.waitForFinished()
+            self.import_obj_process.start(self.blender_path, ["-b", "-P", self.cur_path + "\\lib\\software_scripts\\blender_import_obj_into_scene.py", "--", new_path, self.selected_asset.obj_path])
+            self.selected_asset.change_extension(new_extension='blend')
+
+        elif self.selected_software == "maya":
+            new_path = self.selected_asset.full_path.replace(self.current_extension, '.ma')
+            shutil.copy(self.NEF_folder + "\\maya.ma", new_path)
+            self.import_obj_process.finished.connect(self.change_asset_software_03)
+            self.import_obj_process.waitForFinished()
+            self.import_obj_process.start(self.maya_batch_path, [self.cur_path + "\\lib\\software_scripts\\maya_import_obj_into_scene_from_output.py", new_path, self.selected_asset.obj_path])
+            self.selected_asset.change_extension(new_extension='ma')
+
+        elif self.selected_software == "softimage":
+            new_path = self.selected_asset.full_path.replace(self.current_extension, '.scn')
+            shutil.copy(self.NEF_folder + "\\softimage.scn", new_path)
+            self.import_obj_process.finished.connect(self.change_asset_software_03)
+            self.import_obj_process.start(self.softimage_batch_path,
+                                          ["-processing", "-script", self.cur_path + "\\lib\\software_scripts\\softimage_import_obj_into_scene.py", "-main", "import_obj", "-args", "-file_path", new_path, "-obj_path", self.selected_asset.obj_path])
+            self.selected_asset.change_extension(new_extension='scn')
+
+    def change_asset_software_03(self):
+        os.remove(self.old_path)
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+        self.Lib.message_box(self, type="info", text="Successfully switched software!")
+
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):
