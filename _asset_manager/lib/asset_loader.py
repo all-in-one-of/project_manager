@@ -76,6 +76,7 @@ class AssetLoader(object):
         self.openRealLayoutScene.hide()
         self.loadAssociatedLayoutSceneBtn.hide()
         self.createAssetFromScratchBtn.hide()
+        self.changeAssetSoftwareBtn.hide()
 
         self.assets = {}
         self.selected_asset = None
@@ -181,26 +182,10 @@ class AssetLoader(object):
     def show_right_click_menu_version(self, QPos):
         # Create a menu
         menu = QtGui.QMenu("Menu", self)
-        if self.selected_asset.type == "mod":
-            show_full_media = menu.addAction("Show clay render")
-            show_advanced_media = menu.addAction("Show Turntable")
-            show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
-            show_full_media.triggered.connect(self.versionList_simple_view)
-            show_advanced_media.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
-            show_advanced_media.triggered.connect(self.versionList_advanced_view)
-        elif self.selected_asset.type == "shd":
-            show_full_media = menu.addAction("Show Turntable (Geo)")
-            show_advanced_media = menu.addAction("Show Turntable (HDR)")
-            show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
-            show_full_media.triggered.connect(self.versionList_simple_view)
-            show_advanced_media.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
-            show_advanced_media.triggered.connect(self.versionList_advanced_view)
-        elif self.selected_asset.type == "anm":
-            show_full_media = menu.addAction("Show playblast")
-            show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/custom_media_icon.png"))
-            show_full_media.triggered.connect(self.versionList_advanced_view)
 
-
+        show_full_media = menu.addAction("View thumbnail")
+        show_full_media.setIcon(QtGui.QIcon(self.cur_path + "/media/asset_type_icon.png"))
+        show_full_media.triggered.connect(self.versionList_simple_view)
 
         # Show the context menu
         menu.exec_(self.versionList.mapToGlobal(QPos))
@@ -891,17 +876,10 @@ class AssetLoader(object):
         self.statusLbl.setText("Status: Loading Media")
         media_process = QtCore.QProcess(self)
         media_process.finished.connect(lambda: self.statusLbl.setText("Status: Idle..."))
-        if self.selected_asset.type in ["mod", "rig", "tex", "lay"]:
-            if self.selected_asset.version == "01":
-                subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.first_media])
-            else:
-                subprocess.Popen([self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", self.selected_asset.full_media])
-            self.statusLbl.setText("Status: Idle...")
-        elif self.selected_asset.type == "shd":
+        if self.selected_asset.type in ["mod"]:
             media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.full_media])
-
-        elif self.selected_asset.type in ["anm", "cam"]:
-            media_process.start(self.cur_path_one_folder_up + "\\_soft\\ImageGlass\\ImageGlass.exe", [self.selected_asset.advanced_media])
+        elif self.selected_asset.type in ["shd", "tex"]:
+            media_process.start("H:/DJView/bin/djv_view.exe", [self.selected_asset.first_media])
 
     def versionList_advanced_view(self):
         if self.selected_asset == None:
@@ -948,6 +926,9 @@ class AssetLoader(object):
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
         if self.selected_asset.type == "mod":
+            self.loadObjInHeadusBtn.show()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.show()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.importIntoSceneBtn.show()
@@ -964,6 +945,9 @@ class AssetLoader(object):
 
 
         elif self.selected_asset.type == "cam":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -973,6 +957,9 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "lgt":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -982,6 +969,9 @@ class AssetLoader(object):
             self.publishBtn.hide()
 
         elif self.selected_asset.type == "tex":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -990,6 +980,9 @@ class AssetLoader(object):
             self.loadObjInGplayBtn.hide()
 
         elif self.selected_asset.type == "rig":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -999,6 +992,9 @@ class AssetLoader(object):
             self.createAssetFromAssetBtn.hide()
 
         elif self.selected_asset.type == "anm":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -1008,6 +1004,9 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "sim":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -1017,16 +1016,22 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "shd":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.hide()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
             self.importIntoSceneBtn.hide()
             self.loadObjInGplayBtn.hide()
-            self.publishBtn.hide()
+            self.publishBtn.show()
             self.createAssetFromAssetBtn.hide()
 
 
         elif self.selected_asset.type == "lay":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.hasUvSeparator.hide()
             if self.username in ["thoudon", "lclavet"]:
                 self.createAssetFromAssetBtn.show()
@@ -1040,7 +1045,7 @@ class AssetLoader(object):
                 self.renderLine.hide()
                 self.openRealLayoutScene.hide()
                 self.createVersionBtn.hide()
-            if self.username in ["mbeaudoin"]:
+            if self.username in ["cgonnord"]:
                 self.openRealLayoutScene.show()
                 self.importIntoSceneBtn.show()
             self.publishBtn.hide()
@@ -1048,6 +1053,9 @@ class AssetLoader(object):
 
 
         elif self.selected_asset.type == "dmp":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -1057,6 +1065,9 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "cmp":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -1066,6 +1077,9 @@ class AssetLoader(object):
             self.publishBtn.show()
 
         elif self.selected_asset.type == "rdr":
+            self.loadObjInHeadusBtn.hide()
+            self.createVersionBtn.show()
+            self.changeAssetSoftwareBtn.hide()
             self.renderLine.hide()
             self.openRealLayoutScene.hide()
             self.hasUvSeparator.hide()
@@ -1384,7 +1398,15 @@ class AssetLoader(object):
 
         self.blockSignals(True)
 
+        self.no_gui = False
         if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+            self.no_gui = True
+        else:
+            self.no_gui = False
+
+        self.selected_asset_type = self.selected_asset.type
+
+        if self.no_gui == True:
             # Publish comment GUI
             dialog = QtGui.QDialog(self)
             dialog.setWindowTitle("Add a comment")
@@ -1437,6 +1459,17 @@ class AssetLoader(object):
 
             self.publish_process_finished()
 
+        elif self.selected_asset.type == "shd":
+
+            self.publish_process = QtCore.QProcess(self)
+            self.publish_process.readyRead.connect(self.shading_render_progress)
+            self.publish_process.finished.connect(self.publish_process_finished)
+
+            self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.selected_asset.full_path])
+
+            self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.rig_out_path.replace(self.selected_project_path, ""),))
+            self.db.commit()
+
         elif self.selected_asset.type == "anm":
             # Get frame range from selected shot
             sequence = self.sg.find_one("Sequence", [["code","is",self.selected_asset.sequence]])
@@ -1483,33 +1516,76 @@ class AssetLoader(object):
         else:
             favorited_by = []
 
-        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+        if self.no_gui == True:
             # Add log entry saying that the asset has been published.
             log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
             log_entry.add_log_to_database()
 
-        if self.selected_asset.type == "mod" and not "lowres" in self.selected_asset.name:
+        if self.selected_asset_type == "mod" and not "lowres" in self.selected_asset.name:
             # Normalize modeling scale
             self.normalize_mod_scale_process = QtCore.QProcess(self)
             self.normalize_mod_scale_process.waitForFinished()
             self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
             self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
+        elif self.selected_asset_type == "shd":
+            img_filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/shd/.thumb/" + self.selected_asset.name + "_01_full.jpg"
+            thumb_filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/shd/.thumb/" + self.selected_asset.name + "_01_full-thumb.jpg"
+
+            # Create thumbnail
+            shutil.copy(img_filename, thumb_filename)
+            self.compress_image(thumb_filename, 240, 70)
+
+            # Upload thumbnail to Shotgun
+            sg_asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
+            self.sg.upload_thumbnail("Asset", sg_asset["id"], img_filename)
+
+            # Create new shotgun version
+            sg_user = self.sg.find_one('HumanUser', [['login', 'is', self.sg_members[self.username]]])
+
+            project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
+            sg_version = self.sg.find('Version', [["code", "contains", self.selected_asset.name + "_"], ["project", "is", project]], ["code"])
+            versions = [version["code"] for version in sg_version]
+
+            if len(versions) == 0:
+                last_version_number = "0001"
+            else:
+                last_version = sorted(versions)[-1]
+                last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+
+            data = {
+                'project': {'type': 'Project', 'id': self.sg_project_id},
+                'code': self.selected_asset.name + "_" + last_version_number,
+                'entity': sg_asset,
+                'description': self.publish_comment,
+                'user': sg_user,
+                'sg_path_to_movie': img_filename,
+                'image': img_filename}
+
+            self.sg.create("Version", data)
+            self.Lib.message_box(self, type="info", text="Successfully published shading asset!")
+
         else:
             self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
-                if self.selected_asset.type != "rig":
+            if self.no_gui == True:
+                if self.selected_asset_type != "rig":
                     self.update_thumbnail(False)
 
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
         self.versionList_Clicked()
 
         self.blockSignals(False)
+
+    def shading_render_progress(self):
+        while self.publish_process.canReadLine():
+            print(self.publish_process.readLine())
 
     def normalize_modeling_finished(self):
         self.versionList_Clicked()
         self.update_thumbnail(False)
 
     def update_thumbnail(self, ask_window=True, batch_update=False):
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+        if self.no_gui == True:
             self.Lib.message_box(self, type="info", text="Successfull")
             return
 
@@ -1607,8 +1683,8 @@ class AssetLoader(object):
                 self.update_thumb_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.cur_path + "/lib/software_scripts/houdini_turn_render/turn_render.hipnc", asset.full_path, asset.name])
 
         elif self.selected_asset.type == "rig":
-            self.Lib.take_screenshot(self, path=self.selected_asset.full_media)
-            self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
+            self.Lib.take_screenshot(self, path=self.selected_asset.first_media)
+            self.Lib.compress_image(self, image_path=self.selected_asset.first_media, width=700, quality=100)
 
         elif self.selected_asset.type == "tex":
             self.Lib.take_screenshot(self, path=self.selected_asset.full_media, software="mari")
@@ -1766,7 +1842,7 @@ class AssetLoader(object):
             self.thumbnailProgressBar.hide()
             return
 
-        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+        if self.no_gui == True:
             self.thumbnailProgressBar.hide()
             self.updateThumbBtn.setEnabled(True)
             self.Lib.message_box(self, type="info", text="Successfully created thumbnails")
@@ -2651,6 +2727,9 @@ class AssetLoader(object):
         # Create PureRef Document
         shutil.copy(self.NEF_folder + "\\default.pur", "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/ref/pureref/" + asset_name + ".pur")
 
+        # Create texture folder
+        os.makedirs("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/tex/" + asset_name)
+
     def create_lay_asset_from_scratch(self, asset_name):
 
         # Create modeling scene asset
@@ -2717,15 +2796,22 @@ class AssetLoader(object):
     def create_shd_asset_from_mod(self):
         self.create_from_asset_dialog.close()
 
+        already_existing = self.cursor.execute('''SELECT * FROM assets WHERE asset_name=? AND asset_type="shd"''', (self.selected_asset.name, )).fetchone()
+        if already_existing != None:
+            self.Lib.message_box(self, type="error", text="There's already a shading scene for this asset!")
+            return
+
         # Create shading HDA database entry
-        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", "hip", "shd", "01", [], "", "", "", self.username)
+        shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, self.selected_asset.shot, self.selected_asset.name, "", "hipnc", "shd", "01", [], "", "", "", self.username)
         shading_hda_asset.add_asset_to_db()
-        main_hda_path = shading_hda_asset.full_path.replace("\\shd\\", "\\ass\\").replace("_shd_", "_ass_").replace("_01.", "_out.").replace(".hip", ".hda")
+        main_hda_path = shading_hda_asset.full_path.replace("\\shd\\", "\\ass\\").replace("_shd_", "_ass_").replace("_01.", "_out.").replace(".hipnc", ".hda")
 
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.readyRead.connect(self.blblbl)
+        self.houdini_hda_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully created shading scene!"))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_shd_from_mod.py", main_hda_path, shading_hda_asset.full_path, shading_hda_asset.name])
+
 
     def blblbl(self):
         while self.houdini_hda_process.canReadLine():
@@ -2867,7 +2953,6 @@ class AssetLoader(object):
         self.normalize_mod_scale_process.waitForFinished()
         self.normalize_mod_scale_process.finished.connect(self.change_asset_software_02)
         self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
-
 
     def change_asset_software_02(self):
         self.import_obj_process = QtCore.QProcess(self)

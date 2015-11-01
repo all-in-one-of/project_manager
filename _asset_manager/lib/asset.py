@@ -127,9 +127,9 @@ class Asset(object):
         # Create full media variable to use when user press spacebar.
         # If asset is of type mod, tex or rig, it's the same as the default media user
         # If asset is anm, sim, shd or cam, then the full asset is a mp4 video
-        if self.type in ["mod", "tex", "rig"]:
+        if self.type in ["mod", "tex", "shd", "rig"]:
             self.full_media = self.default_media_user
-        elif self.type in ["anm", "sim", "shd", "cam"]:
+        elif self.type in ["anm", "sim", "cam"]:
             self.full_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full.{3}".format(self.type, self.name, self.version, "mp4")
         else:
             self.full_media = self.project_path + "\\assets\\{0}\\.thumb\\{1}_{2}_full.{3}".format(self.type, self.name, self.version, "mp4")

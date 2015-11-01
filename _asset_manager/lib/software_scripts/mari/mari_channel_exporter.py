@@ -31,15 +31,11 @@ class MariExportManager(gui.QDialog):
         self.geo_list = mari.geo.list()
         obj = mari.geo.current()
         obj_name = str(obj.name())
+        obj_name = obj_name.split("_")[0]
 
-        if "pub_" in obj_name.lower():
-            self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\pub\\assets\\tex\\"
-        elif "nat_" in obj_name.lower():
-            self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\assets\\tex\\"
+        self.path_export = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\assets\\tex\\" + obj_name + "\\"
 
-        obj_name = obj_name[obj_name.find("_mod_") + len("_mod_"):obj_name.rfind("_")]
-        self.nomenclature = obj_name + "-$CHANNEL.png"
-
+        self.nomenclature = "$CHANNEL.png"
 
         # Construire la fenetre et le layout de base
         self.setWindowTitle("Export Manager")
@@ -62,7 +58,6 @@ class MariExportManager(gui.QDialog):
         # Ajouter Group Widget au main Layout
         main_layout.addWidget(top_group)
         main_layout.addWidget(bottom_group)
-
 
 
         # Channel Header, Label et Widgets
