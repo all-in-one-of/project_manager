@@ -2612,7 +2612,7 @@ class AssetLoader(object):
         selected_shot = shotListWidget.selectedItems()[0]
         selected_shot = str(selected_shot.text())
 
-        light_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, selected_shot, "lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
+        light_asset = self.Asset(self, 0, self.selected_project_name, self.selected_asset.sequence, selected_shot, self.selected_asset.sequence + "_lighting-" + selected_shot, "", "hda", "lgt", "01", [], self.selected_asset.id, "", "", self.username)
         light_asset.add_asset_to_db()
 
         # Create HDA associated to modeling scene
