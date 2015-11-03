@@ -586,7 +586,7 @@ class AssetLoader(object):
 
             # Append each item's sequence, shot, name and type to a list to only add first version of an asset to assetList
             assets_list.append((asset.sequence, asset.shot, asset.name, asset.type))
-            if asset.version != "out": # If asset is not a published asset, add it to version list
+            if asset.version != "out" and asset.type not in ["lgt", "cam"]: # If asset is not a published asset, add it to version list
                 # If there's less than 2 entries for an asset, add it to the assetList.
                 # If there's more than 2 entries, it means that current loop is on the version 02 or more of an asset.
                 # Therefore, its first version is already in the assetList and you don't need to add the other versions too.
@@ -1451,6 +1451,74 @@ class AssetLoader(object):
 
             self.publish_process_finished()
 
+        elif self.selected_asset.type == "tex":
+            self.screenshot_is_ok = False
+            while self.screenshot_is_ok == False:
+                self.Lib.take_screenshot(self, path=self.selected_asset.full_media, software="mari")
+                self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
+
+                self.screenshot_dialog = QtGui.QDialog()
+                self.screenshot_dialog.setWindowTitle("Preview")
+                self.screenshot_dialog.setMaximumSize(700, 700)
+                self.Lib.apply_style(self, self.screenshot_dialog)
+
+                image = QtGui.QImage(self.selected_asset.full_media)
+                pixmap = QtGui.QPixmap.fromImage(image)
+                pixmap = pixmap.scaled(700, 700, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+                label = QtGui.QLabel()
+                label.setPixmap(pixmap)
+                correctLbl = QtGui.QLabel("Is this screenshot okay?")
+                correctBtn = QtGui.QPushButton()
+                correctBtn.setText("Yes")
+                notcorrectBtn = QtGui.QPushButton()
+                notcorrectBtn.setText("Nope :( Try Again!")
+
+                correctBtn.clicked.connect(self.set_screenshot_variable_to_true)
+                notcorrectBtn.clicked.connect(self.set_screenshot_variable_to_false)
+
+                layout = QtGui.QVBoxLayout(self.screenshot_dialog)
+
+                layout.addWidget(label)
+                layout.addWidget(correctLbl)
+                layout.addWidget(correctBtn)
+                layout.addWidget(notcorrectBtn)
+
+                self.screenshot_dialog.resize(700, 700)
+
+                self.screenshot_dialog.exec_()
+
+            # Upload thumbnail to Shotgun
+            sg_asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
+            self.sg.upload_thumbnail("Asset", sg_asset["id"], self.selected_asset.full_media)
+
+            # Create new shotgun version
+            sg_user = self.sg.find_one('HumanUser', [['login', 'is', self.sg_members[self.username]]])
+
+            project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
+            sg_version = self.sg.find('Version', [["code", "contains", self.selected_asset.name + "_"], ["project", "is", project]], ["code"])
+            versions = [version["code"] for version in sg_version]
+
+            if len(versions) == 0:
+                last_version_number = "0001"
+            else:
+                last_version = sorted(versions)[-1]
+                last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+
+            data = {
+                'project': {'type': 'Project', 'id': self.sg_project_id},
+                'code': self.selected_asset.name + "_" + last_version_number,
+                'entity': sg_asset,
+                'description': self.publish_comment,
+                'user': sg_user,
+                'sg_path_to_movie': self.selected_asset.full_media,
+                'image': self.selected_asset.full_media}
+
+            self.sg.create("Version", data)
+
+            self.load_all_assets_for_first_time()
+            self.load_assets_from_selected_seq_shot_dept()
+            self.Lib.message_box(self, type="info", text="Successfully published texture asset!")
+
         elif self.selected_asset.type == "shd":
 
             self.publish_process = QtCore.QProcess(self)
@@ -1563,6 +1631,14 @@ class AssetLoader(object):
                     self.update_thumbnail(False)
 
         self.blockSignals(False)
+
+    def set_screenshot_variable_to_true(self):
+        self.screenshot_is_ok = True
+        self.screenshot_dialog.close()
+
+    def set_screenshot_variable_to_false(self):
+        self.screenshot_is_ok = False
+        self.screenshot_dialog.close()
 
     def shading_render_progress(self):
         while self.publish_process.canReadLine():
@@ -2627,10 +2703,6 @@ class AssetLoader(object):
             # Create main HDA database entry
             main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
             main_hda_asset.add_asset_to_db()
-
-            # Create shading HDA database entry
-            shading_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "shd", "01", [], main_hda_asset.id, "", "", self.username)
-            shading_hda_asset.add_asset_to_db()
 
             # Create default publish cube (obj)
             obj_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "obj", "mod", "out", [], asset.id, "", "", self.username)
