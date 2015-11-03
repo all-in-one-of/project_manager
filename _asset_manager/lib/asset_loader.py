@@ -46,8 +46,6 @@ class AssetLoader(object):
         self.publishBtn.setIcon(self.publish_disabled_icon)
         self.createVersionBtn.setIcon(self.new_version_disabled_icon)
         self.loadAssetBtn.setIcon(self.load_asset_disabled_icon)
-        self.loadAssociatedLayoutSceneBtn.setIcon(self.load_asset_icon)
-        self.loadAssociatedLayoutSceneBtn.setIconSize(QtCore.QSize(16, 16))
         self.loadObjInHeadusBtn.setIconSize(QtCore.QSize(16, 16))
         self.importIntoSceneBtn.setIcon(self.import_high_res_obj_icon)
         self.deleteAssetBtn.setIcon(self.delete_asset_icon)
@@ -74,7 +72,6 @@ class AssetLoader(object):
         self.importIntoSceneBtn.hide()
         self.renderLine.hide()
         self.openRealLayoutScene.hide()
-        self.loadAssociatedLayoutSceneBtn.hide()
         self.createAssetFromScratchBtn.hide()
         self.changeAssetSoftwareBtn.hide()
 
@@ -127,8 +124,8 @@ class AssetLoader(object):
         self.addRemoveAssetAsFavoriteBtn.setIcon(self.unfavorite_icon)
         self.addRemoveAssetAsFavoriteBtn.setDisabled(True)
         self.addRemoveAssetAsFavoriteBtn.setIconSize(QtCore.QSize(24, 24))
+        self.addRemoveAssetAsFavoriteBtn.hide()
         self.openRealLayoutScene.clicked.connect(self.open_real_layout_scene)
-        self.loadAssociatedLayoutSceneBtn.clicked.connect(self.open_associated_layout_scene)
         self.changeAssetSeqShotBtn.clicked.connect(self.change_seq_shot)
         self.loadObjInHeadusBtn.clicked.connect(self.load_obj_in_headus)
         self.changeAssetSoftwareBtn.clicked.connect(self.change_asset_software_01)
@@ -1099,8 +1096,6 @@ class AssetLoader(object):
             self.lastAccessLbl.setText("Last accessed by: " + self.selected_asset.last_access)
 
         # Set Is In Layout label
-        self.isInLayoutLbl.setText("Asset is not in any layout scene.")
-        self.loadAssociatedLayoutSceneBtn.hide()
         if "-lowres" in self.selected_asset.name:
             asset_name = self.selected_asset.name.replace("-lowres", "")
         else:
@@ -1116,11 +1111,8 @@ class AssetLoader(object):
             if is_asset_in_layout != None:
                 asset_layout_id = is_asset_in_layout[0]
                 layout_asset = self.Asset(self, asset_layout_id, get_infos_from_id=True)
-                self.isInLayoutLbl.setText("Asset is in layout: {0} ({1})".format(layout_asset.name, layout_asset.sequence))
-                self.loadAssociatedLayoutSceneBtn.show()
                 self.associated_layout_scene = layout_asset.full_path
-            else:
-                self.loadAssociatedLayoutSceneBtn.hide()
+
 
 
         # Set favorite button state
@@ -1399,14 +1391,14 @@ class AssetLoader(object):
         self.blockSignals(True)
 
         self.no_gui = False
-        if QtGui.QApplication.keyboardModifiers() != QtCore.Qt.ShiftModifier:
+        if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
             self.no_gui = True
         else:
             self.no_gui = False
 
         self.selected_asset_type = self.selected_asset.type
 
-        if self.no_gui == True:
+        if self.no_gui == False:
             # Publish comment GUI
             dialog = QtGui.QDialog(self)
             dialog.setWindowTitle("Add a comment")
@@ -1516,10 +1508,10 @@ class AssetLoader(object):
         else:
             favorited_by = []
 
-        if self.no_gui == True:
-            # Add log entry saying that the asset has been published.
-            log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
-            log_entry.add_log_to_database()
+
+        # Add log entry saying that the asset has been published.
+        log_entry = self.LogEntry(self, 0, self.selected_asset.id, [], favorited_by, self.username, "", "publish", "{0} has published a new version of asset {1} ({2}).".format(self.members[self.username], self.selected_asset.name, self.departments_longname[self.selected_asset.type]), datetime.now().strftime("%d/%m/%Y at %H:%M"))
+        log_entry.add_log_to_database()
 
         if self.selected_asset_type == "mod" and not "lowres" in self.selected_asset.name:
             # Normalize modeling scale
@@ -1566,13 +1558,9 @@ class AssetLoader(object):
 
         else:
             self.statusLbl.setText("Status: Publish finished, now updating thumbnails.")
-            if self.no_gui == True:
+            if self.no_gui == False:
                 if self.selected_asset_type != "rig":
                     self.update_thumbnail(False)
-
-        self.load_all_assets_for_first_time()
-        self.load_assets_from_selected_seq_shot_dept()
-        self.versionList_Clicked()
 
         self.blockSignals(False)
 
@@ -1586,7 +1574,7 @@ class AssetLoader(object):
 
     def update_thumbnail(self, ask_window=True, batch_update=False):
         if self.no_gui == True:
-            self.Lib.message_box(self, type="info", text="Successfull")
+            self.Lib.message_box(self, type="info", text="Successfully published asset!")
             return
 
         if self.selected_asset.type == "mod":
@@ -1931,6 +1919,10 @@ class AssetLoader(object):
             'image': img_filename}
 
         self.sg.create("Version", data)
+
+        self.load_all_assets_for_first_time()
+        self.load_assets_from_selected_seq_shot_dept()
+        self.versionList_Clicked()
 
         if len(self.thumbs_to_create) > 0:
             self.create_thumbnails(self.full_obj_path, self.thumbs_to_create, self.version)
@@ -2811,7 +2803,6 @@ class AssetLoader(object):
         self.houdini_hda_process.finished.connect(lambda: self.Lib.message_box(self, type="info", text="Successfully created shading scene!"))
         self.houdini_hda_process.waitForFinished()
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_shd_from_mod.py", main_hda_path, shading_hda_asset.full_path, shading_hda_asset.name])
-
 
     def blblbl(self):
         while self.houdini_hda_process.canReadLine():
