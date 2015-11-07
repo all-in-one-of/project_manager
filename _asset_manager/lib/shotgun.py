@@ -19,10 +19,18 @@ my_local_file = {
     }
 
 
-asset = sg.find_one("Asset", [["code","is","afficheOeuvre"]])
-step = sg.find_one("Step", [["code","is","Concept"]])
-task = sg.find_one("Task", [["entity","is",asset], ["step","is",step]], ["task_assignees"])
-print(task)
+asset = sg.find_one("Asset", [["code","is","afficheOeuvre"]], ["code"])
+
+sg_user = sg.find_one('HumanUser', [['login', 'is', "houdon.thibault"]])
+data = {
+    'project': {'type':'Project','id':project_id},
+    'note_links': [asset],
+    'user': sg_user,
+    'content':'Test',
+    'subject':"Thibault's Note on afficheOeuvre"
+    }
+
+sg.create("Note", data)
 
 #version = sg.create("Version", data)
 

@@ -129,6 +129,7 @@ class AssetLoader(object):
         self.changeAssetSeqShotBtn.clicked.connect(self.change_seq_shot)
         self.loadObjInHeadusBtn.clicked.connect(self.load_obj_in_headus)
         self.changeAssetSoftwareBtn.clicked.connect(self.change_asset_software_01)
+        self.updateStatusBtn.clicked.connect(self.change_sg_status)
 
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
@@ -157,6 +158,34 @@ class AssetLoader(object):
 
         self.icon_display_type = "user"
         self.batch_thumbnail = False
+
+    def change_sg_status(self):
+        pipeline_steps = {"mod": "Modeling", "shd": "Shading", "tex": "Texturing", "lay": "Layout"}
+        project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
+        asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name], ["project", "is", project]])
+        step = self.sg.find_one("Step", [["code", "is", pipeline_steps[self.selected_asset.type]]])
+        task = self.sg.find_one("Task", [["entity", "is", asset], ["step", "is", step]], ["sg_status_list", "id"])
+
+        if self.statusComboBox.currentText() == "On Hold":
+            self.sg.update("Task", task["id"], {'sg_status_list': "hld"})
+        elif self.statusComboBox.currentText() == "Waiting to Start":
+            self.sg.update("Task", task["id"], {'sg_status_list': "wtg"})
+        elif self.statusComboBox.currentText() == "Ready to Start":
+            self.sg.update("Task", task["id"], {'sg_status_list': "rdy"})
+        elif self.statusComboBox.currentText() == "Retake":
+            self.sg.update("Task", task["id"], {'sg_status_list': "rtk"})
+        elif self.statusComboBox.currentText() == "In Progress":
+            self.sg.update("Task", task["id"], {'sg_status_list': "ip"})
+        elif self.statusComboBox.currentText() == "Pending Review":
+            self.sg.update("Task", task["id"], {'sg_status_list': "rev"})
+        elif self.statusComboBox.currentText() == "CBB":
+            self.sg.update("Task", task["id"], {'sg_status_list': "cbb"})
+        elif self.statusComboBox.currentText() == "Final":
+            self.sg.update("Task", task["id"], {'sg_status_list': "fin"})
+        elif self.statusComboBox.currentText() == "N/A":
+            self.sg.update("Task", task["id"], {'sg_status_list': "na"})
+
+        self.Lib.message_box(self, type="info", text="Sucessfully changed task's status!")
 
     def show_right_click_menu(self, QPos):
         # Create a menu
@@ -613,7 +642,6 @@ class AssetLoader(object):
                 self.versionList.addItem(version_item)
                 version_item.setHidden(True)
 
-
     def projectList_Clicked(self):
 
         if self.projectList.count() == 0:
@@ -923,6 +951,9 @@ class AssetLoader(object):
             return
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
+        #Set status combobox to none
+        self.statusComboBox.setCurrentIndex(9)
+
         if self.selected_asset.type == "mod":
             self.loadObjInHeadusBtn.show()
             self.createVersionBtn.show()
@@ -1167,27 +1198,27 @@ class AssetLoader(object):
         asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
         step = self.sg.find_one("Step", [["code", "is", pipeline_steps[self.selected_asset.type]]])
         task = self.sg.find_one("Task", [["entity", "is", asset], ["step", "is", step]], ["sg_status_list"])
-
-        if task["sg_status_list"] == "na":
-            self.statusComboBox.setCurrentIndex(0)
-        elif task["sg_status_list"] == "wtg":
-            self.statusComboBox.setCurrentIndex(1)
-        elif task["sg_status_list"] == "rdy":
-            self.statusComboBox.setCurrentIndex(2)
-        elif task["sg_status_list"] == "hld":
-            self.statusComboBox.setCurrentIndex(3)
-        elif task["sg_status_list"] == "rtk":
-            self.statusComboBox.setCurrentIndex(4)
-        elif task["sg_status_list"] == "ip":
-            self.statusComboBox.setCurrentIndex(5)
-        elif task["sg_status_list"] == "rev":
-            self.statusComboBox.setCurrentIndex(6)
-        elif task["sg_status_list"] == "cbb":
-            self.statusComboBox.setCurrentIndex(7)
-        elif task["sg_status_list"] == "fin":
-            self.statusComboBox.setCurrentIndex(8)
-        else:
-            self.statusComboBox.setCurrentIndex(9)
+        if task != None:
+            if task["sg_status_list"] == "na":
+                self.statusComboBox.setCurrentIndex(0)
+            elif task["sg_status_list"] == "wtg":
+                self.statusComboBox.setCurrentIndex(1)
+            elif task["sg_status_list"] == "rdy":
+                self.statusComboBox.setCurrentIndex(2)
+            elif task["sg_status_list"] == "hld":
+                self.statusComboBox.setCurrentIndex(3)
+            elif task["sg_status_list"] == "rtk":
+                self.statusComboBox.setCurrentIndex(4)
+            elif task["sg_status_list"] == "ip":
+                self.statusComboBox.setCurrentIndex(5)
+            elif task["sg_status_list"] == "rev":
+                self.statusComboBox.setCurrentIndex(6)
+            elif task["sg_status_list"] == "cbb":
+                self.statusComboBox.setCurrentIndex(7)
+            elif task["sg_status_list"] == "fin":
+                self.statusComboBox.setCurrentIndex(8)
+            else:
+                self.statusComboBox.setCurrentIndex(9)
 
     def update_last_published_time_lbl(self, asset_published=None):
 
@@ -1437,17 +1468,96 @@ class AssetLoader(object):
             dialog_layout = QtGui.QVBoxLayout(dialog)
 
             publish_comment_line_edit = QtGui.QLineEdit(dialog)
+
+            status_combobox = QtGui.QComboBox()
+            if self.username in ["thoudon", "lclavet", "cgonnord", "yjobin"]:
+                status_combobox.insertItems(0, QtCore.QStringList(["N/A", "Waiting to Start", "Ready to Start", "On Hold", "Retake", "In Progress", "Pending Review", "CBB", "Final"]))
+            else:
+                status_combobox.insertItems(0, QtCore.QStringList(["N/A", "On Hold", "In Progress", "Pending Review"]))
+
+            # Fetch shotgun task status
+            pipeline_steps = {"mod": "Modeling", "shd": "Shading", "tex": "Texturing", "lay": "Layout"}
+
+            project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
+            asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name], ["project", "is", project]])
+            step = self.sg.find_one("Step", [["code", "is", pipeline_steps[self.selected_asset.type]]])
+            task = self.sg.find_one("Task", [["entity", "is", asset], ["step", "is", step]], ["sg_status_list", "id"])
+
+            if task["sg_status_list"] == "na":
+                status_combobox.setCurrentIndex(0)
+            elif task["sg_status_list"] == "wtg":
+                status_combobox.setCurrentIndex(1)
+            elif task["sg_status_list"] == "rdy":
+                status_combobox.setCurrentIndex(2)
+            elif task["sg_status_list"] == "hld":
+                status_combobox.setCurrentIndex(3)
+            elif task["sg_status_list"] == "rtk":
+                status_combobox.setCurrentIndex(4)
+            elif task["sg_status_list"] == "ip":
+                status_combobox.setCurrentIndex(5)
+            elif task["sg_status_list"] == "rev":
+                status_combobox.setCurrentIndex(6)
+            elif task["sg_status_list"] == "cbb":
+                status_combobox.setCurrentIndex(7)
+            elif task["sg_status_list"] == "fin":
+                status_combobox.setCurrentIndex(8)
+            else:
+                status_combobox.setCurrentIndex(9)
+
             publish_accept_btn = QtGui.QPushButton("Publish asset!", dialog)
             publish_comment_line_edit.returnPressed.connect(dialog.accept)
             publish_accept_btn.clicked.connect(dialog.accept)
 
             dialog_layout.addWidget(publish_comment_line_edit)
+            dialog_layout.addWidget(status_combobox)
             dialog_layout.addWidget(publish_accept_btn)
             dialog.exec_()
 
             if dialog.result() == 0:
                 self.publish_comment = ""
                 return
+
+            self.changed_status = status_combobox.currentText()
+
+            if self.changed_status == "On Hold":
+                #create note dialog
+
+                dialog = QtGui.QDialog(self)
+                dialog.setWindowTitle("Add a note")
+                self.Lib.apply_style(self, dialog)
+
+                dialog_layout = QtGui.QVBoxLayout(dialog)
+
+                note_comment_line_edit = QtGui.QLineEdit(dialog)
+                note_comment_line_edit.returnPressed.connect(dialog.accept)
+
+                dialog_layout.addWidget(note_comment_line_edit)
+                dialog.exec_()
+
+                if dialog.result() == 0:
+                    return
+
+                asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
+                sg_user = self.sg.find_one('HumanUser', [['login', 'is', self.sg_members[self.username]]])
+                data = {'project': {'type': 'Project', 'id': self.sg_project_id}, 'note_links': [asset], 'user': sg_user, 'content': unicode(self.utf8_codec.fromUnicode(note_comment_line_edit.text()), 'utf-8'), 'subject': self.members[self.username] + "'s Note on " + self.selected_asset.name}
+                self.sg.create("Note", data)
+                self.sg.update("Task", task["id"], {'sg_status_list': "hld"})
+            elif self.changed_status == "Waiting to Start":
+                self.sg.update("Task", task["id"], {'sg_status_list': "wtg"})
+            elif self.changed_status == "Ready to Start":
+                self.sg.update("Task", task["id"], {'sg_status_list': "rdy"})
+            elif self.changed_status == "Retake":
+                self.sg.update("Task", task["id"], {'sg_status_list': "rtk"})
+            elif self.changed_status == "In Progress":
+                self.sg.update("Task", task["id"], {'sg_status_list': "ip"})
+            elif self.changed_status == "Pending Review":
+                self.sg.update("Task", task["id"], {'sg_status_list': "rev"})
+            elif self.changed_status == "CBB":
+                self.sg.update("Task", task["id"], {'sg_status_list': "cbb"})
+            elif self.changed_status == "Final":
+                self.sg.update("Task", task["id"], {'sg_status_list': "fin"})
+            elif self.changed_status == "N/A":
+                self.sg.update("Task", task["id"], {'sg_status_list': "na"})
 
             # Add publish comment to database
             self.publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
