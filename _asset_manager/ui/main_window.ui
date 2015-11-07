@@ -480,13 +480,13 @@
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>100</height>
+                 <height>130</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>100</height>
+                 <height>130</height>
                 </size>
                </property>
                <property name="frameShape">
@@ -538,19 +538,6 @@
                    <property name="spacing">
                     <number>3</number>
                    </property>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="lastAccessLbl">
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>Last accessed by:</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="0" column="0">
                     <widget class="QProgressBar" name="thumbnailProgressBar">
                      <property name="maximumSize">
@@ -564,6 +551,19 @@
                      </property>
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="lastAccessLbl">
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Last accessed by:</string>
                      </property>
                     </widget>
                    </item>
@@ -867,6 +867,98 @@
                       </item>
                      </layout>
                     </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QFrame" name="frame_3">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_10">
+                      <property name="spacing">
+                       <number>3</number>
+                      </property>
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QComboBox" name="statusComboBox">
+                        <item>
+                         <property name="text">
+                          <string>N/A</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Waiting to Start</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Ready to Start</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>On Hold</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Retake</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>In Progress</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Pending Review</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>CBB</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Final</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>None</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="updateStatusBtn">
+                        <property name="text">
+                         <string>Update Status</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <spacer name="horizontalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
                    </item>
                   </layout>
                  </widget>
@@ -4678,8 +4770,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>100</width>
-                  <height>30</height>
+                  <width>1443</width>
+                  <height>536</height>
                  </rect>
                 </property>
                </widget>

@@ -613,6 +613,7 @@ class AssetLoader(object):
                 self.versionList.addItem(version_item)
                 version_item.setHidden(True)
 
+
     def projectList_Clicked(self):
 
         if self.projectList.count() == 0:
@@ -1159,6 +1160,35 @@ class AssetLoader(object):
         # Scroll to selected item
         self.versionList.scrollToItem(self.versionList.selectedItems()[0])
 
+
+        # Fetch shotgun task status
+        pipeline_steps = {"mod":"Modeling", "shd":"Shading", "tex":"Texturing", "lay":"Layout"}
+
+        asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
+        step = self.sg.find_one("Step", [["code", "is", pipeline_steps[self.selected_asset.type]]])
+        task = self.sg.find_one("Task", [["entity", "is", asset], ["step", "is", step]], ["sg_status_list"])
+
+        if task["sg_status_list"] == "na":
+            self.statusComboBox.setCurrentIndex(0)
+        elif task["sg_status_list"] == "wtg":
+            self.statusComboBox.setCurrentIndex(1)
+        elif task["sg_status_list"] == "rdy":
+            self.statusComboBox.setCurrentIndex(2)
+        elif task["sg_status_list"] == "hld":
+            self.statusComboBox.setCurrentIndex(3)
+        elif task["sg_status_list"] == "rtk":
+            self.statusComboBox.setCurrentIndex(4)
+        elif task["sg_status_list"] == "ip":
+            self.statusComboBox.setCurrentIndex(5)
+        elif task["sg_status_list"] == "rev":
+            self.statusComboBox.setCurrentIndex(6)
+        elif task["sg_status_list"] == "cbb":
+            self.statusComboBox.setCurrentIndex(7)
+        elif task["sg_status_list"] == "fin":
+            self.statusComboBox.setCurrentIndex(8)
+        else:
+            self.statusComboBox.setCurrentIndex(9)
+
     def update_last_published_time_lbl(self, asset_published=None):
 
         # Set last published date label
@@ -1487,6 +1517,9 @@ class AssetLoader(object):
 
                 self.screenshot_dialog.exec_()
 
+            if self.screenshot_is_ok == False:
+                return
+
             # Upload thumbnail to Shotgun
             sg_asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
             self.sg.upload_thumbnail("Asset", sg_asset["id"], self.selected_asset.full_media)
@@ -1513,7 +1546,8 @@ class AssetLoader(object):
                 'sg_path_to_movie': self.selected_asset.full_media,
                 'image': self.selected_asset.full_media}
 
-            self.sg.create("Version", data)
+            version = self.sg.create("Version", data)
+            self.sg.upload("Version", version["id"], self.selected_asset.full_media.replace("\\", "/"), "sg_uploaded_movie")
 
             self.load_all_assets_for_first_time()
             self.load_assets_from_selected_seq_shot_dept()
@@ -1621,7 +1655,8 @@ class AssetLoader(object):
                 'sg_path_to_movie': img_filename,
                 'image': img_filename}
 
-            self.sg.create("Version", data)
+            version = self.sg.create("Version", data)
+            self.sg.upload("Version", version["id"], img_filename.replace("\\", "/"), "sg_uploaded_movie")
             self.Lib.message_box(self, type="info", text="Successfully published shading asset!")
 
         else:
@@ -1994,7 +2029,8 @@ class AssetLoader(object):
             'sg_path_to_movie':img_filename,
             'image': img_filename}
 
-        self.sg.create("Version", data)
+        version = self.sg.create("Version", data)
+        self.sg.upload("Version", version["id"], img_filename.replace("\\", "/"), "sg_uploaded_movie")
 
         self.load_all_assets_for_first_time()
         self.load_assets_from_selected_seq_shot_dept()

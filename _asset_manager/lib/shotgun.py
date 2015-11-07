@@ -6,26 +6,23 @@ key = "e014f12acda4074561022f165e8cd1913af2ba4903324a72edbb21430abbb2dc"
 project_id = 146 # Demo Project
 
 sg = Shotgun(url, script_name, key)
-sg_asset = sg.find_one("Asset", [["code", "is", "ble"]])
-mod_step = sg.find_one('Step', [['code','is','Modeling']])
-cpt_step = sg.find_one('Step', [['code','is','Concept']])
-tex_step = sg.find_one('Step', [['code','is','Texturing']])
-shd_step = sg.find_one('Step', [['code','is','Shading']])
 
-data = {'project': {'type':'Project','id':project_id}, 'content':'references', 'entity': sg_asset, 'step':cpt_step}
-sg.create('Task', data)
-data = {'project': {'type':'Project','id':project_id}, 'content':'concepts', 'entity': sg_asset, 'step':cpt_step}
-sg.create('Task', data)
-data = {'project': {'type':'Project','id':project_id}, 'content':'modeling', 'entity': sg_asset, 'step':mod_step}
-sg.create('Task', data)
-data = {'project': {'type':'Project','id':project_id}, 'content':'UV', 'entity': sg_asset, 'step':mod_step}
-sg.create('Task', data)
-data = {'project': {'type':'Project','id':project_id}, 'content':'texturing', 'entity': sg_asset, 'step':tex_step}
-sg.create('Task', data)
-data = {'project': {'type':'Project','id':project_id}, 'content':'shading', 'entity': sg_asset, 'step':shd_step}
-sg.create('Task', data)
+filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/mod/.thumb/banc_02_full.jpg"
+result = sg.upload("Version",1048,filename,"sg_uploaded_movie")
 
 
+
+
+my_local_file = {
+    'attachment_links': [{'type':'Version','id':1048}],
+    'project': {'type':'Project','id':146}
+    }
+
+
+asset = sg.find_one("Asset", [["code","is","afficheOeuvre"]])
+step = sg.find_one("Step", [["code","is","Concept"]])
+task = sg.find_one("Task", [["entity","is",asset], ["step","is",step]], ["task_assignees"])
+print(task)
 
 #version = sg.create("Version", data)
 
