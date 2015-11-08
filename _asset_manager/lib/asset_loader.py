@@ -129,7 +129,6 @@ class AssetLoader(object):
         self.changeAssetSeqShotBtn.clicked.connect(self.change_seq_shot)
         self.loadObjInHeadusBtn.clicked.connect(self.load_obj_in_headus)
         self.changeAssetSoftwareBtn.clicked.connect(self.change_asset_software_01)
-        self.updateStatusBtn.clicked.connect(self.change_sg_status)
 
         self.loadObjInGplayBtn.clicked.connect(self.load_obj_in_gplay)
 
@@ -159,33 +158,6 @@ class AssetLoader(object):
         self.icon_display_type = "user"
         self.batch_thumbnail = False
 
-    def change_sg_status(self):
-        pipeline_steps = {"mod": "Modeling", "shd": "Shading", "tex": "Texturing", "lay": "Layout"}
-        project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
-        asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name], ["project", "is", project]])
-        step = self.sg.find_one("Step", [["code", "is", pipeline_steps[self.selected_asset.type]]])
-        task = self.sg.find_one("Task", [["entity", "is", asset], ["step", "is", step]], ["sg_status_list", "id"])
-
-        if self.statusComboBox.currentText() == "On Hold":
-            self.sg.update("Task", task["id"], {'sg_status_list': "hld"})
-        elif self.statusComboBox.currentText() == "Waiting to Start":
-            self.sg.update("Task", task["id"], {'sg_status_list': "wtg"})
-        elif self.statusComboBox.currentText() == "Ready to Start":
-            self.sg.update("Task", task["id"], {'sg_status_list': "rdy"})
-        elif self.statusComboBox.currentText() == "Retake":
-            self.sg.update("Task", task["id"], {'sg_status_list': "rtk"})
-        elif self.statusComboBox.currentText() == "In Progress":
-            self.sg.update("Task", task["id"], {'sg_status_list': "ip"})
-        elif self.statusComboBox.currentText() == "Pending Review":
-            self.sg.update("Task", task["id"], {'sg_status_list': "rev"})
-        elif self.statusComboBox.currentText() == "CBB":
-            self.sg.update("Task", task["id"], {'sg_status_list': "cbb"})
-        elif self.statusComboBox.currentText() == "Final":
-            self.sg.update("Task", task["id"], {'sg_status_list': "fin"})
-        elif self.statusComboBox.currentText() == "N/A":
-            self.sg.update("Task", task["id"], {'sg_status_list': "na"})
-
-        self.Lib.message_box(self, type="info", text="Sucessfully changed task's status!")
 
     def show_right_click_menu(self, QPos):
         # Create a menu
@@ -951,9 +923,6 @@ class AssetLoader(object):
             return
         self.selected_asset = selected_version.data(QtCore.Qt.UserRole).toPyObject()
 
-        #Set status combobox to none
-        self.statusComboBox.setCurrentIndex(9)
-
         if self.selected_asset.type == "mod":
             self.loadObjInHeadusBtn.show()
             self.createVersionBtn.show()
@@ -1191,35 +1160,6 @@ class AssetLoader(object):
         # Scroll to selected item
         self.versionList.scrollToItem(self.versionList.selectedItems()[0])
 
-
-        # Fetch shotgun task status
-        pipeline_steps = {"mod":"Modeling", "shd":"Shading", "tex":"Texturing", "lay":"Layout"}
-
-        asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
-        step = self.sg.find_one("Step", [["code", "is", pipeline_steps[self.selected_asset.type]]])
-        task = self.sg.find_one("Task", [["entity", "is", asset], ["step", "is", step]], ["sg_status_list"])
-        if task != None:
-            if task["sg_status_list"] == "na":
-                self.statusComboBox.setCurrentIndex(0)
-            elif task["sg_status_list"] == "wtg":
-                self.statusComboBox.setCurrentIndex(1)
-            elif task["sg_status_list"] == "rdy":
-                self.statusComboBox.setCurrentIndex(2)
-            elif task["sg_status_list"] == "hld":
-                self.statusComboBox.setCurrentIndex(3)
-            elif task["sg_status_list"] == "rtk":
-                self.statusComboBox.setCurrentIndex(4)
-            elif task["sg_status_list"] == "ip":
-                self.statusComboBox.setCurrentIndex(5)
-            elif task["sg_status_list"] == "rev":
-                self.statusComboBox.setCurrentIndex(6)
-            elif task["sg_status_list"] == "cbb":
-                self.statusComboBox.setCurrentIndex(7)
-            elif task["sg_status_list"] == "fin":
-                self.statusComboBox.setCurrentIndex(8)
-            else:
-                self.statusComboBox.setCurrentIndex(9)
-
     def update_last_published_time_lbl(self, asset_published=None):
 
         # Set last published date label
@@ -1230,9 +1170,6 @@ class AssetLoader(object):
         self.lastPublishedLbl.setStyleSheet("color: #3c3c3c;")
         if number_of_days_since_last_publish == 0:
             number_of_days_since_last_publish = "today"
-        elif number_of_days_since_last_publish > 7:
-            number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago. You should publish a new version!"
-            self.lastPublishedLbl.setStyleSheet("color: red;")
         else:
             number_of_days_since_last_publish = str(number_of_days_since_last_publish) + " days ago"
 
