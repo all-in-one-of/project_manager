@@ -31,8 +31,8 @@ class Monitoring(object):
 
     def check_status(self):
         self.get_computers_list()
-        os.system('taskkill /f /im mpc-hc.exe')
-        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
+        #os.system('taskkill /f /im mpc-hc.exe')
+        #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
 
         i = 0
         if self.status == "idle":
@@ -59,8 +59,8 @@ class Monitoring(object):
 
     def start_render(self):
         print("Starting Render")
-        os.system('taskkill /f /im mpc-hc.exe')
-        subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
+        #os.system('taskkill /f /im mpc-hc.exe')
+        #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
 
         all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
         all_jobs = sorted(all_jobs, key=lambda x: x[2])
@@ -81,8 +81,8 @@ class Monitoring(object):
             all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
 
             resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
-            resolutionX = int(1920.0 * (float(resolution) / 100.0))
-            resolutionY = int(1080.0 * (float(resolution) / 100.0))
+            resolutionX = int(2000.0 * (float(resolution) / 100.0))
+            resolutionY = int(2000.0 * (float(resolution) / 100.0))
             sampling = self.cursor.execute('''SELECT sampling FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
 
             ifd_path = current_job[1]

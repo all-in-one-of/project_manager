@@ -1319,16 +1319,26 @@ class AssetLoader(object):
             self.mari_process.start(self.mari_path, ["-t", self.cur_path + "\\lib\\software_scripts\\mari_create_new_version.py"])
             return
 
-        # Create new scene file, if it fails, remove asset from database and warn user.
-        try:
-            shutil.copy(old_version_path, asset.full_path)
-        except:
-            asset.remove_asset_from_db()
-            self.Lib.message_box(self, type="error", text="Couldn't create new version, an error occured.")
-            return
+        if self.selected_asset.type == "sim":
+            new_version_number = str(int(self.selected_asset.version) + 1).zfill(2)
+            new_version_path = self.selected_asset.full_path.replace("_" + self.selected_asset.version + ".", "_" + new_version_number + ".")
 
-        # Create new version thumbnail from previous version thumbnail
-        shutil.copy(old_version_thumbnail, new_version_thumbnail)
+            # Create HDA for sim asset
+            self.houdini_hda_process = QtCore.QProcess(self)
+            self.houdini_hda_process.waitForFinished()
+            self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_new_sim_version.py", self.selected_asset.name, new_version_number, self.selected_asset.full_path, new_version_path])
+
+        else:
+            # Create new scene file, if it fails, remove asset from database and warn user.
+            try:
+                shutil.copy(old_version_path, asset.full_path)
+            except:
+                asset.remove_asset_from_db()
+                self.Lib.message_box(self, type="error", text="Couldn't create new version, an error occured.")
+                return
+
+            # Create new version thumbnail from previous version thumbnail
+            shutil.copy(old_version_thumbnail, new_version_thumbnail)
 
         # Add item to version list
         version_item = QtGui.QListWidgetItem(asset.version + " (" + asset.extension + ")")
@@ -1407,10 +1417,8 @@ class AssetLoader(object):
             publish_comment_line_edit = QtGui.QLineEdit(dialog)
 
             status_combobox = QtGui.QComboBox()
-            if self.username in ["thoudon", "lclavet", "cgonnord", "yjobin"]:
-                status_combobox.insertItems(0, QtCore.QStringList(["N/A", "Waiting to Start", "Ready to Start", "On Hold", "Retake", "In Progress", "Pending Review", "CBB", "Final"]))
-            else:
-                status_combobox.insertItems(0, QtCore.QStringList(["N/A", "On Hold", "In Progress", "Pending Review"]))
+            status_combobox.insertItems(0, QtCore.QStringList(["N/A", "Waiting to Start", "Ready to Start", "On Hold", "Retake", "In Progress", "Pending Review", "CBB", "Final"]))
+
 
             # Fetch shotgun task status
             pipeline_steps = {"mod": "Modeling", "shd": "Shading", "tex": "Texturing", "lay": "Layout"}
@@ -1453,7 +1461,7 @@ class AssetLoader(object):
             if dialog.result() == 0:
                 self.publish_comment = ""
                 return
-
+            self.publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
             self.changed_status = status_combobox.currentText()
 
             if self.changed_status == "On Hold":
@@ -1497,7 +1505,6 @@ class AssetLoader(object):
                 self.sg.update("Task", task["id"], {'sg_status_list': "na"})
 
             # Add publish comment to database
-            self.publish_comment = unicode(self.utf8_codec.fromUnicode(publish_comment_line_edit.text()), 'utf-8')
             self.cursor.execute('''INSERT INTO publish_comments(asset_id, publish_comment, publish_time, publish_creator) VALUES(?,?,?,?)''', (self.selected_asset.id, self.publish_comment, datetime.now().strftime("%d/%m/%Y at %H:%M"), self.username))
             self.db.commit()
 
@@ -1602,10 +1609,13 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "shd":
 
+            selected_asset = self.selected_asset.name
+
             self.publish_process = QtCore.QProcess(self)
             self.publish_process.readyRead.connect(self.shading_render_progress)
-            self.publish_process.finished.connect(self.publish_process_finished)
+            self.publish_process.finished.connect(partial(self.publish_process_finished, selected_asset))
 
+            self.statusLbl.setText("Status: Rendering shading thumbnail with Mantra. Please wait...")
             self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_render_from_asset.py", self.selected_asset.full_path])
 
             self.cursor.execute('''UPDATE assets SET publish_from_version=? WHERE asset_path=?''', (self.selected_asset.id, self.selected_asset.rig_out_path.replace(self.selected_project_path, ""),))
@@ -1648,7 +1658,7 @@ class AssetLoader(object):
             self.publish_process.waitForFinished()
             self.publish_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_export_cam_from_lay.py", export_path, layout_asset.full_path, camera_name, start_frame, end_frame])
 
-    def publish_process_finished(self):
+    def publish_process_finished(self, selected_asset=""):
 
         # Check if current asset has been favorited by someone.
         favorited_by = self.cursor.execute('''SELECT member FROM favorited_assets WHERE asset_id=?''', (self.selected_asset.id,)).fetchall()
@@ -1669,22 +1679,22 @@ class AssetLoader(object):
             self.normalize_mod_scale_process.finished.connect(self.normalize_modeling_finished)
             self.normalize_mod_scale_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_normalize_scale.py", self.selected_asset.obj_path.replace("\\", "/")])
         elif self.selected_asset_type == "shd":
-            img_filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/shd/.thumb/" + self.selected_asset.name + "_01_full.jpg"
-            thumb_filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/shd/.thumb/" + self.selected_asset.name + "_01_full-thumb.jpg"
+            img_filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/shd/.thumb/" + selected_asset + "_01_full.jpg"
+            thumb_filename = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/shd/.thumb/" + selected_asset + "_01_full-thumb.jpg"
 
             # Create thumbnail
             shutil.copy(img_filename, thumb_filename)
             self.compress_image(thumb_filename, 240, 70)
 
             # Upload thumbnail to Shotgun
-            sg_asset = self.sg.find_one("Asset", [["code", "is", self.selected_asset.name]])
+            sg_asset = self.sg.find_one("Asset", [["code", "is", selected_asset]])
             self.sg.upload_thumbnail("Asset", sg_asset["id"], img_filename)
 
             # Create new shotgun version
             sg_user = self.sg.find_one('HumanUser', [['login', 'is', self.sg_members[self.username]]])
 
             project = self.sg.find_one("Project", [["id", "is", self.sg_project_id]])
-            sg_version = self.sg.find('Version', [["code", "contains", self.selected_asset.name + "_"], ["project", "is", project]], ["code"])
+            sg_version = self.sg.find('Version', [["code", "contains", selected_asset + "_"], ["project", "is", project]], ["code"])
             versions = [version["code"] for version in sg_version]
 
             if len(versions) == 0:
@@ -1695,7 +1705,7 @@ class AssetLoader(object):
 
             data = {
                 'project': {'type': 'Project', 'id': self.sg_project_id},
-                'code': self.selected_asset.name + "_" + last_version_number,
+                'code': selected_asset + "_" + last_version_number,
                 'entity': sg_asset,
                 'description': self.publish_comment,
                 'user': sg_user,
@@ -1712,6 +1722,7 @@ class AssetLoader(object):
                 if self.selected_asset_type != "rig":
                     self.update_thumbnail(False)
 
+        self.statusLbl.setText("Status: Idle...")
         self.blockSignals(False)
 
     def set_screenshot_variable_to_true(self):
@@ -2221,7 +2232,9 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "sim":
             process = QtCore.QProcess(self)
-            process.start(self.houdini_path, [self.selected_asset.main_hda_path.replace("\\", "/")])
+            scene_path = os.path.split(self.selected_asset.full_path.replace("\\", "/"))[0] + os.path.split(self.selected_asset.full_path.replace("\\", "/"))[1].split("_")[0] + "_out.hipnc"
+            print(scene_path)
+            process.start(self.houdini_path, [scene_path])
 
         elif self.selected_asset.type == "lay":
             shutil.copy2(self.selected_asset.full_path, self.selected_asset.full_path.replace(".hipnc", "_" + self.username + "_laytmp.hipnc"))
@@ -2784,7 +2797,7 @@ class AssetLoader(object):
             asset.add_asset_to_db()
 
             # Create main HDA database entry
-            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "lay", "out", [], asset.id, "", "", self.username)
+            main_hda_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "ass", "out", [], asset.id, "", "", self.username)
             main_hda_asset.add_asset_to_db()
 
             # Create default publish cube (obj)
@@ -2887,7 +2900,7 @@ class AssetLoader(object):
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_glob_lgt_into_lay.py", asset.full_path.replace("lay", "lgt").replace(".hipnc", ".hda"), asset.full_path])
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_glob_lgt_into_lay.py", asset.full_path.replace("_01.", "_global_lighting.").replace(".hipnc", ".hda"), asset.full_path])
 
     def create_sim_asset_from_scratch(self, asset_name):
         sim_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "sim", "01", [], "", "", "", self.username)
@@ -2897,7 +2910,7 @@ class AssetLoader(object):
         self.houdini_hda_process = QtCore.QProcess(self)
         self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, sim_asset))
         self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_sim_from_scratch.py", sim_asset.full_path])
+        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_sim_from_scratch.py", sim_asset.full_path, asset_name])
 
     def create_anm_asset_from_scratch(self, asset_name):
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "ma", "anm", "01", [], "", "", "", self.username)
@@ -3046,6 +3059,8 @@ class AssetLoader(object):
         self.batch_thumbnail = False
 
     def change_asset_software_01(self):
+        self.statusLbl.setText("Status: Switching asset's software. This can take up to 5 minutes for high resolution meshes. Please wait...")
+        self.blockSignals(True)
         self.current_extension = os.path.splitext(self.selected_asset.full_path)[-1]
         self.old_path = self.selected_asset.full_path
 
@@ -3133,6 +3148,8 @@ class AssetLoader(object):
         self.load_assets_from_selected_seq_shot_dept()
         self.Lib.message_box(self, type="info", text="Successfully switched software!")
 
+        self.blockSignals(False)
+        self.statusLbl.setText("Status: Idle...")
 
 class AnimSceneChooser(QtGui.QDialog):
     def __init__(self, main):

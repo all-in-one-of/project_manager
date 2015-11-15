@@ -9,7 +9,7 @@ print(file_path)
 print(export_path)
 print(shot_number)
 
-cam_hda = "H:/01-NAD/_pipeline/_utilities/_NEF/cam_hda.hdanc"
+cam_hda = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_NEF/cam_hda.hdanc"
 print("3")
 
 definition = hou.hda.definitionsInFile(cam_hda)
