@@ -96,7 +96,11 @@ class Asset(object):
             self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
         else:
             self.path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
-        self.full_path = self.project_path + self.path
+
+        if self.type == "cmp":
+            self.full_path = asset_path
+        else:
+            self.full_path = self.project_path + self.path
 
         # Get the last version of the asset (Ex: if an asset has 5 version, last_version is equal to "05")
         self.last_version = self.main.cursor.execute('''SELECT MAX(asset_version) FROM assets WHERE asset_name=? AND asset_extension=? AND asset_type=? AND asset_version!="out"''', (self.name, self.extension, self.type,)).fetchone()[0]

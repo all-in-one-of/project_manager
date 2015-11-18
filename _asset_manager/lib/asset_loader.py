@@ -1153,7 +1153,7 @@ class AssetLoader(object):
         self.CommentWidget.load_comments(self)
 
         # Set last publish label
-        if self.selected_asset.type not in ["lay", "shd", "hipnc", "sim", "anm"] and self.selected_asset.extension not in ["hipnc"]:
+        if self.selected_asset.type not in ["cmp", "lay", "shd", "hipnc", "sim", "anm"] and self.selected_asset.extension not in ["hipnc"]:
             asset_published = self.Asset(self, self.selected_asset.dependency, get_infos_from_id=True)
             self.update_last_published_time_lbl(asset_published)
 
@@ -2262,6 +2262,17 @@ class AssetLoader(object):
             process.finished.connect(partial(self.load_asset_finished, associated_hip_scene.replace(".hipnc", "_" + self.username + "_lgttmp.hipnc")))
             process.start(self.houdini_path, [associated_hip_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_lgttmp.hipnc")])
 
+        elif self.selected_asset.type == "cmp":
+            all_nuke_scripts = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/cmp/*")
+            all_nuke_scripts = [i for i in all_nuke_scripts if not "~" in i]
+            selected_nuke_shot = self.selected_asset.full_path.split("\\")[-1]
+
+            print(all_nuke_scripts_for_cur_shot[-1])
+
+            all_nuke_scripts_for_cur_shot = [i for i in all_nuke_scripts if selected_nuke_shot in i]
+            all_nuke_scripts_for_cur_shot = sorted(all_nuke_scripts_for_cur_shot)
+            process = QtCore.QProcess(self)
+            process.start(self.nuke_path, [all_nuke_scripts_for_cur_shot[-1]])
 
         elif self.selected_asset.type == "tex":
             texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
