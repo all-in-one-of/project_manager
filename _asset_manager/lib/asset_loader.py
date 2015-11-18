@@ -2232,7 +2232,7 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "sim":
             process = QtCore.QProcess(self)
-            scene_path = os.path.split(self.selected_asset.full_path.replace("\\", "/"))[0] + os.path.split(self.selected_asset.full_path.replace("\\", "/"))[1].split("_")[0] + "_out.hipnc"
+            scene_path = os.path.split(self.selected_asset.full_path.replace("\\", "/"))[0] + "/" + os.path.split(self.selected_asset.full_path.replace("\\", "/"))[1].split("_")[0] + "_01.hipnc"
             print(scene_path)
             process.start(self.houdini_path, [scene_path])
 
@@ -2267,8 +2267,6 @@ class AssetLoader(object):
             all_nuke_scripts = [i for i in all_nuke_scripts if not "~" in i]
             selected_nuke_shot = self.selected_asset.full_path.split("\\")[-1]
 
-            print(all_nuke_scripts_for_cur_shot[-1])
-
             all_nuke_scripts_for_cur_shot = [i for i in all_nuke_scripts if selected_nuke_shot in i]
             all_nuke_scripts_for_cur_shot = sorted(all_nuke_scripts_for_cur_shot)
             process = QtCore.QProcess(self)
@@ -2280,7 +2278,10 @@ class AssetLoader(object):
 
             self.mari_open_asset_process = QtCore.QProcess(self)
             self.mari_open_asset_process.finished.connect(partial(self.mari_finished, texture_project_path))
-            self.mari_open_asset_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
+            if os.path.exists("C:/Program Files/Mari2.6v2/Bundle/bin/Mari2.6v2.exe"):
+                self.mari_open_asset_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
+            else:
+                self.mari_open_asset_process.start("C:/Program Files/Mari2.6v5/Bundle/bin/Mari2.6v5.exe", [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
 
         self.statusLbl.setText("Status: Idle...")
 
