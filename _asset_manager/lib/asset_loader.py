@@ -2084,8 +2084,11 @@ class AssetLoader(object):
         if len(versions) == 0:
             last_version_number = "0001"
         else:
-            last_version = sorted(versions)[-1]
-            last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+            try:
+                last_version = sorted(versions)[-1]
+                last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+            except:
+                last_version_number = ""
 
         data = {
             'project': {'type': 'Project', 'id': self.sg_project_id},
