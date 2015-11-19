@@ -1537,6 +1537,7 @@ class AssetLoader(object):
 
         elif self.selected_asset.type == "tex":
             self.screenshot_is_ok = False
+            self.cancel_screenshot = False
             while self.screenshot_is_ok == False:
                 self.Lib.take_screenshot(self, path=self.selected_asset.full_media, software="mari")
                 self.Lib.compress_image(self, image_path=self.selected_asset.full_media, width=700, quality=100)
@@ -1556,9 +1557,12 @@ class AssetLoader(object):
                 correctBtn.setText("Yes")
                 notcorrectBtn = QtGui.QPushButton()
                 notcorrectBtn.setText("Nope :( Try Again!")
+                closeBtn = QtGui.QPushButton()
+                closeBtn.setText("Cancel publish")
 
                 correctBtn.clicked.connect(self.set_screenshot_variable_to_true)
                 notcorrectBtn.clicked.connect(self.set_screenshot_variable_to_false)
+                closeBtn.clicked.connect(self.set_screenshot_variable_to_false_and_exit)
 
                 layout = QtGui.QVBoxLayout(self.screenshot_dialog)
 
@@ -1566,12 +1570,12 @@ class AssetLoader(object):
                 layout.addWidget(correctLbl)
                 layout.addWidget(correctBtn)
                 layout.addWidget(notcorrectBtn)
+                layout.addWidget(closeBtn)
 
                 self.screenshot_dialog.resize(700, 700)
-
                 self.screenshot_dialog.exec_()
 
-            if self.screenshot_is_ok == False:
+            if self.cancel_screenshot == True:
                 return
 
             # Upload thumbnail to Shotgun
@@ -1731,6 +1735,11 @@ class AssetLoader(object):
 
     def set_screenshot_variable_to_false(self):
         self.screenshot_is_ok = False
+        self.screenshot_dialog.close()
+
+    def set_screenshot_variable_to_false_and_exit(self):
+        self.screenshot_is_ok = True
+        self.cancel_screenshot = True
         self.screenshot_dialog.close()
 
     def shading_render_progress(self):
@@ -2278,10 +2287,7 @@ class AssetLoader(object):
 
             self.mari_open_asset_process = QtCore.QProcess(self)
             self.mari_open_asset_process.finished.connect(partial(self.mari_finished, texture_project_path))
-            if os.path.exists("C:/Program Files/Mari2.6v2/Bundle/bin/Mari2.6v2.exe"):
-                self.mari_open_asset_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
-            else:
-                self.mari_open_asset_process.start("C:/Program Files/Mari2.6v5/Bundle/bin/Mari2.6v5.exe", [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
+            self.mari_open_asset_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
 
         self.statusLbl.setText("Status: Idle...")
 
