@@ -2285,11 +2285,10 @@ class AssetLoader(object):
             process.start(self.nuke_path, [all_nuke_scripts_for_cur_shot[-1]])
 
         elif self.selected_asset.type == "tex":
-            texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
+            #texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)
             self.Lib.switch_mari_cache(self, "server")
-
             self.mari_open_asset_process = QtCore.QProcess(self)
-            self.mari_open_asset_process.finished.connect(partial(self.mari_finished, texture_project_path))
+            self.mari_open_asset_process.finished.connect(partial(self.mari_finished))
             self.mari_open_asset_process.start(self.mari_path, [self.cur_path + "\\lib\\software_scripts\\mari_start_project.py", self.selected_asset.name + "_" + self.selected_asset.version])
 
         self.statusLbl.setText("Status: Idle...")
@@ -2306,7 +2305,7 @@ class AssetLoader(object):
         except:
             pass
 
-    def mari_finished(self, texture_project_path):
+    def mari_finished(self):
         self.mari_open_asset_process.kill()
 
         self.Lib.switch_mari_cache(self, "perso")
