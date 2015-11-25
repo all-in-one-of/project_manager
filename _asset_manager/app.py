@@ -796,6 +796,12 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.trayIcon.show()
 
     def terminate_program(self):
+        # tasks = subprocess.check_output(['tasklist'])
+        # if "houdin" in tasks.lower():
+        #     self.Lib.message_box(self, type="error", text="Please close Houdini layout scenes before closing the Manager!")
+        #     return
+
+
         self.cursor.execute('''UPDATE preferences SET is_online=0 WHERE username=?''', (self.username,))
         self.db.commit()
         self.Lib.switch_mari_cache(self, "perso")

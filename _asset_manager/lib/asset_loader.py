@@ -158,7 +158,6 @@ class AssetLoader(object):
         self.icon_display_type = "user"
         self.batch_thumbnail = False
 
-
     def show_right_click_menu(self, QPos):
         # Create a menu
         menu = QtGui.QMenu("Menu", self)
@@ -566,6 +565,7 @@ class AssetLoader(object):
 
             # Create asset object and attach it to the ListWidgetItem
             asset = self.Asset(self, asset_id, project_name, sequence_name, shot_number, asset_name, asset_path, asset_extension, asset_type, asset_version, asset_tags, asset_dependency, last_access, last_publish, creator, number_of_publishes, publish_from_version)
+
             # Create ListWidget Item
             if "-lowres" in asset.name:
                 asset_name = asset.name.replace("-lowres", "")
@@ -1704,8 +1704,11 @@ class AssetLoader(object):
             if len(versions) == 0:
                 last_version_number = "0001"
             else:
-                last_version = sorted(versions)[-1]
-                last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+                try:
+                    last_version = sorted(versions)[-1]
+                    last_version_number = str(int(last_version.split("_")[-1]) + 1).zfill(4)
+                except:
+                    last_version_number = "xxxx"
 
             data = {
                 'project': {'type': 'Project', 'id': self.sg_project_id},
@@ -2318,8 +2321,30 @@ class AssetLoader(object):
             process = QtCore.QProcess(self)
             process.start(self.houdini_path, [self.selected_project_path + hda_path[0].replace("\\", "/")])
         else:
+            lock_files = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/lay/*")
+            lock_files = [i for i in lock_files if ".lock" in i]
+            lock_scenes = [(os.path.split(i)[-1].split("_")[0].replace(".lock", ""), os.path.split(i)[-1].split("_")[-1].replace(".lock", "")) for i in lock_files]
+
+            if len(lock_scenes) > 0:
+                for scene_and_user in lock_scenes:
+                    scene = scene_and_user[0]
+                    user = scene_and_user[1]
+                    if self.selected_asset.name == scene and user != self.username:
+                        self.Lib.message_box(self, type="error", text="The scene is already in use by " + self.members[username])
+                        return
+
+            open("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/lay/" + self.selected_asset.name + "_" + self.username + ".lock", "a+")
+
             process = QtCore.QProcess(self)
+            process.finished.connect(self.delete_layout_lock)
             process.start(self.houdini_path, [self.selected_asset.full_path])
+
+    def delete_layout_lock(self):
+        lock_files = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/lay/*")
+        lock_files = [i for i in lock_files if ".lock" in i]
+
+        for each_file in lock_files:
+            os.remove(each_file)
 
     def open_associated_layout_scene(self):
         shutil.copy2(self.associated_layout_scene, self.associated_layout_scene.replace(".hipnc", "_" + self.username + "_layplacementtmp.hipnc"))
@@ -2554,7 +2579,7 @@ class AssetLoader(object):
         # Get asset name
         asset_name = unicode(name_line_edit.text())
         asset_name = self.Lib.normalize_str(self, asset_name)
-        asset_name = asset_name_tmp = self.Lib.convert_to_camel_case(self, asset_name)
+        asset_name = asset_name_tmp = self.Lib.convert_to_camel_case(self, asset_name, asset_type=self.selected_department_name)
 
         if self.selected_department_name == "mod":
             asset_description = unicode(self.utf8_codec.fromUnicode(description_line_edit.text()), 'utf-8')

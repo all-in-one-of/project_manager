@@ -177,7 +177,7 @@ class Lib(object):
             pass
         return unicodedata.normalize('NFKD', data).encode('ascii', 'ignore')
 
-    def convert_to_camel_case(self, str):
+    def convert_to_camel_case(self, str, asset_type):
         str = str.lower()
         str = str.replace("(", "")
         str = str.replace(")", "")
@@ -190,16 +190,17 @@ class Lib(object):
         str = str.replace("#", "")
         str = str.replace("!", "")
         str = str.replace("?", "")
-        str = str.replace("0", "")
-        str = str.replace("1", "")
-        str = str.replace("2", "")
-        str = str.replace("3", "")
-        str = str.replace("4", "")
-        str = str.replace("5", "")
-        str = str.replace("6", "")
-        str = str.replace("7", "")
-        str = str.replace("8", "")
-        str = str.replace("9", "")
+        if asset_type != "lay":
+            str = str.replace("0", "")
+            str = str.replace("1", "")
+            str = str.replace("2", "")
+            str = str.replace("3", "")
+            str = str.replace("4", "")
+            str = str.replace("5", "")
+            str = str.replace("6", "")
+            str = str.replace("7", "")
+            str = str.replace("8", "")
+            str = str.replace("9", "")
         liste = str.split(" ")
         liste = filter(None, liste)
         liste_finale = []
