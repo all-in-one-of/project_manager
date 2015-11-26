@@ -2336,15 +2336,16 @@ class AssetLoader(object):
             open("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/lay/" + self.selected_asset.name + "_" + self.username + ".lock", "a+")
 
             process = QtCore.QProcess(self)
-            process.finished.connect(self.delete_layout_lock)
+            process.finished.connect(partial(self.delete_layout_lock, self.selected_asset.name))
             process.start(self.houdini_path, [self.selected_asset.full_path])
 
-    def delete_layout_lock(self):
+    def delete_layout_lock(self, layout_scene_name):
         lock_files = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/lay/*")
         lock_files = [i for i in lock_files if ".lock" in i]
 
         for each_file in lock_files:
-            os.remove(each_file)
+            if layout_scene_name in each_file:
+                os.remove(each_file)
 
     def open_associated_layout_scene(self):
         shutil.copy2(self.associated_layout_scene, self.associated_layout_scene.replace(".hipnc", "_" + self.username + "_layplacementtmp.hipnc"))
