@@ -375,7 +375,7 @@ class RenderTab(object):
             id = self.renderTableWidget.item(item.row(), 0)
             id = str(id.text())
             for computer in all_computers:
-                if str(computer.split("_")[0]).lower() == str(computer_id).lower():
+                if str(computer.split("_")[0]).lower() == str(id).lower():
                     os.remove(rendering_folder + computer)
 
         self.add_computers_from_database()

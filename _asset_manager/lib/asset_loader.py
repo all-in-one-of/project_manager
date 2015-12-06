@@ -1043,9 +1043,9 @@ class AssetLoader(object):
                 self.renderLine.hide()
                 self.openRealLayoutScene.hide()
                 self.createVersionBtn.hide()
-            if self.username in ["cgonnord"]:
+            if self.username in ["cgonnord", "costiguy", "mroz"]:
                 self.openRealLayoutScene.show()
-                self.importIntoSceneBtn.show()
+            self.importIntoSceneBtn.show()
             self.publishBtn.hide()
             self.loadObjInGplayBtn.hide()
 
@@ -2280,6 +2280,7 @@ class AssetLoader(object):
         elif self.selected_asset.type == "cmp":
             all_nuke_scripts = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/cmp/*")
             all_nuke_scripts = [i for i in all_nuke_scripts if not "~" in i]
+            all_nuke_scripts = [i for i in all_nuke_scripts if not "autosave" in i]
             selected_nuke_shot = self.selected_asset.full_path.split("\\")[-1]
 
             all_nuke_scripts_for_cur_shot = [i for i in all_nuke_scripts if selected_nuke_shot in i]
@@ -2330,7 +2331,7 @@ class AssetLoader(object):
                     scene = scene_and_user[0]
                     user = scene_and_user[1]
                     if self.selected_asset.name == scene and user != self.username:
-                        self.Lib.message_box(self, type="error", text="The scene is already in use by " + self.members[username])
+                        self.Lib.message_box(self, type="error", text="The scene is already in use by " + self.members[user])
                         return
 
             open("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/lay/" + self.selected_asset.name + "_" + self.username + ".lock", "a+")

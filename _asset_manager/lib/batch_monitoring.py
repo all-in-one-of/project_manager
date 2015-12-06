@@ -81,8 +81,8 @@ class Monitoring(object):
             all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
 
             resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
-            resolutionX = int(2000.0 * (float(resolution) / 100.0))
-            resolutionY = int(2000.0 * (float(resolution) / 100.0))
+            resolutionX = int(1920.0 * (float(resolution) / 100.0))
+            resolutionY = int(800.0 * (float(resolution) / 100.0))
             sampling = self.cursor.execute('''SELECT sampling FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
 
             ifd_path = current_job[1]
@@ -108,7 +108,7 @@ class Monitoring(object):
 
                 ifd_file = current_job[1] + "\\" + current_seq + "." + frame_to_render + ".ifd"
 
-                p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.13/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
+                p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.16/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
 
                 try:
                     tasks = subprocess.check_output(['tasklist']).split("\r\n")
