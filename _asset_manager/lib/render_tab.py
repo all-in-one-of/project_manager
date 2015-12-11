@@ -162,6 +162,12 @@ class RenderTab(object):
             time_difference = current_time_datetime - last_active_datetime
             if time_difference.seconds < 3600:
                 self.computers.append((id, classroom, frame, status, last_active))
+            else:
+                try:
+                    os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + frame.replace("-", "_"))
+                except:
+                    pass
+                os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\" + computer)
 
 
         idle_computers_number = 0

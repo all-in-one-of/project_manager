@@ -42,6 +42,10 @@ class Monitoring(object):
                 self.mouse_click()
                 if self.status == "start":
                     self.start_render()
+                elif self.status == "logout":
+                    self.change_computer_status(status="idle")
+                    self.change_computer_frame(frame="0")
+                    os.system("shutdown -l")
                 i += 1
                 if i > 100:
                     self.update_computer_last_active()
@@ -139,9 +143,9 @@ class Monitoring(object):
 
                         time.sleep(2)
                         try:
-                            os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
+                            os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
                         except:
-                            print("Failed to remove exr")
+                            print("Failed to remove tmp")
                         self.check_status()
 
                     elif self.status == "logout":
@@ -150,9 +154,9 @@ class Monitoring(object):
                         self.change_computer_frame(frame="0")
                         time.sleep(2)
                         try:
-                            os.remove(current_job[1] + "\\" + current_seq + "." + frame_to_render + ".exr")
+                            os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
                         except:
-                            print("Failed to remove exr")
+                            print("Failed to remove tmp")
                         os.system("shutdown -l")
 
                     # Check if render is finished (finished if mantra is not running)
@@ -178,6 +182,11 @@ class Monitoring(object):
 
                     i += 1
                     time.sleep(6)
+
+        elif current_job[2] == 100:
+            self.get_computer_status()
+            if self.status == "rendering":
+                self.change_computer_status(status="idle")
 
         self.update_computer_last_active()
         self.check_status()

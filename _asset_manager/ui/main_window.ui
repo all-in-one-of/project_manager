@@ -110,7 +110,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>6</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -3448,6 +3448,11 @@
                         <attribute name="verticalHeaderStretchLastSection">
                          <bool>false</bool>
                         </attribute>
+                        <column>
+                         <property name="text">
+                          <string>ID</string>
+                         </property>
+                        </column>
                         <column>
                          <property name="text">
                           <string>Sequence</string>

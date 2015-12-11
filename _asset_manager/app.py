@@ -276,10 +276,10 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
         self.WhatsNew.load_whats_new(self)
         self.check_last_active()
 
-        self.check_news_thread = CheckNews(self)
-        self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
-        self.check_news_thread.daemon = True
-        self.check_news_thread.start()
+        #self.check_news_thread = CheckNews(self)
+        #self.connect(self.check_news_thread, QtCore.SIGNAL("check_last_active"), self.check_last_active)
+        #self.check_news_thread.daemon = True
+        #self.check_news_thread.start()
 
         self.show()
 
@@ -436,8 +436,6 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
-            self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Render"])
 
         elif self.members[self.username] == "Francis":
             self.Tabs.removeTab(self.tabs_list["Tasks"])
@@ -471,8 +469,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
-            self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Render"])
+
 
         elif self.members[self.username] == "Etienne":
             self.Tabs.removeTab(self.tabs_list["Tasks"])
@@ -536,8 +533,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
             self.Tabs.removeTab(self.tabs_list["Tags Manager"])
             self.get_tabs_id_from_name()
             self.Tabs.removeTab(self.tabs_list["Misc"])
-            self.get_tabs_id_from_name()
-            self.Tabs.removeTab(self.tabs_list["Render"])
+
 
 
         elif self.members[self.username] == "Olivier":
