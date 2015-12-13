@@ -24,20 +24,21 @@ class Monitoring(object):
         self.computer_id = socket.gethostname()
         self.get_classroom_from_id()
         print("Successfully started slave on computer #" + self.computer_id)
-        self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
-        self.db = sqlite3.connect(self.db_path, timeout=60.0)
-        self.cursor = self.db.cursor()
+        #self.db_path = "Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering.sqlite"  # Database projet pub
+        #self.db = sqlite3.connect(self.db_path, timeout=60.0)
+        #self.cursor = self.db.cursor()
         ctypes.windll.user32.SetCursorPos(960, 540)
 
     def check_status(self):
         self.get_computers_list()
+        os.system("COLOR 47")
         #os.system('taskkill /f /im mpc-hc.exe')
         #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/waiting_for_render.jpg"])
 
         i = 0
         if self.status == "idle":
             while True:
-                print("Computer is idle...")
+                print("Rendering...")
                 self.get_computer_status()
                 self.mouse_click()
                 if self.status == "start":
@@ -63,127 +64,135 @@ class Monitoring(object):
 
     def start_render(self):
         print("Starting Render")
+        os.system("COLOR 47")
         #os.system('taskkill /f /im mpc-hc.exe')
         #subprocess.Popen(["Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_soft/MPC/mpc-hc.exe", "/fullscreen", "Z:/Groupes-cours/NAND999-A15-N01/pub/_info/render_in_progress.jpg"])
 
-        all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
-        all_jobs = sorted(all_jobs, key=lambda x: x[2])
-        current_job = all_jobs[0]
-        current_seq = current_job[1].split("\\")[-1]
+        #all_jobs = self.cursor.execute('''SELECT * FROM jobs''').fetchall()
+        all_jobs = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/jobs/*")
+        all_jobs = [i.split("\\")[-1] for i in all_jobs]
+        all_jobs = [i for i in all_jobs if int(i.split("_")[0]) != 100]
+        all_jobs = sorted(all_jobs)
 
-        if current_job[2] < 100:
+        if len(all_jobs) > 0:
 
-            self.change_computer_status(status="rendering")
+            current_job = current_job_path = all_jobs[0]
+            current_job = current_job.split("_")
+            current_seq = current_job[1].split("-")[1]
 
-            rendering_frames = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\*")
-            rendered_frames = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\*")
-            rendering_frames = [os.path.split(i)[1] for i in rendering_frames]
-            rendered_frames = [os.path.split(i)[1] for i in rendered_frames]
+            if int(current_job[0]) < 100:
 
-            all_frames = rendered_frames + rendering_frames
-            all_frames = [(i.split("_")[0], i.split("_")[1]) for i in all_frames]
-            all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
+                self.change_computer_status(status="rendering")
 
-            resolution = self.cursor.execute('''SELECT resolution FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
-            resolutionX = int(1920.0 * (float(resolution) / 100.0))
-            resolutionY = int(800.0 * (float(resolution) / 100.0))
-            sampling = self.cursor.execute('''SELECT sampling FROM jobs WHERE id=?''', (current_job[0],)).fetchone()[0]
+                rendering_frames = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\*")
+                rendered_frames = glob("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\*")
+                rendering_frames = [os.path.split(i)[1] for i in rendering_frames]
+                rendered_frames = [os.path.split(i)[1] for i in rendered_frames]
 
-            ifd_path = current_job[1]
+                all_frames = rendered_frames + rendering_frames
+                all_frames = [(i.split("_")[0], i.split("_")[1]) for i in all_frames]
+                all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
 
-            ifd_files = glob(ifd_path + "\\*")
-            ifd_files = [i for i in ifd_files if ".ifd" in i]
-            ifd_files = [os.path.split(i)[-1].split(".")[1] for i in ifd_files]
+                resolution = current_job[2]
+                resolutionX = int(1920.0 * (float(resolution) / 100.0))
+                resolutionY = int(800.0 * (float(resolution) / 100.0))
+                sampling = current_job[3]
 
-            frames_to_render = sorted(list(set(ifd_files) - set(all_rendered_frames_for_current_sequence)))
+                ifd_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/rdr/{0}/{1}".format(current_job[1].split("-")[0], current_job[1].split("-")[1])
 
-            if len(frames_to_render) == 0:
-                print("No more frames to render for IFD {0}".format(ifd_path))
-                self.cursor.execute('''UPDATE jobs SET priority=100 WHERE id=?''', (current_job[0],))
-                self.db.commit()
+                ifd_files = glob(ifd_path + "\\*")
+                ifd_files = [i for i in ifd_files if ".ifd" in i]
+                ifd_files = [os.path.split(i)[-1].split(".")[1] for i in ifd_files]
 
-            else:
-                frame_to_render = frames_to_render[0]
-                print("Start render for frame #" + frame_to_render)
-                a = datetime.now().replace(microsecond=0)
+                frames_to_render = sorted(list(set(ifd_files) - set(all_rendered_frames_for_current_sequence)))
 
-                open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
-                self.change_computer_frame(frame=current_seq + "-" + frame_to_render)
+                if len(frames_to_render) == 0:
+                    print("No more frames to render for IFD {0}".format(ifd_path))
+                    new_file_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/jobs/{0}_{1}_{2}_{3}".format("100", current_job[1], current_job[2], current_job[3])
+                    os.rename("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/jobs/" + current_job_path, new_file_path)
 
-                ifd_file = current_job[1] + "\\" + current_seq + "." + frame_to_render + ".ifd"
+                else:
+                    frame_to_render = frames_to_render[0]
+                    print("Start render for frame #" + current_seq + "-" + frame_to_render)
+                    a = datetime.now().replace(microsecond=0)
 
-                p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.16/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
+                    open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
+                    self.change_computer_frame(frame=current_seq + "-" + frame_to_render)
 
-                try:
-                    tasks = subprocess.check_output(['tasklist']).split("\r\n")
-                except:
-                    tasks = ""
-                while True:
-                    print("Waiting for render to start")
+                    ifd_file = ifd_path + "/" + current_seq + "." + frame_to_render + ".ifd"
+
+                    p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.16/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
+
                     try:
                         tasks = subprocess.check_output(['tasklist']).split("\r\n")
                     except:
                         tasks = ""
-
-                    if "mantra" in str(tasks):
-                        break
-                    else:
-                        time.sleep(1)
-
-                i = 0
-                while self.status == "rendering":
-                    print("Rendering frame #" + frame_to_render)
-                    self.mouse_click()
-                    self.get_computer_status()
-
-                    if self.status == "stop":
-                        p.kill()
-                        self.change_computer_status(status="idle")
-                        self.change_computer_frame(frame="0")
-
-                        time.sleep(2)
+                    while True:
+                        print("Waiting for render to start")
                         try:
-                            os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
+                            tasks = subprocess.check_output(['tasklist']).split("\r\n")
                         except:
-                            print("Failed to remove tmp")
-                        self.check_status()
+                            tasks = ""
 
-                    elif self.status == "logout":
-                        print("Logging out")
-                        self.change_computer_status(status="idle")
-                        self.change_computer_frame(frame="0")
-                        time.sleep(2)
+                        if "mantra" in str(tasks):
+                            break
+                        else:
+                            time.sleep(1)
+
+                    i = 0
+                    while self.status == "rendering":
+                        print("Rendering frame #" + current_seq + "-" + frame_to_render)
+                        self.mouse_click()
+                        self.get_computer_status()
+
+                        if self.status == "stop":
+                            p.kill()
+                            self.change_computer_frame(frame="0")
+
+                            time.sleep(2)
+                            try:
+                                os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
+                            except:
+                                print("Failed to remove tmp")
+
+                            self.change_computer_status(status="idle")
+                            self.check_status()
+
+                        elif self.status == "logout":
+                            print("Logging out")
+                            self.change_computer_status(status="idle")
+                            self.change_computer_frame(frame="0")
+                            time.sleep(2)
+                            try:
+                                os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
+                            except:
+                                print("Failed to remove tmp")
+                            os.system("shutdown -l")
+
+                        # Check if render is finished (finished if mantra is not running)
                         try:
-                            os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
+                            tasks = subprocess.check_output(['tasklist']).split("\r\n")
                         except:
-                            print("Failed to remove tmp")
-                        os.system("shutdown -l")
+                            tasks = "mantra"
+                        if not "mantra" in str(tasks):
+                            b = datetime.now().replace(microsecond=0)
+                            render_time = b - a
+                            render_time = str(render_time).replace(":", "-")
+                            open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}_{2}_{3}".format(current_seq, frame_to_render, str(render_time), str(self.computer_id).lower()), "a+")
+                            try:
+                                os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render))
+                            except:
+                                pass
+                            os.system('taskkill /f /im mpc-hc.exe')
+                            break
 
-                    # Check if render is finished (finished if mantra is not running)
-                    try:
-                        tasks = subprocess.check_output(['tasklist']).split("\r\n")
-                    except:
-                        tasks = "mantra"
-                    if not "mantra" in str(tasks):
-                        b = datetime.now().replace(microsecond=0)
-                        render_time = b-a
-                        render_time = str(render_time).replace(":", "-")
-                        open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}_{2}_{3}".format(current_seq, frame_to_render, str(render_time), str(self.computer_id).lower()), "a+")
-                        try:
-                            os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render))
-                        except:
-                            pass
-                        os.system('taskkill /f /im mpc-hc.exe')
-                        break
+                        if i == 100:
+                            self.update_computer_last_active()
+                            i = 0
 
-                    if i == 100:
-                        self.update_computer_last_active()
-                        i = 0
-
-                    i += 1
-                    time.sleep(6)
-
-        elif current_job[2] == 100:
+                        i += 1
+                        time.sleep(6)
+        else:
             self.get_computer_status()
             if self.status == "rendering":
                 self.change_computer_status(status="idle")

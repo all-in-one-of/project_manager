@@ -44,18 +44,22 @@ class RenderTab(object):
         for i in reversed(xrange(self.jobsTableWidget.rowCount())):
             self.jobsTableWidget.removeRow(i)
 
-        all_jobs = self.render_cursor.execute('''SELECT * FROM jobs''').fetchall()
+        #all_jobs = self.render_cursor.execute('''SELECT * FROM jobs''').fetchall()
+        all_jobs = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/jobs/*")
+        all_jobs = [i.split("\\")[-1] for i in all_jobs]
 
         # Add existing tasks to task table
         for row_index, jobs in enumerate(reversed(all_jobs)):
 
             self.jobsTableWidget.insertRow(0)
 
-            id = jobs[0]
-            ifd_path = jobs[1]
-            priority = jobs[2]
-            resolution = jobs[3]
-            sampling = jobs[4]
+            jobs = jobs.split("_")
+
+            id = ""
+            ifd_path = jobs[0]
+            priority = jobs[1]
+            resolution = jobs[2]
+            sampling = jobs[3]
 
             if id == None: id = ""
             if ifd_path == None: ifd_path = ""
@@ -160,7 +164,7 @@ class RenderTab(object):
             last_active_datetime = datetime.strptime(last_active, '%d-%m-%Y-%Hh%M')
 
             time_difference = current_time_datetime - last_active_datetime
-            if time_difference.seconds < 3600:
+            if time_difference.seconds < 1800:
                 self.computers.append((id, classroom, frame, status, last_active))
             else:
                 try:
