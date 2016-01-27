@@ -157,7 +157,6 @@ class RenderTab(object):
             classroom = computer.split("_")[1]
             frame = computer.split("_")[2]
             status = computer.split("_")[3]
-
             last_active = computer.split("_")[4]
             current_time = datetime.now().strftime("%d-%m-%Y-%Hh%M")
             current_time_datetime = datetime.strptime(current_time, '%d-%m-%Y-%Hh%M')
@@ -167,8 +166,11 @@ class RenderTab(object):
             if time_difference.seconds < 1800:
                 self.computers.append((id, classroom, frame, status, last_active))
             else:
+
+                file_name = frame.split("-")
+                file_name = "-".join(file_name[0:-1]) + "_" + file_name[-1]
                 try:
-                    os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + frame.replace("-", "_"))
+                    os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + file_name)
                 except:
                     pass
                 os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_computers\\" + computer)
@@ -283,7 +285,7 @@ class RenderTab(object):
                     classroom = computer.split("_")[1]
                     frame = computer.split("_")[2]
                     last_active = computer.split("_")[4]
-                    os.rename(rendering_folder + computer, rendering_folder + "{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, "idle", last_active))
+                    os.rename(rendering_folder + computer, rendering_folder + "{0}_{1}_{2}_{3}_{4}".format(id, classroom, frame, "stop", last_active))
 
             status_item = QtGui.QTableWidgetItem()
             status_item.setText("Idle")

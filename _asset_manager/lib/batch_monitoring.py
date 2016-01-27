@@ -91,14 +91,14 @@ class Monitoring(object):
 
                 all_frames = rendered_frames + rendering_frames
                 all_frames = [(i.split("_")[0], i.split("_")[1]) for i in all_frames]
-                all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_seq]
+                all_rendered_frames_for_current_sequence = [i[1] for i in all_frames if i[0] == current_job[1]]
 
                 resolution = current_job[2]
                 resolutionX = int(1920.0 * (float(resolution) / 100.0))
                 resolutionY = int(800.0 * (float(resolution) / 100.0))
                 sampling = current_job[3]
 
-                ifd_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/rdr/{0}/{1}".format(current_job[1].split("-")[0], current_job[1].split("-")[1])
+                ifd_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/rdr/{0}".format(current_job[1].replace("-", "/"))
 
                 ifd_files = glob(ifd_path + "\\*")
                 ifd_files = [i for i in ifd_files if ".ifd" in i]
@@ -110,16 +110,17 @@ class Monitoring(object):
                     print("No more frames to render for IFD {0}".format(ifd_path))
                     new_file_path = "Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/jobs/{0}_{1}_{2}_{3}".format("100", current_job[1], current_job[2], current_job[3])
                     os.rename("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/jobs/" + current_job_path, new_file_path)
-
+                    self.change_computer_frame(frame="0")
                 else:
                     frame_to_render = frames_to_render[0]
-                    print("Start render for frame #" + current_seq + "-" + frame_to_render)
+                    frame_name = current_job[1].split("-")[-1]
+                    print("Start render for frame #" + frame_name + "-" + frame_to_render)
                     a = datetime.now().replace(microsecond=0)
 
-                    open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render), "a+")
-                    self.change_computer_frame(frame=current_seq + "-" + frame_to_render)
+                    open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_job[1], frame_to_render), "a+")
+                    self.change_computer_frame(frame="{0}-{1}".format(current_job[1], frame_to_render))
 
-                    ifd_file = ifd_path + "/" + current_seq + "." + frame_to_render + ".ifd"
+                    ifd_file = ifd_path + "/" + frame_name + "." + frame_to_render + ".ifd"
 
                     p = subprocess.Popen(["Z:/RFRENC~1/Outils/SPCIFI~1/Houdini/HOUDIN~1.16/bin/mantra.exe", "-V", "0", "-I", "resolution={0}x{1},sampling={2}x{2}".format(resolutionX, resolutionY, sampling), "-f", ifd_file])
 
@@ -141,17 +142,17 @@ class Monitoring(object):
 
                     i = 0
                     while self.status == "rendering":
-                        print("Rendering frame #" + current_seq + "-" + frame_to_render)
+                        print("Rendering frame #" + frame_name + "-" + frame_to_render)
                         self.mouse_click()
                         self.get_computer_status()
 
                         if self.status == "stop":
-                            p.kill()
                             self.change_computer_frame(frame="0")
+                            p.kill()
 
                             time.sleep(2)
                             try:
-                                os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
+                                os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_job[1] + "_" + frame_to_render)
                             except:
                                 print("Failed to remove tmp")
 
@@ -164,7 +165,7 @@ class Monitoring(object):
                             self.change_computer_frame(frame="0")
                             time.sleep(2)
                             try:
-                                os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_seq + "_" + frame_to_render)
+                                os.remove("Z:/Groupes-cours/NAND999-A15-N01/Nature/_pipeline/_utilities/_database/rendering_frames/" + current_job[1] + "_" + frame_to_render)
                             except:
                                 print("Failed to remove tmp")
                             os.system("shutdown -l")
@@ -178,9 +179,9 @@ class Monitoring(object):
                             b = datetime.now().replace(microsecond=0)
                             render_time = b - a
                             render_time = str(render_time).replace(":", "-")
-                            open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}_{2}_{3}".format(current_seq, frame_to_render, str(render_time), str(self.computer_id).lower()), "a+")
+                            open("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendered_frames\\{0}_{1}_{2}_{3}".format(current_job[1], frame_to_render, str(render_time), str(self.computer_id).lower()), "a+")
                             try:
-                                os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_seq, frame_to_render))
+                                os.remove("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\_pipeline\\_utilities\\_database\\rendering_frames\\{0}_{1}".format(current_job[1], frame_to_render))
                             except:
                                 pass
                             os.system('taskkill /f /im mpc-hc.exe')

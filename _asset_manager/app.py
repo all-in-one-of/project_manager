@@ -188,7 +188,7 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Get remaining time and set deadline Progress Bar
         day_start = date(2015,6,28)
-        day_end = date(2016,4,15)
+        day_end = date(2016,4,25)
         day_today = datetime.now().date()
 
         months_and_days_left = relativedelta.relativedelta(day_end, day_today)

@@ -2278,15 +2278,32 @@ class AssetLoader(object):
             process.start(self.houdini_path, [associated_hip_scene.replace("\\", "/").replace(".hipnc", "_" + self.username + "_lgttmp.hipnc")])
 
         elif self.selected_asset.type == "cmp":
-            all_nuke_scripts = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/cmp/*")
+            selected_nuke_shot = self.selected_asset.full_path.split("\\")[-1]
+            all_nuke_scripts = glob("Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/cmp/{0}/02_comp/*".format(selected_nuke_shot))
             all_nuke_scripts = [i for i in all_nuke_scripts if not "~" in i]
             all_nuke_scripts = [i for i in all_nuke_scripts if not "autosave" in i]
-            selected_nuke_shot = self.selected_asset.full_path.split("\\")[-1]
+            all_nuke_scripts_versions = [i.split("\\")[-1].split("_")[-1].replace(".nk", "") for i in all_nuke_scripts if not "autosave" in i]
 
-            all_nuke_scripts_for_cur_shot = [i for i in all_nuke_scripts if selected_nuke_shot in i]
-            all_nuke_scripts_for_cur_shot = sorted(all_nuke_scripts_for_cur_shot)
+            self.select_version_dialog = QtGui.QDialog(self)
+            self.select_version_dialog.setMinimumWidth(150)
+            self.Lib.apply_style(self, self.select_version_dialog)
+
+            self.select_version_dialog.setWindowTitle("Select a version to load:")
+            self.select_version_dialog_layout = QtGui.QHBoxLayout(self.select_version_dialog)
+
+            version_combobox = QtGui.QComboBox(self.select_version_dialog)
+            version_combobox.addItems(all_nuke_scripts_versions)
+            self.select_version_dialog_layout.addWidget(version_combobox)
+
+            loadBtn = QtGui.QPushButton("Load Nuke Script", self.select_version_dialog)
+            loadBtn.clicked.connect(self.select_version_dialog.close)
+
+            self.select_version_dialog_layout.addWidget(loadBtn)
+
+            self.select_version_dialog.exec_()
+
             process = QtCore.QProcess(self)
-            process.start(self.nuke_path, [all_nuke_scripts_for_cur_shot[-1]])
+            process.start(self.nuke_path, ["Z:/Groupes-cours/NAND999-A15-N01/Nature/assets/cmp/{0}/02_comp/{0}_{1}.nk".format(selected_nuke_shot, version_combobox.currentText())])
 
         elif self.selected_asset.type == "tex":
             #texture_project_path = self.Lib.get_mari_project_path_from_asset_name(self, self.selected_asset.name, self.selected_asset.version)

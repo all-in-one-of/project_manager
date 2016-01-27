@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'H:\01-NAD\_pipeline\_utilities\_asset_manager\ui\main_window.ui'
 #
-# Created: Sun Nov 08 09:20:54 2015
+# Created: Mon Dec 14 09:47:53 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -1273,6 +1273,7 @@ class Ui_Form(object):
         self.verticalLayout_6.setMargin(2)
         self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
         self.ifd_and_frames_frame = QtGui.QFrame(self.renderingFrame)
+        self.ifd_and_frames_frame.setMaximumSize(QtCore.QSize(0, 0))
         self.ifd_and_frames_frame.setFrameShape(QtGui.QFrame.NoFrame)
         self.ifd_and_frames_frame.setFrameShadow(QtGui.QFrame.Plain)
         self.ifd_and_frames_frame.setObjectName(_fromUtf8("ifd_and_frames_frame"))
@@ -1343,7 +1344,7 @@ class Ui_Form(object):
         self.renderedFramesTableWidget.setShowGrid(False)
         self.renderedFramesTableWidget.setGridStyle(QtCore.Qt.SolidLine)
         self.renderedFramesTableWidget.setObjectName(_fromUtf8("renderedFramesTableWidget"))
-        self.renderedFramesTableWidget.setColumnCount(4)
+        self.renderedFramesTableWidget.setColumnCount(5)
         self.renderedFramesTableWidget.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.renderedFramesTableWidget.setHorizontalHeaderItem(0, item)
@@ -1353,6 +1354,8 @@ class Ui_Form(object):
         self.renderedFramesTableWidget.setHorizontalHeaderItem(2, item)
         item = QtGui.QTableWidgetItem()
         self.renderedFramesTableWidget.setHorizontalHeaderItem(3, item)
+        item = QtGui.QTableWidgetItem()
+        self.renderedFramesTableWidget.setHorizontalHeaderItem(4, item)
         self.renderedFramesTableWidget.horizontalHeader().setDefaultSectionSize(100)
         self.renderedFramesTableWidget.horizontalHeader().setMinimumSectionSize(10)
         self.renderedFramesTableWidget.horizontalHeader().setStretchLastSection(True)
@@ -1822,7 +1825,7 @@ class Ui_Form(object):
         self.newsFeedScrollArea.setWidgetResizable(True)
         self.newsFeedScrollArea.setObjectName(_fromUtf8("newsFeedScrollArea"))
         self.newsFeedScrollAreaWidgetContents = QtGui.QWidget()
-        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 100, 30))
+        self.newsFeedScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1443, 536))
         self.newsFeedScrollAreaWidgetContents.setObjectName(_fromUtf8("newsFeedScrollAreaWidgetContents"))
         self.newsFeedScrollArea.setWidget(self.newsFeedScrollAreaWidgetContents)
         self.verticalLayout_31.addWidget(self.newsFeedScrollArea)
@@ -2247,12 +2250,14 @@ class Ui_Form(object):
         self.updateJobsBtn.setText(_translate("Form", "Update Jobs", None))
         self.renderedFramesTableWidget.setSortingEnabled(True)
         item = self.renderedFramesTableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("Form", "Sequence", None))
+        item.setText(_translate("Form", "ID", None))
         item = self.renderedFramesTableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("Form", "Frame", None))
+        item.setText(_translate("Form", "Sequence", None))
         item = self.renderedFramesTableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("Form", "Render Time", None))
+        item.setText(_translate("Form", "Frame", None))
         item = self.renderedFramesTableWidget.horizontalHeaderItem(3)
+        item.setText(_translate("Form", "Render Time", None))
+        item = self.renderedFramesTableWidget.horizontalHeaderItem(4)
         item.setText(_translate("Form", "Computer ID", None))
         self.deleteSelectedFramesBtn.setText(_translate("Form", "Delete Selected Frames on Database", None))
         self.checkFramesIntegrityBtn.setText(_translate("Form", "Check frames integrity", None))
