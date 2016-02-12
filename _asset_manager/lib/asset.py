@@ -94,6 +94,8 @@ class Asset(object):
         self.nbr_of_comments = self.main.cursor.execute('''SELECT Count(*) FROM comments WHERE asset_id=? AND comment_type=?''', (self.id, self.type,)).fetchone()[0]
         if self.type == "ref":
             self.path = "\\assets\\{0}\\{1}_{2}_{3}_{0}_{4}_{5}.{6}".format(self.type, self.project_shortname, self.sequence, self.shot, self.name, self.version, self.extension)
+        elif self.type == "anm":
+            self.path = "\\assets\\{0}\\{1}\\{2}_{3}.{4}".format(self.type, self.shot, self.name, self.version, self.extension)
         else:
             self.path = "\\assets\\{0}\\{1}_{2}.{3}".format(self.type, self.name, self.version, self.extension)
 

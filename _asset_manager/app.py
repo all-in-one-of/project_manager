@@ -168,9 +168,15 @@ class Main(QtGui.QWidget, Ui_Form, ReferenceTab, CommentWidget, Lib, TaskManager
 
         # Clear temp folder
         if os.path.isdir("H:/tmp"):
-            shutil.rmtree("H:/tmp")
+            try:
+                shutil.rmtree("H:/tmp")
+            except:
+                pass
 
-        os.makedirs("H:/tmp")
+        try:
+            os.makedirs("H:/tmp")
+        except:
+            pass
 
         # Create Favicon
         self.app_icon = QtGui.QIcon()

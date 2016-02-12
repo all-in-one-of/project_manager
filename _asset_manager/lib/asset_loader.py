@@ -2961,10 +2961,12 @@ class AssetLoader(object):
         asset.add_asset_to_db()
         shutil.copy(self.NEF_folder + "\\houdini.hipnc", asset.full_path)
 
-        self.houdini_hda_process = QtCore.QProcess(self)
-        self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
-        self.houdini_hda_process.waitForFinished()
-        self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_glob_lgt_into_lay.py", asset.full_path.replace("_01.", "_global_lighting.").replace(".hipnc", ".hda"), asset.full_path])
+        self.asset_creation_finished(asset)
+
+        #self.houdini_hda_process = QtCore.QProcess(self)
+        #self.houdini_hda_process.finished.connect(partial(self.asset_creation_finished, asset))
+        #self.houdini_hda_process.waitForFinished()
+        #self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_import_glob_lgt_into_lay.py", asset.full_path.replace("_01.", "_global_lighting.").replace(".hipnc", ".hda"), asset.full_path])
 
     def create_sim_asset_from_scratch(self, asset_name):
         sim_asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "hda", "sim", "01", [], "", "", "", self.username)
@@ -2977,6 +2979,13 @@ class AssetLoader(object):
         self.houdini_hda_process.start(self.houdini_batch_path, [self.cur_path + "\\lib\\software_scripts\\houdini_create_sim_from_scratch.py", sim_asset.full_path, asset_name])
 
     def create_anm_asset_from_scratch(self, asset_name):
+        if self.selected_shot_number != "xxxx":
+            try:
+                os.mkdir("Z:\\Groupes-cours\\NAND999-A15-N01\\Nature\\assets\\anm\\{0}".format(self.selected_shot_number))
+            except:
+                pass
+
+
         asset = self.Asset(self, 0, self.selected_project_name, self.selected_sequence_name, self.selected_shot_number, asset_name, "", "ma", "anm", "01", [], "", "", "", self.username)
         asset.add_asset_to_db()
 
